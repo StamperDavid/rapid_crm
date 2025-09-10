@@ -16,7 +16,7 @@ import {
   CalendarIcon,
   IdentificationIcon
 } from '@heroicons/react/24/outline';
-import { Organization, SELECT_OPTIONS } from '../../../types/schema';
+import { Organization, Person, Vehicle, Driver, SELECT_OPTIONS } from '../../../types/schema';
 
 const Companies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +24,36 @@ const Companies: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Organization | null>(null);
   const [editingCompany, setEditingCompany] = useState<Organization | null>(null);
+
+  // Modal states for adding related entities
+  const [showAddContactModal, setShowAddContactModal] = useState(false);
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
+  const [showAddDriverModal, setShowAddDriverModal] = useState(false);
+  
+  // Mock data for related entities
+  const [contacts, setContacts] = useState<Person[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  
+  // Primary contact for new company
+  const [primaryContact, setPrimaryContact] = useState<Partial<Person>>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    preferredContactMethod: 'Phone',
+    isPrimaryContact: true,
+    position: '',
+    department: ''
+  });
+  
+  // Vehicles and drivers for new company creation
+  const [newCompanyVehicles, setNewCompanyVehicles] = useState<Partial<Vehicle>[]>([]);
+  const [newCompanyDrivers, setNewCompanyDrivers] = useState<Partial<Driver>[]>([]);
+  
+  // Modal states for adding vehicles/drivers during creation
+  const [showAddVehicleToCreation, setShowAddVehicleToCreation] = useState(false);
+  const [showAddDriverToCreation, setShowAddDriverToCreation] = useState(false);
 
   // Mock company data using comprehensive transportation Organization schema
   const [companies, setCompanies] = useState<Organization[]>([
@@ -196,9 +226,12 @@ const Companies: React.FC = () => {
   });
 
   const handleCreateCompany = () => {
-    if (newCompany.legalBusinessName && newCompany.physicalStreetAddress && newCompany.physicalCity) {
+    if (newCompany.legalBusinessName && newCompany.physicalStreetAddress && newCompany.physicalCity && 
+        primaryContact.firstName && primaryContact.lastName && primaryContact.phone && primaryContact.email) {
+      const companyId = (companies.length + 1).toString();
+      
       const company: Organization = {
-        id: (companies.length + 1).toString(),
+        id: companyId,
         physicalStreetAddress: newCompany.physicalStreetAddress!,
         physicalCity: newCompany.physicalCity!,
         physicalState: newCompany.physicalState!,
@@ -233,7 +266,93 @@ const Companies: React.FC = () => {
         createdAt: new Date().toISOString().split('T')[0],
         updatedAt: new Date().toISOString().split('T')[0]
       };
+      
+      // Create primary contact
+      const contact: Person = {
+        id: (contacts.length + 1).toString(),
+        companyId: companyId,
+        firstName: primaryContact.firstName!,
+        lastName: primaryContact.lastName!,
+        phone: primaryContact.phone!,
+        email: primaryContact.email!,
+        preferredContactMethod: primaryContact.preferredContactMethod!,
+        isPrimaryContact: true,
+        position: primaryContact.position,
+        department: primaryContact.department,
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0]
+      };
+      
+      // Create vehicles
+      const createdVehicles: Vehicle[] = newCompanyVehicles.map((vehicle, index) => ({
+        id: (vehicles.length + index + 1).toString(),
+        companyId: companyId,
+        vin: vehicle.vin!,
+        licensePlate: vehicle.licensePlate!,
+        make: vehicle.make!,
+        model: vehicle.model!,
+        year: vehicle.year!,
+        color: vehicle.color,
+        vehicleType: vehicle.vehicleType!,
+        gvwr: vehicle.gvwr!,
+        emptyWeight: vehicle.emptyWeight,
+        fuelType: vehicle.fuelType!,
+        registrationNumber: vehicle.registrationNumber,
+        registrationExpiry: vehicle.registrationExpiry,
+        insuranceProvider: vehicle.insuranceProvider,
+        insurancePolicyNumber: vehicle.insurancePolicyNumber,
+        insuranceExpiry: vehicle.insuranceExpiry,
+        lastInspectionDate: vehicle.lastInspectionDate,
+        nextInspectionDue: vehicle.nextInspectionDue,
+        lastMaintenanceDate: vehicle.lastMaintenanceDate,
+        nextMaintenanceDue: vehicle.nextMaintenanceDue,
+        hasHazmatEndorsement: vehicle.hasHazmatEndorsement!,
+        status: vehicle.status!,
+        currentDriverId: vehicle.currentDriverId,
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0]
+      }));
+      
+      // Create drivers
+      const createdDrivers: Driver[] = newCompanyDrivers.map((driver, index) => ({
+        id: (drivers.length + index + 1).toString(),
+        companyId: companyId,
+        firstName: driver.firstName!,
+        lastName: driver.lastName!,
+        dateOfBirth: driver.dateOfBirth!,
+        ssn: driver.ssn,
+        phone: driver.phone!,
+        email: driver.email,
+        address: driver.address,
+        licenseNumber: driver.licenseNumber!,
+        licenseState: driver.licenseState!,
+        licenseClass: driver.licenseClass!,
+        licenseExpiry: driver.licenseExpiry!,
+        hasHazmatEndorsement: driver.hasHazmatEndorsement!,
+        hasPassengerEndorsement: driver.hasPassengerEndorsement!,
+        hasSchoolBusEndorsement: driver.hasSchoolBusEndorsement!,
+        hireDate: driver.hireDate!,
+        employmentStatus: driver.employmentStatus!,
+        position: driver.position!,
+        payType: driver.payType!,
+        medicalCardNumber: driver.medicalCardNumber,
+        medicalCardExpiry: driver.medicalCardExpiry,
+        drugTestDate: driver.drugTestDate,
+        nextDrugTestDue: driver.nextDrugTestDue,
+        backgroundCheckDate: driver.backgroundCheckDate,
+        nextBackgroundCheckDue: driver.nextBackgroundCheckDue,
+        totalMilesDriven: driver.totalMilesDriven,
+        accidentsInLast3Years: driver.accidentsInLast3Years,
+        violationsInLast3Years: driver.violationsInLast3Years,
+        safetyRating: driver.safetyRating,
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0]
+      }));
+      
       setCompanies([...companies, company]);
+      setContacts([...contacts, contact]);
+      setVehicles([...vehicles, ...createdVehicles]);
+      setDrivers([...drivers, ...createdDrivers]);
       setNewCompany({
         physicalStreetAddress: '',
         physicalCity: '',
@@ -265,6 +384,18 @@ const Companies: React.FC = () => {
         hasDunsBradstreetNumber: 'No',
         additionalRegulatoryDetails: []
       });
+      setPrimaryContact({
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        preferredContactMethod: 'Phone',
+        isPrimaryContact: true,
+        position: '',
+        department: ''
+      });
+      setNewCompanyVehicles([]);
+      setNewCompanyDrivers([]);
       setShowCreateModal(false);
     }
   };
@@ -494,19 +625,19 @@ const Companies: React.FC = () => {
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <MapPinIcon className="h-4 w-4 mr-1" />
                           {company.physicalCity}, {company.physicalState}
-                        </div>
+                      </div>
                         
                         {company.usdotNumber && (
                           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                             <IdentificationIcon className="h-4 w-4 mr-1" />
                             USDOT: {company.usdotNumber}
-                          </div>
+                    </div>
                         )}
                         
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <TruckIcon className="h-4 w-4 mr-1" />
                           {company.numberOfVehicles} vehicles
-                        </div>
+                  </div>
                         
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <UserGroupIcon className="h-4 w-4 mr-1" />
@@ -583,13 +714,13 @@ const Companies: React.FC = () => {
                     {selectedCompany.businessClassification} • {selectedCompany.transportationOperationType}
                   </p>
                 </div>
-                <button
+                    <button
                   onClick={() => setSelectedCompany(null)}
                   className="text-gray-300 hover:text-white"
-                >
+                    >
                   <XMarkIcon className="h-6 w-6" />
-                </button>
-              </div>
+                    </button>
+                  </div>
               
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Business Information */}
@@ -605,8 +736,8 @@ const Companies: React.FC = () => {
                     {selectedCompany.businessStarted && (
                       <div><span className="font-medium text-white">Business Started:</span> {new Date(selectedCompany.businessStarted).toLocaleDateString()}</div>
                     )}
-                  </div>
                 </div>
+                  </div>
                 
                 {/* Transportation Details */}
                 <div className="space-y-4">
@@ -620,7 +751,7 @@ const Companies: React.FC = () => {
                     )}
                     <div><span className="font-medium text-white">Operation Class:</span> {selectedCompany.operationClass}</div>
                   </div>
-                </div>
+                    </div>
                 
                 {/* Fleet Information */}
                 <div className="space-y-4">
@@ -632,9 +763,9 @@ const Companies: React.FC = () => {
                     <div><span className="font-medium text-white">GVWR:</span> {selectedCompany.gvwr}</div>
                     {selectedCompany.vehicleTypesUsed.length > 0 && (
                       <div><span className="font-medium text-white">Vehicle Types:</span> {selectedCompany.vehicleTypesUsed.join(', ')}</div>
-                    )}
-                  </div>
+                  )}
                 </div>
+              </div>
                 
                 {/* Cargo & Safety */}
                 <div className="space-y-4">
@@ -651,11 +782,39 @@ const Companies: React.FC = () => {
                         <ul className="list-disc list-inside ml-2 text-gray-200">
                           {selectedCompany.additionalRegulatoryDetails.map((detail, index) => (
                             <li key={index}>{detail}</li>
-                          ))}
-                        </ul>
+          ))}
+        </ul>
                       </div>
                     )}
                   </div>
+                </div>
+      </div>
+
+              {/* Related Entities Section */}
+              <div className="mt-8 pt-6 border-t border-gray-600">
+                <h4 className="text-lg font-medium text-white mb-4">Related Entities</h4>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <button
+                    onClick={() => setShowAddContactModal(true)}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    <UserGroupIcon className="h-5 w-5 mr-2" />
+                    Add Contact
+                  </button>
+                  <button
+                    onClick={() => setShowAddVehicleModal(true)}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    <TruckIcon className="h-5 w-5 mr-2" />
+                    Add Vehicle
+                  </button>
+                  <button
+                    onClick={() => setShowAddDriverModal(true)}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    <IdentificationIcon className="h-5 w-5 mr-2" />
+                    Add Driver
+                  </button>
                 </div>
               </div>
               
@@ -694,7 +853,7 @@ const Companies: React.FC = () => {
                 <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Business Information</h4>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
+                <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Legal Business Name *
                       </label>
@@ -749,7 +908,7 @@ const Companies: React.FC = () => {
                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="12-3456789"
                       />
-                    </div>
+                  </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -766,7 +925,7 @@ const Companies: React.FC = () => {
                     </div>
                     
                     {newCompany.hasDBA === 'Yes' && (
-                      <div>
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           DBA Name
                         </label>
@@ -777,7 +936,7 @@ const Companies: React.FC = () => {
                           className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                           placeholder="Enter DBA name"
                         />
-                      </div>
+                    </div>
                     )}
                   </div>
                 </div>
@@ -839,7 +998,7 @@ const Companies: React.FC = () => {
                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="Enter state"
                       />
-                    </div>
+                  </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -861,7 +1020,7 @@ const Companies: React.FC = () => {
                 <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Transportation & Operations</h4>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
+                <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Operation Type *
                       </label>
@@ -891,7 +1050,7 @@ const Companies: React.FC = () => {
                       </select>
                     </div>
                     
-                    <div>
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Operation Class
                       </label>
@@ -902,9 +1061,9 @@ const Companies: React.FC = () => {
                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="Class A, Class B, etc."
                       />
-                    </div>
+                      </div>
                     
-                    <div>
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Has USDOT Number
                       </label>
@@ -915,8 +1074,8 @@ const Companies: React.FC = () => {
                       >
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                      </select>
-                    </div>
+                        </select>
+                      </div>
                     
                     {newCompany.hasUSDOTNumber === 'Yes' && (
                       <div>
@@ -932,7 +1091,7 @@ const Companies: React.FC = () => {
                         />
                       </div>
                     )}
-                  </div>
+                    </div>
                 </div>
 
                 {/* Fleet Information Section */}
@@ -965,7 +1124,7 @@ const Companies: React.FC = () => {
                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="0"
                       />
-                    </div>
+                  </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -978,9 +1137,9 @@ const Companies: React.FC = () => {
                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="0"
                       />
-                    </div>
-                    
-                    <div>
+                </div>
+
+                <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         GVWR
                       </label>
@@ -1017,10 +1176,218 @@ const Companies: React.FC = () => {
                       >
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                      </select>
-                    </div>
+                    </select>
+                  </div>
                   </div>
                 </div>
+              </div>
+              
+              {/* Primary Contact Section */}
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Primary Contact</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Add the primary contact person for this company. This will be the main point of contact for all communications.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={primaryContact.firstName || ''}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, firstName: e.target.value }))}
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Enter first name"
+                    />
+                      </div>
+                  
+                      <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={primaryContact.lastName || ''}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, lastName: e.target.value }))}
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Enter last name"
+                    />
+                      </div>
+                  
+                        <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Position
+                    </label>
+                    <input
+                      type="text"
+                      value={primaryContact.position || ''}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, position: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., Operations Manager"
+                    />
+                        </div>
+                  
+                        <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Phone *
+                    </label>
+                    <input
+                      type="tel"
+                      value={primaryContact.phone || ''}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, phone: e.target.value }))}
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={primaryContact.email || ''}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="contact@company.com"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Preferred Contact Method *
+                    </label>
+                    <select
+                      value={primaryContact.preferredContactMethod || 'Phone'}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, preferredContactMethod: e.target.value as any }))}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      {SELECT_OPTIONS.preferredContactMethod.map(method => (
+                        <option key={method} value={method}>{method}</option>
+                      ))}
+                          </select>
+                        </div>
+                  
+                        <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Department
+                    </label>
+                    <input
+                      type="text"
+                      value={primaryContact.department || ''}
+                      onChange={(e) => setPrimaryContact(prev => ({ ...prev, department: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., Operations, Sales"
+                    />
+                        </div>
+                      </div>
+              </div>
+              
+              {/* Vehicles Section (Optional) */}
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                <div className="flex items-center justify-between mb-4">
+                      <div>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Vehicles (Optional)</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Add vehicles that belong to this company. You can also add them later from the company profile.
+                    </p>
+                      </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVehicleToCreation(true)}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <TruckIcon className="h-4 w-4 mr-2" />
+                    Add Vehicle
+                  </button>
+                </div>
+                
+                {newCompanyVehicles.length > 0 ? (
+                  <div className="space-y-3">
+                    {newCompanyVehicles.map((vehicle, index) => (
+                      <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-gray-900 dark:text-gray-100">
+                              {vehicle.year} {vehicle.make} {vehicle.model}
+                            </h5>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              VIN: {vehicle.vin} • License: {vehicle.licensePlate}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setNewCompanyVehicles(prev => prev.filter((_, i) => i !== index))}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                    <TruckIcon className="h-8 w-8 mx-auto mb-2" />
+                    <p>No vehicles added yet</p>
+                    </div>
+                  )}
+                </div>
+
+              {/* Drivers Section (Optional) */}
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Drivers (Optional)</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Add drivers that work for this company. You can also add them later from the company profile.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddDriverToCreation(true)}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <IdentificationIcon className="h-4 w-4 mr-2" />
+                    Add Driver
+                  </button>
+                </div>
+                
+                {newCompanyDrivers.length > 0 ? (
+                  <div className="space-y-3">
+                    {newCompanyDrivers.map((driver, index) => (
+                      <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                    <div>
+                            <h5 className="font-medium text-gray-900 dark:text-gray-100">
+                              {driver.firstName} {driver.lastName}
+                            </h5>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              License: {driver.licenseNumber} ({driver.licenseState}) • Class: {driver.licenseClass}
+                            </p>
+                    </div>
+                          <button
+                            type="button"
+                            onClick={() => setNewCompanyDrivers(prev => prev.filter((_, i) => i !== index))}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                    <IdentificationIcon className="h-8 w-8 mx-auto mb-2" />
+                    <p>No drivers added yet</p>
+                  </div>
+                )}
               </div>
               
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -1037,6 +1404,399 @@ const Companies: React.FC = () => {
                   Add Company
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Vehicle to Company Creation Modal */}
+      {showAddVehicleToCreation && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  Add Vehicle
+                </h3>
+                <button
+                  onClick={() => setShowAddVehicleToCreation(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const vehicle: Partial<Vehicle> = {
+                  vin: formData.get('vin') as string,
+                  licensePlate: formData.get('licensePlate') as string,
+                  make: formData.get('make') as string,
+                  model: formData.get('model') as string,
+                  year: parseInt(formData.get('year') as string),
+                  color: formData.get('color') as string,
+                  vehicleType: formData.get('vehicleType') as any,
+                  gvwr: formData.get('gvwr') as string,
+                  fuelType: formData.get('fuelType') as any,
+                  status: formData.get('status') as any,
+                  hasHazmatEndorsement: formData.get('hasHazmatEndorsement') as any
+                };
+                setNewCompanyVehicles(prev => [...prev, vehicle]);
+                setShowAddVehicleToCreation(false);
+              }} className="space-y-6">
+                {/* Vehicle Identification */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Vehicle Identification</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VIN *</label>
+                      <input
+                        type="text"
+                        name="vin"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="1HGBH41JXMN109186"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Plate *</label>
+                      <input
+                        type="text"
+                        name="licensePlate"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="ABC-1234"
+                      />
+                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Year *</label>
+                      <input
+                        type="number"
+                        name="year"
+                        required
+                        min="1900"
+                        max="2030"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="2023"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Make *</label>
+                      <input
+                        type="text"
+                        name="make"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Freightliner"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model *</label>
+                      <input
+                        type="text"
+                        name="model"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Cascadia"
+                      />
+                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Color</label>
+                      <input
+                        type="text"
+                        name="color"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="White"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Vehicle Specifications */}
+                <div className="pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Vehicle Specifications</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle Type *</label>
+                      <select name="vehicleType" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select type</option>
+                        {SELECT_OPTIONS.vehicleType.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">GVWR *</label>
+                      <input
+                        type="text"
+                        name="gvwr"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="80,000 lbs"
+                      />
+                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Fuel Type *</label>
+                      <select name="fuelType" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select fuel type</option>
+                        {SELECT_OPTIONS.fuelType.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status *</label>
+                      <select name="status" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select status</option>
+                        {SELECT_OPTIONS.vehicleStatus.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                      <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hazmat Endorsement</label>
+                      <select name="hasHazmatEndorsement" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                      </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVehicleToCreation(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Add Vehicle
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Driver to Company Creation Modal */}
+      {showAddDriverToCreation && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  Add Driver
+                </h3>
+                <button
+                  onClick={() => setShowAddDriverToCreation(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const driver: Partial<Driver> = {
+                  firstName: formData.get('firstName') as string,
+                  lastName: formData.get('lastName') as string,
+                  dateOfBirth: formData.get('dateOfBirth') as string,
+                  phone: formData.get('phone') as string,
+                  email: formData.get('email') as string,
+                  licenseNumber: formData.get('licenseNumber') as string,
+                  licenseState: formData.get('licenseState') as string,
+                  licenseClass: formData.get('licenseClass') as any,
+                  licenseExpiry: formData.get('licenseExpiry') as string,
+                  hasHazmatEndorsement: formData.get('hasHazmatEndorsement') as any,
+                  hasPassengerEndorsement: formData.get('hasPassengerEndorsement') as any,
+                  hireDate: formData.get('hireDate') as string,
+                  employmentStatus: formData.get('employmentStatus') as any,
+                  position: formData.get('position') as any,
+                  payType: formData.get('payType') as any
+                };
+                setNewCompanyDrivers(prev => [...prev, driver]);
+                setShowAddDriverToCreation(false);
+              }} className="space-y-6">
+                {/* Personal Information */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Personal Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name *</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name *</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth *</label>
+                      <input
+                        type="date"
+                        name="dateOfBirth"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone *</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="driver@company.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* License Information */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">License Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Number *</label>
+                      <input
+                        type="text"
+                        name="licenseNumber"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="D123456789"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License State *</label>
+                      <select name="licenseState" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select state</option>
+                        {SELECT_OPTIONS.states.map(state => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Class *</label>
+                      <select name="licenseClass" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select class</option>
+                        {SELECT_OPTIONS.licenseClass.map(licenseClass => (
+                          <option key={licenseClass} value={licenseClass}>{licenseClass}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Expiry *</label>
+                      <input
+                        type="date"
+                        name="licenseExpiry"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hazmat Endorsement</label>
+                      <select name="hasHazmatEndorsement" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Passenger Endorsement</label>
+                      <select name="hasPassengerEndorsement" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Employment Information */}
+                <div className="pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Employment Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hire Date *</label>
+                      <input
+                        type="date"
+                        name="hireDate"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Employment Status *</label>
+                      <select name="employmentStatus" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select status</option>
+                        {SELECT_OPTIONS.employmentStatus.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                      <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Position *</label>
+                      <select name="position" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select position</option>
+                        {SELECT_OPTIONS.position.map(position => (
+                          <option key={position} value={position}>{position}</option>
+                        ))}
+                      </select>
+                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pay Type *</label>
+                      <select name="payType" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select pay type</option>
+                        {SELECT_OPTIONS.payType.map(payType => (
+                          <option key={payType} value={payType}>{payType}</option>
+                        ))}
+                      </select>
+                  </div>
+                </div>
+              </div>
+              
+                <div className="flex justify-end space-x-3 pt-4">
+                <button
+                    type="button"
+                    onClick={() => setShowAddDriverToCreation(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                    Add Driver
+                </button>
+              </div>
+              </form>
             </div>
           </div>
         </div>

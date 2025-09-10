@@ -2,6 +2,7 @@
 
 export interface Person {
   id: string;
+  companyId: string; // Link to the company this contact belongs to
   
   // Contact Details (Required)
   firstName: string;
@@ -9,6 +10,11 @@ export interface Person {
   phone: string;
   email: string;
   preferredContactMethod: 'Phone' | 'Email' | 'Text';
+  
+  // Role & Position
+  isPrimaryContact: boolean; // Only one primary contact per company
+  position?: string; // Job title/position
+  department?: string;
   
   // Company Owner Details (Conditional)
   isCompanyOwner?: boolean;
@@ -120,6 +126,94 @@ export interface Invoice {
   amount: number;
   status: 'draft' | 'sent' | 'paid' | 'overdue';
   dueDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Vehicle {
+  id: string;
+  companyId: string; // Link to the company that owns this vehicle
+  
+  // Vehicle Identification
+  vin: string; // Vehicle Identification Number
+  licensePlate: string;
+  make: string;
+  model: string;
+  year: number;
+  color?: string;
+  
+  // Vehicle Specifications
+  vehicleType: 'Truck' | 'Trailer' | 'Bus' | 'Van' | 'Other';
+  gvwr: string; // Gross Vehicle Weight Rating
+  emptyWeight?: string;
+  fuelType: 'Diesel' | 'Gasoline' | 'Electric' | 'Hybrid' | 'Other';
+  
+  // Registration & Insurance
+  registrationNumber?: string;
+  registrationExpiry?: string;
+  insuranceProvider?: string;
+  insurancePolicyNumber?: string;
+  insuranceExpiry?: string;
+  
+  // Maintenance & Compliance
+  lastInspectionDate?: string;
+  nextInspectionDue?: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDue?: string;
+  hasHazmatEndorsement: 'Yes' | 'No';
+  
+  // Status
+  status: 'Active' | 'Inactive' | 'Maintenance' | 'Retired';
+  currentDriverId?: string; // Link to current driver
+  
+  // System Fields
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Driver {
+  id: string;
+  companyId: string; // Link to the company that employs this driver
+  
+  // Personal Information
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  ssn?: string; // Social Security Number (encrypted)
+  phone: string;
+  email?: string;
+  address?: string;
+  
+  // License Information
+  licenseNumber: string;
+  licenseState: string;
+  licenseClass: 'A' | 'B' | 'C' | 'Other';
+  licenseExpiry: string;
+  hasHazmatEndorsement: 'Yes' | 'No';
+  hasPassengerEndorsement: 'Yes' | 'No';
+  hasSchoolBusEndorsement: 'Yes' | 'No';
+  
+  // Employment Information
+  hireDate: string;
+  employmentStatus: 'Active' | 'Inactive' | 'Terminated' | 'On Leave';
+  position: 'Driver' | 'Owner-Operator' | 'Team Driver' | 'Other';
+  payType: 'Hourly' | 'Mileage' | 'Percentage' | 'Salary';
+  
+  // Medical & Compliance
+  medicalCardNumber?: string;
+  medicalCardExpiry?: string;
+  drugTestDate?: string;
+  nextDrugTestDue?: string;
+  backgroundCheckDate?: string;
+  nextBackgroundCheckDue?: string;
+  
+  // Performance & Safety
+  totalMilesDriven?: number;
+  accidentsInLast3Years?: number;
+  violationsInLast3Years?: number;
+  safetyRating?: 'Excellent' | 'Good' | 'Satisfactory' | 'Needs Improvement';
+  
+  // System Fields
   createdAt: string;
   updatedAt: string;
 }
@@ -292,5 +386,17 @@ export const SELECT_OPTIONS = {
     'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
     'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
   ],
-  countries: ['United States', 'Canada', 'Mexico']
+  countries: ['United States', 'Canada', 'Mexico'],
+  
+  // Vehicle Options
+  vehicleType: ['Truck', 'Trailer', 'Bus', 'Van', 'Other'],
+  fuelType: ['Diesel', 'Gasoline', 'Electric', 'Hybrid', 'Other'],
+  vehicleStatus: ['Active', 'Inactive', 'Maintenance', 'Retired'],
+  
+  // Driver Options
+  licenseClass: ['A', 'B', 'C', 'Other'],
+  employmentStatus: ['Active', 'Inactive', 'Terminated', 'On Leave'],
+  position: ['Driver', 'Owner-Operator', 'Team Driver', 'Other'],
+  payType: ['Hourly', 'Mileage', 'Percentage', 'Salary'],
+  safetyRating: ['Excellent', 'Good', 'Satisfactory', 'Needs Improvement']
 };
