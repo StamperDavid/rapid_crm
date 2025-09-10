@@ -175,39 +175,60 @@ export interface Driver {
   id: string;
   companyId: string; // Link to the company that employs this driver
   
-  // Personal Information
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
+  // Driver Name
+  driverName: string; // Single line text
+  
+  // Application & Documentation
+  applicationForEmployment?: string; // Attachment
+  backgroundChecks?: string; // Files
+  certificateOfReceiptForCompanyTestingPolicy?: string; // Files
+  certificateOfReceiptForCompanyWorkPolicy?: string; // Files
+  commercialDriversLicenseInformationSystemReports?: string; // Attachment
+  copyOfDriversLicense?: string; // Files
+  medicalCertificateCopy?: string; // Attachment
+  
+  // Disciplinary & Safety Records
+  disciplinaryAction?: string; // Long Text
+  goodFaithEffortInquiryIntoDrivingRecord?: string; // Long Text
+  goodFaithEffortSafetyPerformanceHistoryInvestigation?: string; // Single Line Text
+  inquiryIntoDrivingRecord?: string; // Single Line Text
+  inquiryToPreviousEmployers?: string; // Single Line Text
+  medicalExaminerNationalRegistryVerification?: string; // Single Line Text
+  motorVehicleReports?: string; // Single Line Text
+  
+  // Employment Documentation
+  driverEmploymentApplication?: string; // Attachment/Files
+  driversRoadTest?: string; // Attachment
+  certificationOfRoadTest?: string; // Single Line Text
+  annualDriversCertificateOfViolations?: string; // Single Line Text
+  annualReviewOfDrivingRecord?: string; // Single Line Text
+  checklistForMultipleEmployers?: string; // Single Line Text
+  
+  // Legacy fields (keeping for backward compatibility)
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
   ssn?: string; // Social Security Number (encrypted)
-  phone: string;
+  phone?: string;
   email?: string;
   address?: string;
-  
-  // License Information
-  licenseNumber: string;
-  licenseState: string;
-  licenseClass: 'A' | 'B' | 'C' | 'Other';
-  licenseExpiry: string;
-  hasHazmatEndorsement: 'Yes' | 'No';
-  hasPassengerEndorsement: 'Yes' | 'No';
-  hasSchoolBusEndorsement: 'Yes' | 'No';
-  
-  // Employment Information
-  hireDate: string;
-  employmentStatus: 'Active' | 'Inactive' | 'Terminated' | 'On Leave';
-  position: 'Driver' | 'Owner-Operator' | 'Team Driver' | 'Other';
-  payType: 'Hourly' | 'Mileage' | 'Percentage' | 'Salary';
-  
-  // Medical & Compliance
+  licenseNumber?: string;
+  licenseState?: string;
+  licenseClass?: 'A' | 'B' | 'C' | 'Other';
+  licenseExpiry?: string;
+  hasHazmatEndorsement?: 'Yes' | 'No';
+  hasPassengerEndorsement?: 'Yes' | 'No';
+  hasSchoolBusEndorsement?: 'Yes' | 'No';
+  hireDate?: string;
+  employmentStatus?: 'Active' | 'Inactive' | 'Terminated' | 'On Leave';
+  position?: 'Driver' | 'Owner-Operator' | 'Team Driver' | 'Other';
+  payType?: 'Hourly' | 'Mileage' | 'Percentage' | 'Salary';
   medicalCardNumber?: string;
   medicalCardExpiry?: string;
   drugTestDate?: string;
   nextDrugTestDue?: string;
   backgroundCheckDate?: string;
   nextBackgroundCheckDue?: string;
-  
-  // Performance & Safety
   totalMilesDriven?: number;
   accidentsInLast3Years?: number;
   violationsInLast3Years?: number;
@@ -235,6 +256,29 @@ export const PERSON_FIELD_GROUPS: FieldGroup[] = [
     name: 'Ownership Details',
     fields: ['isCompanyOwner', 'companyOwnerFirstName', 'companyOwnerLastName', 'companyOwnerPhone', 'companyOwnerEmail'],
     description: 'Company ownership information (if different from primary contact)'
+  }
+];
+
+export const DRIVER_FIELD_GROUPS: FieldGroup[] = [
+  {
+    name: 'Driver Information',
+    fields: ['driverName'],
+    description: 'Basic driver identification'
+  },
+  {
+    name: 'Application & Documentation',
+    fields: ['applicationForEmployment', 'backgroundChecks', 'certificateOfReceiptForCompanyTestingPolicy', 'certificateOfReceiptForCompanyWorkPolicy', 'commercialDriversLicenseInformationSystemReports', 'copyOfDriversLicense', 'medicalCertificateCopy'],
+    description: 'Required application forms and documentation'
+  },
+  {
+    name: 'Disciplinary & Safety Records',
+    fields: ['disciplinaryAction', 'goodFaithEffortInquiryIntoDrivingRecord', 'goodFaithEffortSafetyPerformanceHistoryInvestigation', 'inquiryIntoDrivingRecord', 'inquiryToPreviousEmployers', 'medicalExaminerNationalRegistryVerification', 'motorVehicleReports'],
+    description: 'Safety performance and disciplinary records'
+  },
+  {
+    name: 'Employment Documentation',
+    fields: ['driverEmploymentApplication', 'driversRoadTest', 'certificationOfRoadTest', 'annualDriversCertificateOfViolations', 'annualReviewOfDrivingRecord', 'checklistForMultipleEmployers'],
+    description: 'Employment-related documentation and certifications'
   }
 ];
 
@@ -355,6 +399,37 @@ export const ORGANIZATION_VALIDATION_RULES: ValidationRule[] = [
   // Financial Information
   { field: 'hasDunsBradstreetNumber', required: true },
   { field: 'dunsBradstreetNumber', required: false, conditional: { field: 'hasDunsBradstreetNumber', value: 'Yes' } }
+];
+
+export const DRIVER_VALIDATION_RULES: ValidationRule[] = [
+  // Driver Information (Required)
+  { field: 'driverName', required: true, minLength: 1 },
+  
+  // Application & Documentation (Optional but recommended)
+  { field: 'applicationForEmployment', required: false },
+  { field: 'backgroundChecks', required: false },
+  { field: 'certificateOfReceiptForCompanyTestingPolicy', required: false },
+  { field: 'certificateOfReceiptForCompanyWorkPolicy', required: false },
+  { field: 'commercialDriversLicenseInformationSystemReports', required: false },
+  { field: 'copyOfDriversLicense', required: false },
+  { field: 'medicalCertificateCopy', required: false },
+  
+  // Disciplinary & Safety Records (Optional)
+  { field: 'disciplinaryAction', required: false },
+  { field: 'goodFaithEffortInquiryIntoDrivingRecord', required: false },
+  { field: 'goodFaithEffortSafetyPerformanceHistoryInvestigation', required: false },
+  { field: 'inquiryIntoDrivingRecord', required: false },
+  { field: 'inquiryToPreviousEmployers', required: false },
+  { field: 'medicalExaminerNationalRegistryVerification', required: false },
+  { field: 'motorVehicleReports', required: false },
+  
+  // Employment Documentation (Optional)
+  { field: 'driverEmploymentApplication', required: false },
+  { field: 'driversRoadTest', required: false },
+  { field: 'certificationOfRoadTest', required: false },
+  { field: 'annualDriversCertificateOfViolations', required: false },
+  { field: 'annualReviewOfDrivingRecord', required: false },
+  { field: 'checklistForMultipleEmployers', required: false }
 ];
 
 // Select Options

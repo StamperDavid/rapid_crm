@@ -84,12 +84,34 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ entityType, onSave, onCance
       { id: '6', name: 'is_primary', display_name: 'Primary Contact', field_type: 'boolean' as const, is_required: false, is_unique: false, order: 6 },
     ] : []),
     ...(entityType === 'drivers' ? [
-      { id: '1', name: 'first_name', display_name: 'First Name', field_type: 'text' as const, is_required: true, is_unique: false, order: 1 },
-      { id: '2', name: 'last_name', display_name: 'Last Name', field_type: 'text' as const, is_required: true, is_unique: false, order: 2 },
-      { id: '3', name: 'license_number', display_name: 'License Number', field_type: 'text' as const, is_required: false, is_unique: true, order: 3 },
-      { id: '4', name: 'license_state', display_name: 'License State', field_type: 'text' as const, is_required: false, is_unique: false, order: 4 },
-      { id: '5', name: 'license_expiry', display_name: 'License Expiry', field_type: 'date' as const, is_required: false, is_unique: false, order: 5 },
-      { id: '6', name: 'cdl_class', display_name: 'CDL Class', field_type: 'select' as const, is_required: false, is_unique: false, options: ['A', 'B', 'C'], order: 6 },
+      // Driver Information
+      { id: '1', name: 'driver_name', display_name: 'Driver Name', field_type: 'text' as const, is_required: true, is_unique: false, order: 1 },
+      
+      // Application & Documentation
+      { id: '2', name: 'application_for_employment', display_name: 'Application For Employment', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 2 },
+      { id: '3', name: 'background_checks', display_name: 'Background Checks', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 3 },
+      { id: '4', name: 'certificate_of_receipt_for_company_testing_policy', display_name: 'Certificate of receipt for company testing policy', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 4 },
+      { id: '5', name: 'certificate_of_receipt_for_company_work_policy', display_name: 'Certificate of Receipt For Company Work Policy', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 5 },
+      { id: '6', name: 'commercial_drivers_license_information_system_reports', display_name: 'Commercial Drivers License Information System (CDLIS) Reports', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 6 },
+      { id: '7', name: 'copy_of_drivers_license', display_name: 'Copy Of Drivers License', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 7 },
+      { id: '8', name: 'medical_certificate_copy', display_name: 'Medical Certificate Copy', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 8 },
+      
+      // Disciplinary & Safety Records
+      { id: '9', name: 'disciplinary_action', display_name: 'Disciplinary Action', field_type: 'textarea' as const, is_required: false, is_unique: false, order: 9 },
+      { id: '10', name: 'good_faith_effort_inquiry_into_driving_record', display_name: 'Good Faith Effort - Inquiry Into Driving Record', field_type: 'textarea' as const, is_required: false, is_unique: false, order: 10 },
+      { id: '11', name: 'good_faith_effort_safety_performance_history_investigation', display_name: 'Good Faith Effort - Safety Performance History Investigation', field_type: 'text' as const, is_required: false, is_unique: false, order: 11 },
+      { id: '12', name: 'inquiry_into_driving_record', display_name: 'Inquiry Into Driving Record', field_type: 'text' as const, is_required: false, is_unique: false, order: 12 },
+      { id: '13', name: 'inquiry_to_previous_employers', display_name: 'Inquiry To Previous Employers', field_type: 'text' as const, is_required: false, is_unique: false, order: 13 },
+      { id: '14', name: 'medical_examiner_national_registry_verification', display_name: 'Medical Examiner National Registry Verification', field_type: 'text' as const, is_required: false, is_unique: false, order: 14 },
+      { id: '15', name: 'motor_vehicle_reports', display_name: 'Motor Vehicle Reports (MVR)', field_type: 'text' as const, is_required: false, is_unique: false, order: 15 },
+      
+      // Employment Documentation
+      { id: '16', name: 'driver_employment_application', display_name: 'Driver Employment Application', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 16 },
+      { id: '17', name: 'drivers_road_test', display_name: 'Driver\'s Road Test', field_type: 'attachment' as const, is_required: false, is_unique: false, order: 17 },
+      { id: '18', name: 'certification_of_road_test', display_name: 'Certification Of Road Test', field_type: 'text' as const, is_required: false, is_unique: false, order: 18 },
+      { id: '19', name: 'annual_drivers_certificate_of_violations', display_name: 'Annual Driver\'s Certificate Of Violations', field_type: 'text' as const, is_required: false, is_unique: false, order: 19 },
+      { id: '20', name: 'annual_review_of_driving_record', display_name: 'Annual Review of Driving Record', field_type: 'text' as const, is_required: false, is_unique: false, order: 20 },
+      { id: '21', name: 'checklist_for_multiple_employers', display_name: 'Checklist For Multiple Employers', field_type: 'text' as const, is_required: false, is_unique: false, order: 21 },
     ] : []),
     ...(entityType === 'vehicles' ? [
       { id: '1', name: 'make', display_name: 'Make', field_type: 'text' as const, is_required: false, is_unique: false, order: 1 },

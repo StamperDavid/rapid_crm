@@ -31,9 +31,162 @@ const Companies: React.FC = () => {
   const [showAddDriverModal, setShowAddDriverModal] = useState(false);
   
   // Mock data for related entities
-  const [contacts, setContacts] = useState<Person[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [contacts, setContacts] = useState<Person[]>([
+    {
+      id: '1',
+      companyId: '1',
+      firstName: 'John',
+      lastName: 'Smith',
+      phone: '(555) 123-4567',
+      email: 'john.smith@acmetransport.com',
+      preferredContactMethod: 'Phone',
+      isPrimaryContact: true,
+      position: 'Operations Manager',
+      department: 'Operations',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '2',
+      companyId: '2',
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      phone: '(555) 987-6543',
+      email: 'sarah.johnson@midwestfreight.com',
+      preferredContactMethod: 'Email',
+      isPrimaryContact: true,
+      position: 'Fleet Manager',
+      department: 'Operations',
+      createdAt: '2024-01-10',
+      updatedAt: '2024-01-18'
+    }
+  ]);
+  
+  const [vehicles, setVehicles] = useState<Vehicle[]>([
+    {
+      id: '1',
+      companyId: '1',
+      vin: '1HGBH41JXMN109186',
+      licensePlate: 'IL-ABC123',
+      make: 'Freightliner',
+      model: 'Cascadia',
+      year: 2020,
+      color: 'White',
+      vehicleType: 'Truck',
+      gvwr: '80,000 lbs',
+      fuelType: 'Diesel',
+      status: 'Active',
+      hasHazmatEndorsement: 'No',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '2',
+      companyId: '1',
+      vin: '1HGBH41JXMN109187',
+      licensePlate: 'IL-DEF456',
+      make: 'Peterbilt',
+      model: '579',
+      year: 2019,
+      color: 'Red',
+      vehicleType: 'Truck',
+      gvwr: '80,000 lbs',
+      fuelType: 'Diesel',
+      status: 'Active',
+      hasHazmatEndorsement: 'Yes',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '3',
+      companyId: '2',
+      vin: '1HGBH41JXMN109188',
+      licensePlate: 'WI-GHI789',
+      make: 'Volvo',
+      model: 'VNL',
+      year: 2021,
+      color: 'Blue',
+      vehicleType: 'Truck',
+      gvwr: '26,000 lbs',
+      fuelType: 'Diesel',
+      status: 'Active',
+      hasHazmatEndorsement: 'No',
+      createdAt: '2024-01-10',
+      updatedAt: '2024-01-18'
+    }
+  ]);
+  
+  const [drivers, setDrivers] = useState<Driver[]>([
+    {
+      id: '1',
+      companyId: '1',
+      driverName: 'Mike Johnson',
+      firstName: 'Mike',
+      lastName: 'Johnson',
+      dateOfBirth: '1985-03-15',
+      phone: '(555) 234-5678',
+      email: 'mike.johnson@acmetransport.com',
+      licenseNumber: 'D123456789',
+      licenseState: 'Illinois',
+      licenseClass: 'A',
+      licenseExpiry: '2025-03-15',
+      hasHazmatEndorsement: 'Yes',
+      hasPassengerEndorsement: 'No',
+      hasSchoolBusEndorsement: 'No',
+      hireDate: '2020-01-15',
+      employmentStatus: 'Active',
+      position: 'Driver',
+      payType: 'Mileage',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '2',
+      companyId: '1',
+      driverName: 'Lisa Brown',
+      firstName: 'Lisa',
+      lastName: 'Brown',
+      dateOfBirth: '1988-07-22',
+      phone: '(555) 345-6789',
+      email: 'lisa.brown@acmetransport.com',
+      licenseNumber: 'D987654321',
+      licenseState: 'Illinois',
+      licenseClass: 'A',
+      licenseExpiry: '2026-07-22',
+      hasHazmatEndorsement: 'No',
+      hasPassengerEndorsement: 'No',
+      hasSchoolBusEndorsement: 'No',
+      hireDate: '2021-06-01',
+      employmentStatus: 'Active',
+      position: 'Driver',
+      payType: 'Hourly',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '3',
+      companyId: '2',
+      driverName: 'Robert Wilson',
+      firstName: 'Robert',
+      lastName: 'Wilson',
+      dateOfBirth: '1982-11-08',
+      phone: '(555) 456-7890',
+      email: 'robert.wilson@midwestfreight.com',
+      licenseNumber: 'D456789123',
+      licenseState: 'Wisconsin',
+      licenseClass: 'B',
+      licenseExpiry: '2025-11-08',
+      hasHazmatEndorsement: 'No',
+      hasPassengerEndorsement: 'No',
+      hasSchoolBusEndorsement: 'No',
+      hireDate: '2019-03-10',
+      employmentStatus: 'Active',
+      position: 'Driver',
+      payType: 'Salary',
+      createdAt: '2024-01-10',
+      updatedAt: '2024-01-18'
+    }
+  ]);
   
   // Primary contact for new company
   const [primaryContact, setPrimaryContact] = useState<Partial<Person>>({
@@ -317,6 +470,7 @@ const Companies: React.FC = () => {
       const createdDrivers: Driver[] = newCompanyDrivers.map((driver, index) => ({
         id: (drivers.length + index + 1).toString(),
         companyId: companyId,
+        driverName: `${driver.firstName} ${driver.lastName}`,
         firstName: driver.firstName!,
         lastName: driver.lastName!,
         dateOfBirth: driver.dateOfBirth!,
@@ -722,6 +876,56 @@ const Companies: React.FC = () => {
                     </button>
                   </div>
               
+              {/* Primary Contact Information */}
+              {(() => {
+                const primaryContact = contacts.find(c => c.companyId === selectedCompany.id && c.isPrimaryContact);
+                return primaryContact ? (
+                  <div className="mb-6 p-4 bg-blue-900 bg-opacity-30 border border-blue-600 rounded-lg">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <UserGroupIcon className="h-6 w-6 text-blue-400" />
+                      <h4 className="text-lg font-medium text-white">Primary Contact</h4>
+                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">Primary</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                        <span className="text-sm font-medium text-blue-300">Name:</span>
+                        <p className="text-white font-medium">{primaryContact.firstName} {primaryContact.lastName}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-blue-300">Position:</span>
+                        <p className="text-white">{primaryContact.position || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-blue-300">Department:</span>
+                        <p className="text-white">{primaryContact.department || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-blue-300">Phone:</span>
+                        <p className="text-white">{primaryContact.phone}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-blue-300">Email:</span>
+                        <p className="text-white">{primaryContact.email}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-blue-300">Preferred Contact:</span>
+                        <p className="text-white">{primaryContact.preferredContactMethod}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-6 p-4 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <svg className="h-6 w-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <h4 className="text-lg font-medium text-white">No Primary Contact</h4>
+                    </div>
+                    <p className="text-yellow-200 text-sm mt-2">This company doesn't have a primary contact assigned. Add a contact and mark them as primary.</p>
+                  </div>
+                );
+              })()}
+
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Business Information */}
                 <div className="space-y-4">
@@ -793,7 +997,9 @@ const Companies: React.FC = () => {
               {/* Related Entities Section */}
               <div className="mt-8 pt-6 border-t border-gray-600">
                 <h4 className="text-lg font-medium text-white mb-4">Related Entities</h4>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                
+                {/* Add Entity Buttons */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
                   <button
                     onClick={() => setShowAddContactModal(true)}
                     className="flex items-center justify-center px-4 py-3 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200"
@@ -816,6 +1022,139 @@ const Companies: React.FC = () => {
                     Add Driver
                   </button>
                 </div>
+
+                {/* Current Vehicles */}
+                {vehicles.filter(v => v.companyId === selectedCompany.id).length > 0 && (
+                  <div className="mb-6">
+                    <h5 className="text-md font-medium text-white mb-3">Current Vehicles</h5>
+                    <div className="space-y-2">
+                      {vehicles.filter(v => v.companyId === selectedCompany.id).map((vehicle) => (
+                        <div key={vehicle.id} className="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                          <div className="flex items-center space-x-3">
+                            <TruckIcon className="h-5 w-5 text-gray-300" />
+                            <div>
+                              <p className="text-white font-medium">{vehicle.year} {vehicle.make} {vehicle.model}</p>
+                              <p className="text-gray-300 text-sm">VIN: {vehicle.vin} • License: {vehicle.licensePlate}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to remove ${vehicle.year} ${vehicle.make} ${vehicle.model} from ${selectedCompany.legalBusinessName}?`)) {
+                                setVehicles(vehicles.filter(v => v.id !== vehicle.id));
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-300 p-1"
+                            title="Remove vehicle"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Current Drivers */}
+                {drivers.filter(d => d.companyId === selectedCompany.id).length > 0 && (
+                  <div className="mb-6">
+                    <h5 className="text-md font-medium text-white mb-3">Current Drivers</h5>
+                    <div className="space-y-2">
+                      {drivers.filter(d => d.companyId === selectedCompany.id).map((driver) => (
+                        <div key={driver.id} className="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                          <div className="flex items-center space-x-3">
+                            <IdentificationIcon className="h-5 w-5 text-gray-300" />
+                            <div>
+                              <p className="text-white font-medium">{driver.driverName || `${driver.firstName} ${driver.lastName}`}</p>
+                              <p className="text-gray-300 text-sm">License: {driver.licenseNumber} ({driver.licenseState}) • Class: {driver.licenseClass}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to remove ${driver.driverName || `${driver.firstName} ${driver.lastName}`} from ${selectedCompany.legalBusinessName}?`)) {
+                                setDrivers(drivers.filter(d => d.id !== driver.id));
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-300 p-1"
+                            title="Remove driver"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Current Contacts */}
+                {contacts.filter(c => c.companyId === selectedCompany.id).length > 0 && (
+                  <div className="mb-6">
+                    <h5 className="text-md font-medium text-white mb-3">Current Contacts</h5>
+                    <div className="space-y-2">
+                      {contacts.filter(c => c.companyId === selectedCompany.id).map((contact) => {
+                        const isPrimaryContact = contact.isPrimaryContact;
+                        const companyContacts = contacts.filter(c => c.companyId === selectedCompany.id);
+                        const canDelete = !isPrimaryContact && companyContacts.length > 1;
+                        
+                        return (
+                          <div key={contact.id} className="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                            <div className="flex items-center space-x-3">
+                              <UserGroupIcon className="h-5 w-5 text-gray-300" />
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <p className="text-white font-medium">{contact.firstName} {contact.lastName}</p>
+                                  {isPrimaryContact && (
+                                    <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                      Primary
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-gray-300 text-sm">{contact.position} • {contact.phone} • {contact.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {!isPrimaryContact && (
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Make ${contact.firstName} ${contact.lastName} the primary contact for ${selectedCompany.legalBusinessName}?`)) {
+                                      setContacts(contacts.map(c => 
+                                        c.companyId === selectedCompany.id 
+                                          ? { ...c, isPrimaryContact: c.id === contact.id }
+                                          : c
+                                      ));
+                                    }
+                                  }}
+                                  className="text-blue-400 hover:text-blue-300 p-1"
+                                  title="Make primary contact"
+                                >
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
+                              )}
+                              {canDelete ? (
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Are you sure you want to remove ${contact.firstName} ${contact.lastName} from ${selectedCompany.legalBusinessName}?`)) {
+                                      setContacts(contacts.filter(c => c.id !== contact.id));
+                                    }
+                                  }}
+                                  className="text-red-400 hover:text-red-300 p-1"
+                                  title="Remove contact"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </button>
+                              ) : (
+                                <div className="p-1" title={isPrimaryContact ? "Primary contact cannot be deleted" : "Cannot delete - company must have at least one contact"}>
+                                  <TrashIcon className="h-4 w-4 text-gray-500" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="flex justify-end space-x-3 pt-6">
@@ -1796,6 +2135,565 @@ const Companies: React.FC = () => {
                     Add Driver
                 </button>
               </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Vehicle to Existing Company Modal */}
+      {showAddVehicleModal && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  Add Vehicle to {selectedCompany.legalBusinessName}
+                </h3>
+                <button
+                  onClick={() => setShowAddVehicleModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const vehicle: Vehicle = {
+                  id: (vehicles.length + 1).toString(),
+                  companyId: selectedCompany.id,
+                  vin: formData.get('vin') as string,
+                  licensePlate: formData.get('licensePlate') as string,
+                  make: formData.get('make') as string,
+                  model: formData.get('model') as string,
+                  year: parseInt(formData.get('year') as string),
+                  color: formData.get('color') as string,
+                  vehicleType: formData.get('vehicleType') as any,
+                  gvwr: formData.get('gvwr') as string,
+                  fuelType: formData.get('fuelType') as any,
+                  status: formData.get('status') as any,
+                  hasHazmatEndorsement: formData.get('hasHazmatEndorsement') as any,
+                  createdAt: new Date().toISOString().split('T')[0],
+                  updatedAt: new Date().toISOString().split('T')[0]
+                };
+                setVehicles([...vehicles, vehicle]);
+                setShowAddVehicleModal(false);
+              }} className="space-y-6">
+                {/* Vehicle Identification */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Vehicle Identification</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VIN *</label>
+                      <input
+                        type="text"
+                        name="vin"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="1HGBH41JXMN109186"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Plate *</label>
+                      <input
+                        type="text"
+                        name="licensePlate"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="ABC-1234"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Year *</label>
+                      <input
+                        type="number"
+                        name="year"
+                        required
+                        min="1900"
+                        max="2030"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="2023"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Make *</label>
+                      <input
+                        type="text"
+                        name="make"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Freightliner"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model *</label>
+                      <input
+                        type="text"
+                        name="model"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Cascadia"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Color</label>
+                      <input
+                        type="text"
+                        name="color"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="White"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Vehicle Specifications */}
+                <div className="pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Vehicle Specifications</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle Type *</label>
+                      <select name="vehicleType" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select type</option>
+                        {SELECT_OPTIONS.vehicleType.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">GVWR *</label>
+                      <input
+                        type="text"
+                        name="gvwr"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="80,000 lbs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Fuel Type *</label>
+                      <select name="fuelType" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select fuel type</option>
+                        {SELECT_OPTIONS.fuelType.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status *</label>
+                      <select name="status" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select status</option>
+                        {SELECT_OPTIONS.vehicleStatus.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hazmat Endorsement</label>
+                      <select name="hasHazmatEndorsement" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVehicleModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Add Vehicle
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Driver to Existing Company Modal */}
+      {showAddDriverModal && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  Add Driver to {selectedCompany.legalBusinessName}
+                </h3>
+                <button
+                  onClick={() => setShowAddDriverModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const driver: Driver = {
+                  id: (drivers.length + 1).toString(),
+                  companyId: selectedCompany.id,
+                  driverName: formData.get('driverName') as string,
+                  firstName: formData.get('firstName') as string,
+                  lastName: formData.get('lastName') as string,
+                  dateOfBirth: formData.get('dateOfBirth') as string,
+                  phone: formData.get('phone') as string,
+                  email: formData.get('email') as string,
+                  licenseNumber: formData.get('licenseNumber') as string,
+                  licenseState: formData.get('licenseState') as string,
+                  licenseClass: formData.get('licenseClass') as any,
+                  licenseExpiry: formData.get('licenseExpiry') as string,
+                  hasHazmatEndorsement: formData.get('hasHazmatEndorsement') as any,
+                  hasPassengerEndorsement: formData.get('hasPassengerEndorsement') as any,
+                  hireDate: formData.get('hireDate') as string,
+                  employmentStatus: formData.get('employmentStatus') as any,
+                  position: formData.get('position') as any,
+                  payType: formData.get('payType') as any,
+                  createdAt: new Date().toISOString().split('T')[0],
+                  updatedAt: new Date().toISOString().split('T')[0]
+                };
+                setDrivers([...drivers, driver]);
+                setShowAddDriverModal(false);
+              }} className="space-y-6">
+                {/* Driver Information */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Driver Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Driver Name *</label>
+                      <input
+                        type="text"
+                        name="driverName"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Enter driver name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name *</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name *</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth *</label>
+                      <input
+                        type="date"
+                        name="dateOfBirth"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone *</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="driver@company.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* License Information */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">License Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Number *</label>
+                      <input
+                        type="text"
+                        name="licenseNumber"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="D123456789"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License State *</label>
+                      <select name="licenseState" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select state</option>
+                        {SELECT_OPTIONS.states.map(state => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Class *</label>
+                      <select name="licenseClass" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select class</option>
+                        {SELECT_OPTIONS.licenseClass.map(licenseClass => (
+                          <option key={licenseClass} value={licenseClass}>{licenseClass}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">License Expiry *</label>
+                      <input
+                        type="date"
+                        name="licenseExpiry"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hazmat Endorsement</label>
+                      <select name="hasHazmatEndorsement" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Passenger Endorsement</label>
+                      <select name="hasPassengerEndorsement" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Employment Information */}
+                <div className="pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Employment Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hire Date *</label>
+                      <input
+                        type="date"
+                        name="hireDate"
+                        required
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Employment Status *</label>
+                      <select name="employmentStatus" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select status</option>
+                        {SELECT_OPTIONS.employmentStatus.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Position *</label>
+                      <select name="position" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select position</option>
+                        {SELECT_OPTIONS.position.map(position => (
+                          <option key={position} value={position}>{position}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pay Type *</label>
+                      <select name="payType" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <option value="">Select pay type</option>
+                        {SELECT_OPTIONS.payType.map(payType => (
+                          <option key={payType} value={payType}>{payType}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddDriverModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Add Driver
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Contact to Existing Company Modal */}
+      {showAddContactModal && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  Add Contact to {selectedCompany.legalBusinessName}
+                </h3>
+                <button
+                  onClick={() => setShowAddContactModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const isNewPrimary = formData.get('isPrimaryContact') === 'true';
+                const existingContacts = contacts.filter(c => c.companyId === selectedCompany.id);
+                const hasExistingPrimary = existingContacts.some(c => c.isPrimaryContact);
+                
+                // If this is being set as primary and there's already a primary, remove primary from others
+                let updatedContacts = [...contacts];
+                if (isNewPrimary && hasExistingPrimary) {
+                  updatedContacts = updatedContacts.map(c => 
+                    c.companyId === selectedCompany.id ? { ...c, isPrimaryContact: false } : c
+                  );
+                }
+                
+                const contact: Person = {
+                  id: (contacts.length + 1).toString(),
+                  companyId: selectedCompany.id,
+                  firstName: formData.get('firstName') as string,
+                  lastName: formData.get('lastName') as string,
+                  phone: formData.get('phone') as string,
+                  email: formData.get('email') as string,
+                  preferredContactMethod: formData.get('preferredContactMethod') as any,
+                  isPrimaryContact: isNewPrimary || (!hasExistingPrimary && existingContacts.length === 0), // Auto-set as primary if it's the first contact
+                  position: formData.get('position') as string,
+                  department: formData.get('department') as string,
+                  createdAt: new Date().toISOString().split('T')[0],
+                  updatedAt: new Date().toISOString().split('T')[0]
+                };
+                
+                setContacts([...updatedContacts, contact]);
+                setShowAddContactModal(false);
+              }} className="space-y-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name *</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Enter first name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name *</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Enter last name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="contact@company.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label>
+                    <input
+                      type="text"
+                      name="position"
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., Operations Manager"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
+                    <input
+                      type="text"
+                      name="department"
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., Operations, Sales"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Preferred Contact Method *</label>
+                    <select name="preferredContactMethod" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                      {SELECT_OPTIONS.preferredContactMethod.map(method => (
+                        <option key={method} value={method}>{method}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Contact</label>
+                    <select name="isPrimaryContact" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddContactModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    Add Contact
+                  </button>
+                </div>
               </form>
             </div>
           </div>
