@@ -5,7 +5,7 @@ interface LogoProps {
   className?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ variant = 'light', className = '' }) => {
+const Logo: React.FC<LogoProps> = ({ className = '' }) => {
   return (
     <div className={`flex items-center ${className}`}>
       <div className="flex-shrink-0">
@@ -23,4 +23,3 @@ const Logo: React.FC<LogoProps> = ({ variant = 'light', className = '' }) => {
 };
 
 export default Logo;
-

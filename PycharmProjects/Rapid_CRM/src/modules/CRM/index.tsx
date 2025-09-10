@@ -1,25 +1,12 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import LoadingSpinner from '../../components/LoadingSpinner';
-
-// Lazy load CRM pages for better performance
-const CRMDashboard = lazy(() => import('./pages/Dashboard'));
-const Companies = lazy(() => import('./pages/Companies'));
-const Contacts = lazy(() => import('./pages/Contacts'));
-const Deals = lazy(() => import('./pages/Deals'));
-const Integrations = lazy(() => import('./pages/Integrations'));
+// This file is no longer needed as we're using direct routing
+// Keeping for backward compatibility
+import React from 'react';
 
 const CRMModule: React.FC = () => {
   return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Routes>
-        <Route path="/" element={<CRMDashboard />} />
-        <Route path="/companies" element={<Companies />} />
-        <Route path="/contacts" element={<Contacts />} />
-        <Route path="/deals" element={<Deals />} />
-        <Route path="/integrations" element={<Integrations />} />
-      </Routes>
-    </Suspense>
+    <div className="p-6">
+      <p>This route is deprecated. Please use direct navigation from the sidebar.</p>
+    </div>
   );
 };
 

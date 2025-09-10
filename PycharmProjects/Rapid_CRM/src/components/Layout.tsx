@@ -4,124 +4,89 @@ import {
   HomeIcon,
   BuildingOfficeIcon,
   UserGroupIcon,
-  TruckIcon,
   CurrencyDollarIcon,
-  CalendarIcon,
+  DocumentTextIcon,
   CogIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
+  ChartBarIcon,
   BellIcon,
   UserCircleIcon,
-  ChartBarIcon,
-  ShieldCheckIcon,
-  ArrowTrendingUpIcon,
   SunIcon,
   MoonIcon,
-  TableCellsIcon,
-  WrenchScrewdriverIcon,
+  Bars3Icon,
+  XMarkIcon,
+  UsersIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 import Logo from './Logo';
+import AdminRecovery from './AdminRecovery';
+import GlobalSearch from './GlobalSearch';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'CRM', href: '/crm', icon: BuildingOfficeIcon },
-  { name: 'Data Management', href: '/data', icon: TableCellsIcon },
-  { name: 'Schema Management', href: '/schema', icon: WrenchScrewdriverIcon },
-  { name: 'System Monitoring', href: '/monitoring', icon: ChartBarIcon },
-  { name: 'Compliance', href: '/compliance', icon: ShieldCheckIcon },
-  { name: 'Analytics', href: '/analytics', icon: ArrowTrendingUpIcon },
+const getNavigation = (hasUserManagement: boolean) => [
+  { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
+  { name: 'Contacts', href: '/contacts', icon: UserGroupIcon, color: 'text-green-600' },
+  { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
+  { name: 'Deals', href: '/deals', icon: CurrencyDollarIcon, color: 'text-orange-600' },
+  { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon, color: 'text-red-600' },
+  { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
+  { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
+  ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
+  { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { user, hasPermission } = useUser();
+  
+  const navigation = getNavigation(hasPermission('canManageUsers'));
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
-      {/* Mobile sidebar */}
-      <div className={clsx(
-        'fixed inset-0 flex z-40 md:hidden',
-        sidebarOpen ? 'block' : 'hidden'
-      )}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800">
-          <div className="absolute top-0 right-0 -mr-12 pt-2">
-            <button
-              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <span className="sr-only">Close sidebar</span>
-              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-            <div className="flex-shrink-0 flex items-center px-4">
-              <Logo variant={theme} className="h-8" />
-            </div>
-            <nav className="mt-5 px-2 space-y-1">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={clsx(
-                      isActive
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100',
-                      'group flex items-center px-2 py-2 text-base font-medium rounded-md'
-                    )}
-                  >
-                    <item.icon
-                      className={clsx(
-                        isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500',
-                        'mr-4 flex-shrink-0 h-6 w-6'
-                      )}
-                    />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64">
-          <div className="flex flex-col h-0 flex-1 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-              <div className="flex items-center flex-shrink-0 px-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-800 shadow-xl">
+            <div className="flex h-full flex-col">
+              {/* Mobile header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
                 <Logo variant={theme} className="h-8" />
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
               </div>
-              <nav className="mt-5 flex-1 px-2 space-y-1">
+              
+              {/* Mobile navigation */}
+              <nav className="flex-1 px-4 py-6 space-y-2">
                 {navigation.map((item) => {
                   const isActive = location.pathname === item.href;
                   return (
                     <Link
                       key={item.name}
                       to={item.href}
+                      onClick={() => setSidebarOpen(false)}
                       className={clsx(
+                        'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200',
                         isActive
-                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100',
-                        'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
                       )}
                     >
                       <item.icon
                         className={clsx(
-                          isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500',
-                          'mr-3 flex-shrink-0 h-6 w-6'
+                          'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
+                          isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
                         )}
                       />
                       {item.name}
@@ -129,57 +94,137 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   );
                 })}
               </nav>
+              
+              {/* Mobile user section */}
+              <div className="border-t border-slate-200 dark:border-slate-700 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <UserCircleIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user?.name || 'User'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email || 'user@rapidcrm.com'}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium capitalize">{user?.role || 'user'}</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex-shrink-0 flex border-t border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <UserCircleIcon className="h-8 w-8 text-gray-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Admin User</p>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">admin@rapidcrm.com</p>
-                </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <div className="flex w-64 flex-col fixed inset-y-0 z-40">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-sm">
+          {/* Logo section */}
+          <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-200 dark:border-slate-700">
+            <Logo variant={theme} className="h-8" />
+          </div>
+          
+          {/* Navigation */}
+          <nav className="flex flex-1 flex-col px-4 py-6">
+            <ul role="list" className="flex flex-1 flex-col gap-y-2">
+              {navigation.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <li key={item.name}>
+                    <Link
+                      to={item.href}
+                      className={clsx(
+                        'group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition-all duration-200',
+                        isActive
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
+                      )}
+                    >
+                      <item.icon
+                        className={clsx(
+                          'h-6 w-6 shrink-0 transition-colors',
+                          isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                        )}
+                        aria-hidden="true"
+                      />
+                      {item.name}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+          
+          {/* User section */}
+          <div className="border-t border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <UserCircleIcon className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{user?.name || 'User'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email || 'user@rapidcrm.com'}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium capitalize">{user?.role || 'user'}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
+      {/* Main content area */}
+      <div className="pl-64">
+        {/* Top bar */}
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          {/* Mobile menu button */}
           <button
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            type="button"
+            className="-m-2.5 p-2.5 text-slate-700 dark:text-slate-300 hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
           </button>
-        </div>
-        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {children}
+
+          {/* Separator */}
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden" aria-hidden="true" />
+
+          {/* Top bar content */}
+          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+            <div className="flex flex-1">
+              <GlobalSearch />
             </div>
+            <div className="flex items-center gap-x-4 lg:gap-x-6">
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                {theme === 'light' ? (
+                  <MoonIcon className="h-5 w-5" />
+                ) : (
+                  <SunIcon className="h-5 w-5" />
+                )}
+              </button>
+
+              {/* Notifications */}
+              <button
+                type="button"
+                className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <span className="sr-only">View notifications</span>
+                <BellIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main content */}
+        <main className="py-8">
+          <div className="px-4 sm:px-6 lg:px-8">
+            {children}
           </div>
         </main>
       </div>
-
-      {/* Theme toggle button */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={toggleTheme}
-          className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-        >
-          {theme === 'light' ? (
-            <MoonIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-          ) : (
-            <SunIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-          )}
-        </button>
-      </div>
+      
+      {/* Admin Recovery System - Always Available */}
+      <AdminRecovery />
     </div>
   );
 };
