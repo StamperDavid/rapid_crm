@@ -13,13 +13,48 @@ interface FieldDefinition {
   id: string;
   name: string;
   display_name: string;
-  field_type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'textarea' | 'email' | 'phone';
+  field_type: 'text' | 'number' | 'date' | 'datetime' | 'time' | 'boolean' | 'select' | 'multiselect' | 'textarea' | 'email' | 'phone' | 'url' | 'currency' | 'percentage' | 'rating' | 'attachment' | 'lookup' | 'rollup' | 'formula' | 'autonumber' | 'barcode' | 'button' | 'created_time' | 'last_modified_time' | 'created_by' | 'last_modified_by';
   is_required: boolean;
   is_unique: boolean;
   options?: string[];
   default_value?: string;
-  validation_rules?: any;
+  validation_rules?: {
+    min_length?: number;
+    max_length?: number;
+    min_value?: number;
+    max_value?: number;
+    pattern?: string;
+    custom_validation?: string;
+  };
+  lookup_config?: {
+    linked_table?: string;
+    linked_field?: string;
+    display_field?: string;
+  };
+  rollup_config?: {
+    linked_table?: string;
+    linked_field?: string;
+    aggregation?: 'sum' | 'average' | 'count' | 'min' | 'max';
+  };
+  formula_config?: {
+    formula?: string;
+    result_type?: string;
+  };
+  currency_config?: {
+    currency_code?: string;
+    symbol?: string;
+  };
+  rating_config?: {
+    max_rating?: number;
+    icon?: string;
+  };
+  attachment_config?: {
+    allowed_types?: string[];
+    max_size?: number;
+  };
   order: number;
+  description?: string;
+  help_text?: string;
 }
 
 interface SchemaEditorProps {
@@ -127,11 +162,29 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ entityType, onSave, onCance
       case 'text': return '📝';
       case 'number': return '🔢';
       case 'date': return '📅';
+      case 'datetime': return '📅⏰';
+      case 'time': return '⏰';
       case 'boolean': return '☑️';
       case 'select': return '📋';
+      case 'multiselect': return '📋📋';
       case 'textarea': return '📄';
       case 'email': return '📧';
       case 'phone': return '📞';
+      case 'url': return '🔗';
+      case 'currency': return '💰';
+      case 'percentage': return '📊';
+      case 'rating': return '⭐';
+      case 'attachment': return '📎';
+      case 'lookup': return '🔍';
+      case 'rollup': return '📈';
+      case 'formula': return '🧮';
+      case 'autonumber': return '🔢';
+      case 'barcode': return '📊';
+      case 'button': return '🔘';
+      case 'created_time': return '⏰';
+      case 'last_modified_time': return '⏰';
+      case 'created_by': return '👤';
+      case 'last_modified_by': return '👤';
       default: return '📝';
     }
   };
@@ -327,18 +380,48 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ field, onSave, onCancel }) =>
                 onChange={(e) => setEditedField({ ...editedField, field_type: e.target.value as any })}
                 className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="date">Date</option>
-                <option value="boolean">Boolean (Yes/No)</option>
-                <option value="select">Select (Dropdown)</option>
-                <option value="textarea">Text Area</option>
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
+                <optgroup label="Basic Types">
+                  <option value="text">Text</option>
+                  <option value="number">Number</option>
+                  <option value="date">Date</option>
+                  <option value="datetime">Date & Time</option>
+                  <option value="time">Time</option>
+                  <option value="boolean">Boolean (Yes/No)</option>
+                  <option value="textarea">Text Area</option>
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                  <option value="url">URL</option>
+                </optgroup>
+                <optgroup label="Selection Types">
+                  <option value="select">Select (Dropdown)</option>
+                  <option value="multiselect">Multi-Select</option>
+                </optgroup>
+                <optgroup label="Specialized Types">
+                  <option value="currency">Currency</option>
+                  <option value="percentage">Percentage</option>
+                  <option value="rating">Rating</option>
+                  <option value="attachment">Attachment</option>
+                  <option value="autonumber">Auto Number</option>
+                  <option value="barcode">Barcode</option>
+                </optgroup>
+                <optgroup label="Relationship Types">
+                  <option value="lookup">Lookup</option>
+                  <option value="rollup">Rollup</option>
+                </optgroup>
+                <optgroup label="Formula & Automation">
+                  <option value="formula">Formula</option>
+                  <option value="button">Button</option>
+                </optgroup>
+                <optgroup label="System Fields">
+                  <option value="created_time">Created Time</option>
+                  <option value="last_modified_time">Last Modified Time</option>
+                  <option value="created_by">Created By</option>
+                  <option value="last_modified_by">Last Modified By</option>
+                </optgroup>
               </select>
             </div>
 
-            {editedField.field_type === 'select' && (
+            {(editedField.field_type === 'select' || editedField.field_type === 'multiselect') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Options
@@ -371,6 +454,288 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ field, onSave, onCancel }) =>
               </div>
             )}
 
+            {editedField.field_type === 'currency' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Currency Configuration
+                </label>
+                <div className="mt-1 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Currency Code</label>
+                    <select
+                      value={editedField.currency_config?.currency_code || 'USD'}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        currency_config: { 
+                          ...editedField.currency_config, 
+                          currency_code: e.target.value,
+                          symbol: e.target.value === 'USD' ? '$' : e.target.value === 'EUR' ? '€' : e.target.value === 'GBP' ? '£' : e.target.value
+                        } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="GBP">GBP - British Pound</option>
+                      <option value="CAD">CAD - Canadian Dollar</option>
+                      <option value="AUD">AUD - Australian Dollar</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Symbol</label>
+                    <input
+                      type="text"
+                      value={editedField.currency_config?.symbol || '$'}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        currency_config: { ...editedField.currency_config, symbol: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editedField.field_type === 'rating' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Rating Configuration
+                </label>
+                <div className="mt-1 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Max Rating</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={editedField.rating_config?.max_rating || 5}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        rating_config: { ...editedField.rating_config, max_rating: parseInt(e.target.value) } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Icon</label>
+                    <select
+                      value={editedField.rating_config?.icon || 'star'}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        rating_config: { ...editedField.rating_config, icon: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="star">⭐ Star</option>
+                      <option value="heart">❤️ Heart</option>
+                      <option value="thumbs">👍 Thumbs</option>
+                      <option value="number">🔢 Number</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editedField.field_type === 'attachment' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Attachment Configuration
+                </label>
+                <div className="mt-1 space-y-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Allowed File Types</label>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {['image', 'document', 'video', 'audio', 'pdf', 'spreadsheet', 'presentation'].map(type => (
+                        <label key={type} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={editedField.attachment_config?.allowed_types?.includes(type) || false}
+                            onChange={(e) => {
+                              const currentTypes = editedField.attachment_config?.allowed_types || [];
+                              const newTypes = e.target.checked 
+                                ? [...currentTypes, type]
+                                : currentTypes.filter(t => t !== type);
+                              setEditedField({ 
+                                ...editedField, 
+                                attachment_config: { ...editedField.attachment_config, allowed_types: newTypes } 
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Max File Size (MB)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editedField.attachment_config?.max_size || 10}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        attachment_config: { ...editedField.attachment_config, max_size: parseInt(e.target.value) } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editedField.field_type === 'lookup' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Lookup Configuration
+                </label>
+                <div className="mt-1 space-y-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Linked Table</label>
+                    <select
+                      value={editedField.lookup_config?.linked_table || ''}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        lookup_config: { ...editedField.lookup_config, linked_table: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">Select a table...</option>
+                      <option value="companies">Companies</option>
+                      <option value="contacts">Contacts</option>
+                      <option value="deals">Deals</option>
+                      <option value="vehicles">Vehicles</option>
+                      <option value="drivers">Drivers</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Linked Field</label>
+                    <input
+                      type="text"
+                      value={editedField.lookup_config?.linked_field || ''}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        lookup_config: { ...editedField.lookup_config, linked_field: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., id"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Display Field</label>
+                    <input
+                      type="text"
+                      value={editedField.lookup_config?.display_field || ''}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        lookup_config: { ...editedField.lookup_config, display_field: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., name"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editedField.field_type === 'rollup' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Rollup Configuration
+                </label>
+                <div className="mt-1 space-y-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Linked Table</label>
+                    <select
+                      value={editedField.rollup_config?.linked_table || ''}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        rollup_config: { ...editedField.rollup_config, linked_table: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">Select a table...</option>
+                      <option value="companies">Companies</option>
+                      <option value="contacts">Contacts</option>
+                      <option value="deals">Deals</option>
+                      <option value="vehicles">Vehicles</option>
+                      <option value="drivers">Drivers</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Linked Field</label>
+                    <input
+                      type="text"
+                      value={editedField.rollup_config?.linked_field || ''}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        rollup_config: { ...editedField.rollup_config, linked_field: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., amount"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Aggregation</label>
+                    <select
+                      value={editedField.rollup_config?.aggregation || 'sum'}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        rollup_config: { ...editedField.rollup_config, aggregation: e.target.value as any } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="sum">Sum</option>
+                      <option value="average">Average</option>
+                      <option value="count">Count</option>
+                      <option value="min">Minimum</option>
+                      <option value="max">Maximum</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editedField.field_type === 'formula' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Formula Configuration
+                </label>
+                <div className="mt-1 space-y-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Formula</label>
+                    <textarea
+                      value={editedField.formula_config?.formula || ''}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        formula_config: { ...editedField.formula_config, formula: e.target.value } 
+                      })}
+                      rows={3}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="e.g., {field1} + {field2}"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400">Result Type</label>
+                    <select
+                      value={editedField.formula_config?.result_type || 'text'}
+                      onChange={(e) => setEditedField({ 
+                        ...editedField, 
+                        formula_config: { ...editedField.formula_config, result_type: e.target.value } 
+                      })}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="text">Text</option>
+                      <option value="number">Number</option>
+                      <option value="date">Date</option>
+                      <option value="boolean">Boolean</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Default Value
@@ -382,6 +747,132 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ field, onSave, onCancel }) =>
                 className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 placeholder="Default value"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Description
+              </label>
+              <textarea
+                value={editedField.description || ''}
+                onChange={(e) => setEditedField({ ...editedField, description: e.target.value })}
+                rows={2}
+                className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                placeholder="Describe what this field is for..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Help Text
+              </label>
+              <input
+                type="text"
+                value={editedField.help_text || ''}
+                onChange={(e) => setEditedField({ ...editedField, help_text: e.target.value })}
+                className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                placeholder="Help text shown to users"
+              />
+            </div>
+
+            {/* Validation Rules */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Validation Rules
+              </label>
+              <div className="mt-1 space-y-4">
+                {(editedField.field_type === 'text' || editedField.field_type === 'textarea' || editedField.field_type === 'email') && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400">Min Length</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editedField.validation_rules?.min_length || ''}
+                        onChange={(e) => setEditedField({ 
+                          ...editedField, 
+                          validation_rules: { ...editedField.validation_rules, min_length: parseInt(e.target.value) || undefined } 
+                        })}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Min length"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400">Max Length</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={editedField.validation_rules?.max_length || ''}
+                        onChange={(e) => setEditedField({ 
+                          ...editedField, 
+                          validation_rules: { ...editedField.validation_rules, max_length: parseInt(e.target.value) || undefined } 
+                        })}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Max length"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(editedField.field_type === 'number' || editedField.field_type === 'currency' || editedField.field_type === 'percentage') && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400">Min Value</label>
+                      <input
+                        type="number"
+                        value={editedField.validation_rules?.min_value || ''}
+                        onChange={(e) => setEditedField({ 
+                          ...editedField, 
+                          validation_rules: { ...editedField.validation_rules, min_value: parseFloat(e.target.value) || undefined } 
+                        })}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Min value"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400">Max Value</label>
+                      <input
+                        type="number"
+                        value={editedField.validation_rules?.max_value || ''}
+                        onChange={(e) => setEditedField({ 
+                          ...editedField, 
+                          validation_rules: { ...editedField.validation_rules, max_value: parseFloat(e.target.value) || undefined } 
+                        })}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Max value"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400">Custom Pattern (Regex)</label>
+                  <input
+                    type="text"
+                    value={editedField.validation_rules?.pattern || ''}
+                    onChange={(e) => setEditedField({ 
+                      ...editedField, 
+                      validation_rules: { ...editedField.validation_rules, pattern: e.target.value } 
+                    })}
+                    className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="e.g., ^[A-Z]{2}[0-9]{4}$"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400">Custom Validation Message</label>
+                  <input
+                    type="text"
+                    value={editedField.validation_rules?.custom_validation || ''}
+                    onChange={(e) => setEditedField({ 
+                      ...editedField, 
+                      validation_rules: { ...editedField.validation_rules, custom_validation: e.target.value } 
+                    })}
+                    className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="Custom validation message"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex space-x-4">

@@ -16,6 +16,7 @@ import {
   XMarkIcon,
   UsersIcon,
   ClockIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
@@ -37,6 +38,7 @@ const getNavigation = (hasUserManagement: boolean) => [
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
   ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
+  { name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
 ];
 
