@@ -572,20 +572,20 @@ const Companies: React.FC = () => {
       {/* Company Details Modal */}
       {selectedCompany && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-gray-800">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  <h3 className="text-xl font-medium text-white">
                     {selectedCompany.legalBusinessName}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-300">
                     {selectedCompany.businessClassification} • {selectedCompany.transportationOperationType}
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedCompany(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-300 hover:text-white"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -594,61 +594,61 @@ const Companies: React.FC = () => {
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Business Information */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Business Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Legal Name:</span> {selectedCompany.legalBusinessName}</div>
+                  <h4 className="text-lg font-medium text-white">Business Information</h4>
+                  <div className="space-y-2 text-sm text-gray-200">
+                    <div><span className="font-medium text-white">Legal Name:</span> {selectedCompany.legalBusinessName}</div>
                     {selectedCompany.hasDBA === 'Yes' && selectedCompany.dbaName && (
-                      <div><span className="font-medium">DBA:</span> {selectedCompany.dbaName}</div>
+                      <div><span className="font-medium text-white">DBA:</span> {selectedCompany.dbaName}</div>
                     )}
-                    <div><span className="font-medium">Business Type:</span> {selectedCompany.businessType}</div>
-                    <div><span className="font-medium">EIN:</span> {selectedCompany.ein}</div>
+                    <div><span className="font-medium text-white">Business Type:</span> {selectedCompany.businessType}</div>
+                    <div><span className="font-medium text-white">EIN:</span> {selectedCompany.ein}</div>
                     {selectedCompany.businessStarted && (
-                      <div><span className="font-medium">Business Started:</span> {new Date(selectedCompany.businessStarted).toLocaleDateString()}</div>
+                      <div><span className="font-medium text-white">Business Started:</span> {new Date(selectedCompany.businessStarted).toLocaleDateString()}</div>
                     )}
                   </div>
                 </div>
                 
                 {/* Transportation Details */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Transportation Details</h4>
-                  <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Classification:</span> {selectedCompany.businessClassification}</div>
-                    <div><span className="font-medium">Operation Type:</span> {selectedCompany.transportationOperationType}</div>
-                    <div><span className="font-medium">Interstate/Intrastate:</span> {selectedCompany.interstateIntrastate}</div>
+                  <h4 className="text-lg font-medium text-white">Transportation Details</h4>
+                  <div className="space-y-2 text-sm text-gray-200">
+                    <div><span className="font-medium text-white">Classification:</span> {selectedCompany.businessClassification}</div>
+                    <div><span className="font-medium text-white">Operation Type:</span> {selectedCompany.transportationOperationType}</div>
+                    <div><span className="font-medium text-white">Interstate/Intrastate:</span> {selectedCompany.interstateIntrastate}</div>
                     {selectedCompany.usdotNumber && (
-                      <div><span className="font-medium">USDOT Number:</span> {selectedCompany.usdotNumber}</div>
+                      <div><span className="font-medium text-white">USDOT Number:</span> {selectedCompany.usdotNumber}</div>
                     )}
-                    <div><span className="font-medium">Operation Class:</span> {selectedCompany.operationClass}</div>
+                    <div><span className="font-medium text-white">Operation Class:</span> {selectedCompany.operationClass}</div>
                   </div>
                 </div>
                 
                 {/* Fleet Information */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Fleet Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Fleet Type:</span> {selectedCompany.vehicleFleetType}</div>
-                    <div><span className="font-medium">Number of Vehicles:</span> {selectedCompany.numberOfVehicles}</div>
-                    <div><span className="font-medium">Number of Drivers:</span> {selectedCompany.numberOfDrivers}</div>
-                    <div><span className="font-medium">GVWR:</span> {selectedCompany.gvwr}</div>
+                  <h4 className="text-lg font-medium text-white">Fleet Information</h4>
+                  <div className="space-y-2 text-sm text-gray-200">
+                    <div><span className="font-medium text-white">Fleet Type:</span> {selectedCompany.vehicleFleetType}</div>
+                    <div><span className="font-medium text-white">Number of Vehicles:</span> {selectedCompany.numberOfVehicles}</div>
+                    <div><span className="font-medium text-white">Number of Drivers:</span> {selectedCompany.numberOfDrivers}</div>
+                    <div><span className="font-medium text-white">GVWR:</span> {selectedCompany.gvwr}</div>
                     {selectedCompany.vehicleTypesUsed.length > 0 && (
-                      <div><span className="font-medium">Vehicle Types:</span> {selectedCompany.vehicleTypesUsed.join(', ')}</div>
+                      <div><span className="font-medium text-white">Vehicle Types:</span> {selectedCompany.vehicleTypesUsed.join(', ')}</div>
                     )}
                   </div>
                 </div>
                 
                 {/* Cargo & Safety */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Cargo & Safety</h4>
-                  <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Cargo Types:</span> {selectedCompany.cargoTypesTransported}</div>
-                    <div><span className="font-medium">Hazmat Required:</span> {selectedCompany.hazmatPlacardRequired}</div>
+                  <h4 className="text-lg font-medium text-white">Cargo & Safety</h4>
+                  <div className="space-y-2 text-sm text-gray-200">
+                    <div><span className="font-medium text-white">Cargo Types:</span> {selectedCompany.cargoTypesTransported}</div>
+                    <div><span className="font-medium text-white">Hazmat Required:</span> {selectedCompany.hazmatPlacardRequired}</div>
                     {selectedCompany.phmsaWork && (
-                      <div><span className="font-medium">PHMSA Work:</span> {selectedCompany.phmsaWork}</div>
+                      <div><span className="font-medium text-white">PHMSA Work:</span> {selectedCompany.phmsaWork}</div>
                     )}
                     {selectedCompany.additionalRegulatoryDetails.length > 0 && (
                       <div>
-                        <span className="font-medium">Regulatory Details:</span>
-                        <ul className="list-disc list-inside ml-2">
+                        <span className="font-medium text-white">Regulatory Details:</span>
+                        <ul className="list-disc list-inside ml-2 text-gray-200">
                           {selectedCompany.additionalRegulatoryDetails.map((detail, index) => (
                             <li key={index}>{detail}</li>
                           ))}
@@ -662,7 +662,7 @@ const Companies: React.FC = () => {
               <div className="flex justify-end space-x-3 pt-6">
                 <button
                   onClick={() => setSelectedCompany(null)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-white hover:bg-gray-700"
                 >
                   Close
                 </button>
