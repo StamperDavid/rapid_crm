@@ -466,7 +466,10 @@ const Companies: React.FC = () => {
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {filteredCompanies.map((company) => (
             <li key={company.id}>
-              <div className="px-4 py-6 sm:px-6">
+              <div 
+                className="px-4 py-6 sm:px-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                onClick={() => setSelectedCompany(company)}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -539,14 +542,20 @@ const Companies: React.FC = () => {
                   
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => setSelectedCompany(company)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCompany(company);
+                      }}
                       className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                       title="View details"
                     >
                       <EyeIcon className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => handleDeleteCompany(company.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCompany(company.id);
+                      }}
                       className="p-2 text-red-600 hover:text-red-800"
                       title="Delete company"
                     >
