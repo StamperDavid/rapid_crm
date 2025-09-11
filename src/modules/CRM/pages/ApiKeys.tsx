@@ -22,30 +22,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { useApiKeys } from '../../../hooks/useApiKeys';
 
-// Temporary local interface until schema export is resolved
-interface ApiKey {
-  id: string;
-  name: string;
-  platform: 'google' | 'openai' | 'anthropic' | 'kixie' | 'stripe' | 'quickbooks' | 'custom';
-  key: string;
-  description?: string;
-  status: 'active' | 'inactive' | 'expired' | 'revoked';
-  environment: 'development' | 'staging' | 'production';
-  permissions: string[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  lastUsed?: string;
-  usageCount: number;
-  encryptedKey?: string;
-  iv?: string;
-  salt?: string;
-}
+// Import ApiKey from schema
+import { ApiKey } from '../../../types/schema';
 
 const platformOptions = [
   { value: 'google', label: 'Google Cloud', icon: CloudIcon, color: 'text-blue-600' },
   { value: 'openai', label: 'OpenAI', icon: CpuChipIcon, color: 'text-green-600' },
   { value: 'anthropic', label: 'Anthropic', icon: CpuChipIcon, color: 'text-orange-600' },
+  { value: 'openrouter', label: 'OpenRouter', icon: CpuChipIcon, color: 'text-cyan-600' },
   { value: 'kixie', label: 'Kixie', icon: LinkIcon, color: 'text-purple-600' },
   { value: 'stripe', label: 'Stripe', icon: ServerIcon, color: 'text-indigo-500' },
   { value: 'quickbooks', label: 'QuickBooks', icon: CloudIcon, color: 'text-blue-500' },
@@ -56,6 +40,7 @@ const platformIcons = {
   google: CloudIcon,
   openai: CpuChipIcon,
   anthropic: CpuChipIcon,
+  openrouter: CpuChipIcon,
   kixie: LinkIcon,
   stripe: ServerIcon,
   quickbooks: CloudIcon,
@@ -66,6 +51,7 @@ const platformColors = {
   google: 'text-blue-600',
   openai: 'text-green-600',
   anthropic: 'text-orange-600',
+  openrouter: 'text-cyan-600',
   kixie: 'text-purple-600',
   stripe: 'text-indigo-500',
   quickbooks: 'text-blue-500',
@@ -96,69 +82,25 @@ const ApiKeys: React.FC = () => {
   // Preconfigured API keys with blank values for user to fill in
   const preconfiguredApiKeys: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>[] = [
     {
-      name: 'Google Cloud Vertex AI',
+      name: 'Google Cloud Service Account',
       platform: 'google',
       key: '', // Leave blank for user to fill in
-      description: 'Primary Google Cloud API key for Vertex AI services',
+      description: 'Google Cloud Service Account JSON key for Vertex AI, Document AI, and Storage services',
       status: 'inactive',
       environment: 'production',
-      permissions: ['vertex-ai', 'document-ai', 'discovery-engine', 'natural-language'],
-      tags: ['ai', 'ml', 'production'],
+      permissions: ['vertex-ai', 'document-ai', 'storage', 'discovery-engine', 'natural-language'],
+      tags: ['service-account', 'vertex-ai', 'document-ai', 'storage', 'production'],
       usageCount: 0
     },
     {
-      name: 'Google Cloud Document AI',
+      name: 'Google Cloud API Key',
       platform: 'google',
       key: '', // Leave blank for user to fill in
-      description: 'Google Cloud Document AI for processing USDOT forms and documents',
+      description: 'Google Cloud API Key for Vision, Translation, Speech, and other REST APIs',
       status: 'inactive',
       environment: 'production',
-      permissions: ['document-ai', 'form-parsing', 'text-extraction', 'ocr'],
-      tags: ['document-processing', 'usdot', 'forms', 'production'],
-      usageCount: 0
-    },
-    {
-      name: 'Google Cloud Natural Language API',
-      platform: 'google',
-      key: '', // Leave blank for user to fill in
-      description: 'Natural Language API for sentiment analysis and text processing',
-      status: 'inactive',
-      environment: 'production',
-      permissions: ['natural-language', 'sentiment-analysis', 'entity-extraction', 'syntax-analysis'],
-      tags: ['nlp', 'sentiment', 'text-analysis', 'production'],
-      usageCount: 0
-    },
-    {
-      name: 'Google Cloud Translation API',
-      platform: 'google',
-      key: '', // Leave blank for user to fill in
-      description: 'Translation API for multi-language support in conversations',
-      status: 'inactive',
-      environment: 'production',
-      permissions: ['translation', 'language-detection', 'batch-translation'],
-      tags: ['translation', 'multilingual', 'production'],
-      usageCount: 0
-    },
-    {
-      name: 'Google Cloud Speech-to-Text',
-      platform: 'google',
-      key: '', // Leave blank for user to fill in
-      description: 'Speech-to-Text API for voice input processing',
-      status: 'inactive',
-      environment: 'production',
-      permissions: ['speech-to-text', 'voice-recognition', 'audio-processing'],
-      tags: ['speech', 'voice', 'audio', 'production'],
-      usageCount: 0
-    },
-    {
-      name: 'Google Cloud Text-to-Speech',
-      platform: 'google',
-      key: '', // Leave blank for user to fill in
-      description: 'Text-to-Speech API for voice output in conversations',
-      status: 'inactive',
-      environment: 'production',
-      permissions: ['text-to-speech', 'voice-synthesis', 'audio-generation'],
-      tags: ['speech', 'voice', 'audio', 'production'],
+      permissions: ['vision', 'translation', 'speech-to-text', 'text-to-speech', 'natural-language'],
+      tags: ['api-key', 'vision', 'translation', 'speech', 'production'],
       usageCount: 0
     },
     {
@@ -258,6 +200,28 @@ const ApiKeys: React.FC = () => {
       environment: 'production',
       permissions: ['accounting', 'invoicing', 'expenses', 'reports'],
       tags: ['accounting', 'quickbooks', 'finance', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Google Gemini API',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Google Gemini API key for Gemini Pro and Flash models (separate from Vertex AI)',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['gemini-pro', 'gemini-flash', 'multimodal', 'text-generation', 'image-analysis'],
+      tags: ['gemini', 'ai', 'multimodal', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'OpenRouter API',
+      platform: 'openrouter',
+      key: '', // Leave blank for user to fill in
+      description: 'OpenRouter API for access to multiple AI models including Claude, GPT, and others',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['multiple-models', 'claude', 'gpt', 'llama', 'mistral', 'text-generation'],
+      tags: ['ai', 'multiple-models', 'openrouter', 'production'],
       usageCount: 0
     }
   ];

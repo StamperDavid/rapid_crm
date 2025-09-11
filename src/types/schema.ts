@@ -605,7 +605,7 @@ export interface AgentAnalytics {
 export interface ApiKey {
   id: string;
   name: string;
-  platform: 'google' | 'openai' | 'anthropic' | 'kixie' | 'stripe' | 'quickbooks' | 'custom';
+  platform: 'google' | 'openai' | 'anthropic' | 'openrouter' | 'kixie' | 'stripe' | 'quickbooks' | 'custom';
   key: string;
   description?: string;
   status: 'active' | 'inactive' | 'expired' | 'revoked';
