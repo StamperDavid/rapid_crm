@@ -156,6 +156,66 @@ const mockKnowledgeBases: KnowledgeBase[] = [
     status: 'processing',
     size: '3.1 MB',
     lastUpdated: '2024-01-17T14:20:00Z'
+  },
+  {
+    id: '5',
+    name: 'Hazmat Transportation Guidelines',
+    type: 'regulatory',
+    description: 'Hazardous materials transportation regulations and safety protocols',
+    source: 'api',
+    status: 'active',
+    size: '4.2 MB',
+    lastUpdated: '2024-01-16T11:30:00Z'
+  },
+  {
+    id: '6',
+    name: 'ELD Compliance Documentation',
+    type: 'regulatory',
+    description: 'Electronic Logging Device requirements and compliance procedures',
+    source: 'upload',
+    status: 'active',
+    size: '1.8 MB',
+    lastUpdated: '2024-01-15T16:45:00Z'
+  },
+  {
+    id: '7',
+    name: 'Insurance Requirements Database',
+    type: 'proprietary',
+    description: 'Commercial vehicle insurance requirements by state and cargo type',
+    source: 'database',
+    status: 'active',
+    size: '2.9 MB',
+    lastUpdated: '2024-01-14T09:20:00Z'
+  },
+  {
+    id: '8',
+    name: 'International Border Crossing Procedures',
+    type: 'regulatory',
+    description: 'Cross-border transportation requirements and documentation',
+    source: 'api',
+    status: 'active',
+    size: '3.5 MB',
+    lastUpdated: '2024-01-13T14:15:00Z'
+  },
+  {
+    id: '9',
+    name: 'Fleet Management Best Practices',
+    type: 'proprietary',
+    description: 'Internal fleet management procedures and optimization strategies',
+    source: 'upload',
+    status: 'active',
+    size: '2.1 MB',
+    lastUpdated: '2024-01-12T10:30:00Z'
+  },
+  {
+    id: '10',
+    name: 'Customer Support Scripts',
+    type: 'general',
+    description: 'Standardized customer support responses and escalation procedures',
+    source: 'database',
+    status: 'active',
+    size: '1.5 MB',
+    lastUpdated: '2024-01-11T13:45:00Z'
   }
 ];
 
@@ -192,6 +252,83 @@ const mockRules: Rule[] = [
     supersedes: [],
     supersededBy: ['federal_safety_rating_override', 'hazmat_placard_requirements'],
     category: 'state'
+  },
+  {
+    id: '4',
+    name: 'ELD Mandate Compliance',
+    description: 'Electronic Logging Device requirements for commercial drivers',
+    priority: 2,
+    conditions: ['commercial_vehicle', 'driver_hours_of_service'],
+    actions: ['require_eld_device', 'validate_hos_compliance'],
+    supersedes: ['paper_log_requirements'],
+    supersededBy: ['federal_safety_rating_override'],
+    category: 'federal'
+  },
+  {
+    id: '5',
+    name: 'Insurance Coverage Validation',
+    description: 'Minimum insurance coverage requirements by cargo type and state',
+    priority: 3,
+    conditions: ['commercial_vehicle', 'cargo_type_identified', 'state_requirements'],
+    actions: ['validate_insurance_coverage', 'require_additional_coverage'],
+    supersedes: ['general_insurance_requirements'],
+    supersededBy: ['hazmat_placard_requirements'],
+    category: 'operational'
+  },
+  {
+    id: '6',
+    name: 'International Border Crossing',
+    description: 'Special requirements for cross-border transportation',
+    priority: 2,
+    conditions: ['international_route', 'border_crossing_required'],
+    actions: ['require_customs_documentation', 'validate_import_export_permits'],
+    supersedes: ['domestic_transportation_requirements'],
+    supersededBy: ['federal_safety_rating_override'],
+    category: 'federal'
+  },
+  {
+    id: '7',
+    name: 'Driver Qualification Standards',
+    description: 'Driver qualification and training requirements',
+    priority: 3,
+    conditions: ['commercial_driver', 'vehicle_type_classification'],
+    actions: ['validate_cdl_requirements', 'check_drug_alcohol_testing'],
+    supersedes: ['general_driver_requirements'],
+    supersededBy: ['federal_safety_rating_override', 'hazmat_placard_requirements'],
+    category: 'federal'
+  },
+  {
+    id: '8',
+    name: 'Vehicle Inspection Requirements',
+    description: 'Periodic inspection and maintenance requirements',
+    priority: 4,
+    conditions: ['commercial_vehicle', 'inspection_due_date'],
+    actions: ['schedule_inspection', 'validate_inspection_certificate'],
+    supersedes: [],
+    supersededBy: ['federal_safety_rating_override', 'hazmat_placard_requirements'],
+    category: 'operational'
+  },
+  {
+    id: '9',
+    name: 'Customer Service Escalation',
+    description: 'Automatic escalation rules for customer service issues',
+    priority: 5,
+    conditions: ['customer_complaint', 'urgency_level_high', 'resolution_timeout'],
+    actions: ['escalate_to_supervisor', 'notify_management', 'schedule_callback'],
+    supersedes: ['standard_customer_service_flow'],
+    supersededBy: [],
+    category: 'proprietary'
+  },
+  {
+    id: '10',
+    name: 'Data Privacy Compliance',
+    description: 'GDPR and data privacy requirements for customer information',
+    priority: 1,
+    conditions: ['customer_data_access', 'privacy_request', 'data_retention_policy'],
+    actions: ['validate_data_access_rights', 'anonymize_personal_data'],
+    supersedes: ['general_data_handling'],
+    supersededBy: [],
+    category: 'federal'
   }
 ];
 

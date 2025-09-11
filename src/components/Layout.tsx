@@ -20,6 +20,7 @@ import {
   ChatBubbleLeftRightIcon,
   CpuChipIcon,
   KeyIcon,
+  CircleStackIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
@@ -43,6 +44,7 @@ const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, 
   ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
   ...(hasSchemaManagement ? [{ name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' }] : []),
   ...(hasApiKeyManagement ? [{ name: 'API Keys', href: '/api-keys', icon: KeyIcon, color: 'text-yellow-600' }] : []),
+  { name: 'Database', href: '/database', icon: CircleStackIcon, color: 'text-slate-600' },
   { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
 ];
