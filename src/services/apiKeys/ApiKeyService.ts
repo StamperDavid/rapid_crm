@@ -1,6 +1,6 @@
 import { ApiKey } from '../../types/schema';
 import { encryptionService, EncryptionResult } from './EncryptionService';
-import { realDatabaseService } from '../database/RealDatabaseService';
+import { browserDatabaseService } from '../database/BrowserDatabaseService';
 
 export interface ApiKeyValidation {
   isValid: boolean;
@@ -68,7 +68,7 @@ export class ApiKeyService {
   private async loadApiKeys(): Promise<void> {
     try {
       console.log('Loading API keys from real database...');
-      const apiKeysData = await realDatabaseService.getApiKeys();
+      const apiKeysData = await browserDatabaseService.getApiKeys();
       this.apiKeys = new Map(apiKeysData.map(key => [key.id, key]));
       this.validations = new Map();
       this.usage = new Map();
@@ -118,7 +118,7 @@ export class ApiKeyService {
       };
 
       this.apiKeys.set(newApiKey.id, newApiKey);
-      await realDatabaseService.createApiKey(newApiKey);
+      await browserDatabaseService.createApiKey(newApiKey);
       await this.saveApiKeys();
 
       return newApiKey;
@@ -167,7 +167,7 @@ export class ApiKeyService {
       }
 
       this.apiKeys.set(id, updatedApiKey);
-      await realDatabaseService.updateApiKey(id, updatedApiKey);
+      await browserDatabaseService.updateApiKey(id, updatedApiKey);
       await this.saveApiKeys();
       return updatedApiKey;
     } catch (error) {
@@ -183,7 +183,7 @@ export class ApiKeyService {
     const deleted = this.apiKeys.delete(id);
     this.validations.delete(id);
     this.usage.delete(id);
-    await realDatabaseService.deleteApiKey(id);
+    await browserDatabaseService.deleteApiKey(id);
     await this.saveApiKeys();
     return deleted;
   }

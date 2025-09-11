@@ -15,6 +15,13 @@ import EntityForm from '../../../components/forms/EntityForm';
 const Companies: React.FC = () => {
   const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
   
+  // Debug logging
+  console.log('[Companies] Received companies data:', companies);
+  console.log('[Companies] Companies count:', companies.length);
+  if (companies.length > 0) {
+    console.log('[Companies] First company structure:', companies[0]);
+  }
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -56,7 +63,7 @@ const Companies: React.FC = () => {
   };
 
   const getCompanyInvoices = (companyId: string) => {
-    return invoices.filter(invoice => invoice.companyId === companyId);
+    return invoices?.filter(invoice => invoice.companyId === companyId) || [];
   };
 
   // Handle form submissions

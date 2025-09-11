@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead } from '../types/schema';
-import { realDatabaseService } from '../services/database/RealDatabaseService';
+import { browserDatabaseService } from '../services/database/BrowserDatabaseService';
 
 // Define the context type
 interface CRMContextType {
@@ -72,18 +72,43 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        
-        // Add a small delay to ensure database service is ready
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('[CRMContext] Starting data load...');
         
         const [companiesData, contactsData, leadsData, dealsData, vehiclesData, driversData] = await Promise.all([
-          realDatabaseService.getCompanies(),
-          realDatabaseService.getContacts(),
-          realDatabaseService.getLeads(),
-          realDatabaseService.getDeals(),
-          realDatabaseService.getVehicles(),
-          realDatabaseService.getDrivers()
+          browserDatabaseService.getCompanies().catch(err => {
+            console.error('[CRMContext] Failed to load companies:', err);
+            throw new Error(`Companies: ${err.message}`);
+          }),
+          browserDatabaseService.getContacts().catch(err => {
+            console.error('[CRMContext] Failed to load contacts:', err);
+            throw new Error(`Contacts: ${err.message}`);
+          }),
+          browserDatabaseService.getLeads().catch(err => {
+            console.error('[CRMContext] Failed to load leads:', err);
+            throw new Error(`Leads: ${err.message}`);
+          }),
+          browserDatabaseService.getDeals().catch(err => {
+            console.error('[CRMContext] Failed to load deals:', err);
+            throw new Error(`Deals: ${err.message}`);
+          }),
+          browserDatabaseService.getVehicles().catch(err => {
+            console.error('[CRMContext] Failed to load vehicles:', err);
+            throw new Error(`Vehicles: ${err.message}`);
+          }),
+          browserDatabaseService.getDrivers().catch(err => {
+            console.error('[CRMContext] Failed to load drivers:', err);
+            throw new Error(`Drivers: ${err.message}`);
+          })
         ]);
+        
+        console.log('[CRMContext] Data loaded successfully:', {
+          companies: companiesData.length,
+          contacts: contactsData.length,
+          leads: leadsData.length,
+          deals: dealsData.length,
+          vehicles: vehiclesData.length,
+          drivers: driversData.length
+        });
         
         setCompanies(companiesData);
         setContacts(contactsData);
@@ -92,7 +117,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setVehicles(vehiclesData);
         setDrivers(driversData);
       } catch (error) {
-        console.error('Failed to load data:', error);
+        console.error('[CRMContext] Failed to load data:', error);
         // Set empty arrays as fallback
         setCompanies([]);
         setContacts([]);
@@ -111,7 +136,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
   // Database operations functions
   const refreshCompanies = async () => {
     try {
-      const data = await realDatabaseService.getCompanies();
+      const data = await browserDatabaseService.getCompanies();
       setCompanies(data);
     } catch (error) {
       console.error('Failed to refresh companies:', error);
@@ -121,7 +146,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshContacts = async () => {
     try {
-      const data = await realDatabaseService.getContacts();
+      const data = await browserDatabaseService.getContacts();
       setContacts(data);
     } catch (error) {
       console.error('Failed to refresh contacts:', error);
@@ -131,7 +156,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshLeads = async () => {
     try {
-      const data = await realDatabaseService.getLeads();
+      const data = await browserDatabaseService.getLeads();
       setLeads(data);
     } catch (error) {
       console.error('Failed to refresh leads:', error);
@@ -141,7 +166,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshDeals = async () => {
     try {
-      const data = await realDatabaseService.getDeals();
+      const data = await browserDatabaseService.getDeals();
       setDeals(data);
     } catch (error) {
       console.error('Failed to refresh deals:', error);
@@ -151,7 +176,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshVehicles = async () => {
     try {
-      const data = await realDatabaseService.getVehicles();
+      const data = await browserDatabaseService.getVehicles();
       setVehicles(data);
     } catch (error) {
       console.error('Failed to refresh vehicles:', error);
@@ -161,7 +186,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshDrivers = async () => {
     try {
-      const data = await realDatabaseService.getDrivers();
+      const data = await browserDatabaseService.getDrivers();
       setDrivers(data);
     } catch (error) {
       console.error('Failed to refresh drivers:', error);
@@ -171,7 +196,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createCompany = async (company: Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newCompany = await realDatabaseService.createCompany(company);
+      const newCompany = await browserDatabaseService.createCompany(company);
       setCompanies(prev => [...prev, newCompany]);
       return newCompany;
     } catch (error) {
@@ -182,7 +207,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createContact = async (contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newContact = await realDatabaseService.createContact(contact);
+      const newContact = await browserDatabaseService.createContact(contact);
       setContacts(prev => [...prev, newContact]);
       return newContact;
     } catch (error) {
@@ -193,7 +218,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createLead = async (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newLead = await realDatabaseService.createLead(lead);
+      const newLead = await browserDatabaseService.createLead(lead);
       setLeads(prev => [...prev, newLead]);
       return newLead;
     } catch (error) {
@@ -204,7 +229,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createDeal = async (deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newDeal = await realDatabaseService.createDeal(deal);
+      const newDeal = await browserDatabaseService.createDeal(deal);
       setDeals(prev => [...prev, newDeal]);
       return newDeal;
     } catch (error) {
@@ -215,7 +240,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createVehicle = async (vehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newVehicle = await realDatabaseService.createVehicle(vehicle);
+      const newVehicle = await browserDatabaseService.createVehicle(vehicle);
       setVehicles(prev => [...prev, newVehicle]);
       return newVehicle;
     } catch (error) {
@@ -226,7 +251,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createDriver = async (driver: Omit<Driver, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newDriver = await realDatabaseService.createDriver(driver);
+      const newDriver = await browserDatabaseService.createDriver(driver);
       setDrivers(prev => [...prev, newDriver]);
       return newDriver;
     } catch (error) {
@@ -237,7 +262,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateCompany = async (id: string, company: Partial<Organization>) => {
     try {
-      const updatedCompany = await realDatabaseService.updateCompany(id, company);
+      const updatedCompany = await browserDatabaseService.updateCompany(id, company);
       setCompanies(prev => prev.map(c => c.id === id ? updatedCompany : c));
       return updatedCompany;
     } catch (error) {
@@ -248,7 +273,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateContact = async (id: string, contact: Partial<Person>) => {
     try {
-      const updatedContact = await realDatabaseService.updateContact(id, contact);
+      const updatedContact = await browserDatabaseService.updateContact(id, contact);
       setContacts(prev => prev.map(c => c.id === id ? updatedContact : c));
       return updatedContact;
     } catch (error) {
@@ -259,7 +284,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateLead = async (id: string, lead: Partial<Lead>) => {
     try {
-      const updatedLead = await realDatabaseService.updateLead(id, lead);
+      const updatedLead = await browserDatabaseService.updateLead(id, lead);
       setLeads(prev => prev.map(l => l.id === id ? updatedLead : l));
       return updatedLead;
     } catch (error) {
@@ -270,7 +295,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateDeal = async (id: string, deal: Partial<Deal>) => {
     try {
-      const updatedDeal = await realDatabaseService.updateDeal(id, deal);
+      const updatedDeal = await browserDatabaseService.updateDeal(id, deal);
       setDeals(prev => prev.map(d => d.id === id ? updatedDeal : d));
       return updatedDeal;
     } catch (error) {
@@ -281,7 +306,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateVehicle = async (id: string, vehicle: Partial<Vehicle>) => {
     try {
-      const updatedVehicle = await realDatabaseService.updateVehicle(id, vehicle);
+      const updatedVehicle = await browserDatabaseService.updateVehicle(id, vehicle);
       setVehicles(prev => prev.map(v => v.id === id ? updatedVehicle : v));
       return updatedVehicle;
     } catch (error) {
@@ -292,7 +317,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateDriver = async (id: string, driver: Partial<Driver>) => {
     try {
-      const updatedDriver = await realDatabaseService.updateDriver(id, driver);
+      const updatedDriver = await browserDatabaseService.updateDriver(id, driver);
       setDrivers(prev => prev.map(d => d.id === id ? updatedDriver : d));
       return updatedDriver;
     } catch (error) {
@@ -303,7 +328,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteCompany = async (id: string) => {
     try {
-      await realDatabaseService.deleteCompany(id);
+      await browserDatabaseService.deleteCompany(id);
       setCompanies(prev => prev.filter(c => c.id !== id));
     } catch (error) {
       console.error('Failed to delete company:', error);
@@ -313,7 +338,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteContact = async (id: string) => {
     try {
-      await realDatabaseService.deleteContact(id);
+      await browserDatabaseService.deleteContact(id);
       setContacts(prev => prev.filter(c => c.id !== id));
     } catch (error) {
       console.error('Failed to delete contact:', error);
@@ -323,7 +348,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteLead = async (id: string) => {
     try {
-      await realDatabaseService.deleteLead(id);
+      await browserDatabaseService.deleteLead(id);
       setLeads(prev => prev.filter(l => l.id !== id));
     } catch (error) {
       console.error('Failed to delete lead:', error);
@@ -333,7 +358,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteDeal = async (id: string) => {
     try {
-      await realDatabaseService.deleteDeal(id);
+      await browserDatabaseService.deleteDeal(id);
       setDeals(prev => prev.filter(d => d.id !== id));
     } catch (error) {
       console.error('Failed to delete deal:', error);
@@ -343,7 +368,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteVehicle = async (id: string) => {
     try {
-      await realDatabaseService.deleteVehicle(id);
+      await browserDatabaseService.deleteVehicle(id);
       setVehicles(prev => prev.filter(v => v.id !== id));
     } catch (error) {
       console.error('Failed to delete vehicle:', error);
@@ -353,7 +378,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteDriver = async (id: string) => {
     try {
-      await realDatabaseService.deleteDriver(id);
+      await browserDatabaseService.deleteDriver(id);
       setDrivers(prev => prev.filter(d => d.id !== id));
     } catch (error) {
       console.error('Failed to delete driver:', error);
