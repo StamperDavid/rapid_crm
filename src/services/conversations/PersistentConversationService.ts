@@ -252,8 +252,12 @@ export class PersistentConversationService {
     context.metadata.totalMessages++;
     context.metadata.updatedAt = new Date().toISOString();
 
+    console.log('Adding message to context:', message.sender, 'Total interactions before:', context.clientProfile.totalInteractions);
+
     // Update client profile based on message content
     this.updateClientProfile(context, message);
+    
+    console.log('Total interactions after:', context.clientProfile.totalInteractions);
 
     // Update agent memory based on message content
     this.updateAgentMemory(context, message, agentContext);
@@ -309,6 +313,11 @@ export class PersistentConversationService {
     });
 
     context.clientProfile.lastInteraction = new Date().toISOString();
+    
+    // Increment total interactions for user messages
+    if (message.sender === 'user') {
+      context.clientProfile.totalInteractions++;
+    }
   }
 
   private updateAgentMemory(

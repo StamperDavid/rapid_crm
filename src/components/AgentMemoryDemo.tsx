@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BrainIcon,
+  CpuChipIcon,
   UserIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
@@ -24,12 +24,13 @@ interface AgentMemoryDemoProps {
 const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('customer-service');
   const [clientId, setClientId] = useState<string>('client-demo-001');
-  const [conversationId, setConversationId] = useState<string>('conv-demo-001');
+  const [conversationId, setConversationId] = useState<string>('conv-customer-service-client-demo-001');
   const [message, setMessage] = useState<string>('');
   const [conversationHistory, setConversationHistory] = useState<any[]>([]);
   const [agentInsights, setAgentInsights] = useState<any>(null);
   const [clientMemory, setClientMemory] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [clientSwitchKey, setClientSwitchKey] = useState<number>(0);
 
   const agents = [
     { id: 'customer-service', name: 'Customer Service Agent' },
@@ -47,9 +48,27 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
     "I'm still having the same issue we discussed last week"
   ];
 
+  // Handle client ID and agent changes
   useEffect(() => {
-    loadAgentInsights();
-    loadClientMemory();
+    console.log('Client ID or Agent changed to:', clientId, selectedAgent);
+    setMessage('');
+    const newConversationId = `conv-${selectedAgent}-${clientId}`;
+    setConversationId(newConversationId);
+    
+    // Force clear conversation window immediately and increment key for re-render
+    setConversationHistory([]);
+    setClientSwitchKey(prev => prev + 1);
+    console.log('Cleared conversation history for client:', clientId);
+    console.log('New conversation ID:', newConversationId);
+    
+    // Load everything in sequence to avoid race conditions
+    const loadEverything = async () => {
+      await loadAgentInsights();
+      await loadClientMemory(newConversationId);
+      await loadConversationHistory(newConversationId);
+    };
+    
+    loadEverything();
   }, [selectedAgent, clientId]);
 
   const loadAgentInsights = async () => {
@@ -61,9 +80,67 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
     }
   };
 
-  const loadClientMemory = async () => {
+  const loadConversationHistory = async (currentConversationId?: string) => {
     try {
-      const memory = await persistentConversationService.getClientMemory(selectedAgent, clientId);
+      const idToUse = currentConversationId || conversationId;
+      console.log('Loading conversation history for conversationId:', idToUse);
+      
+      // Get the persistent context for this client/agent combination
+      const persistentContext = await persistentConversationService.getPersistentContext(idToUse);
+      
+      console.log('Found persistent context:', persistentContext ? 'Yes' : 'No');
+      
+      if (persistentContext && persistentContext.conversationHistory && persistentContext.conversationHistory.length > 0) {
+        // Convert persistent conversation history to display format
+        const history = persistentContext.conversationHistory.map((msg: any) => ({
+          id: msg.id || `msg-${Date.now()}-${Math.random()}`,
+          content: msg.content,
+          sender: msg.sender,
+          timestamp: msg.timestamp,
+          type: 'text' as const,
+          metadata: msg.metadata || {}
+        }));
+        
+        setConversationHistory(history);
+        console.log('Loaded conversation history:', history.length, 'messages for client:', clientId);
+      } else {
+        // No existing conversation, ensure it stays clear
+        setConversationHistory([]);
+        console.log('No existing conversation found, keeping window clear for client:', clientId);
+      }
+    } catch (error) {
+      console.error('Error loading conversation history:', error);
+      setConversationHistory([]);
+    }
+  };
+
+  const loadClientMemory = async (currentConversationId?: string) => {
+    try {
+      const idToUse = currentConversationId || conversationId;
+      console.log('Loading client memory for:', selectedAgent, clientId, 'with conversationId:', idToUse);
+      
+      // First try to get existing memory
+      let memory = await persistentConversationService.getClientMemory(selectedAgent, clientId);
+      
+      // If no memory exists, create a new persistent context
+      if (!memory) {
+        console.log('No existing memory found, creating new persistent context');
+        memory = await persistentConversationService.createPersistentConversation(
+          idToUse,
+          clientId,
+          selectedAgent,
+          {
+            sessionId: `session-${Date.now()}`,
+            clientProfile: {
+              name: `Client ${clientId}`,
+              email: `${clientId}@example.com`,
+              preferences: {}
+            }
+          }
+        );
+      }
+      
+      console.log('Loaded client memory:', memory);
       setClientMemory(memory);
     } catch (error) {
       console.error('Error loading client memory:', error);
@@ -112,6 +189,16 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
       // Reload insights and memory
       await loadAgentInsights();
       await loadClientMemory();
+      
+      // Also update client satisfaction score based on agent response confidence
+      if (response.confidence > 0.8) {
+        await persistentConversationService.updateClientSatisfaction(
+          conversationId,
+          Math.min(10, (clientMemory?.clientProfile.satisfactionScore || 0) + 1),
+          "High confidence response"
+        );
+        await loadClientMemory(); // Reload to show updated satisfaction
+      }
 
       setMessage('');
     } catch (error) {
@@ -147,11 +234,24 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
     }
   };
 
+  const updateSatisfactionScore = async (score: number) => {
+    try {
+      await persistentConversationService.updateClientSatisfaction(
+        conversationId,
+        score,
+        "Manual update for testing"
+      );
+      await loadClientMemory();
+    } catch (error) {
+      console.error('Error updating satisfaction score:', error);
+    }
+  };
+
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <BrainIcon className="h-8 w-8 text-blue-600 mr-3" />
+          <CpuChipIcon className="h-8 w-8 text-blue-600 mr-3" />
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               Agent Memory Demo
@@ -232,7 +332,7 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
             Conversation
           </h3>
           
-          <div className="h-64 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-4 bg-gray-50 dark:bg-gray-700">
+          <div key={`conversation-${clientId}-${selectedAgent}`} className="h-64 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-4 bg-gray-50 dark:bg-gray-700">
             {conversationHistory.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center">
                 Start a conversation to see agent memory in action
@@ -393,8 +493,9 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
                   <div>
                     <span className="font-medium">Interactions:</span> {clientMemory.clientProfile.totalInteractions}
                   </div>
-                  <div>
-                    <span className="font-medium">Satisfaction:</span> {clientMemory.clientProfile.satisfactionScore.toFixed(1)}
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Satisfaction:</span> 
+                    <span>{clientMemory.clientProfile.satisfactionScore.toFixed(1)}</span>
                   </div>
                   {clientMemory.agentMemory.previousIssues.length > 0 && (
                     <div>
@@ -406,6 +507,22 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
                       <span className="font-medium">Follow-ups:</span> {clientMemory.agentMemory.followUpItems.length}
                     </div>
                   )}
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => updateSatisfactionScore(5)}
+                      className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200"
+                    >
+                      +1
+                    </button>
+                    <button
+                      onClick={() => updateSatisfactionScore(0)}
+                      className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200"
+                    >
+                      Reset
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

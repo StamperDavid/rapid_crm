@@ -146,7 +146,6 @@ export const useConversations = (): UseConversationsReturn => {
   const sendMessage = useCallback(async (conversationId: string, content: string, senderId: string, senderType: 'user' | 'agent'): Promise<Message> => {
     try {
       const message = await conversationService.addMessage({
-        conversationId,
         content,
         senderId,
         senderType,

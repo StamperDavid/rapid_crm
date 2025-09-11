@@ -330,9 +330,11 @@ export class AgentService {
       // Get or create persistent conversation context
       let persistentContext = context.persistentContext;
       if (!persistentContext && context.conversationId && context.clientId) {
+        console.log('Looking for persistent context:', context.conversationId);
         persistentContext = await persistentConversationService.getPersistentContext(context.conversationId);
         
         if (!persistentContext) {
+          console.log('Creating new persistent context for:', context.conversationId, context.clientId);
           // Create new persistent context
           persistentContext = await persistentConversationService.createPersistentConversation(
             context.conversationId,
@@ -347,6 +349,9 @@ export class AgentService {
               }
             }
           );
+          console.log('Created persistent context:', persistentContext);
+        } else {
+          console.log('Found existing persistent context:', persistentContext);
         }
       }
 

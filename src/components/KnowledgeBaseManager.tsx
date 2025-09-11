@@ -53,7 +53,11 @@ const KnowledgeBaseManager: React.FC<KnowledgeBaseManagerProps> = ({
   const handleCreateKB = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createKnowledgeBase(newKBData);
+      await createKnowledgeBase({
+        ...newKBData,
+        status: 'active',
+        size: '0 MB'
+      });
       setNewKBData({ name: '', description: '', type: 'proprietary', source: 'upload' });
       setShowCreateForm(false);
     } catch (error) {
