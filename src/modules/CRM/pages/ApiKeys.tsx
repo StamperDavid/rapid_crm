@@ -268,22 +268,22 @@ const ApiKeys: React.FC = () => {
   const [showKey, setShowKey] = useState<{ [key: string]: boolean }>({});
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [masterPassword, setMasterPassword] = useState('');
-  const [showPasswordModal, setShowPasswordModal] = useState(!isInitialized);
   const [validatingKeys, setValidatingKeys] = useState<Set<string>>(new Set());
 
-  // Initialize the service when master password is provided
-  const handleInitialize = async () => {
-    if (masterPassword.trim()) {
-      try {
-        await initialize(masterPassword);
-        setShowPasswordModal(false);
-        setMasterPassword('');
-      } catch (error) {
-        console.error('Failed to initialize API key service:', error);
+  // Auto-initialize the service without password requirement
+  useEffect(() => {
+    const autoInitialize = async () => {
+      if (!isInitialized) {
+        try {
+          // Initialize with a default password since encryption is still required
+          await initialize('default-password');
+        } catch (error) {
+          console.error('Failed to auto-initialize API key service:', error);
+        }
       }
-    }
-  };
+    };
+    autoInitialize();
+  }, [isInitialized, initialize]);
 
   // Initialize preconfigured API keys
   const handleInitializePreconfiguredKeys = async () => {
@@ -442,48 +442,7 @@ const ApiKeys: React.FC = () => {
     });
   };
 
-  // Show password modal if not initialized
-  if (showPasswordModal) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <div className="text-center">
-            <ShieldCheckIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Initialize API Key Service
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Enter your master password to encrypt and secure your API keys.
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Master Password
-              </label>
-              <input
-                type="password"
-                value={masterPassword}
-                onChange={(e) => setMasterPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleInitialize()}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                placeholder="Enter master password"
-              />
-            </div>
-            
-            <button
-              onClick={handleInitialize}
-              disabled={!masterPassword.trim() || loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Initializing...' : 'Initialize'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Skip password modal - auto-initialize instead
 
   if (loading && apiKeys.length === 0) {
     return (
