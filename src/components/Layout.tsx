@@ -36,6 +36,7 @@ interface LayoutProps {
 const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, hasSchemaManagement: boolean, hasApiKeyManagement: boolean) => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
+  { name: 'Contacts', href: '/contacts', icon: UserGroupIcon, color: 'text-green-600' },
   { name: 'Deals', href: '/deals', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon, color: 'text-red-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },

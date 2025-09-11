@@ -1,1073 +1,756 @@
 import React, { useState, useEffect } from 'react';
 import {
   XMarkIcon,
-  PlusIcon,
-  TrashIcon,
+  CpuChipIcon,
   DocumentTextIcon,
   CogIcon,
-  ChatBubbleLeftRightIcon,
-  UserIcon,
-  CurrencyDollarIcon,
-  WrenchScrewdriverIcon,
-  CloudIcon,
-  CircleStackIcon,
-  ExclamationTriangleIcon,
+  PlayIcon,
   CheckCircleIcon,
+  ExclamationTriangleIcon,
   InformationCircleIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
+  PlusIcon,
+  TrashIcon,
+  ArrowPathIcon,
+  EyeIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
-
-interface KnowledgeBase {
-  id: string;
-  name: string;
-  type: 'regulatory' | 'proprietary' | 'general' | 'custom';
-  description: string;
-  source: 'upload' | 'url' | 'database' | 'api';
-  status: 'active' | 'processing' | 'error';
-  size: string;
-  lastUpdated: string;
-}
-
-interface Rule {
-  id: string;
-  name: string;
-  description: string;
-  priority: number;
-  conditions: string[];
-  actions: string[];
-  supersedes: string[];
-  supersededBy: string[];
-  category: 'federal' | 'state' | 'proprietary' | 'operational';
-}
-
-interface AgentConfiguration {
-  name: string;
-  description: string;
-  type: 'usdot_application' | 'customer_service' | 'regulatory_compliance' | 'research' | 'custom';
-  model: 'gemini-pro' | 'gemini-pro-vision' | 'text-bison' | 'chat-bison';
-  temperature: number;
-  maxTokens: number;
-  systemPrompt: string;
-  knowledgeBases: string[];
-  rules: string[];
-  capabilities: string[];
-  workflows: Workflow[];
-  sentimentAnalysis: {
-    enabled: boolean;
-    realTimeAnalysis: boolean;
-    emotionDetection: boolean;
-    urgencyDetection: boolean;
-    toneAdaptation: boolean;
-    escalationRules: EscalationRule[];
-    responseTemplates: ResponseTemplate[];
-  };
-  googleCloudConfig: {
-    projectId: string;
-    region: string;
-    vertexAI: boolean;
-    documentAI: boolean;
-    discoveryEngine: boolean;
-    naturalLanguageAPI: boolean;
-  };
-}
-
-interface EscalationRule {
-  id: string;
-  name: string;
-  conditions: {
-    sentimentScore?: { min: number; max: number };
-    urgency?: 'low' | 'medium' | 'high' | 'critical';
-    emotions?: { [key: string]: number };
-    keywords?: string[];
-  };
-  actions: {
-    escalateToHuman: boolean;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    responseTemplate: string;
-    notificationChannels: string[];
-  };
-}
-
-interface ResponseTemplate {
-  id: string;
-  name: string;
-  sentiment: 'positive' | 'negative' | 'neutral' | 'urgent';
-  tone: 'professional' | 'friendly' | 'empathetic' | 'urgent' | 'formal' | 'casual';
-  template: string;
-  variables: string[];
-}
-
-interface Workflow {
-  id: string;
-  name: string;
-  description: string;
-  steps: WorkflowStep[];
-  triggers: string[];
-  conditions: string[];
-}
-
-interface WorkflowStep {
-  id: string;
-  type: 'data_collection' | 'validation' | 'compliance_check' | 'document_generation' | 'notification';
-  name: string;
-  config: any;
-  nextSteps: string[];
-  errorHandling: string;
-}
-
-const mockKnowledgeBases: KnowledgeBase[] = [
-  {
-    id: '1',
-    name: 'Federal Motor Carrier Safety Regulations',
-    type: 'regulatory',
-    description: 'Complete FMCSA regulations and compliance requirements',
-    source: 'upload',
-    status: 'active',
-    size: '2.3 MB',
-    lastUpdated: '2024-01-20T10:30:00Z'
-  },
-  {
-    id: '2',
-    name: 'State Transportation Regulations',
-    type: 'regulatory',
-    description: 'State-specific transportation and safety regulations',
-    source: 'api',
-    status: 'active',
-    size: '5.7 MB',
-    lastUpdated: '2024-01-19T15:45:00Z'
-  },
-  {
-    id: '3',
-    name: 'USDOT Application Procedures',
-    type: 'proprietary',
-    description: 'Internal procedures and best practices for USDOT applications',
-    source: 'upload',
-    status: 'active',
-    size: '1.2 MB',
-    lastUpdated: '2024-01-18T09:15:00Z'
-  },
-  {
-    id: '4',
-    name: 'Customer Portal Knowledge Base',
-    type: 'general',
-    description: 'General customer service and account management information',
-    source: 'database',
-    status: 'processing',
-    size: '3.1 MB',
-    lastUpdated: '2024-01-17T14:20:00Z'
-  },
-  {
-    id: '5',
-    name: 'Hazmat Transportation Guidelines',
-    type: 'regulatory',
-    description: 'Hazardous materials transportation regulations and safety protocols',
-    source: 'api',
-    status: 'active',
-    size: '4.2 MB',
-    lastUpdated: '2024-01-16T11:30:00Z'
-  },
-  {
-    id: '6',
-    name: 'ELD Compliance Documentation',
-    type: 'regulatory',
-    description: 'Electronic Logging Device requirements and compliance procedures',
-    source: 'upload',
-    status: 'active',
-    size: '1.8 MB',
-    lastUpdated: '2024-01-15T16:45:00Z'
-  },
-  {
-    id: '7',
-    name: 'Insurance Requirements Database',
-    type: 'proprietary',
-    description: 'Commercial vehicle insurance requirements by state and cargo type',
-    source: 'database',
-    status: 'active',
-    size: '2.9 MB',
-    lastUpdated: '2024-01-14T09:20:00Z'
-  },
-  {
-    id: '8',
-    name: 'International Border Crossing Procedures',
-    type: 'regulatory',
-    description: 'Cross-border transportation requirements and documentation',
-    source: 'api',
-    status: 'active',
-    size: '3.5 MB',
-    lastUpdated: '2024-01-13T14:15:00Z'
-  },
-  {
-    id: '9',
-    name: 'Fleet Management Best Practices',
-    type: 'proprietary',
-    description: 'Internal fleet management procedures and optimization strategies',
-    source: 'upload',
-    status: 'active',
-    size: '2.1 MB',
-    lastUpdated: '2024-01-12T10:30:00Z'
-  },
-  {
-    id: '10',
-    name: 'Customer Support Scripts',
-    type: 'general',
-    description: 'Standardized customer support responses and escalation procedures',
-    source: 'database',
-    status: 'active',
-    size: '1.5 MB',
-    lastUpdated: '2024-01-11T13:45:00Z'
-  }
-];
-
-const mockRules: Rule[] = [
-  {
-    id: '1',
-    name: 'Federal Safety Rating Override',
-    description: 'Federal safety rating requirements take precedence over state requirements',
-    priority: 1,
-    conditions: ['federal_safety_rating_exists', 'state_requirements_conflict'],
-    actions: ['apply_federal_standards', 'notify_state_compliance'],
-    supersedes: ['state_safety_requirements'],
-    supersededBy: [],
-    category: 'federal'
-  },
-  {
-    id: '2',
-    name: 'Hazmat Placard Requirements',
-    description: 'Hazmat placard requirements based on cargo type and quantity',
-    priority: 2,
-    conditions: ['hazmat_cargo_identified', 'quantity_exceeds_threshold'],
-    actions: ['require_placards', 'update_operating_authority'],
-    supersedes: ['general_cargo_requirements'],
-    supersededBy: ['federal_safety_rating_override'],
-    category: 'federal'
-  },
-  {
-    id: '3',
-    name: 'State-Specific Operating Authority',
-    description: 'State-specific requirements for intrastate operations',
-    priority: 3,
-    conditions: ['intrastate_operation', 'state_authority_required'],
-    actions: ['apply_state_requirements', 'generate_state_forms'],
-    supersedes: [],
-    supersededBy: ['federal_safety_rating_override', 'hazmat_placard_requirements'],
-    category: 'state'
-  },
-  {
-    id: '4',
-    name: 'ELD Mandate Compliance',
-    description: 'Electronic Logging Device requirements for commercial drivers',
-    priority: 2,
-    conditions: ['commercial_vehicle', 'driver_hours_of_service'],
-    actions: ['require_eld_device', 'validate_hos_compliance'],
-    supersedes: ['paper_log_requirements'],
-    supersededBy: ['federal_safety_rating_override'],
-    category: 'federal'
-  },
-  {
-    id: '5',
-    name: 'Insurance Coverage Validation',
-    description: 'Minimum insurance coverage requirements by cargo type and state',
-    priority: 3,
-    conditions: ['commercial_vehicle', 'cargo_type_identified', 'state_requirements'],
-    actions: ['validate_insurance_coverage', 'require_additional_coverage'],
-    supersedes: ['general_insurance_requirements'],
-    supersededBy: ['hazmat_placard_requirements'],
-    category: 'operational'
-  },
-  {
-    id: '6',
-    name: 'International Border Crossing',
-    description: 'Special requirements for cross-border transportation',
-    priority: 2,
-    conditions: ['international_route', 'border_crossing_required'],
-    actions: ['require_customs_documentation', 'validate_import_export_permits'],
-    supersedes: ['domestic_transportation_requirements'],
-    supersededBy: ['federal_safety_rating_override'],
-    category: 'federal'
-  },
-  {
-    id: '7',
-    name: 'Driver Qualification Standards',
-    description: 'Driver qualification and training requirements',
-    priority: 3,
-    conditions: ['commercial_driver', 'vehicle_type_classification'],
-    actions: ['validate_cdl_requirements', 'check_drug_alcohol_testing'],
-    supersedes: ['general_driver_requirements'],
-    supersededBy: ['federal_safety_rating_override', 'hazmat_placard_requirements'],
-    category: 'federal'
-  },
-  {
-    id: '8',
-    name: 'Vehicle Inspection Requirements',
-    description: 'Periodic inspection and maintenance requirements',
-    priority: 4,
-    conditions: ['commercial_vehicle', 'inspection_due_date'],
-    actions: ['schedule_inspection', 'validate_inspection_certificate'],
-    supersedes: [],
-    supersededBy: ['federal_safety_rating_override', 'hazmat_placard_requirements'],
-    category: 'operational'
-  },
-  {
-    id: '9',
-    name: 'Customer Service Escalation',
-    description: 'Automatic escalation rules for customer service issues',
-    priority: 5,
-    conditions: ['customer_complaint', 'urgency_level_high', 'resolution_timeout'],
-    actions: ['escalate_to_supervisor', 'notify_management', 'schedule_callback'],
-    supersedes: ['standard_customer_service_flow'],
-    supersededBy: [],
-    category: 'proprietary'
-  },
-  {
-    id: '10',
-    name: 'Data Privacy Compliance',
-    description: 'GDPR and data privacy requirements for customer information',
-    priority: 1,
-    conditions: ['customer_data_access', 'privacy_request', 'data_retention_policy'],
-    actions: ['validate_data_access_rights', 'anonymize_personal_data'],
-    supersedes: ['general_data_handling'],
-    supersededBy: [],
-    category: 'federal'
-  }
-];
+import { useAgentBuilder } from '../hooks/useAgentBuilder';
+import { Agent } from '../types/schema';
+import KnowledgeBaseManager from './KnowledgeBaseManager';
 
 interface AgentBuilderProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (agent: AgentConfiguration) => void;
-  editingAgent?: any;
+  onSave: (agentConfig: any) => void;
+  editingAgent?: Agent | null;
 }
 
-const AgentBuilder: React.FC<AgentBuilderProps> = ({ isOpen, onClose, onSave, editingAgent }) => {
+interface AgentFormData {
+  name: string;
+  description: string;
+  type: 'onboarding' | 'customer_service' | 'sales' | 'support' | 'custom';
+  status: 'active' | 'inactive' | 'training' | 'error';
+  capabilities: string[];
+  knowledgeBases: string[];
+  rules: string[];
+  configuration: {
+    model: string;
+    temperature: number;
+    maxTokens: number;
+    systemPrompt: string;
+    responseFormat: 'conversational' | 'structured' | 'action' | 'persuasive';
+    fallbackBehavior: 'escalate_to_human' | 'retry_with_backoff' | 'schedule_callback';
+  };
+}
+
+const AgentBuilder: React.FC<AgentBuilderProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  editingAgent
+}) => {
+  const {
+    knowledgeBases,
+    agentTemplates,
+    knowledgeBaseLoading,
+    agentTemplatesLoading,
+    createKnowledgeBase,
+    createAgentFromTemplate,
+    validateAgentConfiguration,
+  } = useAgentBuilder();
+
   const [currentStep, setCurrentStep] = useState(1);
-  const [config, setConfig] = useState<AgentConfiguration>({
+  const [formData, setFormData] = useState<AgentFormData>({
     name: '',
     description: '',
-    type: 'usdot_application',
-    model: 'gemini-pro',
-    temperature: 0.7,
-    maxTokens: 4000,
-    systemPrompt: '',
+    type: 'custom',
+    status: 'training',
+    capabilities: [],
     knowledgeBases: [],
     rules: [],
-    capabilities: [],
-    workflows: [],
-    sentimentAnalysis: {
-      enabled: true,
-      realTimeAnalysis: true,
-      emotionDetection: true,
-      urgencyDetection: true,
-      toneAdaptation: true,
-      escalationRules: [],
-      responseTemplates: []
-    },
-    googleCloudConfig: {
-      projectId: '',
-      region: 'us-central1',
-      vertexAI: true,
-      documentAI: true,
-      discoveryEngine: true,
-      naturalLanguageAPI: true
+    configuration: {
+      model: 'gpt-4',
+      temperature: 0.7,
+      maxTokens: 2000,
+      systemPrompt: '',
+      responseFormat: 'conversational',
+      fallbackBehavior: 'escalate_to_human'
     }
   });
 
-  const [selectedKnowledgeBases, setSelectedKnowledgeBases] = useState<string[]>([]);
-  const [selectedRules, setSelectedRules] = useState<string[]>([]);
-  const [showRuleBuilder, setShowRuleBuilder] = useState(false);
-  const [showWorkflowBuilder, setShowWorkflowBuilder] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+  } | null>(null);
+  const [showKnowledgeBaseManager, setShowKnowledgeBaseManager] = useState(false);
 
-  const agentTypes = [
-    { value: 'usdot_application', label: 'USDOT Application Agent', icon: DocumentTextIcon, description: 'Collects and processes USDOT application data' },
-    { value: 'customer_service', label: 'Customer Service Agent', icon: ChatBubbleLeftRightIcon, description: 'Handles customer inquiries and account management' },
-    { value: 'regulatory_compliance', label: 'Regulatory Compliance Agent', icon: CogIcon, description: 'Ensures compliance with federal and state regulations' },
-    { value: 'research', label: 'Research Agent', icon: WrenchScrewdriverIcon, description: 'Conducts research and analysis tasks' },
-    { value: 'custom', label: 'Custom Agent', icon: UserIcon, description: 'Custom agent for specific use cases' }
-  ];
-
-  const models = [
-    { value: 'gemini-pro', label: 'Gemini Pro', description: 'Latest Google AI model for complex reasoning' },
-    { value: 'gemini-pro-vision', label: 'Gemini Pro Vision', description: 'Multimodal model with vision capabilities' },
-    { value: 'text-bison', label: 'Text Bison', description: 'Optimized for text generation tasks' },
-    { value: 'chat-bison', label: 'Chat Bison', description: 'Specialized for conversational AI' }
-  ];
-
-  const capabilities = [
-    'data_collection',
-    'form_filling',
-    'compliance_checking',
-    'document_generation',
-    'regulatory_analysis',
-    'customer_support',
-    'account_management',
-    'research_analysis',
-    'multilingual_support',
-    'voice_interaction'
-  ];
-
+  // Initialize form data when editing
   useEffect(() => {
-    if (editingAgent) {
-      setConfig(editingAgent);
-      setSelectedKnowledgeBases(editingAgent.knowledgeBases || []);
-      setSelectedRules(editingAgent.rules || []);
+    if (editingAgent && isOpen) {
+      setFormData({
+        name: editingAgent.name,
+        description: editingAgent.description,
+        type: editingAgent.type,
+        status: editingAgent.status,
+        capabilities: editingAgent.capabilities,
+        knowledgeBases: editingAgent.knowledgeBases,
+        rules: editingAgent.rules,
+        configuration: editingAgent.configuration
+      });
+    } else if (isOpen) {
+      // Reset form for new agent
+      setFormData({
+        name: '',
+        description: '',
+        type: 'custom',
+        status: 'training',
+        capabilities: [],
+        knowledgeBases: [],
+        rules: [],
+        configuration: {
+          model: 'gpt-4',
+          temperature: 0.7,
+          maxTokens: 2000,
+          systemPrompt: '',
+          responseFormat: 'conversational',
+          fallbackBehavior: 'escalate_to_human'
+        }
+      });
     }
-  }, [editingAgent]);
+  }, [editingAgent, isOpen]);
 
-  const handleSave = () => {
-    const finalConfig = {
-      ...config,
-      knowledgeBases: selectedKnowledgeBases,
-      rules: selectedRules
-    };
-    onSave(finalConfig);
-    onClose();
+  const steps = [
+    { id: 1, name: 'Basic Info', description: 'Agent name and description' },
+    { id: 2, name: 'Configuration', description: 'AI model and behavior settings' },
+    { id: 3, name: 'Knowledge & Rules', description: 'Knowledge bases and business rules' },
+    { id: 4, name: 'Review & Create', description: 'Review and validate configuration' }
+  ];
+
+  const capabilityOptions = [
+    'usdot_data_collection',
+    'compliance_validation',
+    'document_processing',
+    'rpa_trigger',
+    'regulatory_guidance',
+    'account_setup',
+    'feature_explanation',
+    'troubleshooting',
+    'billing_support',
+    'technical_help',
+    'feature_requests',
+    'lead_qualification',
+    'demo_scheduling',
+    'objection_handling',
+    'form_automation',
+    'data_entry',
+    'document_upload',
+    'submission_processing',
+    'error_handling',
+    'status_reporting'
+  ];
+
+  const ruleOptions = [
+    'usdot_compliance',
+    'data_validation',
+    'user_guidance',
+    'troubleshooting',
+    'support_escalation',
+    'billing_guidance',
+    'lead_scoring',
+    'demo_qualification',
+    'form_validation',
+    'error_handling'
+  ];
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear errors when user makes changes
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   };
 
-  const addWorkflow = () => {
-    const newWorkflow: Workflow = {
-      id: Date.now().toString(),
-      name: 'New Workflow',
-      description: '',
-      steps: [],
-      triggers: [],
-      conditions: []
-    };
-    setConfig(prev => ({
+  const handleConfigurationChange = (field: string, value: any) => {
+    setFormData(prev => ({
       ...prev,
-      workflows: [...prev.workflows, newWorkflow]
+      configuration: {
+        ...prev.configuration,
+        [field]: value
+      }
     }));
   };
 
-  const renderStep1 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Configuration</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Agent Name
-            </label>
-            <input
-              type="text"
-              value={config.name}
-              onChange={(e) => setConfig(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Enter agent name"
-            />
-          </div>
+  const handleCapabilityToggle = (capability: string) => {
+    setFormData(prev => ({
+      ...prev,
+      capabilities: prev.capabilities.includes(capability)
+        ? prev.capabilities.filter(c => c !== capability)
+        : [...prev.capabilities, capability]
+    }));
+  };
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
-            </label>
-            <textarea
-              value={config.description}
-              onChange={(e) => setConfig(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Describe what this agent does"
-            />
-          </div>
+  const handleKnowledgeBaseToggle = (kbId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      knowledgeBases: prev.knowledgeBases.includes(kbId)
+        ? prev.knowledgeBases.filter(id => id !== kbId)
+        : [...prev.knowledgeBases, kbId]
+    }));
+  };
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Agent Type
-            </label>
-            <div className="grid grid-cols-1 gap-3">
-              {agentTypes.map((type) => {
-                const Icon = type.icon;
-                return (
-                  <label key={type.value} className="relative">
-                    <input
-                      type="radio"
-                      name="agentType"
-                      value={type.value}
-                      checked={config.type === type.value}
-                      onChange={(e) => setConfig(prev => ({ ...prev, type: e.target.value as any }))}
-                      className="sr-only"
-                    />
-                    <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      config.type === type.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-                    }`}>
-                      <div className="flex items-start">
-                        <Icon className="h-6 w-6 text-blue-600 mt-1 mr-3" />
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white">{type.label}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{type.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const handleRuleToggle = (rule: string) => {
+    setFormData(prev => ({
+      ...prev,
+      rules: prev.rules.includes(rule)
+        ? prev.rules.filter(r => r !== rule)
+        : [...prev.rules, rule]
+    }));
+  };
 
-  const renderStep2 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Google Cloud AI Configuration</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              AI Model
-            </label>
-            <select
-              value={config.model}
-              onChange={(e) => setConfig(prev => ({ ...prev, model: e.target.value as any }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              {models.map((model) => (
-                <option key={model.value} value={model.value}>
-                  {model.label} - {model.description}
-                </option>
-              ))}
-            </select>
-          </div>
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
 
-          <div className="grid grid-cols-2 gap-4">
+    switch (step) {
+      case 1:
+        if (!formData.name.trim()) newErrors.name = 'Agent name is required';
+        if (!formData.description.trim()) newErrors.description = 'Agent description is required';
+        break;
+      case 2:
+        if (!formData.configuration.systemPrompt.trim()) {
+          newErrors.systemPrompt = 'System prompt is required';
+        }
+        if (formData.configuration.temperature < 0 || formData.configuration.temperature > 2) {
+          newErrors.temperature = 'Temperature must be between 0 and 2';
+        }
+        if (formData.configuration.maxTokens < 100 || formData.configuration.maxTokens > 4000) {
+          newErrors.maxTokens = 'Max tokens must be between 100 and 4000';
+        }
+        break;
+      case 3:
+        if (formData.capabilities.length === 0) {
+          newErrors.capabilities = 'At least one capability is required';
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, steps.length));
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleValidateConfiguration = async () => {
+    setIsValidating(true);
+    try {
+      const result = await validateAgentConfiguration(formData.configuration);
+      setValidationResult(result);
+    } catch (error) {
+      console.error('Validation failed:', error);
+      setValidationResult({
+        isValid: false,
+        errors: ['Validation service unavailable'],
+        warnings: []
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!validateStep(currentStep)) return;
+
+    try {
+      await onSave(formData);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save agent:', error);
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Temperature ({config.temperature})
+                Agent Name
               </label>
               <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={config.temperature}
-                onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                className="w-full"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                  errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Enter agent name"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Focused</span>
-                <span>Creative</span>
+              {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={3}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                  errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Describe what this agent does"
+              />
+              {errors.description && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Agent Type
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) => handleInputChange('type', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="onboarding">Onboarding</option>
+                <option value="customer_service">Customer Service</option>
+                <option value="sales">Sales</option>
+                <option value="support">Support</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  AI Model
+                </label>
+                <select
+                  value={formData.configuration.model}
+                  onChange={(e) => handleConfigurationChange('model', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                >
+                  <option value="gpt-4">GPT-4</option>
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="claude-3">Claude 3</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Response Format
+                </label>
+                <select
+                  value={formData.configuration.responseFormat}
+                  onChange={(e) => handleConfigurationChange('responseFormat', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                >
+                  <option value="conversational">Conversational</option>
+                  <option value="structured">Structured</option>
+                  <option value="action">Action-oriented</option>
+                  <option value="persuasive">Persuasive</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Temperature ({formData.configuration.temperature})
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={formData.configuration.temperature}
+                  onChange={(e) => handleConfigurationChange('temperature', parseFloat(e.target.value))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Focused</span>
+                  <span>Creative</span>
+                </div>
+                {errors.temperature && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.temperature}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Max Tokens
+                </label>
+                <input
+                  type="number"
+                  min="100"
+                  max="4000"
+                  value={formData.configuration.maxTokens}
+                  onChange={(e) => handleConfigurationChange('maxTokens', parseInt(e.target.value))}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                    errors.maxTokens ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                />
+                {errors.maxTokens && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.maxTokens}</p>}
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Max Tokens
+                System Prompt
               </label>
-              <input
-                type="number"
-                value={config.maxTokens}
-                onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                min="100"
-                max="8000"
+              <textarea
+                value={formData.configuration.systemPrompt}
+                onChange={(e) => handleConfigurationChange('systemPrompt', e.target.value)}
+                rows={6}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                  errors.systemPrompt ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Define the agent's behavior, personality, and instructions..."
               />
+              {errors.systemPrompt && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.systemPrompt}</p>}
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              System Prompt
-            </label>
-            <textarea
-              value={config.systemPrompt}
-              onChange={(e) => setConfig(prev => ({ ...prev, systemPrompt: e.target.value }))}
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Define how the agent should behave, its role, and key instructions..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Google Cloud Project ID
-            </label>
-            <input
-              type="text"
-              value={config.googleCloudConfig.projectId}
-              onChange={(e) => setConfig(prev => ({
-                ...prev,
-                googleCloudConfig: { ...prev.googleCloudConfig, projectId: e.target.value }
-              }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="your-gcp-project-id"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Google Cloud Services
-            </label>
-            <div className="space-y-2">
-              {[
-                { key: 'vertexAI', label: 'Vertex AI', description: 'Advanced AI model training and deployment' },
-                { key: 'documentAI', label: 'Document AI', description: 'Document processing and extraction' },
-                { key: 'discoveryEngine', label: 'Discovery Engine', description: 'Enterprise search and knowledge discovery' },
-                { key: 'naturalLanguageAPI', label: 'Natural Language API', description: 'Sentiment analysis and text understanding' }
-              ].map((service) => (
-                <label key={service.key} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={config.googleCloudConfig[service.key as keyof typeof config.googleCloudConfig] as boolean}
-                    onChange={(e) => setConfig(prev => ({
-                      ...prev,
-                      googleCloudConfig: {
-                        ...prev.googleCloudConfig,
-                        [service.key]: e.target.checked
-                      }
-                    }))}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <div className="ml-3">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{service.label}</span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{service.description}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Knowledge Base Integration</h3>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">Available Knowledge Bases</h4>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              <PlusIcon className="h-4 w-4 inline mr-1" />
-              Add Knowledge Base
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {mockKnowledgeBases.map((kb) => (
-              <label key={kb.id} className="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedKnowledgeBases.includes(kb.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedKnowledgeBases(prev => [...prev, kb.id]);
-                    } else {
-                      setSelectedKnowledgeBases(prev => prev.filter(id => id !== kb.id));
-                    }
-                  }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                />
-                <div className="ml-3 flex-1">
-                  <div className="flex items-center justify-between">
-                    <h5 className="text-sm font-medium text-gray-900 dark:text-white">{kb.name}</h5>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      kb.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' :
-                      kb.status === 'processing' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' :
-                      'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                    }`}>
-                      {kb.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{kb.description}</p>
-                  <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    <span className="mr-4">Type: {kb.type}</span>
-                    <span className="mr-4">Size: {kb.size}</span>
-                    <span>Updated: {new Date(kb.lastUpdated).toLocaleDateString()}</span>
-                  </div>
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fallback Behavior
               </label>
-            ))}
+              <select
+                value={formData.configuration.fallbackBehavior}
+                onChange={(e) => handleConfigurationChange('fallbackBehavior', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="escalate_to_human">Escalate to Human</option>
+                <option value="retry_with_backoff">Retry with Backoff</option>
+                <option value="schedule_callback">Schedule Callback</option>
+              </select>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
+        );
 
-  const renderStep4 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Rule Engine & Conflict Resolution</h3>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">Business Rules</h4>
-            <button 
-              onClick={() => setShowRuleBuilder(true)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              <PlusIcon className="h-4 w-4 inline mr-1" />
-              Create Rule
-            </button>
-          </div>
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Capabilities
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {capabilityOptions.map((capability) => (
+                  <label key={capability} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.capabilities.includes(capability)}
+                      onChange={() => handleCapabilityToggle(capability)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {capability.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {errors.capabilities && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.capabilities}</p>}
+            </div>
 
-          <div className="space-y-3">
-            {mockRules.map((rule) => (
-              <div key={rule.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Knowledge Bases
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowKnowledgeBaseManager(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  Manage Knowledge Bases
+                </button>
+              </div>
+              {knowledgeBaseLoading ? (
+                <div className="flex items-center space-x-2">
+                  <ArrowPathIcon className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Loading knowledge bases...</span>
+                </div>
+              ) : knowledgeBases.length === 0 ? (
+                <div className="text-center py-4">
+                  <DocumentTextIcon className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">No knowledge bases available</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowKnowledgeBaseManager(true)}
+                    className="mt-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Create your first knowledge base
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {knowledgeBases.map((kb) => (
+                    <label key={kb.id} className="flex items-center space-x-2">
                       <input
                         type="checkbox"
-                        checked={selectedRules.includes(rule.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedRules(prev => [...prev, rule.id]);
-                          } else {
-                            setSelectedRules(prev => prev.filter(id => id !== rule.id));
-                          }
-                        }}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3"
+                        checked={formData.knowledgeBases.includes(kb.id)}
+                        onChange={() => handleKnowledgeBaseToggle(kb.id)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <h5 className="text-sm font-medium text-gray-900 dark:text-white">{rule.name}</h5>
-                      <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
-                        rule.category === 'federal' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' :
-                        rule.category === 'state' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' :
-                        rule.category === 'proprietary' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300' :
-                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
-                      }`}>
-                        {rule.category}
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {kb.name}
                       </span>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rule.description}</p>
-                    <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <span className="mr-4">Priority: {rule.priority}</span>
-                      {rule.supersedes.length > 0 && (
-                        <span className="mr-4">Supersedes: {rule.supersedes.join(', ')}</span>
-                      )}
-                    </div>
-                  </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Business Rules
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {ruleOptions.map((rule) => (
+                  <label key={rule} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.rules.includes(rule)}
+                      onChange={() => handleRuleToggle(rule)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {rule.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Configuration Summary</h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Name:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{formData.name}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Type:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white capitalize">{formData.type}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Model:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{formData.configuration.model}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Capabilities:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{formData.capabilities.length}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Knowledge Bases:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{formData.knowledgeBases.length}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Rules:</span>
+                  <span className="ml-2 text-gray-900 dark:text-white">{formData.rules.length}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep5 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Capabilities & Workflows</h3>
-        
-        <div className="space-y-6">
-          <div>
-            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Agent Capabilities</h4>
-            <div className="grid grid-cols-2 gap-3">
-              {capabilities.map((capability) => (
-                <label key={capability} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={config.capabilities.includes(capability)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setConfig(prev => ({ ...prev, capabilities: [...prev.capabilities, capability] }));
-                      } else {
-                        setConfig(prev => ({ ...prev, capabilities: prev.capabilities.filter(c => c !== capability) }));
-                      }
-                    }}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">
-                    {capability.replace(/_/g, ' ')}
-                  </span>
-                </label>
-              ))}
             </div>
-          </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">Workflows</h4>
-              <button 
-                onClick={addWorkflow}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            <div>
+              <button
+                onClick={handleValidateConfiguration}
+                disabled={isValidating}
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                <PlusIcon className="h-4 w-4 inline mr-1" />
-                Add Workflow
+                {isValidating ? (
+                  <>
+                    <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="h-4 w-4 mr-2" />
+                    Validate Configuration
+                  </>
+                )}
               </button>
             </div>
-            
-            {config.workflows.length === 0 ? (
-              <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                <CogIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No workflows</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Add workflows to define how the agent processes tasks
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {config.workflows.map((workflow) => (
-                  <div key={workflow.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-900 dark:text-white">{workflow.name}</h5>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{workflow.description}</p>
+
+            {validationResult && (
+              <div className={`p-4 rounded-lg ${
+                validationResult.isValid 
+                  ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                  : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+              }`}>
+                <div className="flex">
+                  {validationResult.isValid ? (
+                    <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                  ) : (
+                    <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+                  )}
+                  <div className="ml-3">
+                    <h3 className={`text-sm font-medium ${
+                      validationResult.isValid 
+                        ? 'text-green-800 dark:text-green-200' 
+                        : 'text-red-800 dark:text-red-200'
+                    }`}>
+                      {validationResult.isValid ? 'Configuration Valid' : 'Configuration Issues'}
+                    </h3>
+                    {validationResult.errors.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-sm text-red-700 dark:text-red-300">Errors:</p>
+                        <ul className="list-disc list-inside text-sm text-red-700 dark:text-red-300">
+                          {validationResult.errors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <button className="text-red-600 hover:text-red-700">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
+                    )}
+                    {validationResult.warnings.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">Warnings:</p>
+                        <ul className="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300">
+                          {validationResult.warnings.map((warning, index) => (
+                            <li key={index}>{warning}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </div>
-  );
+        );
 
-  const renderStep6 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Sentiment Analysis & Emotional Intelligence</h3>
-        
-        <div className="space-y-6">
-          <div>
-            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Sentiment Analysis Features</h4>
-            <div className="space-y-3">
-              {[
-                { key: 'enabled', label: 'Enable Sentiment Analysis', description: 'Analyze customer emotions and sentiment in real-time' },
-                { key: 'realTimeAnalysis', label: 'Real-time Analysis', description: 'Analyze sentiment as conversations happen' },
-                { key: 'emotionDetection', label: 'Emotion Detection', description: 'Detect specific emotions (joy, anger, fear, etc.)' },
-                { key: 'urgencyDetection', label: 'Urgency Detection', description: 'Identify urgent and critical situations' },
-                { key: 'toneAdaptation', label: 'Tone Adaptation', description: 'Automatically adjust response tone based on sentiment' }
-              ].map((feature) => (
-                <label key={feature.key} className="flex items-start">
-                  <input
-                    type="checkbox"
-                    checked={config.sentimentAnalysis[feature.key as keyof typeof config.sentimentAnalysis] as boolean}
-                    onChange={(e) => setConfig(prev => ({
-                      ...prev,
-                      sentimentAnalysis: {
-                        ...prev.sentimentAnalysis,
-                        [feature.key]: e.target.checked
-                      }
-                    }))}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                  />
-                  <div className="ml-3">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{feature.label}</span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{feature.description}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">Escalation Rules</h4>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                <PlusIcon className="h-4 w-4 inline mr-1" />
-                Add Rule
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {config.sentimentAnalysis.escalationRules.length === 0 ? (
-                <div className="text-center py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                  <ExclamationTriangleIcon className="mx-auto h-8 w-8 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No escalation rules</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Add rules to automatically escalate conversations based on sentiment
-                  </p>
-                </div>
-              ) : (
-                config.sentimentAnalysis.escalationRules.map((rule) => (
-                  <div key={rule.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-900 dark:text-white">{rule.name}</h5>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Escalate when: {rule.conditions.urgency || 'any urgency'} level detected
-                        </p>
-                      </div>
-                      <button className="text-red-600 hover:text-red-700">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">Response Templates</h4>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                <PlusIcon className="h-4 w-4 inline mr-1" />
-                Add Template
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {config.sentimentAnalysis.responseTemplates.length === 0 ? (
-                <div className="text-center py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                  <ChatBubbleLeftRightIcon className="mx-auto h-8 w-8 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No response templates</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Add templates for different sentiment scenarios
-                  </p>
-                </div>
-              ) : (
-                config.sentimentAnalysis.responseTemplates.map((template) => (
-                  <div key={template.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-900 dark:text-white">{template.name}</h5>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {template.sentiment} sentiment • {template.tone} tone
-                        </p>
-                      </div>
-                      <button className="text-red-600 hover:text-red-700">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <div className="flex">
-              <InformationCircleIcon className="h-5 w-5 text-blue-400 mt-0.5 mr-3" />
-              <div>
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">Sentiment Analysis Benefits</h4>
-                <ul className="mt-2 text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                  <li>• Automatically detect customer emotions and urgency levels</li>
-                  <li>• Adapt response tone to match customer sentiment</li>
-                  <li>• Escalate critical situations to human agents</li>
-                  <li>• Improve customer satisfaction with empathetic responses</li>
-                  <li>• Reduce response time for urgent issues</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const steps = [
-    { number: 1, title: 'Basic Config', component: renderStep1 },
-    { number: 2, title: 'AI Model', component: renderStep2 },
-    { number: 3, title: 'Knowledge Base', component: renderStep3 },
-    { number: 4, title: 'Rules Engine', component: renderStep4 },
-    { number: 5, title: 'Capabilities', component: renderStep5 },
-    { number: 6, title: 'Sentiment Analysis', component: renderStep6 },
-  ];
+      default:
+        return null;
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        
-        <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-4 sm:top-10 mx-auto p-4 sm:p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800 m-4 sm:m-0">
+        <div className="mt-3">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {editingAgent ? 'Edit Agent' : 'Create New Agent'}
-              </h2>
+              </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Build a sophisticated AI agent with Google Cloud integration
+                {editingAgent ? 'Update agent configuration' : 'Build a custom AI agent for your platform'}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
 
           {/* Progress Steps */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center">
-                  <button
-                    onClick={() => setCurrentStep(step.number)}
-                    className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                      currentStep === step.number
-                        ? 'bg-blue-600 text-white'
-                        : currentStep > step.number
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                    }`}
-                  >
-                    {currentStep > step.number ? (
-                      <CheckCircleIcon className="h-5 w-5" />
-                    ) : (
-                      step.number
+          <div className="mb-6 sm:mb-8">
+            <nav aria-label="Progress">
+              <ol className="flex items-center overflow-x-auto pb-2">
+                {steps.map((step, stepIdx) => (
+                  <li key={step.name} className={`${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''} relative`}>
+                    <div className="flex items-center">
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                        currentStep >= step.id
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {currentStep > step.id ? (
+                          <CheckCircleIcon className="w-5 h-5" />
+                        ) : (
+                          <span className="text-sm font-medium">{step.id}</span>
+                        )}
+                      </div>
+                      <div className="ml-2 sm:ml-4 min-w-0">
+                        <p className={`text-xs sm:text-sm font-medium ${
+                          currentStep >= step.id
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {step.name}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:block">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                    {stepIdx !== steps.length - 1 && (
+                      <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-gray-300 dark:bg-gray-600" />
                     )}
-                  </button>
-                  <span className={`ml-2 text-sm font-medium ${
-                    currentStep === step.number
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    {step.title}
-                  </span>
-                  {index < steps.length - 1 && (
-                    <div className={`w-12 h-0.5 mx-4 ${
-                      currentStep > step.number ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`} />
-                  )}
-                </div>
-              ))}
-            </div>
+                  </li>
+                ))}
+              </ol>
+            </nav>
           </div>
 
-          {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[60vh]">
-            {steps.find(step => step.number === currentStep)?.component()}
+          {/* Step Content */}
+          <div className="mb-8">
+            {renderStepContent()}
           </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-slate-700">
-            <div className="flex space-x-3">
-              {currentStep > 1 && (
-                <button
-                  onClick={() => setCurrentStep(currentStep - 1)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600"
-                >
-                  Previous
-                </button>
-              )}
-            </div>
-            
-            <div className="flex space-x-3">
+          {/* Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between pt-6 border-t border-gray-200 dark:border-gray-700 space-y-3 sm:space-y-0">
+            <button
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Cancel
               </button>
+              
               {currentStep < steps.length ? (
                 <button
-                  onClick={() => setCurrentStep(currentStep + 1)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+                  onClick={handleNext}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Next
                 </button>
               ) : (
                 <button
                   onClick={handleSave}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
+                  disabled={validationResult ? !validationResult.isValid : false}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {editingAgent ? 'Update Agent' : 'Create Agent'}
                 </button>
@@ -1076,6 +759,18 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({ isOpen, onClose, onSave, ed
           </div>
         </div>
       </div>
+
+      {/* Knowledge Base Manager Modal */}
+      <KnowledgeBaseManager
+        isOpen={showKnowledgeBaseManager}
+        onClose={() => setShowKnowledgeBaseManager(false)}
+        selectedIds={formData.knowledgeBases}
+        onSelect={(kbId) => {
+          if (!formData.knowledgeBases.includes(kbId)) {
+            handleKnowledgeBaseToggle(kbId);
+          }
+        }}
+      />
     </div>
   );
 };

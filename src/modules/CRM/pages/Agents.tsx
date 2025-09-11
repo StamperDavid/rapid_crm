@@ -17,6 +17,7 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import AgentBuilder from '../../../components/AgentBuilder';
+import AgentMemoryDemo from '../../../components/AgentMemoryDemo';
 import { useAIAgents } from '../../../hooks/useAIAgents';
 import { Agent } from '../../../types/schema';
 
@@ -500,6 +501,11 @@ const Agents: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Agent Memory Demo Section */}
+      <div className="mt-8">
+        <AgentMemoryDemo />
+      </div>
 
       {/* Agent Builder Modal */}
       <AgentBuilder

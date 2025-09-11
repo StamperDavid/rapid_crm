@@ -1,4 +1,5 @@
 import { Agent, KnowledgeBase, Rule, AgentConfiguration } from '../../types/schema';
+import { persistentConversationService, PersistentConversationContext } from '../conversations/PersistentConversationService';
 
 export interface AgentResponse {
   id: string;
@@ -44,6 +45,9 @@ export interface AgentContext {
   userPreferences?: Record<string, any>;
   currentTask?: string;
   environment?: 'development' | 'staging' | 'production';
+  conversationId?: string;
+  clientId?: string;
+  persistentContext?: PersistentConversationContext;
 }
 
 export class AgentService {
@@ -323,8 +327,74 @@ export class AgentService {
         throw new Error(`Agent ${agentId} is not active`);
       }
 
-      // Simulate AI processing
-      const response = await this.simulateAIResponse(agent, message, context);
+      // Get or create persistent conversation context
+      let persistentContext = context.persistentContext;
+      if (!persistentContext && context.conversationId && context.clientId) {
+        persistentContext = await persistentConversationService.getPersistentContext(context.conversationId);
+        
+        if (!persistentContext) {
+          // Create new persistent context
+          persistentContext = await persistentConversationService.createPersistentConversation(
+            context.conversationId,
+            context.clientId,
+            agentId,
+            {
+              sessionId: context.sessionId,
+              clientProfile: {
+                name: context.userId || 'Unknown Client',
+                email: '',
+                preferences: context.userPreferences || {}
+              }
+            }
+          );
+        }
+      }
+
+      // Add message to persistent context
+      if (persistentContext) {
+        const messageObj = {
+          id: `msg_${Date.now()}`,
+          content: message,
+          sender: 'user' as const,
+          timestamp: new Date().toISOString(),
+          type: 'text' as const,
+          metadata: {
+            agentId,
+            confidence: 1.0
+          }
+        };
+
+        await persistentConversationService.addMessageToContext(
+          persistentContext.conversationId,
+          messageObj,
+          context
+        );
+      }
+
+      // Simulate AI processing with persistent context
+      const response = await this.simulateAIResponse(agent, message, context, persistentContext);
+      
+      // Add agent response to persistent context
+      if (persistentContext) {
+        const responseMessage = {
+          id: response.id,
+          content: response.message,
+          sender: 'agent' as const,
+          timestamp: response.timestamp,
+          type: 'text' as const,
+          metadata: {
+            agentId,
+            confidence: response.confidence,
+            sources: response.sources
+          }
+        };
+
+        await persistentConversationService.addMessageToContext(
+          persistentContext.conversationId,
+          responseMessage,
+          context
+        );
+      }
       
       // Update metrics
       this.updateAgentMetrics(agentId, Date.now() - startTime, true);
@@ -339,7 +409,8 @@ export class AgentService {
   private async simulateAIResponse(
     agent: Agent, 
     message: string, 
-    context: AgentContext
+    context: AgentContext,
+    persistentContext?: PersistentConversationContext
   ): Promise<AgentResponse> {
     // Simulate AI processing time
     const processingTime = Math.random() * 2000 + 500; // 500-2500ms
@@ -353,22 +424,22 @@ export class AgentService {
     switch (agent.type) {
       case 'custom':
         if (agent.id === 'usdot-onboarding') {
-          responseMessage = this.generateUSDOTOnboardingResponse(message, context);
+          responseMessage = this.generateUSDOTOnboardingResponse(message, context, persistentContext);
           confidence = 0.9;
           sources = ['usdot_regulations', 'fmcsa_guidelines', 'application_forms'];
         } else if (agent.id === 'usdot-rpa') {
-          responseMessage = this.generateUSDOTRPAResponse(message, context);
+          responseMessage = this.generateUSDOTRPAResponse(message, context, persistentContext);
           confidence = 0.95;
           sources = ['usdot_forms', 'submission_procedures'];
         }
         break;
       case 'customer_service':
-        responseMessage = this.generateCustomerServiceResponse(message, context);
+        responseMessage = this.generateCustomerServiceResponse(message, context, persistentContext);
         confidence = 0.85;
         sources = ['product_documentation', 'faq'];
         break;
       case 'sales':
-        responseMessage = this.generateSalesResponse(message, context);
+        responseMessage = this.generateSalesResponse(message, context, persistentContext);
         confidence = 0.8;
         sources = ['product_catalog', 'sales_scripts'];
         break;
@@ -393,7 +464,7 @@ export class AgentService {
     };
   }
 
-  private generateUSDOTOnboardingResponse(message: string, context: AgentContext): string {
+  private generateUSDOTOnboardingResponse(message: string, context: AgentContext, persistentContext?: PersistentConversationContext): string {
     const lowerMessage = message.toLowerCase();
     
     if (lowerMessage.includes('usdot') || lowerMessage.includes('application')) {
@@ -422,7 +493,7 @@ What specific aspect of the USDOT application would you like help with?`;
     return `I understand you're working on a USDOT application. Let me help you navigate through this process. Could you tell me what specific information you need assistance with?`;
   }
 
-  private generateUSDOTRPAResponse(message: string, context: AgentContext): string {
+  private generateUSDOTRPAResponse(message: string, context: AgentContext, persistentContext?: PersistentConversationContext): string {
     const lowerMessage = message.toLowerCase();
     
     if (lowerMessage.includes('submit') || lowerMessage.includes('application')) {
@@ -443,21 +514,42 @@ Your application data appears to be ready. Shall I proceed with the submission?`
     return `I'm your USDOT RPA agent, ready to automate your application submission process. What would you like me to do?`;
   }
 
-  private generateCustomerServiceResponse(message: string, context: AgentContext): string {
+  private generateCustomerServiceResponse(message: string, context: AgentContext, persistentContext?: PersistentConversationContext): string {
     const lowerMessage = message.toLowerCase();
     
+    // Use persistent context to provide personalized responses
+    let greeting = "Hello!";
+    if (persistentContext?.clientProfile.name && persistentContext.clientProfile.name !== 'Unknown Client') {
+      greeting = `Hello ${persistentContext.clientProfile.name}!`;
+    }
+    
+    // Reference previous conversations if available
+    if (persistentContext?.agentMemory.previousIssues.length > 0) {
+      const lastIssue = persistentContext.agentMemory.previousIssues[persistentContext.agentMemory.previousIssues.length - 1];
+      if (lowerMessage.includes('same') || lowerMessage.includes('again') || lowerMessage.includes('still')) {
+        return `${greeting} I see you're still experiencing issues with ${lastIssue}. Let me help you with a different approach this time.`;
+      }
+    }
+    
     if (lowerMessage.includes('billing') || lowerMessage.includes('payment')) {
-      return `I can help you with billing and payment questions. Let me look up your account information and assist you with any billing concerns you may have.`;
+      return `${greeting} I can help you with billing and payment questions. Let me look up your account information and assist you with any billing concerns you may have.`;
     }
     
     if (lowerMessage.includes('problem') || lowerMessage.includes('issue')) {
-      return `I'm sorry to hear you're experiencing an issue. Let me help you troubleshoot this problem. Can you provide more details about what's not working as expected?`;
+      return `${greeting} I'm sorry to hear you're experiencing an issue. Let me help you troubleshoot this problem. Can you provide more details about what's not working as expected?`;
     }
     
-    return `Hello! I'm here to help you with any questions or concerns you may have. How can I assist you today?`;
+    // Reference client preferences if available
+    if (persistentContext?.clientProfile.communicationStyle === 'formal') {
+      return `${greeting} I'm here to assist you with any questions or concerns you may have. How may I be of service today?`;
+    } else if (persistentContext?.clientProfile.communicationStyle === 'casual') {
+      return `${greeting} I'm here to help you with whatever you need! What's up?`;
+    }
+    
+    return `${greeting} I'm here to help you with any questions or concerns you may have. How can I assist you today?`;
   }
 
-  private generateSalesResponse(message: string, context: AgentContext): string {
+  private generateSalesResponse(message: string, context: AgentContext, persistentContext?: PersistentConversationContext): string {
     const lowerMessage = message.toLowerCase();
     
     if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
