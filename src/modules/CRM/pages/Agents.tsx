@@ -14,28 +14,11 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   CurrencyDollarIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import AgentBuilder from '../../../components/AgentBuilder';
-
-interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  type: 'onboarding' | 'customer_service' | 'sales' | 'support' | 'custom';
-  status: 'active' | 'inactive' | 'training' | 'error';
-  lastActive: string;
-  conversationsHandled: number;
-  successRate: number;
-  configuration: {
-    model: string;
-    temperature: number;
-    maxTokens: number;
-    systemPrompt: string;
-    capabilities: string[];
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+import { useAIAgents } from '../../../hooks/useAIAgents';
+import { Agent } from '../../../types/schema';
 
 const mockAgents: Agent[] = [
   {
@@ -44,15 +27,22 @@ const mockAgents: Agent[] = [
     description: 'Specialized agent for USDOT application data collection and robotic process automation',
     type: 'onboarding',
     status: 'active',
-    lastActive: '2024-01-20T14:30:00Z',
-    conversationsHandled: 156,
-    successRate: 97.4,
+    capabilities: ['usdot_data_collection', 'compliance_validation', 'document_processing', 'rpa_trigger', 'regulatory_guidance'],
+    knowledgeBases: ['usdot_regulations', 'fmcsa_guidelines'],
+    rules: ['usdot_compliance', 'data_validation'],
     configuration: {
       model: 'gpt-4',
       temperature: 0.3,
       maxTokens: 3000,
       systemPrompt: 'You are a specialized USDOT Application Agent for Rapid CRM. Your primary role is to collect comprehensive USDOT application data from transportation companies during the onboarding process. You must gather all required information including Operation Classification Summary, Company Contact Information, Operation Questions, Vehicle Summary, Driver Summary, Affiliation with Others, Compliance Certifications, and File Uploads. Once all data is collected and validated, you will trigger the robotic process automation agent to complete the actual USDOT application submission. Always be thorough, professional, and ensure compliance with FMCSA requirements.',
-      capabilities: ['usdot_data_collection', 'compliance_validation', 'document_processing', 'rpa_trigger', 'regulatory_guidance']
+      responseFormat: 'structured',
+      fallbackBehavior: 'escalate_to_human'
+    },
+    metrics: {
+      totalInteractions: 156,
+      successRate: 97.4,
+      averageResponseTime: 2.3,
+      userSatisfaction: 4.8
     },
     createdAt: '2024-01-15T09:00:00Z',
     updatedAt: '2024-01-20T14:30:00Z'
@@ -63,15 +53,22 @@ const mockAgents: Agent[] = [
     description: 'Robotic Process Automation agent that completes USDOT applications using collected data',
     type: 'custom',
     status: 'active',
-    lastActive: '2024-01-20T14:25:00Z',
-    conversationsHandled: 89,
-    successRate: 95.5,
+    capabilities: ['form_automation', 'data_entry', 'document_upload', 'submission_processing', 'error_handling', 'status_reporting'],
+    knowledgeBases: ['usdot_forms', 'rpa_patterns'],
+    rules: ['form_validation', 'error_handling'],
     configuration: {
       model: 'gpt-4',
       temperature: 0.1,
       maxTokens: 2500,
       systemPrompt: 'You are a Robotic Process Automation (RPA) Agent specialized in USDOT application completion. You receive structured data from the USDOT Application Agent and use it to automatically fill out and submit USDOT applications through the official FMCSA portal. You handle form navigation, data entry, validation, document uploads, and final submission. You must ensure 100% accuracy and compliance with all FMCSA requirements. Report back on submission status and any issues encountered.',
-      capabilities: ['form_automation', 'data_entry', 'document_upload', 'submission_processing', 'error_handling', 'status_reporting']
+      responseFormat: 'action',
+      fallbackBehavior: 'retry_with_backoff'
+    },
+    metrics: {
+      totalInteractions: 89,
+      successRate: 95.5,
+      averageResponseTime: 1.8,
+      userSatisfaction: 4.6
     },
     createdAt: '2024-01-16T10:00:00Z',
     updatedAt: '2024-01-20T14:25:00Z'
@@ -82,15 +79,22 @@ const mockAgents: Agent[] = [
     description: 'Helps new customers get started with the platform',
     type: 'onboarding',
     status: 'active',
-    lastActive: '2024-01-20T10:30:00Z',
-    conversationsHandled: 1247,
-    successRate: 94.2,
+    capabilities: ['account_setup', 'feature_explanation', 'troubleshooting'],
+    knowledgeBases: ['platform_guide', 'faq'],
+    rules: ['user_guidance', 'troubleshooting'],
     configuration: {
       model: 'gpt-4',
       temperature: 0.7,
       maxTokens: 2000,
       systemPrompt: 'You are a helpful onboarding assistant for Rapid CRM...',
-      capabilities: ['account_setup', 'feature_explanation', 'troubleshooting']
+      responseFormat: 'conversational',
+      fallbackBehavior: 'escalate_to_human'
+    },
+    metrics: {
+      totalInteractions: 1247,
+      successRate: 94.2,
+      averageResponseTime: 1.5,
+      userSatisfaction: 4.7
     },
     createdAt: '2024-01-15T09:00:00Z',
     updatedAt: '2024-01-20T10:30:00Z'
@@ -101,15 +105,22 @@ const mockAgents: Agent[] = [
     description: 'Handles general customer inquiries and support requests',
     type: 'customer_service',
     status: 'active',
-    lastActive: '2024-01-20T11:15:00Z',
-    conversationsHandled: 3421,
-    successRate: 89.7,
+    capabilities: ['billing_support', 'technical_help', 'feature_requests'],
+    knowledgeBases: ['support_docs', 'billing_info'],
+    rules: ['support_escalation', 'billing_guidance'],
     configuration: {
       model: 'gpt-3.5-turbo',
       temperature: 0.5,
       maxTokens: 1500,
       systemPrompt: 'You are a professional customer service representative...',
-      capabilities: ['billing_support', 'technical_help', 'feature_requests']
+      responseFormat: 'conversational',
+      fallbackBehavior: 'escalate_to_human'
+    },
+    metrics: {
+      totalInteractions: 3421,
+      successRate: 89.7,
+      averageResponseTime: 2.1,
+      userSatisfaction: 4.3
     },
     createdAt: '2024-01-10T14:20:00Z',
     updatedAt: '2024-01-20T11:15:00Z'
@@ -120,15 +131,22 @@ const mockAgents: Agent[] = [
     description: 'Qualifies leads and schedules demos for the sales team',
     type: 'sales',
     status: 'training',
-    lastActive: '2024-01-19T16:45:00Z',
-    conversationsHandled: 89,
-    successRate: 76.4,
+    capabilities: ['lead_qualification', 'demo_scheduling', 'objection_handling'],
+    knowledgeBases: ['sales_playbook', 'product_info'],
+    rules: ['lead_scoring', 'demo_qualification'],
     configuration: {
       model: 'gpt-4',
       temperature: 0.6,
       maxTokens: 1800,
       systemPrompt: 'You are a sales qualification specialist...',
-      capabilities: ['lead_qualification', 'demo_scheduling', 'objection_handling']
+      responseFormat: 'persuasive',
+      fallbackBehavior: 'schedule_callback'
+    },
+    metrics: {
+      totalInteractions: 89,
+      successRate: 76.4,
+      averageResponseTime: 2.8,
+      userSatisfaction: 4.1
     },
     createdAt: '2024-01-18T12:00:00Z',
     updatedAt: '2024-01-19T16:45:00Z'
@@ -136,7 +154,17 @@ const mockAgents: Agent[] = [
 ];
 
 const Agents: React.FC = () => {
-  const [agents, setAgents] = useState<Agent[]>(mockAgents);
+  const { 
+    agents, 
+    loading, 
+    error, 
+    systemHealth, 
+    createAgent, 
+    updateAgent, 
+    deleteAgent, 
+    refreshAgents 
+  } = useAIAgents();
+  
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -147,6 +175,35 @@ const Agents: React.FC = () => {
     if (filter === 'all') return true;
     return agent.status === filter;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex items-center space-x-2">
+          <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-600" />
+          <span className="text-slate-600 dark:text-slate-400">Loading AI Agents...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+        <div className="flex">
+          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+              Error Loading AI Agents
+            </h3>
+            <div className="mt-1 text-sm text-red-700 dark:text-red-300">
+              {error}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: Agent['status']) => {
     switch (status) {
@@ -178,46 +235,42 @@ const Agents: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const handleDeleteAgent = (agentId: string) => {
+  const handleDeleteAgent = async (agentId: string) => {
     if (confirm('Are you sure you want to delete this agent?')) {
-      setAgents(agents.filter(agent => agent.id !== agentId));
-    }
-  };
-
-  const handleToggleStatus = (agentId: string) => {
-    setAgents(agents.map(agent => {
-      if (agent.id === agentId) {
-        const newStatus = agent.status === 'active' ? 'inactive' : 'active';
-        return { ...agent, status: newStatus, updatedAt: new Date().toISOString() };
+      try {
+        await deleteAgent(agentId);
+      } catch (error) {
+        console.error('Failed to delete agent:', error);
       }
-      return agent;
-    }));
+    }
   };
 
-  const handleSaveAgent = (agentConfig: any) => {
-    if (editingAgent) {
-      // Update existing agent
-      setAgents(agents.map(agent => 
-        agent.id === editingAgent.id 
-          ? { ...agent, ...agentConfig, updatedAt: new Date().toISOString() }
-          : agent
-      ));
-      setEditingAgent(null);
-    } else {
-      // Create new agent
-      const newAgent: Agent = {
-        id: Date.now().toString(),
-        ...agentConfig,
-        status: 'inactive',
-        lastActive: new Date().toISOString(),
-        conversationsHandled: 0,
-        successRate: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setAgents([...agents, newAgent]);
+  const handleToggleStatus = async (agentId: string) => {
+    try {
+      const agent = agents.find(a => a.id === agentId);
+      if (agent) {
+        const newStatus = agent.status === 'active' ? 'inactive' : 'active';
+        await updateAgent(agentId, { status: newStatus });
+      }
+    } catch (error) {
+      console.error('Failed to toggle agent status:', error);
     }
-    setShowCreateModal(false);
+  };
+
+  const handleSaveAgent = async (agentConfig: any) => {
+    try {
+      if (editingAgent) {
+        // Update existing agent
+        await updateAgent(editingAgent.id, agentConfig);
+        setEditingAgent(null);
+      } else {
+        // Create new agent
+        await createAgent(agentConfig);
+      }
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Failed to save agent:', error);
+    }
   };
 
   const handleCloseModal = () => {
@@ -235,6 +288,13 @@ const Agents: React.FC = () => {
             Build and manage AI agents for your platform
           </p>
         </div>
+        <button
+          onClick={refreshAgents}
+          className="inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
+        >
+          <ArrowPathIcon className="h-4 w-4 mr-2" />
+          Refresh
+        </button>
         <button
           onClick={handleCreateAgent}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -291,7 +351,7 @@ const Agents: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Conversations</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {agents.reduce((sum, agent) => sum + agent.conversationsHandled, 0).toLocaleString()}
+                {agents.reduce((sum, agent) => sum + agent.metrics.totalInteractions, 0).toLocaleString()}
               </p>
             </div>
           </div>
@@ -365,21 +425,21 @@ const Agents: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Conversations</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {agent.conversationsHandled.toLocaleString()}
+                    {agent.metrics.totalInteractions.toLocaleString()}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Success Rate</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {agent.successRate}%
+                    {agent.metrics.successRate}%
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Last Active</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Last Updated</span>
                   <span className="text-sm text-gray-900 dark:text-white">
-                    {new Date(agent.lastActive).toLocaleDateString()}
+                    {new Date(agent.updatedAt).toLocaleDateString()}
                   </span>
                 </div>
               </div>

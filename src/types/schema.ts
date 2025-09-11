@@ -475,3 +475,107 @@ export const SELECT_OPTIONS = {
   payType: ['Hourly', 'Mileage', 'Percentage', 'Salary'],
   safetyRating: ['Excellent', 'Good', 'Satisfactory', 'Needs Improvement']
 };
+
+// AI Agent Types
+export interface Agent {
+  id: string;
+  name: string;
+  type: 'onboarding' | 'customer_service' | 'sales' | 'support' | 'custom';
+  description: string;
+  status: 'active' | 'inactive' | 'training' | 'error';
+  capabilities: string[];
+  knowledgeBases: string[];
+  rules: string[];
+  configuration: AgentConfiguration;
+  metrics: {
+    totalInteractions: number;
+    successRate: number;
+    averageResponseTime: number;
+    userSatisfaction: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentConfiguration {
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  systemPrompt: string;
+  responseFormat: 'conversational' | 'structured' | 'action' | 'persuasive';
+  fallbackBehavior: 'escalate_to_human' | 'retry_with_backoff' | 'schedule_callback';
+}
+
+export interface KnowledgeBase {
+  id: string;
+  name: string;
+  type: 'regulatory' | 'proprietary' | 'public';
+  description: string;
+  source: 'api' | 'upload' | 'scrape';
+  status: 'active' | 'inactive' | 'processing';
+  size: string;
+  lastUpdated: string;
+}
+
+export interface Rule {
+  id: string;
+  name: string;
+  description: string;
+  priority: number;
+  conditions: string[];
+  actions: string[];
+  supersedes: string[];
+  supersededBy: string[];
+  category: string;
+}
+
+export interface AgentResponse {
+  id: string;
+  agentId: string;
+  message: string;
+  confidence: number;
+  sources: string[];
+  timestamp: string;
+  metadata: {
+    processingTime: number;
+    tokensUsed: number;
+    model: string;
+    temperature: number;
+  };
+}
+
+export interface AgentContext {
+  userId?: string;
+  companyId?: string;
+  sessionId?: string;
+  conversationHistory?: any[];
+  userPreferences?: Record<string, any>;
+  currentTask?: string;
+  environment?: 'development' | 'staging' | 'production';
+  knowledgeContext?: any;
+  agentCapabilities?: string[];
+  agentRules?: string[];
+}
+
+export interface AgentAnalytics {
+  agentId: string;
+  totalInteractions: number;
+  averageSatisfaction: number;
+  averageResponseTime: number;
+  successRate: number;
+  topQueries: Array<{
+    query: string;
+    count: number;
+  }>;
+  userFeedback: Array<{
+    rating: number;
+    comment: string;
+    timestamp: string;
+  }>;
+  performanceTrends: Array<{
+    date: string;
+    interactions: number;
+    satisfaction: number;
+    responseTime: number;
+  }>;
+}

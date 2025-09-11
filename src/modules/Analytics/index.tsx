@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
   ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   UsersIcon,
   CurrencyDollarIcon,
   BuildingOfficeIcon,
@@ -24,8 +25,6 @@ import {
   GlobeAltIcon,
   LightBulbIcon,
   TrophyIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   MinusIcon,
   PlayIcon,
   PauseIcon,
@@ -42,7 +41,7 @@ import {
   StarIcon,
   FireIcon,
   BoltIcon,
-  TargetIcon,
+  TagIcon,
   ChartPieIcon,
   ChartBarSquareIcon,
   SignalIcon,
@@ -540,9 +539,9 @@ const AnalyticsModule: React.FC = () => {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <TrendingUpIcon className="h-4 w-4 text-green-500" />;
+        return <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />;
       case 'down':
-        return <TrendingDownIcon className="h-4 w-4 text-red-500" />;
+        return <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />;
       default:
         return <MinusIcon className="h-4 w-4 text-gray-500" />;
     }
@@ -581,10 +580,10 @@ const AnalyticsModule: React.FC = () => {
       {/* Real-time Controls */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
-          <div>
+      <div>
             <h3 className="text-lg font-semibold">Real-Time Analytics Command Center</h3>
             <p className="text-blue-100">Live data streaming with AI-powered insights</p>
-          </div>
+      </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setRealTimeMode(!realTimeMode)}
@@ -601,17 +600,17 @@ const AnalyticsModule: React.FC = () => {
               <SignalIcon className="h-5 w-5" />
               <span className="text-sm">Data Freshness: {realTimeMode ? 'Real-time' : '5 min ago'}</span>
             </div>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {mockMetrics.slice(0, 8).map((metric) => (
           <div key={metric.id} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg border-l-4 border-blue-500">
             <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
                   {getCategoryIcon(metric.category)}
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -642,7 +641,7 @@ const AnalyticsModule: React.FC = () => {
                     </div>
                   </dl>
                 </div>
-              </div>
+            </div>
             </div>
           </div>
         ))}

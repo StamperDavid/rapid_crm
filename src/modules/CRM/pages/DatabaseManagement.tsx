@@ -14,9 +14,11 @@ import {
   TrashIcon,
   EyeIcon,
   CogIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import DatabaseConfigModal from '../../../components/DatabaseConfigModal';
 import { databaseConnectionService, DatabaseConfig } from '../../../services/databaseConnection';
+import { databaseManager } from '../../../services/database/DatabaseManager';
 
 interface DatabaseConnection {
   id: string;
@@ -91,6 +93,47 @@ const DatabaseManagement: React.FC = () => {
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
 
+  useEffect(() => {
+    loadDatabaseData();
+  }, []);
+
+  const loadDatabaseData = async () => {
+    try {
+      // Initialize database manager
+      await databaseManager.initialize();
+      
+      // Get real database connections
+      const dbConnections = databaseManager.getConnections();
+      const dbStats = await databaseManager.getStats();
+      
+      // Transform to match our interface
+      const transformedConnections = dbConnections.map(conn => ({
+        id: conn.id,
+        name: conn.config.name,
+        type: conn.config.type,
+        host: conn.config.host,
+        port: conn.config.port,
+        database: conn.config.database,
+        status: conn.isConnected ? 'connected' : 'disconnected',
+        lastConnected: conn.config.lastConnected || conn.createdAt,
+        isActive: conn.isConnected
+      }));
+      
+      setConnections(transformedConnections);
+      setStats({
+        totalConnections: dbStats.totalConnections,
+        activeConnections: dbStats.activeConnections,
+        totalQueries: dbStats.totalQueries,
+        averageResponseTime: dbStats.averageResponseTime,
+        databaseSize: dbStats.databaseSize,
+        lastBackup: '2024-01-20T08:00:00Z' // Mock for now
+      });
+    } catch (error) {
+      console.error('Failed to load database data:', error);
+      // Keep existing mock data as fallback
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
@@ -135,24 +178,26 @@ const DatabaseManagement: React.FC = () => {
   const handleTestConnection = async (connection: DatabaseConnection) => {
     setIsLoading(true);
     try {
-      const config: DatabaseConfig = {
-        type: connection.type as any,
-        host: connection.host,
-        port: connection.port,
-        database: connection.database,
-        username: 'test_user', // In real app, this would be stored securely
-        password: 'test_password'
-      };
-
-      const result = await databaseConnectionService.testConnection(config);
+      // Test the connection using our database manager
+      const health = await databaseManager.healthCheck();
       
       setConnections(prev => prev.map(conn => 
         conn.id === connection.id 
-          ? { ...conn, status: result.success ? 'connected' : 'error' }
+          ? { 
+              ...conn, 
+              status: health.healthy ? 'connected' : 'error',
+              lastConnected: health.healthy ? new Date().toISOString() : conn.lastConnected,
+              isActive: health.healthy
+            }
           : conn
       ));
     } catch (error) {
       console.error('Connection test failed:', error);
+      setConnections(prev => prev.map(conn => 
+        conn.id === connection.id 
+          ? { ...conn, status: 'error', isActive: false }
+          : conn
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +206,7 @@ const DatabaseManagement: React.FC = () => {
   const handleCreateBackup = async () => {
     setIsLoading(true);
     try {
-      const result = await databaseConnectionService.backupDatabase();
+      const result = await databaseManager.backup('primary');
       if (result.success) {
         setStats(prev => ({ ...prev, lastBackup: new Date().toISOString() }));
         alert(`Backup created successfully: ${result.backupPath}`);

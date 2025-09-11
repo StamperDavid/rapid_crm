@@ -16,6 +16,7 @@ import {
   BellIcon,
   ArrowPathIcon,
   ExclamationTriangleIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import { useUser } from '../../../contexts/UserContext';
 
