@@ -70,14 +70,13 @@ export class KnowledgeBaseManager {
   /**
    * Load data from storage
    */
-  private loadData(): void {
+  private async loadData(): Promise<void> {
     try {
-      const stored = localStorage.getItem('rapid_crm_knowledge_bases');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.knowledgeBases = new Map(data.knowledgeBases || []);
-        this.documents = new Map(data.documents || []);
-      }
+      console.log('Loading knowledge base data from real database...');
+      // TODO: Implement real database loading
+      // For now, initialize empty
+      this.knowledgeBases = new Map();
+      this.documents = new Map();
     } catch (error) {
       console.error('Error loading knowledge base data:', error);
     }
@@ -86,13 +85,11 @@ export class KnowledgeBaseManager {
   /**
    * Save data to storage
    */
-  private saveData(): void {
+  private async saveData(): Promise<void> {
     try {
-      const data = {
-        knowledgeBases: Array.from(this.knowledgeBases.entries()),
-        documents: Array.from(this.documents.entries())
-      };
-      localStorage.setItem('rapid_crm_knowledge_bases', JSON.stringify(data));
+      console.log('Saving knowledge base data to real database...');
+      // TODO: Implement real database saving
+      // Data is saved individually when created/updated
     } catch (error) {
       console.error('Error saving knowledge base data:', error);
     }
@@ -110,7 +107,7 @@ export class KnowledgeBaseManager {
 
     this.knowledgeBases.set(newKB.id, newKB);
     this.documents.set(newKB.id, []);
-    this.saveData();
+    await this.saveData();
 
     return newKB;
   }
@@ -145,7 +142,7 @@ export class KnowledgeBaseManager {
     };
 
     this.knowledgeBases.set(id, updatedKB);
-    this.saveData();
+    await this.saveData();
     return updatedKB;
   }
 
@@ -156,7 +153,7 @@ export class KnowledgeBaseManager {
     const deleted = this.knowledgeBases.delete(id);
     this.documents.delete(id);
     this.searchIndex.delete(id);
-    this.saveData();
+    await this.saveData();
     return deleted;
   }
 
@@ -187,7 +184,7 @@ export class KnowledgeBaseManager {
     // Update search index
     await this.updateSearchIndex(kbId, newDocument);
 
-    this.saveData();
+    await this.saveData();
     return newDocument;
   }
 

@@ -1,5 +1,6 @@
 import { ApiKey } from '../../types/schema';
 import { encryptionService, EncryptionResult } from './EncryptionService';
+import { realDatabaseService } from '../database/RealDatabaseService';
 
 export interface ApiKeyValidation {
   isValid: boolean;
@@ -64,31 +65,30 @@ export class ApiKeyService {
   /**
    * Load API keys from storage
    */
-  private loadApiKeys(): void {
+  private async loadApiKeys(): Promise<void> {
     try {
-      const stored = localStorage.getItem('rapid_crm_api_keys');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.apiKeys = new Map(data.apiKeys || []);
-        this.validations = new Map(data.validations || []);
-        this.usage = new Map(data.usage || []);
-      }
+      console.log('Loading API keys from real database...');
+      const apiKeysData = await realDatabaseService.getApiKeys();
+      this.apiKeys = new Map(apiKeysData.map(key => [key.id, key]));
+      this.validations = new Map();
+      this.usage = new Map();
     } catch (error) {
       console.error('Error loading API keys:', error);
+      this.apiKeys = new Map();
+      this.validations = new Map();
+      this.usage = new Map();
     }
   }
 
   /**
    * Save API keys to storage
    */
-  private saveApiKeys(): void {
+  private async saveApiKeys(): Promise<void> {
     try {
-      const data = {
-        apiKeys: Array.from(this.apiKeys.entries()),
-        validations: Array.from(this.validations.entries()),
-        usage: Array.from(this.usage.entries())
-      };
-      localStorage.setItem('rapid_crm_api_keys', JSON.stringify(data));
+      console.log('Saving API keys to real database...');
+      // API keys are already saved individually when created/updated
+      // This method is kept for compatibility but doesn't need to do anything
+      // since each API key operation saves to the database directly
     } catch (error) {
       console.error('Error saving API keys:', error);
     }
@@ -118,7 +118,8 @@ export class ApiKeyService {
       };
 
       this.apiKeys.set(newApiKey.id, newApiKey);
-      this.saveApiKeys();
+      await realDatabaseService.createApiKey(newApiKey);
+      await this.saveApiKeys();
 
       return newApiKey;
     } catch (error) {
@@ -166,7 +167,8 @@ export class ApiKeyService {
       }
 
       this.apiKeys.set(id, updatedApiKey);
-      this.saveApiKeys();
+      await realDatabaseService.updateApiKey(id, updatedApiKey);
+      await this.saveApiKeys();
       return updatedApiKey;
     } catch (error) {
       console.error('Failed to update API key:', error);
@@ -181,7 +183,8 @@ export class ApiKeyService {
     const deleted = this.apiKeys.delete(id);
     this.validations.delete(id);
     this.usage.delete(id);
-    this.saveApiKeys();
+    await realDatabaseService.deleteApiKey(id);
+    await this.saveApiKeys();
     return deleted;
   }
 
@@ -227,13 +230,13 @@ export class ApiKeyService {
         ...validation,
         lastChecked: new Date().toISOString()
       });
-      this.saveApiKeys();
+      await this.saveApiKeys();
 
       return validation;
     } catch (error) {
       const validation = { isValid: false, error: 'Validation failed' };
       this.validations.set(id, validation);
-      this.saveApiKeys();
+      await this.saveApiKeys();
       return validation;
     }
   }
@@ -386,7 +389,7 @@ export class ApiKeyService {
       lastUsed: new Date().toISOString()
     });
 
-    this.saveApiKeys();
+    await this.saveApiKeys();
   }
 
   /**
@@ -538,7 +541,7 @@ export class ApiKeyService {
         }
       }
 
-      this.saveApiKeys();
+      await this.saveApiKeys();
       return importedCount;
     } catch (error) {
       console.error('Failed to import API keys:', error);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Person, Organization, Driver, PERSON_FIELD_GROUPS, ORGANIZATION_FIELD_GROUPS, DRIVER_FIELD_GROUPS, SELECT_OPTIONS } from '../../types/schema';
-import { databaseService } from '../../services/database';
+import { useCRM } from '../../contexts/CRMContext';
 // import FileUpload from './FileUpload';
 
 interface EntityFormProps {
@@ -18,10 +18,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
   onCancel, 
   isEditing = false 
 }) => {
+  const crmContext = useCRM();
   const [formData, setFormData] = useState<any>(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [companies, setCompanies] = useState<any[]>([]);
 
   useEffect(() => {
     setFormData(initialData);
@@ -31,18 +31,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // Load companies for companyId dropdown
   useEffect(() => {
     if (entityType === 'drivers' || entityType === 'contacts') {
-      loadCompanies();
+      crmContext.refreshCompanies();
     }
-  }, [entityType]);
-
-  const loadCompanies = async () => {
-    try {
-      const companiesData = await databaseService.getCompanies();
-      setCompanies(companiesData);
-    } catch (error) {
-      console.error('Error loading companies:', error);
-    }
-  };
+  }, [entityType, crmContext]);
 
   const getFieldGroups = () => {
     switch (entityType) {
@@ -168,7 +159,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             }`}
           >
             <option value="">Select Company</option>
-            {companies.map((company) => (
+            {crmContext.companies.map((company) => (
               <option key={company.id} value={company.id}>
                 {company.legalBusinessName}
               </option>

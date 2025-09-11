@@ -10,15 +10,16 @@ import {
 import { useCRM } from '../../contexts/CRMContext';
 
 const DashboardModule: React.FC = () => {
-  const { companies, contacts, vehicles, drivers, isLoading } = useCRM();
+  const { companies, contacts, vehicles, drivers, leads, deals, isLoading } = useCRM();
   
-  // Calculate real stats from CRM data
+  // Calculate real stats from CRM data with null checks
   const stats = {
-    companies: companies.length,
-    contacts: contacts.length,
-    vehicles: vehicles.length,
-    drivers: drivers.length,
-    deals: 5, // Dummy data for now - deals not implemented yet
+    companies: companies?.length || 0,
+    contacts: contacts?.length || 0,
+    vehicles: vehicles?.length || 0,
+    drivers: drivers?.length || 0,
+    leads: leads?.length || 0,
+    deals: deals?.length || 0,
     revenue: 125000 // Dummy data for now - revenue calculation not implemented yet
   };
 
@@ -57,7 +58,7 @@ const DashboardModule: React.FC = () => {
     },
     {
       name: 'Total Leads',
-      value: stats?.contacts || 0,
+      value: stats?.leads || 0,
       icon: UserGroupIcon,
       change: '+8%',
       changeType: 'increase' as const,

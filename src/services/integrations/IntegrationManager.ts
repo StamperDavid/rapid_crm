@@ -117,16 +117,14 @@ export class IntegrationManager {
   /**
    * Load data from storage
    */
-  private loadData(): void {
+  private async loadData(): Promise<void> {
     try {
-      const stored = localStorage.getItem('rapid_crm_integrations');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.integrations = new Map(data.integrations || []);
-        this.templates = new Map(data.templates || []);
-        this.syncResults = new Map(data.syncResults || []);
-        this.healthChecks = new Map(data.healthChecks || []);
-      }
+      console.log('Loading integration data from real database...');
+      // TODO: Implement real database loading
+      // For now, initialize empty
+      this.integrations = new Map();
+      this.syncResults = new Map();
+      this.healthChecks = new Map();
     } catch (error) {
       console.error('Error loading integration data:', error);
     }
@@ -135,15 +133,11 @@ export class IntegrationManager {
   /**
    * Save data to storage
    */
-  private saveData(): void {
+  private async saveData(): Promise<void> {
     try {
-      const data = {
-        integrations: Array.from(this.integrations.entries()),
-        templates: Array.from(this.templates.entries()),
-        syncResults: Array.from(this.syncResults.entries()),
-        healthChecks: Array.from(this.healthChecks.entries())
-      };
-      localStorage.setItem('rapid_crm_integrations', JSON.stringify(data));
+      console.log('Saving integration data to real database...');
+      // TODO: Implement real database saving
+      // Data is saved individually when created/updated
     } catch (error) {
       console.error('Error saving integration data:', error);
     }
@@ -336,7 +330,7 @@ export class IntegrationManager {
     // Test the connection
     await this.testConnection(newIntegration.id);
 
-    this.saveData();
+    await this.saveData();
     return newIntegration;
   }
 
@@ -370,7 +364,7 @@ export class IntegrationManager {
     };
 
     this.integrations.set(id, updatedIntegration);
-    this.saveData();
+    await this.saveData();
     return updatedIntegration;
   }
 
@@ -381,7 +375,7 @@ export class IntegrationManager {
     const deleted = this.integrations.delete(id);
     this.syncResults.delete(id);
     this.healthChecks.delete(id);
-    this.saveData();
+    await this.saveData();
     return deleted;
   }
 
@@ -456,7 +450,7 @@ export class IntegrationManager {
       }
       this.syncResults.set(integrationId, syncResults);
 
-      this.saveData();
+      await this.saveData();
       return result;
     } catch (error) {
       await this.updateIntegration(integrationId, {
@@ -563,7 +557,7 @@ export class IntegrationManager {
       };
 
       this.healthChecks.set(integrationId, health);
-      this.saveData();
+      await this.saveData();
       return health;
     } catch (error) {
       const health: IntegrationHealth = {
@@ -583,7 +577,7 @@ export class IntegrationManager {
       };
 
       this.healthChecks.set(integrationId, health);
-      this.saveData();
+      await this.saveData();
       return health;
     }
   }

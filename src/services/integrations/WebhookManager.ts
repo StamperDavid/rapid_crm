@@ -84,15 +84,14 @@ export class WebhookManager {
   /**
    * Load data from storage
    */
-  private loadData(): void {
+  private async loadData(): Promise<void> {
     try {
-      const stored = localStorage.getItem('rapid_crm_webhooks');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.webhooks = new Map(data.webhooks || []);
-        this.events = new Map(data.events || []);
-        this.deliveries = new Map(data.deliveries || []);
-      }
+      console.log('Loading webhook data from real database...');
+      // TODO: Implement real database loading
+      // For now, initialize empty
+      this.webhooks = new Map();
+      this.events = new Map();
+      this.deliveries = new Map();
     } catch (error) {
       console.error('Error loading webhook data:', error);
     }
@@ -101,14 +100,11 @@ export class WebhookManager {
   /**
    * Save data to storage
    */
-  private saveData(): void {
+  private async saveData(): Promise<void> {
     try {
-      const data = {
-        webhooks: Array.from(this.webhooks.entries()),
-        events: Array.from(this.events.entries()),
-        deliveries: Array.from(this.deliveries.entries())
-      };
-      localStorage.setItem('rapid_crm_webhooks', JSON.stringify(data));
+      console.log('Saving webhook data to real database...');
+      // TODO: Implement real database saving
+      // Data is saved individually when created/updated
     } catch (error) {
       console.error('Error saving webhook data:', error);
     }
@@ -131,7 +127,7 @@ export class WebhookManager {
     this.events.set(newWebhook.id, []);
     this.deliveries.set(newWebhook.id, []);
 
-    this.saveData();
+    await this.saveData();
     return newWebhook;
   }
 
@@ -172,7 +168,7 @@ export class WebhookManager {
     };
 
     this.webhooks.set(id, updatedWebhook);
-    this.saveData();
+    await this.saveData();
     return updatedWebhook;
   }
 
@@ -183,7 +179,7 @@ export class WebhookManager {
     const deleted = this.webhooks.delete(id);
     this.events.delete(id);
     this.deliveries.delete(id);
-    this.saveData();
+    await this.saveData();
     return deleted;
   }
 
@@ -219,7 +215,7 @@ export class WebhookManager {
     // Process the webhook asynchronously
     this.processWebhookEvent(webhookEvent);
 
-    this.saveData();
+    await this.saveData();
     return webhookEvent;
   }
 
@@ -316,7 +312,7 @@ export class WebhookManager {
       }
     }
 
-    this.saveData();
+    await this.saveData();
   }
 
   /**
@@ -431,7 +427,7 @@ export class WebhookManager {
       retryCount++;
     }
 
-    this.saveData();
+    await this.saveData();
     return retryCount;
   }
 

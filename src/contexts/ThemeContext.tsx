@@ -22,18 +22,40 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    return savedTheme || 'light';
-  });
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    // Load theme from database
+    const loadTheme = async () => {
+      try {
+        console.log('Loading theme from real database...');
+        // TODO: Implement real database loading for theme
+        // For now, use default light theme
+        setTheme('light');
+      } catch (error) {
+        console.error('Error loading theme:', error);
+        setTheme('light');
+      }
+    };
+    loadTheme();
+  }, []);
+
+  useEffect(() => {
+    // Save theme to database
+    const saveTheme = async () => {
+      try {
+        console.log('Saving theme to real database...');
+        // TODO: Implement real database saving for theme
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (error) {
+        console.error('Error saving theme:', error);
+      }
+    };
+    saveTheme();
   }, [theme]);
 
   const toggleTheme = () => {

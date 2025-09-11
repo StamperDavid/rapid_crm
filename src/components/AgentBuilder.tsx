@@ -35,9 +35,9 @@ interface AgentFormData {
   rules: string[];
   configuration: {
     model: string;
-    temperature: number;
-    maxTokens: number;
-    systemPrompt: string;
+  temperature: number;
+  maxTokens: number;
+  systemPrompt: string;
     responseFormat: 'conversational' | 'structured' | 'action' | 'persuasive';
     fallbackBehavior: 'escalate_to_human' | 'retry_with_backoff' | 'schedule_callback';
   };
@@ -70,9 +70,9 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
     rules: [],
     configuration: {
       model: 'gpt-4',
-      temperature: 0.7,
+    temperature: 0.7,
       maxTokens: 2000,
-      systemPrompt: '',
+    systemPrompt: '',
       responseFormat: 'conversational',
       fallbackBehavior: 'escalate_to_human'
     }
@@ -108,8 +108,8 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
         type: 'custom',
         status: 'training',
         capabilities: [],
-        knowledgeBases: [],
-        rules: [],
+    knowledgeBases: [],
+    rules: [],
         configuration: {
           model: 'gpt-4',
           temperature: 0.7,
@@ -289,43 +289,43 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Agent Name
-              </label>
-              <input
-                type="text"
+    <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Agent Name
+            </label>
+            <input
+              type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                   errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                 }`}
-                placeholder="Enter agent name"
-              />
+              placeholder="Enter agent name"
+            />
               {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description
-              </label>
-              <textarea
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={3}
+              rows={3}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                   errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                 }`}
-                placeholder="Describe what this agent does"
-              />
+              placeholder="Describe what this agent does"
+            />
               {errors.description && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Agent Type
-              </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Agent Type
+            </label>
               <select
                 value={formData.type}
                 onChange={(e) => handleInputChange('type', e.target.value)}
@@ -337,15 +337,15 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 <option value="support">Support</option>
                 <option value="custom">Custom</option>
               </select>
-            </div>
-          </div>
-        );
+      </div>
+    </div>
+  );
 
       case 2:
         return (
-          <div className="space-y-6">
+    <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+      <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   AI Model
                 </label>
@@ -360,11 +360,11 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Response Format
-                </label>
-                <select
+            </label>
+            <select
                   value={formData.configuration.responseFormat}
                   onChange={(e) => handleConfigurationChange('responseFormat', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -373,38 +373,38 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   <option value="structured">Structured</option>
                   <option value="action">Action-oriented</option>
                   <option value="persuasive">Persuasive</option>
-                </select>
+            </select>
               </div>
-            </div>
+          </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Temperature ({formData.configuration.temperature})
-                </label>
-                <input
-                  type="range"
-                  min="0"
+              </label>
+              <input
+                type="range"
+                min="0"
                   max="2"
-                  step="0.1"
+                step="0.1"
                   value={formData.configuration.temperature}
                   onChange={(e) => handleConfigurationChange('temperature', parseFloat(e.target.value))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Focused</span>
-                  <span>Creative</span>
-                </div>
-                {errors.temperature && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.temperature}</p>}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Focused</span>
+                <span>Creative</span>
               </div>
+                {errors.temperature && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.temperature}</p>}
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Max Tokens
-                </label>
-                <input
-                  type="number"
-                  min="100"
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Max Tokens
+              </label>
+              <input
+                type="number"
+                min="100"
                   max="4000"
                   value={formData.configuration.maxTokens}
                   onChange={(e) => handleConfigurationChange('maxTokens', parseInt(e.target.value))}
@@ -413,29 +413,29 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   }`}
                 />
                 {errors.maxTokens && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.maxTokens}</p>}
-              </div>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                System Prompt
-              </label>
-              <textarea
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              System Prompt
+            </label>
+            <textarea
                 value={formData.configuration.systemPrompt}
                 onChange={(e) => handleConfigurationChange('systemPrompt', e.target.value)}
-                rows={6}
+              rows={6}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                   errors.systemPrompt ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                 }`}
                 placeholder="Define the agent's behavior, personality, and instructions..."
               />
               {errors.systemPrompt && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.systemPrompt}</p>}
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Fallback Behavior
-              </label>
+            </label>
               <select
                 value={formData.configuration.fallbackBehavior}
                 onChange={(e) => handleConfigurationChange('fallbackBehavior', e.target.value)}
@@ -445,36 +445,36 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 <option value="retry_with_backoff">Retry with Backoff</option>
                 <option value="schedule_callback">Schedule Callback</option>
               </select>
-            </div>
+          </div>
           </div>
         );
 
       case 3:
         return (
           <div className="space-y-6">
-            <div>
+          <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Capabilities
-              </label>
+            </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {capabilityOptions.map((capability) => (
                   <label key={capability} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
+                  <input
+                    type="checkbox"
                       checked={formData.capabilities.includes(capability)}
                       onChange={() => handleCapabilityToggle(capability)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
                       {capability.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </span>
-                  </label>
-                ))}
-              </div>
-              {errors.capabilities && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.capabilities}</p>}
+                </label>
+              ))}
             </div>
+              {errors.capabilities && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.capabilities}</p>}
+          </div>
 
-            <div>
+      <div>
               <div className="flex items-center justify-between mb-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Knowledge Bases
@@ -485,25 +485,25 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   Manage Knowledge Bases
-                </button>
-              </div>
+            </button>
+          </div>
               {knowledgeBaseLoading ? (
                 <div className="flex items-center space-x-2">
                   <ArrowPathIcon className="h-4 w-4 animate-spin text-blue-600" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">Loading knowledge bases...</span>
-                </div>
+                  </div>
               ) : knowledgeBases.length === 0 ? (
                 <div className="text-center py-4">
                   <DocumentTextIcon className="mx-auto h-8 w-8 text-gray-400" />
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">No knowledge bases available</p>
-                  <button
+            <button 
                     type="button"
                     onClick={() => setShowKnowledgeBaseManager(true)}
                     className="mt-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
+            >
                     Create your first knowledge base
-                  </button>
-                </div>
+            </button>
+          </div>
               ) : (
                 <div className="space-y-2">
                   {knowledgeBases.map((kb) => (
@@ -519,68 +519,68 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                       </span>
                     </label>
                   ))}
-                </div>
-              )}
-            </div>
+                    </div>
+                      )}
+                    </div>
 
-            <div>
+      <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Business Rules
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {ruleOptions.map((rule) => (
                   <label key={rule} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
+                  <input
+                    type="checkbox"
                       checked={formData.rules.includes(rule)}
                       onChange={() => handleRuleToggle(rule)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
                       {rule.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
+                  </span>
+                </label>
+              ))}
+        </div>
+      </div>
+    </div>
+  );
 
       case 4:
         return (
-          <div className="space-y-6">
+    <div className="space-y-6">
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Configuration Summary</h3>
-              
-              <div className="space-y-3">
+        
+            <div className="space-y-3">
                 <div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">Name:</span>
                   <span className="ml-2 text-gray-900 dark:text-white">{formData.name}</span>
-                </div>
+                  </div>
                 <div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">Type:</span>
                   <span className="ml-2 text-gray-900 dark:text-white capitalize">{formData.type}</span>
-                </div>
+            </div>
                 <div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">Model:</span>
                   <span className="ml-2 text-gray-900 dark:text-white">{formData.configuration.model}</span>
-                </div>
-                <div>
+          </div>
+          <div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">Capabilities:</span>
                   <span className="ml-2 text-gray-900 dark:text-white">{formData.capabilities.length}</span>
-                </div>
+            </div>
                 <div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">Knowledge Bases:</span>
                   <span className="ml-2 text-gray-900 dark:text-white">{formData.knowledgeBases.length}</span>
                 </div>
-                <div>
+                      <div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">Rules:</span>
                   <span className="ml-2 text-gray-900 dark:text-white">{formData.rules.length}</span>
-                </div>
-              </div>
+                      </div>
             </div>
+          </div>
 
-            <div>
+          <div>
               <button
                 onClick={handleValidateConfiguration}
                 disabled={isValidating}
@@ -599,7 +599,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 )}
               </button>
             </div>
-
+            
             {validationResult && (
               <div className={`p-4 rounded-lg ${
                 validationResult.isValid 
@@ -628,7 +628,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                             <li key={index}>{error}</li>
                           ))}
                         </ul>
-                      </div>
+            </div>
                     )}
                     {validationResult.warnings.length > 0 && (
                       <div className="mt-2">
@@ -637,15 +637,15 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                           {validationResult.warnings.map((warning, index) => (
                             <li key={index}>{warning}</li>
                           ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                </ul>
               </div>
-            )}
+                    )}
+            </div>
           </div>
-        );
+        </div>
+            )}
+    </div>
+  );
 
       default:
         return null;
@@ -685,7 +685,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                     <div className="flex items-center">
                       <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
                         currentStep >= step.id
-                          ? 'bg-blue-600 text-white'
+                        ? 'bg-blue-600 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                       }`}>
                         {currentStep > step.id ? (
@@ -697,21 +697,21 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                       <div className="ml-2 sm:ml-4 min-w-0">
                         <p className={`text-xs sm:text-sm font-medium ${
                           currentStep >= step.id
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}>
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}>
                           {step.name}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:block">
                           {step.description}
                         </p>
-                      </div>
+                </div>
                     </div>
                     {stepIdx !== steps.length - 1 && (
                       <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-gray-300 dark:bg-gray-600" />
                     )}
                   </li>
-                ))}
+              ))}
               </ol>
             </nav>
           </div>
@@ -723,14 +723,14 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
 
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row justify-between pt-6 border-t border-gray-200 dark:border-gray-700 space-y-3 sm:space-y-0">
-            <button
+                <button
               onClick={handlePrevious}
               disabled={currentStep === 1}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-
+                >
+                  Previous
+                </button>
+            
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={onClose}

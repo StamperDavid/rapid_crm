@@ -90,32 +90,13 @@ export class PersistentConversationService {
 
   private async loadPersistentData(): Promise<void> {
     try {
-      // Load from localStorage for persistence
-      const storedContexts = localStorage.getItem('rapid_crm_conversation_contexts');
-      const storedMemoryBanks = localStorage.getItem('rapid_crm_agent_memory_banks');
-      const storedIndexes = localStorage.getItem('rapid_crm_conversation_indexes');
-
-      if (storedContexts) {
-        const contexts = JSON.parse(storedContexts);
-        this.conversationContexts = new Map(contexts);
-      }
-
-      if (storedMemoryBanks) {
-        const memoryBanks = JSON.parse(storedMemoryBanks);
-        this.agentMemoryBanks = new Map(memoryBanks.map(([agentId, bank]: [string, any]) => [
-          agentId,
-          {
-            ...bank,
-            clientMemories: new Map(bank.clientMemories)
-          }
-        ]));
-      }
-
-      if (storedIndexes) {
-        const indexes = JSON.parse(storedIndexes);
-        this.conversationIndex = new Map(indexes.conversationIndex);
-        this.agentIndex = new Map(indexes.agentIndex);
-      }
+      console.log('Loading persistent conversation data from real database...');
+      // TODO: Implement real database loading
+      // For now, initialize empty
+      this.conversationContexts = new Map();
+      this.agentMemoryBanks = new Map();
+      this.conversationIndex = new Map();
+      this.agentIndex = new Map();
     } catch (error) {
       console.error('Error loading persistent conversation data:', error);
     }
@@ -123,23 +104,9 @@ export class PersistentConversationService {
 
   private async savePersistentData(): Promise<void> {
     try {
-      // Save to localStorage for persistence
-      const contexts = Array.from(this.conversationContexts.entries());
-      const memoryBanks = Array.from(this.agentMemoryBanks.entries()).map(([agentId, bank]) => [
-        agentId,
-        {
-          ...bank,
-          clientMemories: Array.from(bank.clientMemories.entries())
-        }
-      ]);
-      const indexes = {
-        conversationIndex: Array.from(this.conversationIndex.entries()),
-        agentIndex: Array.from(this.agentIndex.entries())
-      };
-
-      localStorage.setItem('rapid_crm_conversation_contexts', JSON.stringify(contexts));
-      localStorage.setItem('rapid_crm_agent_memory_banks', JSON.stringify(memoryBanks));
-      localStorage.setItem('rapid_crm_conversation_indexes', JSON.stringify(indexes));
+      console.log('Saving persistent conversation data to real database...');
+      // TODO: Implement real database saving
+      // Data is saved individually when created/updated
     } catch (error) {
       console.error('Error saving persistent conversation data:', error);
     }

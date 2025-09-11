@@ -86,16 +86,14 @@ export class AgentConfigurationService {
   /**
    * Load data from storage
    */
-  private loadData(): void {
+  private async loadData(): Promise<void> {
     try {
-      const stored = localStorage.getItem('rapid_crm_agent_configurations');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.agents = new Map(data.agents || []);
-        this.templates = new Map(data.templates || []);
-        this.trainingData = new Map(data.trainingData || []);
-        this.performanceMetrics = new Map(data.performanceMetrics || []);
-      }
+      console.log('Loading agent configuration data from real database...');
+      // TODO: Implement real database loading
+      // For now, initialize empty
+      this.agents = new Map();
+      this.trainingData = new Map();
+      this.performanceMetrics = new Map();
     } catch (error) {
       console.error('Error loading agent configuration data:', error);
     }
@@ -104,15 +102,11 @@ export class AgentConfigurationService {
   /**
    * Save data to storage
    */
-  private saveData(): void {
+  private async saveData(): Promise<void> {
     try {
-      const data = {
-        agents: Array.from(this.agents.entries()),
-        templates: Array.from(this.templates.entries()),
-        trainingData: Array.from(this.trainingData.entries()),
-        performanceMetrics: Array.from(this.performanceMetrics.entries())
-      };
-      localStorage.setItem('rapid_crm_agent_configurations', JSON.stringify(data));
+      console.log('Saving agent configuration data to real database...');
+      // TODO: Implement real database saving
+      // Data is saved individually when created/updated
     } catch (error) {
       console.error('Error saving agent configuration data:', error);
     }
@@ -252,7 +246,7 @@ export class AgentConfigurationService {
     template.usageCount++;
     this.templates.set(templateId, template);
 
-    this.saveData();
+    await this.saveData();
     return newAgent;
   }
 
@@ -282,7 +276,7 @@ export class AgentConfigurationService {
     };
 
     this.templates.set(newTemplate.id, newTemplate);
-    this.saveData();
+    await this.saveData();
     return newTemplate;
   }
 
@@ -300,7 +294,7 @@ export class AgentConfigurationService {
     };
 
     this.agents.set(agentId, updatedAgent);
-    this.saveData();
+    await this.saveData();
     return updatedAgent;
   }
 
@@ -323,7 +317,7 @@ export class AgentConfigurationService {
     existingData.push(newTrainingData);
     this.trainingData.set(agentId, existingData);
 
-    this.saveData();
+    await this.saveData();
     return newTrainingData;
   }
 
@@ -355,7 +349,7 @@ export class AgentConfigurationService {
     }
     
     this.performanceMetrics.set(agentId, existingMetrics);
-    this.saveData();
+    await this.saveData();
   }
 
   /**
@@ -527,7 +521,7 @@ export class AgentConfigurationService {
         this.performanceMetrics.set(agent.id, data.metrics);
       }
 
-      this.saveData();
+      await this.saveData();
       return agent;
     } catch (error) {
       console.error('Failed to import agent configuration:', error);

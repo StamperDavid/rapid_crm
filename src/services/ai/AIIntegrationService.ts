@@ -73,13 +73,16 @@ export class AIIntegrationService {
   }
 
   private async initializeDefaultProviders(): Promise<void> {
+    // Check if we're in a browser environment
+    const isBrowser = typeof window !== 'undefined';
+    
     const defaultProviders: AIProvider[] = [
       {
         id: 'openai',
         name: 'OpenAI',
         type: 'openai',
         baseUrl: 'https://api.openai.com/v1',
-        apiKey: process.env.OPENAI_API_KEY || '',
+        apiKey: isBrowser ? '' : (process.env.OPENAI_API_KEY || ''),
         models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-3.5-turbo-16k'],
         capabilities: ['chat', 'completion', 'embeddings', 'function_calling'],
         rateLimits: {
@@ -96,7 +99,7 @@ export class AIIntegrationService {
         name: 'Anthropic',
         type: 'anthropic',
         baseUrl: 'https://api.anthropic.com/v1',
-        apiKey: process.env.ANTHROPIC_API_KEY || '',
+        apiKey: isBrowser ? '' : (process.env.ANTHROPIC_API_KEY || ''),
         models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
         capabilities: ['chat', 'completion', 'function_calling'],
         rateLimits: {
@@ -113,7 +116,7 @@ export class AIIntegrationService {
         name: 'Google AI',
         type: 'google',
         baseUrl: 'https://generativelanguage.googleapis.com/v1',
-        apiKey: process.env.GOOGLE_AI_API_KEY || '',
+        apiKey: isBrowser ? '' : (process.env.GOOGLE_AI_API_KEY || ''),
         models: ['gemini-pro', 'gemini-pro-vision'],
         capabilities: ['chat', 'completion', 'vision'],
         rateLimits: {

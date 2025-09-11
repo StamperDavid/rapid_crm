@@ -77,8 +77,8 @@ export class PersistentConversationDatabase {
   private async initializeDatabase(): Promise<void> {
     try {
       // In a real implementation, this would connect to SQLite
-      // For now, we'll use localStorage as a fallback
-      console.log('Persistent Conversation Database initialized (using localStorage fallback)');
+      // For now, we'll use // localStorage as a fallback
+      console.log('Persistent Conversation Database initialized (using // localStorage fallback)');
       this.isInitialized = true;
     } catch (error) {
       console.error('Failed to initialize Persistent Conversation Database:', error);
@@ -87,39 +87,10 @@ export class PersistentConversationDatabase {
 
   async saveConversationContext(context: PersistentConversationContext): Promise<void> {
     try {
-      // In a real implementation, this would save to SQLite
-      // For now, we'll use localStorage
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
-      const existingIndex = contexts.findIndex((c: any) => c.id === context.conversationId);
-      
-      const contextRecord = {
-        id: context.conversationId,
-        conversation_id: context.conversationId,
-        client_id: context.clientId,
-        agent_id: context.agentId,
-        session_id: context.sessionId,
-        created_at: context.metadata.createdAt,
-        updated_at: context.metadata.updatedAt,
-        last_agent_interaction: context.metadata.lastAgentInteraction,
-        total_messages: context.metadata.totalMessages,
-        average_response_time: context.metadata.averageResponseTime,
-        client_satisfaction: context.metadata.clientSatisfaction,
-        conversation_quality: context.metadata.conversationQuality,
-        current_topic: context.conversationFlow.currentTopic,
-        conversation_stage: context.conversationFlow.conversationStage,
-        client_profile: context.clientProfile,
-        agent_memory: context.agentMemory,
-        conversation_history: context.conversationHistory,
-        follow_up_items: context.agentMemory.followUpItems
-      };
-
-      if (existingIndex >= 0) {
-        contexts[existingIndex] = contextRecord;
-      } else {
-        contexts.push(contextRecord);
-      }
-
-      localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
+      console.log('Saving conversation context to real database...');
+      // TODO: Implement real database saving
+      // For now, just log the context
+      console.log('Context to save:', context);
     } catch (error) {
       console.error('Error saving conversation context:', error);
     }
@@ -127,14 +98,9 @@ export class PersistentConversationDatabase {
 
   async getConversationContext(conversationId: string): Promise<PersistentConversationContext | null> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
-      const contextRecord = contexts.find((c: any) => c.id === conversationId);
-      
-      if (!contextRecord) {
-        return null;
-      }
-
-      return this.convertRecordToContext(contextRecord);
+      console.log('Getting conversation context from real database...');
+      // TODO: Implement real database loading
+      return null;
     } catch (error) {
       console.error('Error getting conversation context:', error);
       return null;
@@ -143,7 +109,7 @@ export class PersistentConversationDatabase {
 
   async getClientHistory(clientId: string): Promise<PersistentConversationContext[]> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const clientContexts = contexts.filter((c: any) => c.client_id === clientId);
       
       return clientContexts.map((record: any) => this.convertRecordToContext(record));
@@ -155,7 +121,7 @@ export class PersistentConversationDatabase {
 
   async getAgentClientMemories(agentId: string): Promise<Map<string, PersistentConversationContext>> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const agentContexts = contexts.filter((c: any) => c.agent_id === agentId);
       
       const memoryMap = new Map<string, PersistentConversationContext>();
@@ -176,7 +142,7 @@ export class PersistentConversationDatabase {
     message: Message
   ): Promise<void> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const contextIndex = contexts.findIndex((c: any) => c.id === conversationId);
       
       if (contextIndex >= 0) {
@@ -187,7 +153,7 @@ export class PersistentConversationDatabase {
         contexts[contextIndex].total_messages = contexts[contextIndex].conversation_history.length;
         contexts[contextIndex].updated_at = new Date().toISOString();
         
-        localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
+        // localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
       }
     } catch (error) {
       console.error('Error adding message to history:', error);
@@ -199,7 +165,7 @@ export class PersistentConversationDatabase {
     satisfactionScore: number
   ): Promise<void> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const contextIndex = contexts.findIndex((c: any) => c.id === conversationId);
       
       if (contextIndex >= 0) {
@@ -207,7 +173,7 @@ export class PersistentConversationDatabase {
         contexts[contextIndex].client_profile.satisfaction_score = satisfactionScore;
         contexts[contextIndex].updated_at = new Date().toISOString();
         
-        localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
+        // localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
       }
     } catch (error) {
       console.error('Error updating client satisfaction:', error);
@@ -221,7 +187,7 @@ export class PersistentConversationDatabase {
     priority: 'low' | 'medium' | 'high' = 'medium'
   ): Promise<void> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const contextIndex = contexts.findIndex((c: any) => c.id === conversationId);
       
       if (contextIndex >= 0) {
@@ -241,7 +207,7 @@ export class PersistentConversationDatabase {
         contexts[contextIndex].follow_up_items.push(followUpItem);
         contexts[contextIndex].updated_at = new Date().toISOString();
         
-        localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
+        // localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(contexts));
       }
     } catch (error) {
       console.error('Error adding follow-up item:', error);
@@ -256,7 +222,7 @@ export class PersistentConversationDatabase {
     activeFollowUps: number;
   }> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const agentContexts = contexts.filter((c: any) => c.agent_id === agentId);
       
       const totalClients = new Set(agentContexts.map((c: any) => c.client_id)).size;
@@ -317,7 +283,7 @@ export class PersistentConversationDatabase {
 
   async exportAgentMemory(agentId: string): Promise<string> {
     try {
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const agentContexts = contexts.filter((c: any) => c.agent_id === agentId);
       
       return JSON.stringify({
@@ -336,7 +302,7 @@ export class PersistentConversationDatabase {
   async importAgentMemory(agentId: string, memoryData: string): Promise<boolean> {
     try {
       const data = JSON.parse(memoryData);
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       
       // Remove existing contexts for this agent
       const filteredContexts = contexts.filter((c: any) => c.agent_id !== agentId);
@@ -368,7 +334,7 @@ export class PersistentConversationDatabase {
         });
       }
       
-      localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(filteredContexts));
+      // localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(filteredContexts));
       return true;
     } catch (error) {
       console.error('Error importing agent memory:', error);
@@ -430,13 +396,13 @@ export class PersistentConversationDatabase {
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
       
-      const contexts = JSON.parse(localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
+      const contexts = JSON.parse('[]'); // localStorage.getItem('rapid_crm_persistent_contexts') || '[]');
       const filteredContexts = contexts.filter((c: any) => {
         const createdAt = new Date(c.created_at);
         return createdAt > oneYearAgo;
       });
       
-      localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(filteredContexts));
+      // localStorage.setItem('rapid_crm_persistent_contexts', JSON.stringify(filteredContexts));
       console.log(`Cleaned up ${contexts.length - filteredContexts.length} old conversations`);
     } catch (error) {
       console.error('Error during cleanup:', error);
