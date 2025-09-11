@@ -17,6 +17,7 @@ import {
 import { useAgentBuilder } from '../hooks/useAgentBuilder';
 import { Agent } from '../types/schema';
 import KnowledgeBaseManager from './KnowledgeBaseManager';
+import AgentTrainingManager from './AgentTrainingManager';
 
 interface AgentBuilderProps {
   isOpen: boolean;
@@ -86,6 +87,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
     warnings: string[];
   } | null>(null);
   const [showKnowledgeBaseManager, setShowKnowledgeBaseManager] = useState(false);
+  const [showTrainingManager, setShowTrainingManager] = useState(false);
 
   // Initialize form data when editing
   useEffect(() => {
@@ -126,7 +128,8 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
     { id: 1, name: 'Basic Info', description: 'Agent name and description' },
     { id: 2, name: 'Configuration', description: 'AI model and behavior settings' },
     { id: 3, name: 'Knowledge & Rules', description: 'Knowledge bases and business rules' },
-    { id: 4, name: 'Review & Create', description: 'Review and validate configuration' }
+    { id: 4, name: 'Training Setup', description: 'Configure training data and parameters' },
+    { id: 5, name: 'Review & Create', description: 'Review and validate configuration' }
   ];
 
   const capabilityOptions = [
@@ -240,6 +243,9 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
         if (formData.capabilities.length === 0) {
           newErrors.capabilities = 'At least one capability is required';
         }
+        break;
+      case 4:
+        // Training setup validation - optional step
         break;
     }
 
@@ -541,12 +547,49 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   </span>
                 </label>
               ))}
+            </div>
+          </div>
+    </div>
+  );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <CpuChipIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Training Setup</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Configure training data and parameters for your agent
+              </p>
+              <button 
+                onClick={() => setShowTrainingManager(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <CpuChipIcon className="h-4 w-4 mr-2" />
+                Open Training Manager
+              </button>
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex">
+                <InformationCircleIcon className="h-5 w-5 text-blue-400" />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    Training is Optional
+                  </h3>
+                  <div className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                    <p>
+                      You can create your agent now and set up training later, or configure training data 
+                      to improve your agent's performance with custom datasets.
+                </p>
+              </div>
+                      </div>
         </div>
       </div>
     </div>
   );
 
-      case 4:
+      case 5:
         return (
     <div className="space-y-6">
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
@@ -770,6 +813,14 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
             handleKnowledgeBaseToggle(kbId);
           }
         }}
+      />
+
+      {/* Training Manager Modal */}
+      <AgentTrainingManager
+        isOpen={showTrainingManager}
+        onClose={() => setShowTrainingManager(false)}
+        agentId={editingAgent?.id}
+        agentName={formData.name || editingAgent?.name}
       />
     </div>
   );

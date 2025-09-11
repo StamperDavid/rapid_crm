@@ -15,9 +15,13 @@ import {
   ClockIcon,
   CurrencyDollarIcon,
   ArrowPathIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import AgentBuilder from '../../../components/AgentBuilder';
+import IntelligentAgentBuilder from '../../../components/IntelligentAgentBuilder';
 import AgentMemoryDemo from '../../../components/AgentMemoryDemo';
+import AgentTrainingManager from '../../../components/AgentTrainingManager';
+import RPATrainingManager from '../../../components/RPATrainingManager';
 import { useAIAgents } from '../../../hooks/useAIAgents';
 import { Agent } from '../../../types/schema';
 
@@ -168,8 +172,13 @@ const Agents: React.FC = () => {
   
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showIntelligentBuilder, setShowIntelligentBuilder] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [showTrainingManager, setShowTrainingManager] = useState(false);
+  const [showRPATrainingManager, setShowRPATrainingManager] = useState(false);
+  const [trainingAgent, setTrainingAgent] = useState<Agent | null>(null);
+  const [rpaTrainingAgent, setRPATrainingAgent] = useState<Agent | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive' | 'training'>('all');
 
   const filteredAgents = agents.filter(agent => {
@@ -231,6 +240,10 @@ const Agents: React.FC = () => {
     setShowCreateModal(true);
   };
 
+  const handleCreateIntelligentAgent = () => {
+    setShowIntelligentBuilder(true);
+  };
+
   const handleEditAgent = (agent: Agent) => {
     setEditingAgent(agent);
     setShowCreateModal(true);
@@ -279,6 +292,26 @@ const Agents: React.FC = () => {
     setEditingAgent(null);
   };
 
+  const handleOpenTraining = (agent: Agent) => {
+    setTrainingAgent(agent);
+    setShowTrainingManager(true);
+  };
+
+  const handleCloseTraining = () => {
+    setShowTrainingManager(false);
+    setTrainingAgent(null);
+  };
+
+  const handleOpenRPATraining = (agent: Agent) => {
+    setRPATrainingAgent(agent);
+    setShowRPATrainingManager(true);
+  };
+
+  const handleCloseRPATraining = () => {
+    setShowRPATrainingManager(false);
+    setRPATrainingAgent(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -296,13 +329,22 @@ const Agents: React.FC = () => {
           <ArrowPathIcon className="h-4 w-4 mr-2" />
           Refresh
         </button>
-        <button
-          onClick={handleCreateAgent}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Create Agent
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleCreateIntelligentAgent}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          >
+            <SparklesIcon className="h-4 w-4 mr-2" />
+            AI Agent Builder
+          </button>
+          <button
+            onClick={handleCreateAgent}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Create Agent
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -466,9 +508,27 @@ const Agents: React.FC = () => {
                     </>
                   )}
                 </button>
+                {agent.name.includes('RPA') ? (
+                  <button
+                    onClick={() => handleOpenRPATraining(agent)}
+                    className="px-3 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-md transition-colors"
+                    title="Train RPA Agent"
+                  >
+                    <CpuChipIcon className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleOpenTraining(agent)}
+                    className="px-3 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
+                    title="Train Agent"
+                  >
+                    <CpuChipIcon className="h-4 w-4" />
+                  </button>
+                )}
                 <button
                   onClick={() => setSelectedAgent(agent)}
                   className="px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                  title="View Details"
                 >
                   <EyeIcon className="h-4 w-4" />
                 </button>
@@ -507,12 +567,35 @@ const Agents: React.FC = () => {
         <AgentMemoryDemo />
       </div>
 
+      {/* Intelligent Agent Builder Modal */}
+      <IntelligentAgentBuilder
+        isOpen={showIntelligentBuilder}
+        onClose={() => setShowIntelligentBuilder(false)}
+        onSave={handleSaveAgent}
+      />
+
       {/* Agent Builder Modal */}
       <AgentBuilder
         isOpen={showCreateModal}
         onClose={handleCloseModal}
         onSave={handleSaveAgent}
         editingAgent={editingAgent}
+      />
+
+      {/* Training Manager Modal */}
+      <AgentTrainingManager
+        isOpen={showTrainingManager}
+        onClose={handleCloseTraining}
+        agentId={trainingAgent?.id}
+        agentName={trainingAgent?.name}
+      />
+
+      {/* RPA Training Manager Modal */}
+      <RPATrainingManager
+        isOpen={showRPATrainingManager}
+        onClose={handleCloseRPATraining}
+        agentId={rpaTrainingAgent?.id}
+        agentName={rpaTrainingAgent?.name}
       />
     </div>
   );
