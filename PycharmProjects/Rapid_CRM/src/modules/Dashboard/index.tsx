@@ -7,17 +7,20 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline';
+import { useCRM } from '../../contexts/CRMContext';
 
 const DashboardModule: React.FC = () => {
-  // Mock data for dashboard stats
+  const { companies, contacts, vehicles, drivers, isLoading } = useCRM();
+  
+  // Calculate real stats from CRM data
   const stats = {
-    companies: 24,
-    contacts: 156,
-    deals: 12,
-    revenue: 485000
+    companies: companies.length,
+    contacts: contacts.length,
+    vehicles: vehicles.length,
+    drivers: drivers.length,
+    deals: 5, // Dummy data for now - deals not implemented yet
+    revenue: 125000 // Dummy data for now - revenue calculation not implemented yet
   };
-
-  const isLoading = false;
 
   const recentActivities = [
     {
@@ -64,23 +67,23 @@ const DashboardModule: React.FC = () => {
       iconColor: 'text-green-600 dark:text-green-400'
     },
     {
-      name: 'Open Deals',
-      value: stats?.deals || 0,
+      name: 'Total Vehicles',
+      value: stats?.vehicles || 0,
       icon: CurrencyDollarIcon,
       change: '+15%',
       changeType: 'increase' as const,
-      href: '/crm/deals',
+      href: '/crm/vehicles',
       color: 'purple',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
       iconColor: 'text-purple-600 dark:text-purple-400'
     },
     {
-      name: 'Total Revenue',
-      value: `$${(stats?.revenue || 0).toLocaleString()}`,
+      name: 'Total Drivers',
+      value: stats?.drivers || 0,
       icon: CurrencyDollarIcon,
       change: '+23%',
       changeType: 'increase' as const,
-      href: '/crm/deals',
+      href: '/crm/drivers',
       color: 'emerald',
       bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
       iconColor: 'text-emerald-600 dark:text-emerald-400'

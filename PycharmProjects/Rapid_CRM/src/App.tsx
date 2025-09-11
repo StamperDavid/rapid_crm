@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
+import { CRMProvider } from './contexts/CRMContext';
 import Layout from './components/Layout';
 
 // Import modules directly (not lazy loaded for now)
@@ -37,8 +38,9 @@ function App() {
   return (
     <ThemeProvider>
       <UserProvider>
-        <QueryClientProvider client={queryClient}>
-          <Router>
+        <CRMProvider>
+          <QueryClientProvider client={queryClient}>
+            <Router>
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
               <Layout>
                 <Routes>
@@ -79,6 +81,7 @@ function App() {
             </div>
           </Router>
         </QueryClientProvider>
+        </CRMProvider>
       </UserProvider>
     </ThemeProvider>
   );
