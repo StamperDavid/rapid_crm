@@ -9,6 +9,7 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import SchemaEditor from '../components/SchemaEditor';
 import { schemaService, SchemaDefinition } from '../services/schemaService';
@@ -85,6 +86,15 @@ const SchemaManagement: React.FC = () => {
       category: 'Sales',
       isSystem: true,
     },
+    {
+      id: 'usdot_application_record',
+      name: 'USDOT Application Record',
+      description: 'USDOT application data collected from onboarding agent for robotic process automation',
+      icon: DocumentTextIcon,
+      color: 'orange',
+      category: 'Transportation',
+      isSystem: true,
+    },
     // Add custom schemas from the service
     ...schemas.map(schema => ({
       id: schema.name,
@@ -115,6 +125,7 @@ const SchemaManagement: React.FC = () => {
       yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100',
       purple: 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100',
       indigo: 'bg-indigo-50 border-indigo-200 text-indigo-800 hover:bg-indigo-100',
+      orange: 'bg-orange-50 border-orange-200 text-orange-800 hover:bg-orange-100',
       gray: 'bg-gray-50 border-gray-200 text-gray-800 hover:bg-gray-100',
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.blue;
@@ -149,7 +160,8 @@ const SchemaManagement: React.FC = () => {
           { id: 'contacts', name: 'Contacts' },
           { id: 'drivers', name: 'Drivers' },
           { id: 'vehicles', name: 'Vehicles' },
-          { id: 'deals', name: 'Deals' }
+          { id: 'deals', name: 'Deals' },
+          { id: 'usdot_application_record', name: 'USDOT Application Record' }
         ];
         const schemaData = {
           name: selectedEntityType,

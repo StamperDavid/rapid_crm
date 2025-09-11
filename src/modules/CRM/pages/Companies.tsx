@@ -30,6 +30,7 @@ const Companies: React.FC = () => {
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [showAddDriverModal, setShowAddDriverModal] = useState(false);
+  const [showUSDOTApplicationModal, setShowUSDOTApplicationModal] = useState(false);
   
   // Mock data for related entities
   const [contacts, setContacts] = useState<Person[]>([
@@ -186,6 +187,41 @@ const Companies: React.FC = () => {
       payType: 'Salary',
       createdAt: '2024-01-10',
       updatedAt: '2024-01-18'
+    }
+  ]);
+
+  // USDOT Application Records - one per company
+  const [usdotApplications, setUsdotApplications] = useState<any[]>([
+    {
+      id: '1',
+      companyId: '1',
+      has_duns_bradstreet_number: 'Yes',
+      legal_business_name: 'ABC Transport LLC',
+      doing_business_as_name: 'ABC Trucking',
+      is_principal_address_same_as_contact: 'Yes',
+      principal_address_country: 'United States',
+      principal_address_street: '123 Main St',
+      principal_address_city: 'Chicago',
+      principal_address_state: 'IL',
+      principal_address_postal_code: '60601',
+      principal_telephone_number: '312-555-0100',
+      ein_or_ssn: '12-3456789',
+      is_unit_of_government: 'No',
+      form_of_business: 'limited liability company',
+      ownership_and_control: 'owned/controlled by citizen of United States',
+      company_contact_first_name: 'John',
+      company_contact_last_name: 'Smith',
+      company_contact_title: 'Owner',
+      company_contact_email: 'john@abctransport.com',
+      company_contact_telephone: '312-555-0100',
+      will_transport_property: 'Yes',
+      will_receive_compensation_for_transporting_property: 'Yes',
+      type_of_property_to_transport: 'general freight',
+      will_transport_non_hazardous_materials_interstate: 'Yes',
+      cargo_classifications: ['general freight', 'household goods'],
+      electronic_signature: 'John Smith',
+      createdAt: '2023-01-15',
+      updatedAt: '2023-01-15'
     }
   ]);
   
@@ -1085,6 +1121,215 @@ const Companies: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                {/* USDOT Application Record */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className="text-md font-medium text-white">USDOT Application Record</h5>
+                    {usdotApplications.find(app => app.companyId === selectedCompany.id) ? (
+                      <button
+                        onClick={() => setShowUSDOTApplicationModal(true)}
+                        className="flex items-center justify-center px-4 py-2 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200"
+                      >
+                        <DocumentTextIcon className="h-4 w-4 mr-2" />
+                        Edit Application
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowUSDOTApplicationModal(true)}
+                        className="flex items-center justify-center px-4 py-2 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200"
+                      >
+                        <DocumentTextIcon className="h-4 w-4 mr-2" />
+                        Create Application
+                      </button>
+                    )}
+                  </div>
+                  
+                  {usdotApplications.find(app => app.companyId === selectedCompany.id) ? (
+                    <div className="bg-gray-700 rounded-lg p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <DocumentTextIcon className="h-5 w-5 text-gray-300" />
+                        <div>
+                          <p className="text-white font-medium">USDOT Application Record</p>
+                          <p className="text-gray-300 text-sm">
+                            Legal Name: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.legal_business_name}
+                          </p>
+                          <p className="text-gray-300 text-sm">
+                            EIN/SSN: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.ein_or_ssn}
+                          </p>
+                          <p className="text-gray-300 text-sm">
+                            Business Form: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.form_of_business}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Collapsible Detailed View */}
+                      <details className="mt-4">
+                        <summary className="cursor-pointer text-blue-400 hover:text-blue-300 text-sm font-medium">
+                          View Complete Application Details
+                        </summary>
+                        <div className="mt-4 space-y-4 text-sm">
+                          {/* Operation Classification Summary */}
+                          <div className="border-l-2 border-blue-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Operation Classification Summary</h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300">
+                              <div>DUNS Number: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.has_duns_bradstreet_number || 'Not provided'}</div>
+                              <div>Legal Business Name: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.legal_business_name || 'Not provided'}</div>
+                              <div>DBA Name: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.doing_business_as_name || 'Not provided'}</div>
+                              <div>Principal Address Same as Contact: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.is_principal_address_same_as_contact || 'Not provided'}</div>
+                              <div>Principal Address: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_street || 'Not provided'}, {usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_city || ''}, {usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_state || ''} {usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_postal_code || ''}</div>
+                              <div>Principal Country: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_country || 'Not provided'}</div>
+                              <div>Mailing Address: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_street || 'Not provided'}, {usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_city || ''}, {usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_state || ''} {usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_postal_code || ''}</div>
+                              <div>Mailing Country: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_country || 'Not provided'}</div>
+                              <div>Telephone: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_telephone_number || 'Not provided'}</div>
+                              <div>EIN/SSN: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.ein_or_ssn || 'Not provided'}</div>
+                              <div>Government Unit: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.is_unit_of_government || 'Not provided'}</div>
+                              <div>Form of Business: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.form_of_business || 'Not provided'}</div>
+                              <div>Ownership: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.ownership_and_control || 'Not provided'}</div>
+                            </div>
+                          </div>
+
+                          {/* Company Contact Information */}
+                          <div className="border-l-2 border-green-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Company Contact Information</h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300">
+                              <div>First Name: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_first_name || 'Not provided'}</div>
+                              <div>Middle Name: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_middle_name || 'Not provided'}</div>
+                              <div>Last Name: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_last_name || 'Not provided'}</div>
+                              <div>Suffix: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_suffix || 'Not provided'}</div>
+                              <div>Title: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_title || 'Not provided'}</div>
+                              <div>Email: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_email || 'Not provided'}</div>
+                              <div>Phone: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_telephone || 'Not provided'}</div>
+                              <div>Contact Address: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_street || 'Not provided'}, {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_city || ''}, {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_state || ''} {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_postal_code || ''}</div>
+                              <div>Contact Country: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_country || 'Not provided'}</div>
+                            </div>
+                          </div>
+
+                          {/* Operation Questions */}
+                          <div className="border-l-2 border-yellow-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Operation Questions</h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300">
+                              <div>Transport Property: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_property || 'Not provided'}</div>
+                              <div>Receive Compensation: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_receive_compensation_for_transporting_property || 'Not provided'}</div>
+                              <div>Property Type: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.type_of_property_to_transport || 'Not provided'}</div>
+                              <div>Interstate Commerce: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_non_hazardous_materials_interstate || 'Not provided'}</div>
+                              <div>Transport Own Property: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_own_property || 'Not provided'}</div>
+                              <div>Transport Passengers: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_passengers || 'Not provided'}</div>
+                              <div>Broker Services: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_provide_broker_services || 'Not provided'}</div>
+                              <div>Freight Forwarder: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_provide_freight_forwarder_services || 'Not provided'}</div>
+                              <div>Cargo Tank Facility: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_cargo_tank_facility || 'Not provided'}</div>
+                              <div>Driveaway: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_as_driveaway || 'Not provided'}</div>
+                              <div>Towaway: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_as_towaway || 'Not provided'}</div>
+                              <div>Intermodal Equipment: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_as_intermodal_equipment_provider || 'Not provided'}</div>
+                            </div>
+                            {usdotApplications.find(app => app.companyId === selectedCompany.id)?.cargo_classifications && (
+                              <div className="mt-2">
+                                <div className="text-gray-300">Cargo Classifications:</div>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {usdotApplications.find(app => app.companyId === selectedCompany.id)?.cargo_classifications.map((classification: string, index: number) => (
+                                    <span key={index} className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
+                                      {classification}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Vehicle Summary */}
+                          <div className="border-l-2 border-purple-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Vehicle Summary</h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300">
+                              <div>Total Vehicles: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.total_vehicles || 'Not provided'}</div>
+                              <div>Tractors: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_tractors || 'Not provided'}</div>
+                              <div>Trailers: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_trailers || 'Not provided'}</div>
+                              <div>Straight Trucks: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_straight_trucks || 'Not provided'}</div>
+                              <div>Buses: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_buses || 'Not provided'}</div>
+                              <div>Other Vehicles: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_other_vehicles || 'Not provided'}</div>
+                            </div>
+                          </div>
+
+                          {/* Driver Summary */}
+                          <div className="border-l-2 border-indigo-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Driver Summary</h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300">
+                              <div>Total Drivers: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.total_drivers || 'Not provided'}</div>
+                              <div>CDL Drivers: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_cdl_drivers || 'Not provided'}</div>
+                              <div>Non-CDL Drivers: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_non_cdl_drivers || 'Not provided'}</div>
+                              <div>Hazmat Drivers: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_hazmat_drivers || 'Not provided'}</div>
+                            </div>
+                          </div>
+
+                          {/* Affiliation with Others */}
+                          <div className="border-l-2 border-red-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Affiliation with Others</h6>
+                            <div className="text-gray-300">
+                              <div>Affiliated with Other Carrier: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.is_affiliated_with_other_carrier || 'Not provided'}</div>
+                              {usdotApplications.find(app => app.companyId === selectedCompany.id)?.affiliation_details && (
+                                <div className="mt-1">Details: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.affiliation_details}</div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Compliance Certifications */}
+                          <div className="border-l-2 border-orange-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Compliance Certifications</h6>
+                            <div className="text-gray-300">
+                              <div>Enforcement Actions: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.has_enforcement_actions || 'Not provided'}</div>
+                              {usdotApplications.find(app => app.companyId === selectedCompany.id)?.enforcement_actions_details && (
+                                <div className="mt-1">Details: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.enforcement_actions_details}</div>
+                              )}
+                              <div className="mt-2">Out-of-Service Orders: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.has_out_of_service_orders || 'Not provided'}</div>
+                              {usdotApplications.find(app => app.companyId === selectedCompany.id)?.out_of_service_orders_details && (
+                                <div className="mt-1">Details: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.out_of_service_orders_details}</div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* File Uploads */}
+                          <div className="border-l-2 border-teal-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">File Uploads</h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300">
+                              <div>Drivers License Picture: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.drivers_license_picture ? 'Uploaded' : 'Not uploaded'}</div>
+                              <div>Client Identity Picture: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.client_identity_picture ? 'Uploaded' : 'Not uploaded'}</div>
+                            </div>
+                          </div>
+
+                          {/* Electronic Signature */}
+                          <div className="border-l-2 border-gray-500 pl-4">
+                            <h6 className="text-white font-medium mb-2">Electronic Signature</h6>
+                            <div className="text-gray-300">
+                              Signature: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.electronic_signature || 'Not provided'}
+                            </div>
+                          </div>
+                        </div>
+                      </details>
+                      
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="text-sm text-gray-300">
+                          Created: {usdotApplications.find(app => app.companyId === selectedCompany.id)?.createdAt}
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete the USDOT application record for ${selectedCompany.legalBusinessName}?`)) {
+                              setUsdotApplications(usdotApplications.filter(app => app.companyId !== selectedCompany.id));
+                            }
+                          }}
+                          className="text-red-400 hover:text-red-300 p-1"
+                          title="Delete application record"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-700 rounded-lg p-4 text-center">
+                      <DocumentTextIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-300">No USDOT application record found</p>
+                      <p className="text-gray-400 text-sm">Create one to track USDOT application data</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Enhanced Contacts Management */}
                 <div className="mb-6">
@@ -2812,6 +3057,967 @@ const Companies: React.FC = () => {
                     className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                   >
                     {editingContact ? 'Update Contact' : 'Add Contact'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* USDOT Application Record Modal */}
+      {showUSDOTApplicationModal && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-6xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                  {usdotApplications.find(app => app.companyId === selectedCompany.id) 
+                    ? 'Edit USDOT Application Record' 
+                    : 'Create USDOT Application Record'} for {selectedCompany.legalBusinessName}
+                </h3>
+                <button
+                  onClick={() => setShowUSDOTApplicationModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const applicationData: any = {};
+                
+                // Collect all form data
+                for (const [key, value] of formData.entries()) {
+                  applicationData[key] = value;
+                }
+                
+                // Add system fields
+                applicationData.companyId = selectedCompany.id;
+                applicationData.id = usdotApplications.find(app => app.companyId === selectedCompany.id)?.id || Date.now().toString();
+                applicationData.createdAt = usdotApplications.find(app => app.companyId === selectedCompany.id)?.createdAt || new Date().toISOString().split('T')[0];
+                applicationData.updatedAt = new Date().toISOString().split('T')[0];
+                
+                // Update or create application
+                if (usdotApplications.find(app => app.companyId === selectedCompany.id)) {
+                  setUsdotApplications(usdotApplications.map(app => 
+                    app.companyId === selectedCompany.id ? applicationData : app
+                  ));
+                } else {
+                  setUsdotApplications([...usdotApplications, applicationData]);
+                }
+                
+                setShowUSDOTApplicationModal(false);
+              }} className="space-y-6 max-h-[80vh] overflow-y-auto">
+                
+                {/* Operation Classification Summary */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Operation Classification Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Does the Applicant have a Dun and Bradstreet Number?
+                      </label>
+                      <select
+                        name="has_duns_bradstreet_number"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.has_duns_bradstreet_number || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Legal Business Name
+                      </label>
+                      <input
+                        type="text"
+                        name="legal_business_name"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.legal_business_name || selectedCompany.legalBusinessName}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Doing Business As Name(s) (if different from Legal Business Name)
+                      </label>
+                      <input
+                        type="text"
+                        name="doing_business_as_name"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.doing_business_as_name || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Is the Applicant's Principal Place of Business Address the same as the Application Contact's Address?
+                      </label>
+                      <select
+                        name="is_principal_address_same_as_contact"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.is_principal_address_same_as_contact || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    {/* Principal Place of Business Address */}
+                    <div className="md:col-span-2">
+                      <h5 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3">Principal Place of Business Address</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                          <input
+                            type="text"
+                            name="principal_address_country"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_country || 'United States'}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Street Address/Route Number</label>
+                          <input
+                            type="text"
+                            name="principal_address_street"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_street || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                          <input
+                            type="text"
+                            name="principal_address_city"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_city || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">State/Province</label>
+                          <input
+                            type="text"
+                            name="principal_address_state"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_state || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code</label>
+                          <input
+                            type="text"
+                            name="principal_address_postal_code"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_address_postal_code || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Mailing Address */}
+                    <div className="md:col-span-2">
+                      <h5 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3">Mailing Address</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                          <input
+                            type="text"
+                            name="mailing_address_country"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_country || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Street Address/Route Number</label>
+                          <input
+                            type="text"
+                            name="mailing_address_street"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_street || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                          <input
+                            type="text"
+                            name="mailing_address_city"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_city || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">State/Province</label>
+                          <input
+                            type="text"
+                            name="mailing_address_state"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_state || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code</label>
+                          <input
+                            type="text"
+                            name="mailing_address_postal_code"
+                            defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.mailing_address_postal_code || ''}
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Principal Place of Business Telephone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="principal_telephone_number"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.principal_telephone_number || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Employer Identification Number (EIN) or Social Security Number (SSN)
+                      </label>
+                      <input
+                        type="text"
+                        name="ein_or_ssn"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.ein_or_ssn || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Is the Applicant a Unit of Government?
+                      </label>
+                      <select
+                        name="is_unit_of_government"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.is_unit_of_government || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Form of Business (Select the business form that applies)
+                      </label>
+                      <select
+                        name="form_of_business"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.form_of_business || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="sole proprietor">Sole Proprietor</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="limited liability company">Limited Liability Company</option>
+                        <option value="Corporation (State of Incorporation)">Corporation (State of Incorporation)</option>
+                        <option value="Limited Liability Partnership">Limited Liability Partnership</option>
+                        <option value="Trusts">Trusts</option>
+                        <option value="Other Form Of Business">Other Form Of Business</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Ownership and Control
+                      </label>
+                      <select
+                        name="ownership_and_control"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.ownership_and_control || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="owned/controlled by citizen of United States">Owned/Controlled by Citizen of United States</option>
+                        <option value="owned/controlled by citizen of Canada">Owned/Controlled by Citizen of Canada</option>
+                        <option value="owned/controlled by citizen of Mexico">Owned/Controlled by Citizen of Mexico</option>
+                        <option value="owned/controlled by citizen of other foreign country">Owned/Controlled by Citizen of Other Foreign Country</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Company Contact Information */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Company Contact Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Contact - First Name
+                      </label>
+                      <input
+                        type="text"
+                        name="company_contact_first_name"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_first_name || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Contact - Middle Name
+                      </label>
+                      <input
+                        type="text"
+                        name="company_contact_middle_name"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_middle_name || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Contact - Last Name
+                      </label>
+                      <input
+                        type="text"
+                        name="company_contact_last_name"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_last_name || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Contact - Suffix
+                      </label>
+                      <input
+                        type="text"
+                        name="company_contact_suffix"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_suffix || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Official's Title
+                      </label>
+                      <input
+                        type="text"
+                        name="company_contact_title"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_title || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Contact - Email
+                      </label>
+                      <input
+                        type="email"
+                        name="company_contact_email"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_email || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Company Contact - Telephone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="company_contact_telephone"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_telephone || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Company Contact Address */}
+                  <div className="mt-6">
+                    <h5 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3">Company Contact Address</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                        <input
+                          type="text"
+                          name="company_contact_address_country"
+                          defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_country || ''}
+                          className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Street Address/Route Number</label>
+                        <input
+                          type="text"
+                          name="company_contact_address_street"
+                          defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_street || ''}
+                          className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                        <input
+                          type="text"
+                          name="company_contact_address_city"
+                          defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_city || ''}
+                          className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">State/Province</label>
+                        <input
+                          type="text"
+                          name="company_contact_address_state"
+                          defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_state || ''}
+                          className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code</label>
+                        <input
+                          type="text"
+                          name="company_contact_address_postal_code"
+                          defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.company_contact_address_postal_code || ''}
+                          className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Operation Questions */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Operation Questions</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant operate as an Intermodal Equipment Provider?
+                      </label>
+                      <select
+                        name="will_operate_as_intermodal_equipment_provider"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_as_intermodal_equipment_provider || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant transport Property?
+                      </label>
+                      <select
+                        name="will_transport_property"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_property || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant receive compensation for transporting property belonging to others?
+                      </label>
+                      <select
+                        name="will_receive_compensation_for_transporting_property"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_receive_compensation_for_transporting_property || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        What type of Property will the Applicant transport?
+                      </label>
+                      <select
+                        name="type_of_property_to_transport"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.type_of_property_to_transport || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="hazardous materials">Hazardous Materials</option>
+                        <option value="household goods">Household Goods</option>
+                        <option value="exempt commodities">Exempt Commodities</option>
+                        <option value="Other non hazardous freight">Other Non-Hazardous Freight</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant transport Non-Hazardous Materials across state lines (Interstate Commerce)?
+                      </label>
+                      <select
+                        name="will_transport_non_hazardous_materials_interstate"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_non_hazardous_materials_interstate || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant transport their own property?
+                      </label>
+                      <select
+                        name="will_transport_own_property"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_own_property || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant transport any Passengers?
+                      </label>
+                      <select
+                        name="will_transport_passengers"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_transport_passengers || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant provide Property or Household Goods (HHG) Broker services?
+                      </label>
+                      <select
+                        name="will_provide_broker_services"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_provide_broker_services || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant provide Freight Forwarder services?
+                      </label>
+                      <select
+                        name="will_provide_freight_forwarder_services"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_provide_freight_forwarder_services || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant operate a Cargo Tank Facility?
+                      </label>
+                      <select
+                        name="will_operate_cargo_tank_facility"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_cargo_tank_facility || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant operate as a Driveaway?
+                      </label>
+                      <select
+                        name="will_operate_as_driveaway"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_as_driveaway || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Will the Applicant operate as a Towaway?
+                      </label>
+                      <select
+                        name="will_operate_as_towaway"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.will_operate_as_towaway || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Please select all classifications of cargo that the Applicant will transport or handle
+                      </label>
+                      <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {['general freight', 'drive away/tow away', 'Machinery & large objects', 'household goods', 'metal: sheets coils rolls', 'motor vehicles', 'Logs Poles Beams Lumber', 'Building Materials', 'Mobile Homes', 'Fresh Produce', 'Liquids & Gases', 'Intermodal Containers', 'Passengers', 'Oil Field Equipment', 'livestock', 'grain feed hay', 'coal/coke', 'meat', 'garbage/refuse/trash', 'US Mail', 'Commodities Dry Bulk', 'Refrigerated Food', 'Beverages', 'Paper Product', 'Utility', 'Farm Supplies', 'Construction', 'Water Well', 'Other'].map((option) => (
+                          <label key={option} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              name="cargo_classifications"
+                              value={option}
+                              defaultChecked={usdotApplications.find(app => app.companyId === selectedCompany.id)?.cargo_classifications?.includes(option) || false}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{option}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vehicle Summary */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Vehicle Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Total Number of Vehicles
+                      </label>
+                      <input
+                        type="number"
+                        name="total_vehicles"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.total_vehicles || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Tractors
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_tractors"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_tractors || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Trailers
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_trailers"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_trailers || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Straight Trucks
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_straight_trucks"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_straight_trucks || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Buses
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_buses"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_buses || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Other Vehicles
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_other_vehicles"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_other_vehicles || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Driver Summary */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Driver Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Total Number of Drivers
+                      </label>
+                      <input
+                        type="number"
+                        name="total_drivers"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.total_drivers || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of CDL Drivers
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_cdl_drivers"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_cdl_drivers || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Non-CDL Drivers
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_non_cdl_drivers"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_non_cdl_drivers || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Hazmat Drivers
+                      </label>
+                      <input
+                        type="number"
+                        name="number_of_hazmat_drivers"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.number_of_hazmat_drivers || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Affiliation with Others Summary */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Affiliation with Others Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Is the Applicant affiliated with any other motor carrier?
+                      </label>
+                      <select
+                        name="is_affiliated_with_other_carrier"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.is_affiliated_with_other_carrier || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        If yes, provide details
+                      </label>
+                      <textarea
+                        name="affiliation_details"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.affiliation_details || ''}
+                        rows={3}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Describe affiliation details..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Compliance Certifications Summary */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Compliance Certifications Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Has the Applicant been subject to any enforcement actions?
+                      </label>
+                      <select
+                        name="has_enforcement_actions"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.has_enforcement_actions || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        If yes, provide details
+                      </label>
+                      <textarea
+                        name="enforcement_actions_details"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.enforcement_actions_details || ''}
+                        rows={3}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Describe enforcement actions..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Has the Applicant been subject to any out-of-service orders?
+                      </label>
+                      <select
+                        name="has_out_of_service_orders"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.has_out_of_service_orders || ''}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        If yes, provide details
+                      </label>
+                      <textarea
+                        name="out_of_service_orders_details"
+                        defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.out_of_service_orders_details || ''}
+                        rows={3}
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Describe out-of-service orders..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* File Uploads */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">File Uploads</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Drivers License Picture
+                      </label>
+                      <input
+                        type="file"
+                        name="drivers_license_picture"
+                        accept="image/*"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Client Identity Picture
+                      </label>
+                      <input
+                        type="file"
+                        name="client_identity_picture"
+                        accept="image/*"
+                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Electronic Signature */}
+                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Electronic Signature</h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Electronic Signature (Applicant's First Name and Last Name)
+                    </label>
+                    <input
+                      type="text"
+                      name="electronic_signature"
+                      defaultValue={usdotApplications.find(app => app.companyId === selectedCompany.id)?.electronic_signature || ''}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowUSDOTApplicationModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    {usdotApplications.find(app => app.companyId === selectedCompany.id) ? 'Update Application' : 'Create Application'}
                   </button>
                 </div>
               </form>

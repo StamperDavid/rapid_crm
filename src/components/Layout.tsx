@@ -19,6 +19,7 @@ import {
   WrenchScrewdriverIcon,
   ChatBubbleLeftRightIcon,
   CpuChipIcon,
+  KeyIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
@@ -31,7 +32,7 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, hasSchemaManagement: boolean) => [
+const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, hasSchemaManagement: boolean, hasApiKeyManagement: boolean) => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
   { name: 'Deals', href: '/deals', icon: CurrencyDollarIcon, color: 'text-orange-600' },
@@ -41,6 +42,7 @@ const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, 
   ...(hasAgentManagement ? [{ name: 'Agents', href: '/agents', icon: CpuChipIcon, color: 'text-violet-600' }] : []),
   ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
   ...(hasSchemaManagement ? [{ name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' }] : []),
+  ...(hasApiKeyManagement ? [{ name: 'API Keys', href: '/api-keys', icon: KeyIcon, color: 'text-yellow-600' }] : []),
   { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
 ];
@@ -55,7 +57,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigation = getNavigation(
     hasPermission('canManageUsers'),
     hasPermission('canManageAgents'),
-    hasPermission('canManageSchema')
+    hasPermission('canManageSchema'),
+    hasPermission('canManageApiKeys')
   );
 
   // Mock conversation notifications - in real app, this would come from WebSocket or polling

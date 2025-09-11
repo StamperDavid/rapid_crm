@@ -251,30 +251,147 @@ export class MockConversationService extends ConversationService {
         customerEmail: 'john.smith@acmetrans.com',
         customerPhone: '(555) 123-4567',
         companyName: 'Acme Transportation',
-        status: 'waiting_for_agent',
+        status: 'active',
         agentType: 'onboarding',
         priority: 'high',
         startedAt: '2024-01-20T10:30:00Z',
-        lastMessageAt: '2024-01-20T11:15:00Z',
-        tags: ['new-customer', 'onboarding', 'urgent'],
+        lastMessageAt: '2024-01-20T14:30:00Z',
+        tags: ['usdot-application', 'onboarding', 'urgent'],
         context: {
           source: 'website',
-          intent: 'onboarding',
+          intent: 'usdot_application',
           companyId: '1'
         },
         messages: [
           {
             id: '1',
-            content: 'Hi, I need help getting started with your transportation services.',
+            content: 'Hi, I need help with my USDOT application. I\'m starting a new trucking company.',
             sender: 'user',
             timestamp: '2024-01-20T10:30:00Z',
             type: 'text'
           },
           {
             id: '2',
-            content: 'Hello John! I\'m your AI onboarding assistant. I\'d be happy to help you get started with our transportation services.',
+            content: 'Hello John! I\'m your specialized USDOT Application Agent. I\'ll help you collect all the required information for your USDOT application and then trigger our robotic process automation to complete the submission for you. Let\'s start with your company information.',
             sender: 'ai',
             timestamp: '2024-01-20T10:30:15Z',
+            type: 'text'
+          },
+          {
+            id: '3',
+            content: 'What is your legal business name?',
+            sender: 'ai',
+            timestamp: '2024-01-20T10:30:30Z',
+            type: 'text'
+          },
+          {
+            id: '4',
+            content: 'Acme Transportation LLC',
+            sender: 'user',
+            timestamp: '2024-01-20T10:31:00Z',
+            type: 'text'
+          },
+          {
+            id: '5',
+            content: 'Perfect! Now, do you have a Dun and Bradstreet Number?',
+            sender: 'ai',
+            timestamp: '2024-01-20T10:31:15Z',
+            type: 'text'
+          },
+          {
+            id: '6',
+            content: 'No, I don\'t have one yet.',
+            sender: 'user',
+            timestamp: '2024-01-20T10:31:45Z',
+            type: 'text'
+          },
+          {
+            id: '7',
+            content: 'That\'s fine. Let\'s continue with your business address. What is your principal place of business address?',
+            sender: 'ai',
+            timestamp: '2024-01-20T10:32:00Z',
+            type: 'text'
+          }
+        ]
+      },
+      {
+        id: '2',
+        customerName: 'Sarah Johnson',
+        customerEmail: 'sarah@globalshipping.com',
+        customerPhone: '(555) 987-6543',
+        companyName: 'Global Shipping Co',
+        status: 'resolved',
+        agentType: 'onboarding',
+        priority: 'medium',
+        startedAt: '2024-01-19T14:20:00Z',
+        lastMessageAt: '2024-01-19T16:45:00Z',
+        tags: ['usdot-application', 'completed', 'rpa-success'],
+        context: {
+          source: 'website',
+          intent: 'usdot_application',
+          companyId: '2'
+        },
+        messages: [
+          {
+            id: '8',
+            content: 'I need help with my USDOT application for my shipping company.',
+            sender: 'user',
+            timestamp: '2024-01-19T14:20:00Z',
+            type: 'text'
+          },
+          {
+            id: '9',
+            content: 'Hello Sarah! I\'m your USDOT Application Agent. I\'ll guide you through collecting all the required information. Let\'s start with your company details.',
+            sender: 'ai',
+            timestamp: '2024-01-19T14:20:15Z',
+            type: 'text'
+          },
+          {
+            id: '10',
+            content: 'Excellent! I\'ve collected all your USDOT application information. Now I\'m triggering our RPA agent to complete your application submission. You should receive confirmation within 24 hours.',
+            sender: 'ai',
+            timestamp: '2024-01-19T16:44:30Z',
+            type: 'text'
+          },
+          {
+            id: '11',
+            content: 'Thank you so much! This was much easier than doing it manually.',
+            sender: 'user',
+            timestamp: '2024-01-19T16:45:00Z',
+            type: 'text'
+          }
+        ]
+      },
+      {
+        id: '3',
+        customerName: 'Mike Rodriguez',
+        customerEmail: 'mike@metrofreight.com',
+        customerPhone: '(555) 456-7890',
+        companyName: 'Metro Freight Lines',
+        status: 'waiting_for_agent',
+        agentType: 'customer_service',
+        priority: 'low',
+        startedAt: '2024-01-20T15:30:00Z',
+        lastMessageAt: '2024-01-20T15:35:00Z',
+        tags: ['billing', 'support'],
+        context: {
+          source: 'website',
+          intent: 'billing_support',
+          companyId: '3'
+        },
+        messages: [
+          {
+            id: '12',
+            content: 'I have a question about my invoice from last month.',
+            sender: 'user',
+            timestamp: '2024-01-20T15:30:00Z',
+            type: 'text'
+          },
+          {
+            id: '13',
+            content: 'Hello Mike! I\'m your customer service assistant. I\'d be happy to help you with your invoice question. What specific issue are you experiencing?',
+            sender: 'ai',
+            timestamp: '2024-01-20T15:30:15Z',
             type: 'text'
           }
         ]

@@ -40,6 +40,44 @@ interface Agent {
 const mockAgents: Agent[] = [
   {
     id: '1',
+    name: 'USDOT Application Agent',
+    description: 'Specialized agent for USDOT application data collection and robotic process automation',
+    type: 'onboarding',
+    status: 'active',
+    lastActive: '2024-01-20T14:30:00Z',
+    conversationsHandled: 156,
+    successRate: 97.4,
+    configuration: {
+      model: 'gpt-4',
+      temperature: 0.3,
+      maxTokens: 3000,
+      systemPrompt: 'You are a specialized USDOT Application Agent for Rapid CRM. Your primary role is to collect comprehensive USDOT application data from transportation companies during the onboarding process. You must gather all required information including Operation Classification Summary, Company Contact Information, Operation Questions, Vehicle Summary, Driver Summary, Affiliation with Others, Compliance Certifications, and File Uploads. Once all data is collected and validated, you will trigger the robotic process automation agent to complete the actual USDOT application submission. Always be thorough, professional, and ensure compliance with FMCSA requirements.',
+      capabilities: ['usdot_data_collection', 'compliance_validation', 'document_processing', 'rpa_trigger', 'regulatory_guidance']
+    },
+    createdAt: '2024-01-15T09:00:00Z',
+    updatedAt: '2024-01-20T14:30:00Z'
+  },
+  {
+    id: '2',
+    name: 'USDOT RPA Agent',
+    description: 'Robotic Process Automation agent that completes USDOT applications using collected data',
+    type: 'custom',
+    status: 'active',
+    lastActive: '2024-01-20T14:25:00Z',
+    conversationsHandled: 89,
+    successRate: 95.5,
+    configuration: {
+      model: 'gpt-4',
+      temperature: 0.1,
+      maxTokens: 2500,
+      systemPrompt: 'You are a Robotic Process Automation (RPA) Agent specialized in USDOT application completion. You receive structured data from the USDOT Application Agent and use it to automatically fill out and submit USDOT applications through the official FMCSA portal. You handle form navigation, data entry, validation, document uploads, and final submission. You must ensure 100% accuracy and compliance with all FMCSA requirements. Report back on submission status and any issues encountered.',
+      capabilities: ['form_automation', 'data_entry', 'document_upload', 'submission_processing', 'error_handling', 'status_reporting']
+    },
+    createdAt: '2024-01-16T10:00:00Z',
+    updatedAt: '2024-01-20T14:25:00Z'
+  },
+  {
+    id: '3',
     name: 'Onboarding Assistant',
     description: 'Helps new customers get started with the platform',
     type: 'onboarding',
@@ -58,7 +96,7 @@ const mockAgents: Agent[] = [
     updatedAt: '2024-01-20T10:30:00Z'
   },
   {
-    id: '2',
+    id: '4',
     name: 'Customer Service Bot',
     description: 'Handles general customer inquiries and support requests',
     type: 'customer_service',
@@ -77,7 +115,7 @@ const mockAgents: Agent[] = [
     updatedAt: '2024-01-20T11:15:00Z'
   },
   {
-    id: '3',
+    id: '5',
     name: 'Sales Qualification Bot',
     description: 'Qualifies leads and schedules demos for the sales team',
     type: 'sales',
@@ -126,6 +164,7 @@ const Agents: React.FC = () => {
       case 'customer_service': return ChatBubbleLeftRightIcon;
       case 'sales': return CurrencyDollarIcon;
       case 'support': return CogIcon;
+      case 'custom': return CpuChipIcon;
       default: return CpuChipIcon;
     }
   };

@@ -11,7 +11,9 @@ import {
   ChartBarIcon,
   XMarkIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  ShieldCheckIcon,
+  TruckIcon
 } from '@heroicons/react/24/outline';
 import { useUser } from '../../../contexts/UserContext';
 
@@ -77,6 +79,56 @@ const Integrations: React.FC = () => {
       category: 'communication',
       icon: ChartBarIcon,
       features: ['SMS Campaigns', 'Automated Messages', 'Delivery Tracking']
+    },
+    {
+      id: 7,
+      name: 'FMCSA Portal',
+      description: 'Direct integration with FMCSA USDOT application portal',
+      status: 'connected',
+      lastSync: '2024-01-20 14:30 AM',
+      category: 'compliance',
+      icon: ShieldCheckIcon,
+      features: ['USDOT Applications', 'Compliance Monitoring', 'Safety Ratings', 'Registration Status']
+    },
+    {
+      id: 8,
+      name: 'ELD Providers',
+      description: 'Electronic Logging Device integrations',
+      status: 'disconnected',
+      lastSync: null,
+      category: 'compliance',
+      icon: CogIcon,
+      features: ['Hours of Service', 'Driver Logs', 'Compliance Reporting', 'Real-time Tracking']
+    },
+    {
+      id: 9,
+      name: 'Load Boards',
+      description: 'Integration with major freight load boards',
+      status: 'disconnected',
+      lastSync: null,
+      category: 'logistics',
+      icon: TruckIcon,
+      features: ['Load Matching', 'Rate Negotiation', 'Booking Management', 'Tracking']
+    },
+    {
+      id: 10,
+      name: 'Fuel Cards',
+      description: 'Fuel card and expense management',
+      status: 'disconnected',
+      lastSync: null,
+      category: 'expenses',
+      icon: CreditCardIcon,
+      features: ['Fuel Tracking', 'Expense Reports', 'Driver Cards', 'Fleet Management']
+    },
+    {
+      id: 11,
+      name: 'Insurance Providers',
+      description: 'Commercial vehicle insurance integration',
+      status: 'disconnected',
+      lastSync: null,
+      category: 'compliance',
+      icon: ShieldCheckIcon,
+      features: ['Policy Management', 'Claims Processing', 'Coverage Verification', 'Renewal Tracking']
     }
   ]);
 
@@ -84,7 +136,10 @@ const Integrations: React.FC = () => {
     { name: 'All', value: 'all' },
     { name: 'Accounting', value: 'accounting' },
     { name: 'Payments', value: 'payments' },
-    { name: 'Communication', value: 'communication' }
+    { name: 'Communication', value: 'communication' },
+    { name: 'Compliance', value: 'compliance' },
+    { name: 'Logistics', value: 'logistics' },
+    { name: 'Expenses', value: 'expenses' }
   ];
 
   const [selectedCategory, setSelectedCategory] = useState('all');

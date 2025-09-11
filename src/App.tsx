@@ -14,8 +14,9 @@ import Invoices from './modules/CRM/pages/Invoices';
 import Integrations from './modules/CRM/pages/Integrations';
 import UserManagement from './modules/CRM/pages/UserManagement';
 import Tasks from './modules/CRM/pages/Tasks';
-import Conversations from './modules/CRM/pages/Conversations';
+import Conversations from './modules/CRM/pages/ConversationsScalable';
 import Agents from './modules/CRM/pages/Agents';
+import ApiKeys from './modules/CRM/pages/ApiKeys';
 import SystemMonitoringModule from './modules/SystemMonitoring/index';
 import ComplianceModule from './modules/Compliance/index';
 import AnalyticsModule from './modules/Analytics/index';
@@ -55,6 +56,7 @@ function App() {
                   <Route path="/tasks" element={<Tasks />} />
                   <Route path="/conversations" element={<Conversations />} />
                   <Route path="/agents" element={<Agents />} />
+                  <Route path="/api-keys" element={<ApiKeys />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/users" element={<UserManagement />} />
                   

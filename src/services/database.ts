@@ -1,5 +1,21 @@
 import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../types/schema';
 
+interface ApiKey {
+  id: string;
+  name: string;
+  platform: 'google_cloud' | 'openai' | 'anthropic' | 'openrouter' | 'aws' | 'azure' | 'custom';
+  key: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastUsed?: string;
+  usageCount: number;
+  permissions: string[];
+  environment: 'development' | 'staging' | 'production';
+  tags: string[];
+}
+
 // Database interface for CRUD operations
 export interface IDatabaseService {
   // Companies
@@ -65,13 +81,15 @@ class BrowserDatabaseService implements IDatabaseService {
     drivers: Driver[];
     deals: Deal[];
     invoices: Invoice[];
+    apiKeys: ApiKey[];
   } = {
     companies: [],
     contacts: [],
     vehicles: [],
     drivers: [],
     deals: [],
-    invoices: []
+    invoices: [],
+    apiKeys: []
   };
 
   constructor() {
@@ -624,6 +642,49 @@ class BrowserDatabaseService implements IDatabaseService {
   }
 
   async deleteInvoice(id: string): Promise<boolean> {
+    return true;
+  }
+
+  // API Keys
+  async getApiKeys(): Promise<ApiKey[]> {
+    return this.data.apiKeys;
+  }
+
+  async getApiKey(id: string): Promise<ApiKey | null> {
+    return this.data.apiKeys.find(key => key.id === id) || null;
+  }
+
+  async createApiKey(apiKey: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiKey> {
+    const newApiKey: ApiKey = {
+      ...apiKey,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    this.data.apiKeys.push(newApiKey);
+    this.saveToStorage();
+    return newApiKey;
+  }
+
+  async updateApiKey(id: string, updates: Partial<ApiKey>): Promise<ApiKey> {
+    const index = this.data.apiKeys.findIndex(key => key.id === id);
+    if (index === -1) throw new Error('API key not found');
+    
+    this.data.apiKeys[index] = {
+      ...this.data.apiKeys[index],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    this.saveToStorage();
+    return this.data.apiKeys[index];
+  }
+
+  async deleteApiKey(id: string): Promise<boolean> {
+    const index = this.data.apiKeys.findIndex(key => key.id === id);
+    if (index === -1) return false;
+    
+    this.data.apiKeys.splice(index, 1);
+    this.saveToStorage();
     return true;
   }
 }
