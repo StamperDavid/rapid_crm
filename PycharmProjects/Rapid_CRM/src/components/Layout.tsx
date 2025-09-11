@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   HomeIcon,
@@ -17,6 +17,8 @@ import {
   UsersIcon,
   ClockIcon,
   WrenchScrewdriverIcon,
+  ChatBubbleLeftRightIcon,
+  CpuChipIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
@@ -29,26 +31,47 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const getNavigation = (hasUserManagement: boolean) => [
+const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, hasSchemaManagement: boolean) => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
-  { name: 'Contacts', href: '/contacts', icon: UserGroupIcon, color: 'text-green-600' },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
   { name: 'Deals', href: '/deals', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon, color: 'text-red-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
-  { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
+  { name: 'Conversations', href: '/conversations', icon: ChatBubbleLeftRightIcon, color: 'text-cyan-600' },
+  ...(hasAgentManagement ? [{ name: 'Agents', href: '/agents', icon: CpuChipIcon, color: 'text-violet-600' }] : []),
   ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
-  { name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' },
+  ...(hasSchemaManagement ? [{ name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' }] : []),
+  { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [conversationNotifications, setConversationNotifications] = useState(0);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user, hasPermission } = useUser();
   
-  const navigation = getNavigation(hasPermission('canManageUsers'));
+  const navigation = getNavigation(
+    hasPermission('canManageUsers'),
+    hasPermission('canManageAgents'),
+    hasPermission('canManageSchema')
+  );
+
+  // Mock conversation notifications - in real app, this would come from WebSocket or polling
+  useEffect(() => {
+    // Simulate checking for waiting conversations
+    const checkConversations = () => {
+      // Mock data - in real app, this would be an API call
+      const waitingCount = Math.floor(Math.random() * 3); // 0-2 notifications
+      setConversationNotifications(waitingCount);
+    };
+
+    checkConversations();
+    const interval = setInterval(checkConversations, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -85,12 +108,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
                       )}
                     >
-                      <item.icon
-                        className={clsx(
-                          'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
-                          isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                      <div className="relative">
+                        <item.icon
+                          className={clsx(
+                            'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
+                            isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                          )}
+                        />
+                        {item.name === 'Conversations' && conversationNotifications > 0 && (
+                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                            {conversationNotifications}
+                          </span>
                         )}
-                      />
+                      </div>
                       {item.name}
                     </Link>
                   );
@@ -139,13 +169,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
                       )}
                     >
-                      <item.icon
-                        className={clsx(
-                          'h-6 w-6 shrink-0 transition-colors',
-                          isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                      <div className="relative">
+                        <item.icon
+                          className={clsx(
+                            'h-6 w-6 shrink-0 transition-colors',
+                            isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                          )}
+                          aria-hidden="true"
+                        />
+                        {item.name === 'Conversations' && conversationNotifications > 0 && (
+                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                            {conversationNotifications}
+                          </span>
                         )}
-                        aria-hidden="true"
-                      />
+                      </div>
                       {item.name}
                     </Link>
                   </li>

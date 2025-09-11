@@ -144,9 +144,16 @@ const SchemaManagement: React.FC = () => {
   const handleSaveSchema = async (fields: any[]) => {
     try {
       if (selectedEntityType) {
+        const entityTypes = [
+          { id: 'companies', name: 'Companies' },
+          { id: 'contacts', name: 'Contacts' },
+          { id: 'drivers', name: 'Drivers' },
+          { id: 'vehicles', name: 'Vehicles' },
+          { id: 'deals', name: 'Deals' }
+        ];
         const schemaData = {
           name: selectedEntityType,
-          display_name: entityTypes.find(e => e.id === selectedEntityType)?.name || selectedEntityType,
+          display_name: entityTypes.find((e: any) => e.id === selectedEntityType)?.name || selectedEntityType,
           description: `Schema for ${selectedEntityType}`,
           table_name: selectedEntityType,
           fields: fields,
@@ -248,9 +255,9 @@ const SchemaManagement: React.FC = () => {
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             {entity.description}
                           </p>
-                          {!entity.isSystem && entity.schemaData && (
+                          {!entity.isSystem && (entity as any).schemaData && (
                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                              {entity.schemaData.fields.length} fields • Created {new Date(entity.schemaData.created_at).toLocaleDateString()}
+                              {(entity as any).schemaData.fields.length} fields • Created {new Date((entity as any).schemaData.created_at).toLocaleDateString()}
                             </p>
                           )}
                         </div>

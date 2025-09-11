@@ -12,6 +12,8 @@ export interface User {
     canManageUsers: boolean;
     canViewFinancials: boolean;
     canEditInvoices: boolean;
+    canManageAgents: boolean;
+    canManageSchema: boolean;
   };
 }
 
@@ -39,6 +41,8 @@ const defaultUsers: User[] = [
       canManageUsers: true,
       canViewFinancials: true,
       canEditInvoices: true,
+      canManageAgents: true,
+      canManageSchema: true,
     }
   },
   {
@@ -53,6 +57,8 @@ const defaultUsers: User[] = [
       canManageUsers: false,
       canViewFinancials: true,
       canEditInvoices: true,
+      canManageAgents: false,
+      canManageSchema: false,
     }
   },
   {
@@ -67,6 +73,8 @@ const defaultUsers: User[] = [
       canManageUsers: false,
       canViewFinancials: false,
       canEditInvoices: false,
+      canManageAgents: false,
+      canManageSchema: false,
     }
   }
 ];

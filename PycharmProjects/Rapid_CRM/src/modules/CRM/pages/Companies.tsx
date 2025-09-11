@@ -24,6 +24,7 @@ const Companies: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Organization | null>(null);
   const [editingCompany, setEditingCompany] = useState<Organization | null>(null);
+  const [editingContact, setEditingContact] = useState<Person | null>(null);
 
   // Modal states for adding related entities
   const [showAddContactModal, setShowAddContactModal] = useState(false);
@@ -1085,76 +1086,153 @@ const Companies: React.FC = () => {
                   </div>
                 )}
 
-                {/* Current Contacts */}
-                {contacts.filter(c => c.companyId === selectedCompany.id).length > 0 && (
-                  <div className="mb-6">
-                    <h5 className="text-md font-medium text-white mb-3">Current Contacts</h5>
-                    <div className="space-y-2">
+                {/* Enhanced Contacts Management */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="text-md font-medium text-white">Company Contacts</h5>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-300">
+                        {contacts.filter(c => c.companyId === selectedCompany.id).length} contact(s)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {contacts.filter(c => c.companyId === selectedCompany.id).length > 0 ? (
+                    <div className="space-y-3">
                       {contacts.filter(c => c.companyId === selectedCompany.id).map((contact) => {
                         const isPrimaryContact = contact.isPrimaryContact;
                         const companyContacts = contacts.filter(c => c.companyId === selectedCompany.id);
                         const canDelete = !isPrimaryContact && companyContacts.length > 1;
                         
                         return (
-                          <div key={contact.id} className="flex items-center justify-between bg-gray-700 rounded-lg p-3">
-                            <div className="flex items-center space-x-3">
-                              <UserGroupIcon className="h-5 w-5 text-gray-300" />
-                              <div>
-                                <div className="flex items-center space-x-2">
-                                  <p className="text-white font-medium">{contact.firstName} {contact.lastName}</p>
-                                  {isPrimaryContact && (
-                                    <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                                      Primary
-                                    </span>
-                                  )}
+                          <div key={contact.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600 hover:border-gray-500 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-3 flex-1">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-white font-semibold text-sm">
+                                    {contact.firstName[0]}{contact.lastName[0]}
+                                  </span>
                                 </div>
-                                <p className="text-gray-300 text-sm">{contact.position} • {contact.phone} • {contact.email}</p>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <h6 className="text-white font-medium text-lg">
+                                      {contact.firstName} {contact.lastName}
+                                    </h6>
+                                    {isPrimaryContact && (
+                                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                        Primary Contact
+                                      </span>
+                                    )}
+                                    <span className="bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded-full">
+                                      {contact.preferredContactMethod}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                                    <div>
+                                      <span className="text-gray-400">Position:</span>
+                                      <p className="text-white">{contact.position || 'Not specified'}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-400">Department:</span>
+                                      <p className="text-white">{contact.department || 'Not specified'}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-400">Phone:</span>
+                                      <p className="text-white">{contact.phone}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-400">Email:</span>
+                                      <p className="text-white break-all">{contact.email}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-400">Preferred Contact:</span>
+                                      <p className="text-white">{contact.preferredContactMethod}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-400">Added:</span>
+                                      <p className="text-white">{new Date(contact.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              {!isPrimaryContact && (
+                              
+                              <div className="flex items-center space-x-2 ml-4">
                                 <button
                                   onClick={() => {
-                                    if (window.confirm(`Make ${contact.firstName} ${contact.lastName} the primary contact for ${selectedCompany.legalBusinessName}?`)) {
-                                      setContacts(contacts.map(c => 
-                                        c.companyId === selectedCompany.id 
-                                          ? { ...c, isPrimaryContact: c.id === contact.id }
-                                          : c
-                                      ));
-                                    }
+                                    setEditingContact(contact);
+                                    setShowAddContactModal(true);
                                   }}
-                                  className="text-blue-400 hover:text-blue-300 p-1"
-                                  title="Make primary contact"
+                                  className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-600 rounded-lg transition-colors"
+                                  title="Edit contact"
                                 >
                                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                   </svg>
                                 </button>
-                              )}
-                              {canDelete ? (
-                                <button
-                                  onClick={() => {
-                                    if (window.confirm(`Are you sure you want to remove ${contact.firstName} ${contact.lastName} from ${selectedCompany.legalBusinessName}?`)) {
-                                      setContacts(contacts.filter(c => c.id !== contact.id));
-                                    }
-                                  }}
-                                  className="text-red-400 hover:text-red-300 p-1"
-                                  title="Remove contact"
-                                >
-                                  <TrashIcon className="h-4 w-4" />
-                                </button>
-                              ) : (
-                                <div className="p-1" title={isPrimaryContact ? "Primary contact cannot be deleted" : "Cannot delete - company must have at least one contact"}>
-                                  <TrashIcon className="h-4 w-4 text-gray-500" />
-                                </div>
-                              )}
+                                
+                                {!isPrimaryContact && (
+                                  <button
+                                    onClick={() => {
+                                      if (window.confirm(`Make ${contact.firstName} ${contact.lastName} the primary contact for ${selectedCompany.legalBusinessName}?`)) {
+                                        setContacts(contacts.map(c => 
+                                          c.companyId === selectedCompany.id 
+                                            ? { ...c, isPrimaryContact: c.id === contact.id }
+                                            : c
+                                        ));
+                                      }
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-green-400 hover:bg-gray-600 rounded-lg transition-colors"
+                                    title="Make primary contact"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </button>
+                                )}
+                                
+                                {canDelete ? (
+                                  <button
+                                    onClick={() => {
+                                      if (window.confirm(`Are you sure you want to remove ${contact.firstName} ${contact.lastName} from ${selectedCompany.legalBusinessName}?`)) {
+                                        setContacts(contacts.filter(c => c.id !== contact.id));
+                                      }
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-600 rounded-lg transition-colors"
+                                    title="Remove contact"
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                  </button>
+                                ) : (
+                                  <div className="p-2" title={isPrimaryContact ? "Primary contact cannot be deleted" : "Cannot delete - company must have at least one contact"}>
+                                    <TrashIcon className="h-4 w-4 text-gray-500" />
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="bg-gray-700 rounded-lg p-6 border border-gray-600 border-dashed">
+                      <div className="text-center">
+                        <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                        <h6 className="text-white font-medium mb-2">No contacts added yet</h6>
+                        <p className="text-gray-400 text-sm mb-4">
+                          Add contacts to manage communication with this company
+                        </p>
+                        <button
+                          onClick={() => setShowAddContactModal(true)}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          <UserGroupIcon className="h-4 w-4 mr-2" />
+                          Add First Contact
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-end space-x-3 pt-6">
@@ -2553,17 +2631,20 @@ const Companies: React.FC = () => {
         </div>
       )}
 
-      {/* Add Contact to Existing Company Modal */}
+      {/* Add/Edit Contact Modal */}
       {showAddContactModal && selectedCompany && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
-                  Add Contact to {selectedCompany.legalBusinessName}
+                  {editingContact ? `Edit Contact - ${editingContact.firstName} ${editingContact.lastName}` : `Add Contact to ${selectedCompany.legalBusinessName}`}
                 </h3>
                 <button
-                  onClick={() => setShowAddContactModal(false)}
+                  onClick={() => {
+                    setShowAddContactModal(false);
+                    setEditingContact(null);
+                  }}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <XMarkIcon className="h-6 w-6" />
@@ -2585,23 +2666,44 @@ const Companies: React.FC = () => {
                   );
                 }
                 
-                const contact: Person = {
-                  id: (contacts.length + 1).toString(),
-                  companyId: selectedCompany.id,
-                  firstName: formData.get('firstName') as string,
-                  lastName: formData.get('lastName') as string,
-                  phone: formData.get('phone') as string,
-                  email: formData.get('email') as string,
-                  preferredContactMethod: formData.get('preferredContactMethod') as any,
-                  isPrimaryContact: isNewPrimary || (!hasExistingPrimary && existingContacts.length === 0), // Auto-set as primary if it's the first contact
-                  position: formData.get('position') as string,
-                  department: formData.get('department') as string,
-                  createdAt: new Date().toISOString().split('T')[0],
-                  updatedAt: new Date().toISOString().split('T')[0]
-                };
+                if (editingContact) {
+                  // Update existing contact
+                  const updatedContact: Person = {
+                    ...editingContact,
+                    firstName: formData.get('firstName') as string,
+                    lastName: formData.get('lastName') as string,
+                    phone: formData.get('phone') as string,
+                    email: formData.get('email') as string,
+                    preferredContactMethod: formData.get('preferredContactMethod') as any,
+                    isPrimaryContact: isNewPrimary,
+                    position: formData.get('position') as string,
+                    department: formData.get('department') as string,
+                    updatedAt: new Date().toISOString().split('T')[0]
+                  };
+                  
+                  setContacts(updatedContacts.map(c => c.id === editingContact.id ? updatedContact : c));
+                } else {
+                  // Add new contact
+                  const contact: Person = {
+                    id: (contacts.length + 1).toString(),
+                    companyId: selectedCompany.id,
+                    firstName: formData.get('firstName') as string,
+                    lastName: formData.get('lastName') as string,
+                    phone: formData.get('phone') as string,
+                    email: formData.get('email') as string,
+                    preferredContactMethod: formData.get('preferredContactMethod') as any,
+                    isPrimaryContact: isNewPrimary || (!hasExistingPrimary && existingContacts.length === 0), // Auto-set as primary if it's the first contact
+                    position: formData.get('position') as string,
+                    department: formData.get('department') as string,
+                    createdAt: new Date().toISOString().split('T')[0],
+                    updatedAt: new Date().toISOString().split('T')[0]
+                  };
+                  
+                  setContacts([...updatedContacts, contact]);
+                }
                 
-                setContacts([...updatedContacts, contact]);
                 setShowAddContactModal(false);
+                setEditingContact(null);
               }} className="space-y-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
@@ -2610,6 +2712,7 @@ const Companies: React.FC = () => {
                       type="text"
                       name="firstName"
                       required
+                      defaultValue={editingContact?.firstName || ''}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="Enter first name"
                     />
@@ -2620,6 +2723,7 @@ const Companies: React.FC = () => {
                       type="text"
                       name="lastName"
                       required
+                      defaultValue={editingContact?.lastName || ''}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="Enter last name"
                     />
@@ -2630,6 +2734,7 @@ const Companies: React.FC = () => {
                       type="tel"
                       name="phone"
                       required
+                      defaultValue={editingContact?.phone || ''}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="(555) 123-4567"
                     />
@@ -2640,6 +2745,7 @@ const Companies: React.FC = () => {
                       type="email"
                       name="email"
                       required
+                      defaultValue={editingContact?.email || ''}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="contact@company.com"
                     />
@@ -2649,6 +2755,7 @@ const Companies: React.FC = () => {
                     <input
                       type="text"
                       name="position"
+                      defaultValue={editingContact?.position || ''}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="e.g., Operations Manager"
                     />
@@ -2658,13 +2765,19 @@ const Companies: React.FC = () => {
                     <input
                       type="text"
                       name="department"
+                      defaultValue={editingContact?.department || ''}
                       className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="e.g., Operations, Sales"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Preferred Contact Method *</label>
-                    <select name="preferredContactMethod" required className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <select 
+                      name="preferredContactMethod" 
+                      required 
+                      defaultValue={editingContact?.preferredContactMethod || 'Phone'}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
                       {SELECT_OPTIONS.preferredContactMethod.map(method => (
                         <option key={method} value={method}>{method}</option>
                       ))}
@@ -2672,7 +2785,11 @@ const Companies: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Contact</label>
-                    <select name="isPrimaryContact" className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <select 
+                      name="isPrimaryContact" 
+                      defaultValue={editingContact?.isPrimaryContact ? 'true' : 'false'}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
                       <option value="false">No</option>
                       <option value="true">Yes</option>
                     </select>
@@ -2682,7 +2799,10 @@ const Companies: React.FC = () => {
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setShowAddContactModal(false)}
+                    onClick={() => {
+                      setShowAddContactModal(false);
+                      setEditingContact(null);
+                    }}
                     className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancel
@@ -2691,7 +2811,7 @@ const Companies: React.FC = () => {
                     type="submit"
                     className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                   >
-                    Add Contact
+                    {editingContact ? 'Update Contact' : 'Add Contact'}
                   </button>
                 </div>
               </form>

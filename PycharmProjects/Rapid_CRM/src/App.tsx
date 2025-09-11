@@ -8,13 +8,14 @@ import Layout from './components/Layout';
 
 // Import modules directly (not lazy loaded for now)
 import DashboardModule from './modules/Dashboard/index';
-import Contacts from './modules/CRM/pages/Contacts';
 import Companies from './modules/CRM/pages/Companies';
 import Deals from './modules/CRM/pages/Deals';
 import Invoices from './modules/CRM/pages/Invoices';
 import Integrations from './modules/CRM/pages/Integrations';
 import UserManagement from './modules/CRM/pages/UserManagement';
 import Tasks from './modules/CRM/pages/Tasks';
+import Conversations from './modules/CRM/pages/Conversations';
+import Agents from './modules/CRM/pages/Agents';
 import SystemMonitoringModule from './modules/SystemMonitoring/index';
 import ComplianceModule from './modules/Compliance/index';
 import AnalyticsModule from './modules/Analytics/index';
@@ -48,13 +49,14 @@ function App() {
                   <Route path="/" element={<DashboardModule />} />
                   
                   {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
-                  <Route path="/contacts" element={<Contacts />} />
                   <Route path="/companies" element={<Companies />} />
                   <Route path="/deals" element={<Deals />} />
                   <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/conversations" element={<Conversations />} />
+                  <Route path="/agents" element={<Agents />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/users" element={<UserManagement />} />
-                  <Route path="/tasks" element={<Tasks />} />
                   
                   {/* Reports */}
                   <Route path="/reports" element={<AnalyticsModule />} />

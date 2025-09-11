@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Person, Organization, Driver, PERSON_FIELD_GROUPS, ORGANIZATION_FIELD_GROUPS, DRIVER_FIELD_GROUPS, SELECT_OPTIONS } from '../../types/schema';
 import { databaseService } from '../../services/database';
-import FileUpload from './FileUpload';
+// import FileUpload from './FileUpload';
 
 interface EntityFormProps {
   entityType: string;
@@ -100,7 +100,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
   };
 
   const handleFieldChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: value
     }));
@@ -185,19 +185,16 @@ const EntityForm: React.FC<EntityFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {label}
           </label>
-          <FileUpload
-            value={value}
-            onChange={(files) => handleFieldChange(field, files)}
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            multiple={true}
-          />
+          <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+            <p className="text-gray-500">File upload component not implemented yet</p>
+          </div>
           {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
         </div>
       );
     }
 
     if (type === 'select') {
-      const options = SELECT_OPTIONS[field] || [];
+      const options = (SELECT_OPTIONS as any)[field] || [];
       return (
         <div key={field}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -211,7 +208,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             }`}
           >
             <option value="">Select {label}</option>
-            {options.map((option) => (
+            {options.map((option: any) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -282,7 +279,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
     if (field.includes('date') || field.includes('Date')) return 'date';
     if (field.includes('number') || field.includes('Number')) return 'number';
     if (field.includes('website') || field.includes('Website')) return 'url';
-    if (SELECT_OPTIONS[field]) return 'select';
+    if ((SELECT_OPTIONS as any)[field]) return 'select';
     if (field.includes('description') || field.includes('notes')) return 'textarea';
     if (field.includes('is') || field.includes('has')) return 'checkbox';
     return 'text';
