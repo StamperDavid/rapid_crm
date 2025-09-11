@@ -36,7 +36,7 @@ interface LayoutProps {
 const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, hasSchemaManagement: boolean, hasApiKeyManagement: boolean) => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
-  { name: 'Contacts', href: '/contacts', icon: UserGroupIcon, color: 'text-green-600' },
+  { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
   { name: 'Deals', href: '/deals', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon, color: 'text-red-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
@@ -214,13 +214,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       {/* Main content area */}
-      <div className="pl-64">
+      <div className="md:pl-64">
         {/* Top bar */}
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           {/* Mobile menu button */}
           <button
             type="button"
-            className="-m-2.5 p-2.5 text-slate-700 dark:text-slate-300 hidden"
+            className="-m-2.5 p-2.5 text-slate-700 dark:text-slate-300 md:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>

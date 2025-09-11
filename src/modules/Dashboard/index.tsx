@@ -50,18 +50,18 @@ const DashboardModule: React.FC = () => {
       icon: BuildingOfficeIcon,
       change: '+12%',
       changeType: 'increase' as const,
-      href: '/crm/companies',
+      href: '/companies',
       color: 'blue',
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
       iconColor: 'text-blue-600 dark:text-blue-400'
     },
     {
-      name: 'Total Contacts',
+      name: 'Total Leads',
       value: stats?.contacts || 0,
       icon: UserGroupIcon,
       change: '+8%',
       changeType: 'increase' as const,
-      href: '/crm/contacts',
+      href: '/leads',
       color: 'green',
       bgColor: 'bg-green-50 dark:bg-green-900/20',
       iconColor: 'text-green-600 dark:text-green-400'
@@ -72,7 +72,7 @@ const DashboardModule: React.FC = () => {
       icon: CurrencyDollarIcon,
       change: '+15%',
       changeType: 'increase' as const,
-      href: '/crm/vehicles',
+      href: '/vehicles',
       color: 'purple',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
       iconColor: 'text-purple-600 dark:text-purple-400'
@@ -83,7 +83,7 @@ const DashboardModule: React.FC = () => {
       icon: CurrencyDollarIcon,
       change: '+23%',
       changeType: 'increase' as const,
-      href: '/crm/drivers',
+      href: '/drivers',
       color: 'emerald',
       bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
       iconColor: 'text-emerald-600 dark:text-emerald-400'

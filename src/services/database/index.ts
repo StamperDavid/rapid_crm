@@ -11,6 +11,7 @@ export { UserRepository } from './repositories/UserRepository';
 export type { User, UserPermissions, UserFilters } from './repositories/UserRepository';
 export { DealRepository } from './repositories/DealRepository';
 export type { Deal, DealFilters, DealStats } from './repositories/DealRepository';
+export { LeadRepository } from './repositories/LeadRepository';
 
 // Configuration exports
 export type {

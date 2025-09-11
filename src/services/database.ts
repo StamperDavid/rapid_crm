@@ -1,4 +1,4 @@
-import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../types/schema';
+import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Campaign } from '../types/schema';
 
 interface ApiKey {
   id: string;
@@ -32,6 +32,20 @@ export interface IDatabaseService {
   createContact(contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>): Promise<Person>;
   updateContact(id: string, contact: Partial<Person>): Promise<Person>;
   deleteContact(id: string): Promise<boolean>;
+
+  // Leads
+  getLeads(): Promise<Lead[]>;
+  getLead(id: string): Promise<Lead | null>;
+  createLead(lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead>;
+  updateLead(id: string, lead: Partial<Lead>): Promise<Lead>;
+  deleteLead(id: string): Promise<boolean>;
+
+  // Campaigns
+  getCampaigns(): Promise<Campaign[]>;
+  getCampaign(id: string): Promise<Campaign | null>;
+  createCampaign(campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>): Promise<Campaign>;
+  updateCampaign(id: string, campaign: Partial<Campaign>): Promise<Campaign>;
+  deleteCampaign(id: string): Promise<boolean>;
 
   // Vehicles
   getVehicles(): Promise<Vehicle[]>;
@@ -77,6 +91,8 @@ class BrowserDatabaseService implements IDatabaseService {
   private data: {
     companies: Organization[];
     contacts: Person[];
+    leads: Lead[];
+    campaigns: Campaign[];
     vehicles: Vehicle[];
     drivers: Driver[];
     deals: Deal[];
@@ -85,6 +101,8 @@ class BrowserDatabaseService implements IDatabaseService {
   } = {
     companies: [],
     contacts: [],
+    leads: [],
+    campaigns: [],
     vehicles: [],
     drivers: [],
     deals: [],
@@ -477,6 +495,100 @@ class BrowserDatabaseService implements IDatabaseService {
     if (index === -1) return false;
     
     this.data.contacts.splice(index, 1);
+    this.saveToStorage();
+    return true;
+  }
+
+  // Leads
+  async getLeads(): Promise<Lead[]> {
+    return [...this.data.leads];
+  }
+
+  async getLead(id: string): Promise<Lead | null> {
+    return this.data.leads.find(lead => lead.id === id) || null;
+  }
+
+  async createLead(lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead> {
+    const now = new Date().toISOString().split('T')[0];
+    const newLead: Lead = {
+      ...lead,
+      id: Date.now().toString(),
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.data.leads.push(newLead);
+    this.saveToStorage();
+    return newLead;
+  }
+
+  async updateLead(id: string, lead: Partial<Lead>): Promise<Lead> {
+    const index = this.data.leads.findIndex(l => l.id === id);
+    if (index === -1) throw new Error('Lead not found');
+    
+    const updated = {
+      ...this.data.leads[index],
+      ...lead,
+      updatedAt: new Date().toISOString().split('T')[0]
+    };
+    
+    this.data.leads[index] = updated;
+    this.saveToStorage();
+    return updated;
+  }
+
+  async deleteLead(id: string): Promise<boolean> {
+    const index = this.data.leads.findIndex(l => l.id === id);
+    if (index === -1) return false;
+    
+    this.data.leads.splice(index, 1);
+    this.saveToStorage();
+    return true;
+  }
+
+  // Campaigns
+  async getCampaigns(): Promise<Campaign[]> {
+    return [...this.data.campaigns];
+  }
+
+  async getCampaign(id: string): Promise<Campaign | null> {
+    return this.data.campaigns.find(campaign => campaign.id === id) || null;
+  }
+
+  async createCampaign(campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>): Promise<Campaign> {
+    const now = new Date().toISOString().split('T')[0];
+    const newCampaign: Campaign = {
+      ...campaign,
+      id: Date.now().toString(),
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.data.campaigns.push(newCampaign);
+    this.saveToStorage();
+    return newCampaign;
+  }
+
+  async updateCampaign(id: string, campaign: Partial<Campaign>): Promise<Campaign> {
+    const index = this.data.campaigns.findIndex(c => c.id === id);
+    if (index === -1) throw new Error('Campaign not found');
+    
+    const updated = {
+      ...this.data.campaigns[index],
+      ...campaign,
+      updatedAt: new Date().toISOString().split('T')[0]
+    };
+    
+    this.data.campaigns[index] = updated;
+    this.saveToStorage();
+    return updated;
+  }
+
+  async deleteCampaign(id: string): Promise<boolean> {
+    const index = this.data.campaigns.findIndex(c => c.id === id);
+    if (index === -1) return false;
+    
+    this.data.campaigns.splice(index, 1);
     this.saveToStorage();
     return true;
   }

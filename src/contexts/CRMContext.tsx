@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../types/schema';
+import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead } from '../types/schema';
 import { databaseService } from '../services/database';
 
 // Define the context type
@@ -9,6 +9,8 @@ interface CRMContextType {
   setCompanies: React.Dispatch<React.SetStateAction<Organization[]>>;
   contacts: Person[];
   setContacts: React.Dispatch<React.SetStateAction<Person[]>>;
+  leads: Lead[];
+  setLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
   vehicles: Vehicle[];
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   drivers: Driver[];
@@ -18,21 +20,25 @@ interface CRMContextType {
   // Database operations
   refreshCompanies: () => Promise<void>;
   refreshContacts: () => Promise<void>;
+  refreshLeads: () => Promise<void>;
   refreshVehicles: () => Promise<void>;
   refreshDrivers: () => Promise<void>;
   
   createCompany: (company: Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Organization>;
   createContact: (contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Person>;
+  createLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Lead>;
   createVehicle: (vehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Vehicle>;
   createDriver: (driver: Omit<Driver, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Driver>;
   
   updateCompany: (id: string, company: Partial<Organization>) => Promise<Organization>;
   updateContact: (id: string, contact: Partial<Person>) => Promise<Person>;
+  updateLead: (id: string, lead: Partial<Lead>) => Promise<Lead>;
   updateVehicle: (id: string, vehicle: Partial<Vehicle>) => Promise<Vehicle>;
   updateDriver: (id: string, driver: Partial<Driver>) => Promise<Driver>;
   
   deleteCompany: (id: string) => Promise<void>;
   deleteContact: (id: string) => Promise<void>;
+  deleteLead: (id: string) => Promise<void>;
   deleteVehicle: (id: string) => Promise<void>;
   deleteDriver: (id: string) => Promise<void>;
 }
@@ -49,6 +55,7 @@ interface CRMProviderProps {
 export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
   const [companies, setCompanies] = useState<Organization[]>([]);
   const [contacts, setContacts] = useState<Person[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,15 +69,17 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         // Add a small delay to ensure database service is ready
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        const [companiesData, contactsData, vehiclesData, driversData] = await Promise.all([
+        const [companiesData, contactsData, leadsData, vehiclesData, driversData] = await Promise.all([
           databaseService.getCompanies(),
           databaseService.getContacts(),
+          databaseService.getLeads(),
           databaseService.getVehicles(),
           databaseService.getDrivers()
         ]);
         
         setCompanies(companiesData);
         setContacts(contactsData);
+        setLeads(leadsData);
         setVehicles(vehiclesData);
         setDrivers(driversData);
       } catch (error) {
@@ -78,6 +87,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         // Set empty arrays as fallback
         setCompanies([]);
         setContacts([]);
+        setLeads([]);
         setVehicles([]);
         setDrivers([]);
       } finally {
@@ -105,6 +115,16 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
       setContacts(data);
     } catch (error) {
       console.error('Failed to refresh contacts:', error);
+      throw error;
+    }
+  };
+
+  const refreshLeads = async () => {
+    try {
+      const data = await databaseService.getLeads();
+      setLeads(data);
+    } catch (error) {
+      console.error('Failed to refresh leads:', error);
       throw error;
     }
   };
@@ -147,6 +167,17 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
       return newContact;
     } catch (error) {
       console.error('Failed to create contact:', error);
+      throw error;
+    }
+  };
+
+  const createLead = async (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newLead = await databaseService.createLead(lead);
+      setLeads(prev => [...prev, newLead]);
+      return newLead;
+    } catch (error) {
+      console.error('Failed to create lead:', error);
       throw error;
     }
   };
@@ -195,6 +226,17 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     }
   };
 
+  const updateLead = async (id: string, lead: Partial<Lead>) => {
+    try {
+      const updatedLead = await databaseService.updateLead(id, lead);
+      setLeads(prev => prev.map(l => l.id === id ? updatedLead : l));
+      return updatedLead;
+    } catch (error) {
+      console.error('Failed to update lead:', error);
+      throw error;
+    }
+  };
+
   const updateVehicle = async (id: string, vehicle: Partial<Vehicle>) => {
     try {
       const updatedVehicle = await databaseService.updateVehicle(id, vehicle);
@@ -237,6 +279,16 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     }
   };
 
+  const deleteLead = async (id: string) => {
+    try {
+      await databaseService.deleteLead(id);
+      setLeads(prev => prev.filter(l => l.id !== id));
+    } catch (error) {
+      console.error('Failed to delete lead:', error);
+      throw error;
+    }
+  };
+
   const deleteVehicle = async (id: string) => {
     try {
       await databaseService.deleteVehicle(id);
@@ -262,6 +314,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     setCompanies,
     contacts,
     setContacts,
+    leads,
+    setLeads,
     vehicles,
     setVehicles,
     drivers,
@@ -269,18 +323,22 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     isLoading,
     refreshCompanies,
     refreshContacts,
+    refreshLeads,
     refreshVehicles,
     refreshDrivers,
     createCompany,
     createContact,
+    createLead,
     createVehicle,
     createDriver,
     updateCompany,
     updateContact,
+    updateLead,
     updateVehicle,
     updateDriver,
     deleteCompany,
     deleteContact,
+    deleteLead,
     deleteVehicle,
     deleteDriver,
   };

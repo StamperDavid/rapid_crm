@@ -9,7 +9,7 @@ import Layout from './components/Layout';
 // Import modules directly (not lazy loaded for now)
 import DashboardModule from './modules/Dashboard/index';
 import Companies from './modules/CRM/pages/Companies';
-import Contacts from './modules/CRM/pages/Contacts';
+import Leads from './modules/CRM/pages/Leads';
 import Deals from './modules/CRM/pages/Deals';
 import Invoices from './modules/CRM/pages/Invoices';
 import Integrations from './modules/CRM/pages/Integrations';
@@ -53,7 +53,7 @@ function App() {
                   
                   {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
                   <Route path="/companies" element={<Companies />} />
-                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/leads" element={<Leads />} />
                   <Route path="/deals" element={<Deals />} />
                   <Route path="/invoices" element={<Invoices />} />
                   <Route path="/tasks" element={<Tasks />} />

@@ -600,3 +600,83 @@ export interface ApiKey {
   iv?: string;
   salt?: string;
 }
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'Email' | 'Social Media' | 'Google Ads' | 'Facebook Ads' | 'LinkedIn' | 'Trade Show' | 'Referral Program' | 'Cold Outreach' | 'Website' | 'Other';
+  status: 'Active' | 'Paused' | 'Completed' | 'Draft';
+  startDate: string;
+  endDate?: string;
+  budget?: number;
+  targetAudience?: string;
+  goals?: string[];
+  metrics: {
+    totalLeads: number;
+    convertedLeads: number;
+    conversionRate: number;
+    costPerLead: number;
+    roi: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Lead {
+  id: string;
+  
+  // Basic Information
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company?: string;
+  jobTitle?: string;
+  
+  // Campaign & Source Tracking
+  campaignId?: string; // Link to campaign
+  leadSource: 'Website' | 'Referral' | 'Cold Call' | 'Trade Show' | 'Social Media' | 'Email Campaign' | 'Google Ads' | 'Facebook Ads' | 'LinkedIn' | 'Other';
+  leadStatus: 'New' | 'Contacted' | 'Qualified' | 'Unqualified' | 'Converted' | 'Lost';
+  leadScore: number; // 0-100
+  
+  // Transportation-Specific Fields
+  businessType?: 'Carrier' | 'Broker' | 'Freight Forwarder' | 'Shipper' | 'Owner Operator' | 'Other';
+  fleetSize?: number; // Changed to number for scoring
+  operatingStates?: string[];
+  cargoTypes?: string[];
+  hasUSDOT?: boolean;
+  usdotNumber?: string;
+  
+  // Lead Qualification
+  budget?: number; // Annual budget in dollars for scoring
+  timeline?: string; // Free text for timeline scoring
+  decisionMaker?: boolean;
+  painPoints?: string[];
+  interests?: string[];
+  
+  // Communication
+  preferredContactMethod: 'Phone' | 'Email' | 'Text' | 'LinkedIn';
+  lastContactDate?: string;
+  nextFollowUpDate?: string;
+  notes?: string;
+  
+  // Conversion Tracking
+  convertedToContact?: boolean;
+  convertedToDeal?: boolean;
+  conversionDate?: string;
+  conversionValue?: number;
+  convertedContactId?: string; // Link to the contact this lead converted to
+  convertedDealId?: string; // Link to the deal this lead converted to
+  
+  // Company Relationship
+  companyId?: string; // Link to existing company if lead is from existing company
+  
+  // Assignment
+  assignedTo?: string; // User ID
+  assignedDate?: string;
+  
+  // System Fields
+  createdAt: string;
+  updatedAt: string;
+}

@@ -16,7 +16,7 @@ import {
   CalendarIcon,
   IdentificationIcon
 } from '@heroicons/react/24/outline';
-import { Organization, Person, Vehicle, Driver, SELECT_OPTIONS } from '../../../types/schema';
+import { Organization, Person, Vehicle, Driver, Deal, Invoice, SELECT_OPTIONS } from '../../../types/schema';
 
 const Companies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +31,16 @@ const Companies: React.FC = () => {
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [showAddDriverModal, setShowAddDriverModal] = useState(false);
   const [showUSDOTApplicationModal, setShowUSDOTApplicationModal] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [isEditingDeal, setIsEditingDeal] = useState(false);
+  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
+  const [showUpdateStageModal, setShowUpdateStageModal] = useState(false);
+  const [newNote, setNewNote] = useState('');
+  const [dealNotes, setDealNotes] = useState<{[dealId: string]: Array<{id: string, text: string, author: string, date: string}>}>({});
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [isEditingInvoice, setIsEditingInvoice] = useState(false);
   
   // Mock data for related entities
   const [contacts, setContacts] = useState<Person[]>([
@@ -187,6 +197,107 @@ const Companies: React.FC = () => {
       payType: 'Salary',
       createdAt: '2024-01-10',
       updatedAt: '2024-01-18'
+    }
+  ]);
+
+  // Mock deals data
+  const [deals, setDeals] = useState<Deal[]>([
+    {
+      id: '1',
+      title: 'Acme Transportation - Fleet Management Contract',
+      description: 'Comprehensive fleet management services including vehicle tracking, maintenance scheduling, and driver management.',
+      value: 125000,
+      stage: 'Negotiation',
+      probability: 75,
+      expectedCloseDate: '2024-03-15',
+      companyId: '1',
+      contactId: '1',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '2',
+      title: 'Acme Transportation - USDOT Compliance Package',
+      description: 'USDOT compliance services including safety management, driver qualification files, and regulatory reporting.',
+      value: 45000,
+      stage: 'Closed Won',
+      probability: 100,
+      expectedCloseDate: '2024-01-30',
+      actualCloseDate: '2024-01-28',
+      companyId: '1',
+      contactId: '1',
+      createdAt: '2024-01-10',
+      updatedAt: '2024-01-28'
+    },
+    {
+      id: '3',
+      title: 'Midwest Freight Solutions - Brokerage Services',
+      description: 'Freight brokerage services for regional transportation needs.',
+      value: 85000,
+      stage: 'Proposal',
+      probability: 60,
+      expectedCloseDate: '2024-04-01',
+      companyId: '2',
+      contactId: '2',
+      createdAt: '2024-01-12',
+      updatedAt: '2024-01-18'
+    },
+    {
+      id: '4',
+      title: 'Midwest Freight Solutions - Insurance Package',
+      description: 'Comprehensive insurance coverage for fleet operations.',
+      value: 32000,
+      stage: 'Qualification',
+      probability: 40,
+      expectedCloseDate: '2024-05-15',
+      companyId: '2',
+      contactId: '2',
+      createdAt: '2024-01-08',
+      updatedAt: '2024-01-15'
+    }
+  ]);
+
+  // Mock invoices data
+  const [invoices, setInvoices] = useState<Invoice[]>([
+    {
+      id: '1',
+      invoiceNumber: 'INV-2024-001',
+      clientName: 'Acme Transportation LLC',
+      amount: 12500,
+      status: 'paid',
+      dueDate: '2024-01-15',
+      createdAt: '2024-01-01',
+      updatedAt: '2024-01-16'
+    },
+    {
+      id: '2',
+      invoiceNumber: 'INV-2024-002',
+      clientName: 'Acme Transportation LLC',
+      amount: 8500,
+      status: 'sent',
+      dueDate: '2024-02-15',
+      createdAt: '2024-01-15',
+      updatedAt: '2024-01-15'
+    },
+    {
+      id: '3',
+      invoiceNumber: 'INV-2024-003',
+      clientName: 'Midwest Freight Solutions',
+      amount: 15000,
+      status: 'overdue',
+      dueDate: '2024-01-10',
+      createdAt: '2023-12-15',
+      updatedAt: '2024-01-20'
+    },
+    {
+      id: '4',
+      invoiceNumber: 'INV-2024-004',
+      clientName: 'Midwest Freight Solutions',
+      amount: 22000,
+      status: 'draft',
+      dueDate: '2024-03-15',
+      createdAt: '2024-01-20',
+      updatedAt: '2024-01-20'
     }
   ]);
 
@@ -595,19 +706,131 @@ const Companies: React.FC = () => {
     setCompanies(companies.filter(company => company.id !== companyId));
   };
 
+  const handleEditDeal = (deal: Deal) => {
+    setEditingDeal({ ...deal });
+    setIsEditingDeal(true);
+  };
+
+  const handleSaveDeal = () => {
+    if (editingDeal) {
+      setDeals(deals.map(deal => 
+        deal.id === editingDeal.id 
+          ? { ...editingDeal, updatedAt: new Date().toISOString() }
+          : deal
+      ));
+      setSelectedDeal(editingDeal);
+      setIsEditingDeal(false);
+      setEditingDeal(null);
+    }
+  };
+
+  const handleCancelEditDeal = () => {
+    setIsEditingDeal(false);
+    setEditingDeal(null);
+  };
+
+  const handleAddNote = () => {
+    if (newNote.trim() && selectedDeal) {
+      const note = {
+        id: Date.now().toString(),
+        text: newNote.trim(),
+        author: 'Current User', // In a real app, this would be the logged-in user
+        date: new Date().toISOString()
+      };
+      
+      setDealNotes(prev => ({
+        ...prev,
+        [selectedDeal.id]: [...(prev[selectedDeal.id] || []), note]
+      }));
+      
+      setNewNote('');
+      setShowAddNoteModal(false);
+    }
+  };
+
+  const handleUpdateStage = (newStage: string) => {
+    if (selectedDeal) {
+      const updatedDeal = {
+        ...selectedDeal,
+        stage: newStage,
+        actualCloseDate: newStage === 'Closed Won' ? new Date().toISOString().split('T')[0] : undefined,
+        updatedAt: new Date().toISOString()
+      };
+      
+      setDeals(deals.map(deal => 
+        deal.id === selectedDeal.id ? updatedDeal : deal
+      ));
+      setSelectedDeal(updatedDeal);
+      setShowUpdateStageModal(false);
+    }
+  };
+
+  // Invoice handlers
+  const handleEditInvoice = (invoice: Invoice) => {
+    setEditingInvoice({ ...invoice });
+    setIsEditingInvoice(true);
+  };
+
+  const handleSaveInvoice = () => {
+    if (editingInvoice) {
+      setInvoices(invoices.map(invoice => 
+        invoice.id === editingInvoice.id 
+          ? { ...editingInvoice, updatedAt: new Date().toISOString() }
+          : invoice
+      ));
+      setSelectedInvoice(editingInvoice);
+      setIsEditingInvoice(false);
+      setEditingInvoice(null);
+    }
+  };
+
+  const handleCancelEditInvoice = () => {
+    setIsEditingInvoice(false);
+    setEditingInvoice(null);
+  };
+
+  const handleSendInvoice = (invoiceId: string) => {
+    setInvoices(invoices.map(invoice => 
+      invoice.id === invoiceId 
+        ? { ...invoice, status: 'sent' as const, updatedAt: new Date().toISOString() }
+        : invoice
+    ));
+    if (selectedInvoice && selectedInvoice.id === invoiceId) {
+      setSelectedInvoice({ ...selectedInvoice, status: 'sent', updatedAt: new Date().toISOString() });
+    }
+  };
+
+  const handleMarkAsPaid = (invoiceId: string) => {
+    setInvoices(invoices.map(invoice => 
+      invoice.id === invoiceId 
+        ? { ...invoice, status: 'paid' as const, updatedAt: new Date().toISOString() }
+        : invoice
+    ));
+    if (selectedInvoice && selectedInvoice.id === invoiceId) {
+      setSelectedInvoice({ ...selectedInvoice, status: 'paid', updatedAt: new Date().toISOString() });
+    }
+  };
+
   const totalCompanies = companies.length;
   const carriers = companies.filter(c => c.businessClassification === 'Carrier').length;
   const brokers = companies.filter(c => c.businessClassification === 'Broker').length;
   const forwarders = companies.filter(c => c.businessClassification === 'Freight Forwarder').length;
   const totalVehicles = companies.reduce((sum, c) => sum + c.numberOfVehicles, 0);
   const totalDrivers = companies.reduce((sum, c) => sum + c.numberOfDrivers, 0);
+  
+  // Deals statistics
+  const totalDeals = deals.length;
+  const activeDeals = deals.filter(d => !['Closed Won', 'Closed Lost'].includes(d.stage)).length;
+  const wonDeals = deals.filter(d => d.stage === 'Closed Won').length;
+  const totalDealValue = deals.reduce((sum, d) => sum + d.value, 0);
+  const wonDealValue = deals.filter(d => d.stage === 'Closed Won').reduce((sum, d) => sum + d.value, 0);
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Transportation Companies</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Companies</h1>
           <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
             Manage transportation and logistics companies with comprehensive DOT compliance tracking
           </p>
@@ -627,7 +850,7 @@ const Companies: React.FC = () => {
       </div>
 
       {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
@@ -721,6 +944,29 @@ const Companies: React.FC = () => {
                   </dt>
                   <dd className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     {totalDrivers}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CurrencyDollarIcon className="h-6 w-6 text-green-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    Active Deals
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {activeDeals}
+                  </dd>
+                  <dd className="text-sm text-gray-500 dark:text-gray-400">
+                    ${totalDealValue.toLocaleString()} total
                   </dd>
                 </dl>
               </div>
@@ -834,6 +1080,37 @@ const Companies: React.FC = () => {
                           <UserGroupIcon className="h-4 w-4 mr-1" />
                           {company.numberOfDrivers} drivers
                         </div>
+                        
+                        {(() => {
+                          const companyDeals = deals.filter(d => d.companyId === company.id);
+                          const totalDealValue = companyDeals.reduce((sum, deal) => sum + deal.value, 0);
+                          const activeDeals = companyDeals.filter(d => !['Closed Won', 'Closed Lost'].includes(d.stage));
+                          const wonDeals = companyDeals.filter(d => d.stage === 'Closed Won');
+                          const wonDealValue = wonDeals.reduce((sum, deal) => sum + deal.value, 0);
+                          
+                          return (
+                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                              <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+                              {companyDeals.length > 0 ? (
+                                <span>
+                                  {companyDeals.length} deals
+                                  {totalDealValue > 0 && (
+                                    <span className="ml-1 text-green-600 dark:text-green-400">
+                                      (${totalDealValue.toLocaleString()})
+                                    </span>
+                                  )}
+                                  {activeDeals.length > 0 && (
+                                    <span className="ml-1 text-blue-600 dark:text-blue-400">
+                                      • {activeDeals.length} active
+                                    </span>
+                                  )}
+                                </span>
+                              ) : (
+                                <span>No deals</span>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                       
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -1030,6 +1307,210 @@ const Companies: React.FC = () => {
                   </div>
                 </div>
       </div>
+
+              {/* Deals Section */}
+              <div className="mt-8 pt-6 border-t border-gray-600">
+                <h4 className="text-lg font-medium text-white mb-4">Deals & Opportunities</h4>
+                
+                {/* Current Deals */}
+                {deals.filter(d => d.companyId === selectedCompany.id).length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="text-md font-medium text-white">Current Deals</h5>
+                      <button
+                        className="flex items-center justify-center px-3 py-1 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200 text-sm"
+                      >
+                        <PlusIcon className="h-4 w-4 mr-1" />
+                        Add Deal
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {deals.filter(d => d.companyId === selectedCompany.id).map((deal) => (
+                        <div key={deal.id} className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors duration-200" onClick={() => setSelectedDeal(deal)}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h6 className="text-white font-medium">{deal.title}</h6>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  deal.stage === 'Closed Won' ? 'bg-green-600 text-white' :
+                                  deal.stage === 'Closed Lost' ? 'bg-red-600 text-white' :
+                                  deal.stage === 'Negotiation' ? 'bg-yellow-600 text-white' :
+                                  deal.stage === 'Proposal' ? 'bg-blue-600 text-white' :
+                                  'bg-gray-600 text-white'
+                                }`}>
+                                  {deal.stage}
+                                </span>
+                                <span className="text-green-400 font-medium">
+                                  ${deal.value.toLocaleString()}
+                                </span>
+                              </div>
+                              {deal.description && (
+                                <p className="text-gray-300 text-sm mb-2">{deal.description}</p>
+                              )}
+                              <div className="flex items-center space-x-4 text-sm text-gray-400">
+                                <div className="flex items-center">
+                                  <span className="mr-1">Probability:</span>
+                                  <span className="text-white font-medium">{deal.probability}%</span>
+                                </div>
+                                {deal.expectedCloseDate && (
+                                  <div className="flex items-center">
+                                    <CalendarIcon className="h-4 w-4 mr-1" />
+                                    <span>Expected: {new Date(deal.expectedCloseDate).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                                {deal.actualCloseDate && (
+                                  <div className="flex items-center">
+                                    <CalendarIcon className="h-4 w-4 mr-1" />
+                                    <span>Closed: {new Date(deal.actualCloseDate).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => setSelectedDeal(deal)}
+                                className="text-blue-400 hover:text-blue-300 p-1"
+                                title="View deal details"
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEditDeal(deal)}
+                                className="text-gray-400 hover:text-gray-300 p-1"
+                                title="Edit deal"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (window.confirm(`Are you sure you want to delete the deal "${deal.title}"?`)) {
+                                    setDeals(deals.filter(d => d.id !== deal.id));
+                                  }
+                                }}
+                                className="text-red-400 hover:text-red-300 p-1"
+                                title="Delete deal"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Deals Message */}
+                {deals.filter(d => d.companyId === selectedCompany.id).length === 0 && (
+                  <div className="mb-6 p-4 bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <CurrencyDollarIcon className="h-6 w-6 text-gray-400" />
+                      <div>
+                        <h5 className="text-md font-medium text-white">No Deals</h5>
+                        <p className="text-gray-300 text-sm">This company doesn't have any deals yet.</p>
+                      </div>
+                    </div>
+                    <button className="mt-3 flex items-center justify-center px-4 py-2 border border-gray-600 rounded-lg text-white hover:bg-gray-600 transition-colors duration-200">
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Create First Deal
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Invoices Section */}
+              <div className="mt-8 pt-6 border-t border-gray-600">
+                <h4 className="text-lg font-medium text-white mb-4">Invoices & Billing</h4>
+                
+                {/* Current Invoices */}
+                {invoices.filter(i => i.clientName === selectedCompany.legalBusinessName).length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="text-md font-medium text-white">Current Invoices</h5>
+                      <button
+                        className="flex items-center justify-center px-3 py-1 border border-gray-600 rounded-lg text-white hover:bg-gray-700 transition-colors duration-200 text-sm"
+                      >
+                        <PlusIcon className="h-4 w-4 mr-1" />
+                        Create Invoice
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {invoices.filter(i => i.clientName === selectedCompany.legalBusinessName).map((invoice) => (
+                        <div key={invoice.id} className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors duration-200" onClick={() => setSelectedInvoice(invoice)}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h6 className="text-white font-medium">{invoice.invoiceNumber}</h6>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                  invoice.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                                  invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-4 text-sm text-gray-300">
+                                <span className="flex items-center">
+                                  <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+                                  ${invoice.amount.toLocaleString()}
+                                </span>
+                                <span className="flex items-center">
+                                  <CalendarIcon className="h-4 w-4 mr-1" />
+                                  Due: {new Date(invoice.dueDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => setSelectedInvoice(invoice)}
+                                className="text-blue-400 hover:text-blue-300 p-1"
+                                title="View invoice details"
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEditInvoice(invoice)}
+                                className="text-gray-400 hover:text-gray-300 p-1"
+                                title="Edit invoice"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                className="text-red-400 hover:text-red-300 p-1"
+                                title="Delete invoice"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Invoices Message */}
+                {invoices.filter(i => i.clientName === selectedCompany.legalBusinessName).length === 0 && (
+                  <div className="text-center py-8">
+                    <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-white">No invoices</h3>
+                    <p className="mt-1 text-sm text-gray-400">Get started by creating a new invoice for this company.</p>
+                    <div className="mt-6">
+                      <button
+                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Create Invoice
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Related Entities Section */}
               <div className="mt-8 pt-6 border-t border-gray-600">
@@ -4021,6 +4502,740 @@ const Companies: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deal Details Modal */}
+      {selectedDeal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-5 mx-auto p-5 border w-full max-w-6xl shadow-lg rounded-md bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-medium text-white">
+                    {isEditingDeal ? 'Edit Deal' : selectedDeal.title}
+                  </h3>
+                  <p className="text-sm text-gray-300">
+                    {isEditingDeal ? 'Modify deal information and save changes' : `Deal Value: $${selectedDeal.value.toLocaleString()} • Stage: ${selectedDeal.stage}`}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {!isEditingDeal && (
+                    <button
+                      onClick={() => handleEditDeal(selectedDeal)}
+                      className="px-3 py-1 border border-gray-600 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700"
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedDeal(null);
+                      setIsEditingDeal(false);
+                      setEditingDeal(null);
+                    }}
+                    className="text-gray-300 hover:text-white"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+
+              {isEditingDeal && editingDeal ? (
+                /* Edit Mode */
+                <form onSubmit={(e) => { e.preventDefault(); handleSaveDeal(); }}>
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {/* Basic Deal Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-medium text-white">Deal Information</h4>
+                      <div className="bg-gray-700 rounded-lg p-4 space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Deal Title</label>
+                          <input
+                            type="text"
+                            value={editingDeal.title}
+                            onChange={(e) => setEditingDeal({...editingDeal, title: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Deal Value ($)</label>
+                          <input
+                            type="number"
+                            value={editingDeal.value}
+                            onChange={(e) => setEditingDeal({...editingDeal, value: Number(e.target.value)})}
+                            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Stage</label>
+                          <select
+                            value={editingDeal.stage}
+                            onChange={(e) => setEditingDeal({...editingDeal, stage: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            <option value="Qualification">Qualification</option>
+                            <option value="Proposal">Proposal</option>
+                            <option value="Negotiation">Negotiation</option>
+                            <option value="Closed Won">Closed Won</option>
+                            <option value="Closed Lost">Closed Lost</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Probability (%)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={editingDeal.probability}
+                            onChange={(e) => setEditingDeal({...editingDeal, probability: Number(e.target.value)})}
+                            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Expected Close Date</label>
+                          <input
+                            type="date"
+                            value={editingDeal.expectedCloseDate || ''}
+                            onChange={(e) => setEditingDeal({...editingDeal, expectedCloseDate: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        
+                        {editingDeal.stage === 'Closed Won' && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1">Actual Close Date</label>
+                            <input
+                              type="date"
+                              value={editingDeal.actualCloseDate || ''}
+                              onChange={(e) => setEditingDeal({...editingDeal, actualCloseDate: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Description and Notes */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-medium text-white">Description & Notes</h4>
+                      <div className="bg-gray-700 rounded-lg p-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                          <textarea
+                            value={editingDeal.description || ''}
+                            onChange={(e) => setEditingDeal({...editingDeal, description: e.target.value})}
+                            rows={4}
+                            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Describe the deal details, services, and requirements..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={handleCancelEditDeal}
+                      className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* View Mode */
+                <div>
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {/* Deal Overview */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-medium text-white">Deal Overview</h4>
+                  <div className="bg-gray-700 rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Deal Value:</span>
+                      <span className="text-green-400 font-medium">${selectedDeal.value.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Stage:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        selectedDeal.stage === 'Closed Won' ? 'bg-green-600 text-white' :
+                        selectedDeal.stage === 'Closed Lost' ? 'bg-red-600 text-white' :
+                        selectedDeal.stage === 'Negotiation' ? 'bg-yellow-600 text-white' :
+                        selectedDeal.stage === 'Proposal' ? 'bg-blue-600 text-white' :
+                        'bg-gray-600 text-white'
+                      }`}>
+                        {selectedDeal.stage}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Probability:</span>
+                      <span className="text-white font-medium">{selectedDeal.probability}%</span>
+                    </div>
+                    {selectedDeal.expectedCloseDate && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Expected Close:</span>
+                        <span className="text-white">{new Date(selectedDeal.expectedCloseDate).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                    {selectedDeal.actualCloseDate && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Actual Close:</span>
+                        <span className="text-white">{new Date(selectedDeal.actualCloseDate).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {selectedDeal.description && (
+                    <div>
+                      <h5 className="text-md font-medium text-white mb-2">Description</h5>
+                      <p className="text-gray-300 text-sm">{selectedDeal.description}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Registration Process */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-medium text-white">Registration Process</h4>
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="space-y-4">
+                      {/* Registration Stages */}
+                      <div>
+                        <h6 className="text-white font-medium mb-2">Current Stage</h6>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <span className="text-gray-300">Application Submitted</span>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <span className="text-gray-300">Under Review</span>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                          <span className="text-gray-400">Approval Pending</span>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                          <span className="text-gray-400">Registration Complete</span>
+                        </div>
+                      </div>
+
+                      {/* Renewal Information */}
+                      <div>
+                        <h6 className="text-white font-medium mb-2">Renewal Information</h6>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-300">Next Renewal:</span>
+                            <span className="text-white">March 15, 2025</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-300">Renewal Fee:</span>
+                            <span className="text-white">$300</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-300">Days Until Renewal:</span>
+                            <span className="text-yellow-400 font-medium">45 days</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Required Documents */}
+              <div className="mt-6">
+                <h4 className="text-lg font-medium text-white mb-4">Required Documents</h4>
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-3">
+                      <h6 className="text-white font-medium">Client Documents</h6>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Business License</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">EIN Certificate</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Insurance Certificate</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Safety Management Plan</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Driver Qualification Files</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h6 className="text-white font-medium">Our Documents</h6>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Application Form</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Service Agreement</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <span className="text-gray-300 text-sm">Compliance Checklist</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                          <span className="text-gray-400 text-sm">Final Report</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <svg className="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <span className="text-yellow-200 text-sm font-medium">Action Required: Client needs to provide Safety Management Plan and Driver Qualification Files</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeline & Notes */}
+              <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div>
+                  <h4 className="text-lg font-medium text-white mb-4">Timeline</h4>
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <div>
+                          <p className="text-white text-sm font-medium">Application Submitted</p>
+                          <p className="text-gray-400 text-xs">January 15, 2024</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <div>
+                          <p className="text-white text-sm font-medium">Under Review</p>
+                          <p className="text-gray-400 text-xs">January 20, 2024</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                        <div>
+                          <p className="text-gray-400 text-sm">Approval Expected</p>
+                          <p className="text-gray-500 text-xs">February 15, 2024</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-lg font-medium text-white mb-4">Notes & Updates</h4>
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="space-y-3">
+                      {/* Dynamic Notes */}
+                      {selectedDeal && dealNotes[selectedDeal.id] && dealNotes[selectedDeal.id].length > 0 ? (
+                        dealNotes[selectedDeal.id].map((note, index) => (
+                          <div key={note.id} className="border-l-2 border-blue-500 pl-3">
+                            <p className="text-white text-sm">{note.text}</p>
+                            <p className="text-gray-400 text-xs">
+                              {new Date(note.date).toLocaleDateString()} - {note.author}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-gray-400 text-sm">No notes yet. Add a note to track important updates.</p>
+                        </div>
+                      )}
+                      
+                      {/* Sample Notes (for demonstration) */}
+                      {(!selectedDeal || !dealNotes[selectedDeal.id] || dealNotes[selectedDeal.id].length === 0) && (
+                        <>
+                          <div className="border-l-2 border-yellow-500 pl-3">
+                            <p className="text-white text-sm">Waiting for safety management plan from client. Follow up scheduled for next week.</p>
+                            <p className="text-gray-400 text-xs">January 18, 2024 - Sarah Johnson</p>
+                          </div>
+                          <div className="border-l-2 border-green-500 pl-3">
+                            <p className="text-white text-sm">Initial application submitted successfully. All basic documentation received.</p>
+                            <p className="text-gray-400 text-xs">January 15, 2024 - System</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setSelectedDeal(null)}
+                  className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700"
+                >
+                  Close
+                </button>
+                <button 
+                  onClick={() => setShowAddNoteModal(true)}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Add Note
+                </button>
+                <button 
+                  onClick={() => setShowUpdateStageModal(true)}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                >
+                  Update Stage
+                </button>
+              </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Note Modal */}
+      {showAddNoteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-white">Add Note</h3>
+                <button
+                  onClick={() => {
+                    setShowAddNoteModal(false);
+                    setNewNote('');
+                  }}
+                  className="text-gray-300 hover:text-white"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Note for {selectedDeal?.title}
+                </label>
+                <textarea
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your note here..."
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowAddNoteModal(false);
+                    setNewNote('');
+                  }}
+                  className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddNote}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Add Note
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Stage Modal */}
+      {showUpdateStageModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-white">Update Stage</h3>
+                <button
+                  onClick={() => setShowUpdateStageModal(false)}
+                  className="text-gray-300 hover:text-white"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Current Stage: <span className="text-white font-medium">{selectedDeal?.stage}</span>
+                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Select New Stage:
+                </label>
+                <select
+                  onChange={(e) => handleUpdateStage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select new stage...</option>
+                  <option value="Qualification">Qualification</option>
+                  <option value="Proposal">Proposal</option>
+                  <option value="Negotiation">Negotiation</option>
+                  <option value="Closed Won">Closed Won</option>
+                  <option value="Closed Lost">Closed Lost</option>
+                </select>
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowUpdateStageModal(false)}
+                  className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Details Modal */}
+      {selectedInvoice && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-5 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-medium text-white">
+                  {isEditingInvoice ? 'Edit Invoice' : `Invoice Details - ${selectedInvoice.invoiceNumber}`}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  {!isEditingInvoice && (
+                    <button
+                      onClick={() => handleEditInvoice(selectedInvoice)}
+                      className="text-blue-400 hover:text-blue-300 p-1"
+                      title="Edit invoice"
+                    >
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedInvoice(null)}
+                    className="text-gray-300 hover:text-white"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {isEditingInvoice ? (
+                  /* Edit Mode */
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h4 className="text-md font-medium text-white mb-4">Edit Invoice</h4>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Invoice Number</label>
+                        <input
+                          type="text"
+                          value={editingInvoice?.invoiceNumber || ''}
+                          onChange={(e) => setEditingInvoice(prev => prev ? {...prev, invoiceNumber: e.target.value} : null)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Client</label>
+                        <input
+                          type="text"
+                          value={editingInvoice?.clientName || ''}
+                          onChange={(e) => setEditingInvoice(prev => prev ? {...prev, clientName: e.target.value} : null)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Amount</label>
+                        <input
+                          type="number"
+                          value={editingInvoice?.amount || 0}
+                          onChange={(e) => setEditingInvoice(prev => prev ? {...prev, amount: parseFloat(e.target.value) || 0} : null)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Status</label>
+                        <select
+                          value={editingInvoice?.status || 'draft'}
+                          onChange={(e) => setEditingInvoice(prev => prev ? {...prev, status: e.target.value as any} : null)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="sent">Sent</option>
+                          <option value="paid">Paid</option>
+                          <option value="overdue">Overdue</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Due Date</label>
+                        <input
+                          type="date"
+                          value={editingInvoice?.dueDate ? editingInvoice.dueDate.split('T')[0] : ''}
+                          onChange={(e) => setEditingInvoice(prev => prev ? {...prev, dueDate: e.target.value} : null)}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* View Mode */
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h4 className="text-md font-medium text-white mb-4">Invoice Overview</h4>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Invoice Number</label>
+                        <p className="mt-1 text-sm text-white">{selectedInvoice.invoiceNumber}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Client</label>
+                        <p className="mt-1 text-sm text-white">{selectedInvoice.clientName}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Amount</label>
+                        <p className="mt-1 text-sm text-white font-medium">${selectedInvoice.amount.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Status</label>
+                        <span className={`mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          selectedInvoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                          selectedInvoice.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                          selectedInvoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {selectedInvoice.status.charAt(0).toUpperCase() + selectedInvoice.status.slice(1)}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Due Date</label>
+                        <p className="mt-1 text-sm text-white">{new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Created</label>
+                        <p className="mt-1 text-sm text-white">{new Date(selectedInvoice.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Invoice Items */}
+                <div className="bg-gray-700 rounded-lg p-6">
+                  <h4 className="text-md font-medium text-white mb-4">Invoice Items</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-600">
+                      <div>
+                        <p className="text-white font-medium">USDOT Compliance Services</p>
+                        <p className="text-gray-300 text-sm">Comprehensive compliance management and reporting</p>
+                      </div>
+                      <p className="text-white font-medium">${selectedInvoice.amount.toLocaleString()}</p>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <p className="text-white font-medium">Total</p>
+                      <p className="text-white font-bold text-lg">${selectedInvoice.amount.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Information */}
+                <div className="bg-gray-700 rounded-lg p-6">
+                  <h4 className="text-md font-medium text-white mb-4">Payment Information</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">Payment Method</label>
+                      <p className="mt-1 text-sm text-white">Bank Transfer / Check</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">Payment Terms</label>
+                      <p className="mt-1 text-sm text-white">Net 30</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-6 border-t border-gray-600">
+                  {isEditingInvoice ? (
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={handleSaveInvoice}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      >
+                        <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={handleCancelEditInvoice}
+                        className="inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex space-x-3">
+                      {selectedInvoice.status !== 'sent' && selectedInvoice.status !== 'paid' && (
+                        <button
+                          onClick={() => handleSendInvoice(selectedInvoice.id)}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Send Invoice
+                        </button>
+                      )}
+                      {selectedInvoice.status !== 'paid' && (
+                        <button
+                          onClick={() => handleMarkAsPaid(selectedInvoice.id)}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Mark as Paid
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setSelectedInvoice(null)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -254,3 +254,104 @@ CREATE INDEX IF NOT EXISTS idx_invoices_company ON invoices(company_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_company ON tasks(company_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+
+-- Campaigns Table
+CREATE TABLE IF NOT EXISTS campaigns (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    type TEXT NOT NULL CHECK (type IN ('Email', 'Social Media', 'Google Ads', 'Facebook Ads', 'LinkedIn', 'Trade Show', 'Referral Program', 'Cold Outreach', 'Website', 'Other')),
+    status TEXT NOT NULL CHECK (status IN ('Active', 'Paused', 'Completed', 'Draft')),
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    budget REAL,
+    target_audience TEXT,
+    goals TEXT, -- JSON array
+    metrics TEXT, -- JSON object
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- Indexes for campaigns table
+CREATE INDEX IF NOT EXISTS idx_campaigns_type ON campaigns(type);
+CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status);
+CREATE INDEX IF NOT EXISTS idx_campaigns_start_date ON campaigns(start_date);
+
+-- Leads Table
+CREATE TABLE IF NOT EXISTS leads (
+    id TEXT PRIMARY KEY,
+    
+    -- Basic Information
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    company TEXT,
+    job_title TEXT,
+    
+    -- Campaign & Source Tracking
+    campaign_id TEXT, -- Foreign key to campaigns table
+    lead_source TEXT NOT NULL CHECK (lead_source IN ('Website', 'Referral', 'Cold Call', 'Trade Show', 'Social Media', 'Email Campaign', 'Google Ads', 'Facebook Ads', 'LinkedIn', 'Other')),
+    lead_status TEXT NOT NULL CHECK (lead_status IN ('New', 'Contacted', 'Qualified', 'Unqualified', 'Converted', 'Lost')),
+    lead_score INTEGER DEFAULT 0 CHECK (lead_score >= 0 AND lead_score <= 100),
+    
+    -- Transportation-Specific Fields
+    business_type TEXT CHECK (business_type IN ('Carrier', 'Broker', 'Freight Forwarder', 'Shipper', 'Other')),
+    fleet_size TEXT,
+    operating_states TEXT, -- JSON array
+    cargo_types TEXT, -- JSON array
+    has_usdot BOOLEAN DEFAULT FALSE,
+    usdot_number TEXT,
+    
+    -- Lead Qualification
+    budget TEXT CHECK (budget IN ('Under $10K', '$10K-$50K', '$50K-$100K', '$100K-$500K', 'Over $500K', 'Unknown')),
+    timeline TEXT CHECK (timeline IN ('Immediate', '1-3 Months', '3-6 Months', '6-12 Months', 'Over 1 Year', 'Unknown')),
+    decision_maker BOOLEAN DEFAULT FALSE,
+    pain_points TEXT, -- JSON array
+    interests TEXT, -- JSON array
+    
+    -- Communication
+    preferred_contact_method TEXT NOT NULL CHECK (preferred_contact_method IN ('Phone', 'Email', 'Text', 'LinkedIn')),
+    last_contact_date TEXT,
+    next_follow_up_date TEXT,
+    notes TEXT,
+    
+    -- Conversion Tracking
+    converted_to_contact BOOLEAN DEFAULT FALSE,
+    converted_to_deal BOOLEAN DEFAULT FALSE,
+    conversion_date TEXT,
+    conversion_value REAL,
+    converted_contact_id TEXT, -- Foreign key to contacts table
+    converted_deal_id TEXT, -- Foreign key to deals table
+    
+    -- Company Relationship
+    company_id TEXT, -- Foreign key to companies table
+    
+    -- Assignment
+    assigned_to TEXT, -- User ID
+    assigned_date TEXT,
+    
+    -- System Fields
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- Indexes for leads table
+CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+CREATE INDEX IF NOT EXISTS idx_leads_phone ON leads(phone);
+CREATE INDEX IF NOT EXISTS idx_leads_company ON leads(company);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(lead_status);
+CREATE INDEX IF NOT EXISTS idx_leads_source ON leads(lead_source);
+CREATE INDEX IF NOT EXISTS idx_leads_score ON leads(lead_score);
+CREATE INDEX IF NOT EXISTS idx_leads_assigned ON leads(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_leads_follow_up ON leads(next_follow_up_date);
+CREATE INDEX IF NOT EXISTS idx_leads_campaign ON leads(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_leads_company_id ON leads(company_id);
+CREATE INDEX IF NOT EXISTS idx_leads_converted_contact ON leads(converted_contact_id);
+CREATE INDEX IF NOT EXISTS idx_leads_converted_deal ON leads(converted_deal_id);
+
+-- Foreign Key Constraints (SQLite doesn't enforce these by default, but we document them)
+-- leads.campaign_id -> campaigns.id
+-- leads.company_id -> companies.id  
+-- leads.converted_contact_id -> contacts.id
+-- leads.converted_deal_id -> deals.id
