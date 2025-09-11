@@ -579,3 +579,24 @@ export interface AgentAnalytics {
     responseTime: number;
   }>;
 }
+
+// API Key Types - Secure API key management
+export interface ApiKey {
+  id: string;
+  name: string;
+  platform: 'google' | 'openai' | 'anthropic' | 'kixie' | 'stripe' | 'quickbooks' | 'custom';
+  key: string;
+  description?: string;
+  status: 'active' | 'inactive' | 'expired' | 'revoked';
+  environment: 'development' | 'staging' | 'production';
+  permissions: string[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  lastUsed?: string;
+  usageCount: number;
+  // Encrypted fields for secure storage
+  encryptedKey?: string;
+  iv?: string;
+  salt?: string;
+}

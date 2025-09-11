@@ -16,289 +16,378 @@ import {
   CogIcon,
   ShieldCheckIcon,
   XMarkIcon,
+  ArrowPathIcon,
+  DocumentArrowDownIcon,
+  DocumentArrowUpIcon,
 } from '@heroicons/react/24/outline';
-import { databaseService } from '../../../services/database';
-import DatabaseConfigModal from '../../../components/DatabaseConfigModal';
-import { DatabaseConfig } from '../../../services/databaseConnection';
+import { useApiKeys } from '../../../hooks/useApiKeys';
 
+// Temporary local interface until schema export is resolved
 interface ApiKey {
   id: string;
   name: string;
-  platform: 'google_cloud' | 'openai' | 'anthropic' | 'openrouter' | 'aws' | 'azure' | 'custom';
+  platform: 'google' | 'openai' | 'anthropic' | 'kixie' | 'stripe' | 'quickbooks' | 'custom';
   key: string;
   description?: string;
-  isActive: boolean;
+  status: 'active' | 'inactive' | 'expired' | 'revoked';
+  environment: 'development' | 'staging' | 'production';
+  permissions: string[];
+  tags: string[];
   createdAt: string;
   updatedAt: string;
   lastUsed?: string;
   usageCount: number;
-  permissions: string[];
-  environment: 'development' | 'staging' | 'production';
-  tags: string[];
-}
-
-interface DatabaseStatus {
-  isConnected: boolean;
-  type?: string;
-  lastChecked: string;
-  error?: string;
+  encryptedKey?: string;
+  iv?: string;
+  salt?: string;
 }
 
 const platformOptions = [
-  { value: 'google_cloud', label: 'Google Cloud', icon: CloudIcon, color: 'text-blue-600' },
+  { value: 'google', label: 'Google Cloud', icon: CloudIcon, color: 'text-blue-600' },
   { value: 'openai', label: 'OpenAI', icon: CpuChipIcon, color: 'text-green-600' },
   { value: 'anthropic', label: 'Anthropic', icon: CpuChipIcon, color: 'text-orange-600' },
-  { value: 'openrouter', label: 'OpenRouter', icon: CpuChipIcon, color: 'text-purple-600' },
-  { value: 'aws', label: 'AWS', icon: ServerIcon, color: 'text-yellow-600' },
-  { value: 'azure', label: 'Azure', icon: CloudIcon, color: 'text-blue-500' },
+  { value: 'kixie', label: 'Kixie', icon: LinkIcon, color: 'text-purple-600' },
+  { value: 'stripe', label: 'Stripe', icon: ServerIcon, color: 'text-indigo-500' },
+  { value: 'quickbooks', label: 'QuickBooks', icon: CloudIcon, color: 'text-blue-500' },
   { value: 'custom', label: 'Custom', icon: CogIcon, color: 'text-gray-600' },
 ];
 
 const platformIcons = {
-  google_cloud: CloudIcon,
+  google: CloudIcon,
   openai: CpuChipIcon,
   anthropic: CpuChipIcon,
-  openrouter: CpuChipIcon,
-  aws: ServerIcon,
-  azure: CloudIcon,
+  kixie: LinkIcon,
+  stripe: ServerIcon,
+  quickbooks: CloudIcon,
   custom: CogIcon,
 };
 
 const platformColors = {
-  google_cloud: 'text-blue-600',
+  google: 'text-blue-600',
   openai: 'text-green-600',
   anthropic: 'text-orange-600',
-  openrouter: 'text-purple-600',
-  aws: 'text-yellow-600',
-  azure: 'text-blue-500',
+  kixie: 'text-purple-600',
+  stripe: 'text-indigo-500',
+  quickbooks: 'text-blue-500',
   custom: 'text-gray-600',
 };
 
-const mockApiKeys: ApiKey[] = [
-  {
-    id: '1',
-    name: 'Google Cloud Vertex AI',
-    platform: 'google_cloud',
-    key: 'AIzaSyBvOkBwvOkBwvOkBwvOkBwvOkBwvOkBwvOk',
-    description: 'Primary Google Cloud API key for Vertex AI services',
-    isActive: true,
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-20T14:45:00Z',
-    lastUsed: '2024-01-20T16:30:00Z',
-    usageCount: 1247,
-    permissions: ['vertex-ai', 'document-ai', 'discovery-engine', 'natural-language'],
-    environment: 'production',
-    tags: ['ai', 'ml', 'production']
-  },
-  {
-    id: '2',
-    name: 'Google Cloud Document AI',
-    platform: 'google_cloud',
-    key: 'AIzaSyCxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbC',
-    description: 'Google Cloud Document AI for processing USDOT forms and documents',
-    isActive: true,
-    createdAt: '2024-01-16T09:15:00Z',
-    updatedAt: '2024-01-20T15:20:00Z',
-    lastUsed: '2024-01-20T17:45:00Z',
-    usageCount: 89,
-    permissions: ['document-ai', 'form-parsing', 'text-extraction', 'ocr'],
-    environment: 'production',
-    tags: ['document-processing', 'usdot', 'forms', 'production']
-  },
-  {
-    id: '3',
-    name: 'Google Cloud Natural Language API',
-    platform: 'google_cloud',
-    key: 'AIzaSyDxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCd',
-    description: 'Natural Language API for sentiment analysis and text processing',
-    isActive: true,
-    createdAt: '2024-01-17T11:30:00Z',
-    updatedAt: '2024-01-20T16:10:00Z',
-    lastUsed: '2024-01-20T18:15:00Z',
-    usageCount: 156,
-    permissions: ['natural-language', 'sentiment-analysis', 'entity-extraction', 'syntax-analysis'],
-    environment: 'production',
-    tags: ['nlp', 'sentiment', 'text-analysis', 'production']
-  },
-  {
-    id: '4',
-    name: 'Google Cloud Discovery Engine',
-    platform: 'google_cloud',
-    key: 'AIzaSyExYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCe',
-    description: 'Discovery Engine for regulatory knowledge base and search',
-    isActive: true,
-    createdAt: '2024-01-18T14:20:00Z',
-    updatedAt: '2024-01-20T17:30:00Z',
-    lastUsed: '2024-01-20T19:00:00Z',
-    usageCount: 67,
-    permissions: ['discovery-engine', 'search', 'knowledge-base', 'regulatory-data'],
-    environment: 'production',
-    tags: ['search', 'knowledge-base', 'regulatory', 'production']
-  },
-  {
-    id: '5',
-    name: 'Google Cloud Translation API',
-    platform: 'google_cloud',
-    key: 'AIzaSyFxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCf',
-    description: 'Translation API for multi-language support in conversations',
-    isActive: true,
-    createdAt: '2024-01-19T10:45:00Z',
-    updatedAt: '2024-01-20T18:00:00Z',
-    lastUsed: '2024-01-20T19:30:00Z',
-    usageCount: 34,
-    permissions: ['translation', 'language-detection', 'multi-language'],
-    environment: 'production',
-    tags: ['translation', 'multi-language', 'production']
-  },
-  {
-    id: '6',
-    name: 'Kixie Power Dialer',
-    platform: 'custom',
-    key: 'kx_live_abc123def456ghi789jkl012mno345pqr678',
-    description: 'Kixie Power Dialer API for automated calling and call tracking',
-    isActive: true,
-    createdAt: '2024-01-20T08:30:00Z',
-    updatedAt: '2024-01-20T19:45:00Z',
-    lastUsed: '2024-01-20T20:15:00Z',
-    usageCount: 23,
-    permissions: ['power-dialing', 'call-recording', 'call-analytics', 'lead-tracking'],
-    environment: 'production',
-    tags: ['calling', 'power-dialer', 'sales', 'production']
-  },
-  {
-    id: '7',
-    name: 'OpenAI GPT-4',
-    platform: 'openai',
-    key: 'sk-proj-abc123def456ghi789jkl012mno345pqr678',
-    description: 'OpenAI API key for GPT-4 and other models',
-    isActive: true,
-    createdAt: '2024-01-10T09:15:00Z',
-    updatedAt: '2024-01-18T11:20:00Z',
-    lastUsed: '2024-01-20T15:45:00Z',
-    usageCount: 892,
-    permissions: ['gpt-4', 'gpt-3.5-turbo', 'embeddings', 'moderations'],
-    environment: 'production',
-    tags: ['llm', 'chat', 'production']
-  },
-  {
-    id: '8',
-    name: 'OpenRouter API',
-    platform: 'openrouter',
-    key: 'sk-or-v1-abc123def456ghi789jkl012mno345pqr678',
-    description: 'OpenRouter API key for accessing multiple LLM providers',
-    isActive: true,
-    createdAt: '2024-01-12T14:20:00Z',
-    updatedAt: '2024-01-19T16:10:00Z',
-    lastUsed: '2024-01-20T17:15:00Z',
-    usageCount: 456,
-    permissions: ['claude', 'gpt-4', 'llama', 'gemini'],
-    environment: 'production',
-    tags: ['llm', 'multi-provider', 'production']
-  },
-  {
-    id: '9',
-    name: 'Anthropic Claude',
-    platform: 'anthropic',
-    key: 'sk-ant-api03-abc123def456ghi789jkl012mno345pqr678',
-    description: 'Anthropic Claude API key for advanced reasoning tasks',
-    isActive: false,
-    createdAt: '2024-01-08T13:45:00Z',
-    updatedAt: '2024-01-15T10:30:00Z',
-    lastUsed: '2024-01-15T09:20:00Z',
-    usageCount: 234,
-    permissions: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-    environment: 'development',
-    tags: ['llm', 'reasoning', 'development']
-  }
-];
-
 const ApiKeys: React.FC = () => {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(mockApiKeys);
+  // Use the new API Keys hook
+  const {
+    apiKeys,
+    analytics,
+    loading,
+    error,
+    isInitialized,
+    initialize,
+    createApiKey,
+    updateApiKey,
+    deleteApiKey,
+    getDecryptedApiKey,
+    validateApiKey,
+    validateAllApiKeys,
+    generateApiKey,
+    exportApiKeys,
+    importApiKeys,
+    refreshApiKeys
+  } = useApiKeys();
+
+  // Preconfigured API keys with blank values for user to fill in
+  const preconfiguredApiKeys: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>[] = [
+    {
+      name: 'Google Cloud Vertex AI',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Primary Google Cloud API key for Vertex AI services',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['vertex-ai', 'document-ai', 'discovery-engine', 'natural-language'],
+      tags: ['ai', 'ml', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Google Cloud Document AI',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Google Cloud Document AI for processing USDOT forms and documents',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['document-ai', 'form-parsing', 'text-extraction', 'ocr'],
+      tags: ['document-processing', 'usdot', 'forms', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Google Cloud Natural Language API',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Natural Language API for sentiment analysis and text processing',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['natural-language', 'sentiment-analysis', 'entity-extraction', 'syntax-analysis'],
+      tags: ['nlp', 'sentiment', 'text-analysis', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Google Cloud Translation API',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Translation API for multi-language support in conversations',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['translation', 'language-detection', 'batch-translation'],
+      tags: ['translation', 'multilingual', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Google Cloud Speech-to-Text',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Speech-to-Text API for voice input processing',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['speech-to-text', 'voice-recognition', 'audio-processing'],
+      tags: ['speech', 'voice', 'audio', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Google Cloud Text-to-Speech',
+      platform: 'google',
+      key: '', // Leave blank for user to fill in
+      description: 'Text-to-Speech API for voice output in conversations',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['text-to-speech', 'voice-synthesis', 'audio-generation'],
+      tags: ['speech', 'voice', 'audio', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'OpenAI GPT-4',
+      platform: 'openai',
+      key: '', // Leave blank for user to fill in
+      description: 'OpenAI GPT-4 for advanced AI conversations and reasoning',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['gpt-4', 'chat-completions', 'text-generation'],
+      tags: ['ai', 'gpt-4', 'conversations', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'OpenAI GPT-3.5 Turbo',
+      platform: 'openai',
+      key: '', // Leave blank for user to fill in
+      description: 'OpenAI GPT-3.5 Turbo for fast AI responses',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['gpt-3.5-turbo', 'chat-completions', 'text-generation'],
+      tags: ['ai', 'gpt-3.5', 'conversations', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'OpenAI Embeddings',
+      platform: 'openai',
+      key: '', // Leave blank for user to fill in
+      description: 'OpenAI Embeddings for semantic search and knowledge base',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['embeddings', 'text-embedding', 'semantic-search'],
+      tags: ['embeddings', 'search', 'knowledge-base', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Anthropic Claude 3.5 Sonnet',
+      platform: 'anthropic',
+      key: '', // Leave blank for user to fill in
+      description: 'Anthropic Claude 3.5 Sonnet for advanced reasoning and analysis',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['claude-3.5-sonnet', 'messages', 'text-generation'],
+      tags: ['ai', 'claude', 'reasoning', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Anthropic Claude 3 Haiku',
+      platform: 'anthropic',
+      key: '', // Leave blank for user to fill in
+      description: 'Anthropic Claude 3 Haiku for fast, cost-effective AI responses',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['claude-3-haiku', 'messages', 'text-generation'],
+      tags: ['ai', 'claude', 'fast', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Kixie Power Dialer',
+      platform: 'kixie',
+      key: '', // Leave blank for user to fill in
+      description: 'Kixie Power Dialer API for automated calling and lead management',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['power-dialer', 'calling', 'lead-management', 'crm-integration'],
+      tags: ['calling', 'dialer', 'leads', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Kixie SMS',
+      platform: 'kixie',
+      key: '', // Leave blank for user to fill in
+      description: 'Kixie SMS API for text messaging and communication',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['sms', 'text-messaging', 'communication'],
+      tags: ['sms', 'messaging', 'communication', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'Stripe Payment Processing',
+      platform: 'stripe',
+      key: '', // Leave blank for user to fill in
+      description: 'Stripe API for payment processing and subscription management',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['payments', 'subscriptions', 'invoicing', 'webhooks'],
+      tags: ['payments', 'stripe', 'billing', 'production'],
+      usageCount: 0
+    },
+    {
+      name: 'QuickBooks Online',
+      platform: 'quickbooks',
+      key: '', // Leave blank for user to fill in
+      description: 'QuickBooks Online API for accounting and financial management',
+      status: 'inactive',
+      environment: 'production',
+      permissions: ['accounting', 'invoicing', 'expenses', 'reports'],
+      tags: ['accounting', 'quickbooks', 'finance', 'production'],
+      usageCount: 0
+    }
+  ];
+
+  // Local state for UI
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
   const [showKey, setShowKey] = useState<{ [key: string]: boolean }>({});
-  const [databaseStatus, setDatabaseStatus] = useState<DatabaseStatus>({
-    isConnected: false,
-    lastChecked: new Date().toISOString()
-  });
-  const [showDatabaseModal, setShowDatabaseModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [masterPassword, setMasterPassword] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(!isInitialized);
+  const [validatingKeys, setValidatingKeys] = useState<Set<string>>(new Set());
 
-  // Load API keys from database
-  useEffect(() => {
-    const loadApiKeys = async () => {
+  // Initialize the service when master password is provided
+  const handleInitialize = async () => {
+    if (masterPassword.trim()) {
       try {
-        const dbApiKeys = await databaseService.getApiKeys();
-        if (dbApiKeys.length > 0) {
-          setApiKeys(dbApiKeys);
-        }
+        await initialize(masterPassword);
+        setShowPasswordModal(false);
+        setMasterPassword('');
       } catch (error) {
-        console.error('Error loading API keys:', error);
+        console.error('Failed to initialize API key service:', error);
       }
-    };
+    }
+  };
 
-    loadApiKeys();
-  }, []);
-
-  // Check database connection status
-  useEffect(() => {
-    const checkDatabaseStatus = async () => {
-      try {
-        // This would be a real database check in production
-        setDatabaseStatus({
-          isConnected: true,
-          type: 'PostgreSQL',
-          lastChecked: new Date().toISOString()
-        });
-      } catch (error) {
-        setDatabaseStatus({
-          isConnected: false,
-          lastChecked: new Date().toISOString(),
-          error: 'Connection failed'
-        });
+  // Initialize preconfigured API keys
+  const handleInitializePreconfiguredKeys = async () => {
+    try {
+      for (const keyData of preconfiguredApiKeys) {
+        await createApiKey(keyData);
       }
-    };
+      alert('Successfully initialized all preconfigured API keys! You can now fill in your actual API keys.');
+    } catch (error) {
+      console.error('Failed to initialize preconfigured API keys:', error);
+      alert('Failed to initialize some API keys. Please try again.');
+    }
+  };
 
-    checkDatabaseStatus();
-    const interval = setInterval(checkDatabaseStatus, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
+  // Handle creating a new API key
   const handleCreateKey = async (keyData: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newKey = await databaseService.createApiKey(keyData);
-      setApiKeys(prev => [...prev, newKey]);
+      await createApiKey(keyData);
       setShowCreateModal(false);
     } catch (error) {
       console.error('Error creating API key:', error);
     }
   };
 
+  // Handle updating an API key
   const handleUpdateKey = async (id: string, updates: Partial<ApiKey>) => {
     try {
-      const updatedKey = await databaseService.updateApiKey(id, {
-        ...updates,
-        updatedAt: new Date().toISOString()
-      });
-      setApiKeys(prev => prev.map(key => key.id === id ? updatedKey : key));
+      await updateApiKey(id, updates);
       setEditingKey(null);
     } catch (error) {
       console.error('Error updating API key:', error);
     }
   };
 
+  // Handle deleting an API key
   const handleDeleteKey = async (id: string) => {
-    if (confirm('Are you sure you want to delete this API key?')) {
+    if (window.confirm('Are you sure you want to delete this API key?')) {
       try {
-        await databaseService.deleteApiKey(id);
-        setApiKeys(prev => prev.filter(key => key.id !== id));
+        await deleteApiKey(id);
       } catch (error) {
         console.error('Error deleting API key:', error);
       }
     }
   };
 
+  // Handle validating an API key
+  const handleValidateKey = async (id: string) => {
+    setValidatingKeys(prev => new Set(prev).add(id));
+    try {
+      await validateApiKey(id);
+    } catch (error) {
+      console.error('Error validating API key:', error);
+    } finally {
+      setValidatingKeys(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
+  };
+
+  // Handle validating all API keys
+  const handleValidateAllKeys = async () => {
+    try {
+      await validateAllApiKeys();
+    } catch (error) {
+      console.error('Error validating all API keys:', error);
+    }
+  };
+
+  // Handle exporting API keys
+  const handleExportKeys = async () => {
+    try {
+      const exportData = await exportApiKeys();
+      const blob = new Blob([exportData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `api-keys-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting API keys:', error);
+    }
+  };
+
+  // Handle importing API keys
+  const handleImportKeys = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const text = await file.text();
+        const importedCount = await importApiKeys(text);
+        alert(`Successfully imported ${importedCount} API keys`);
+      } catch (error) {
+        console.error('Error importing API keys:', error);
+        alert('Failed to import API keys. Please check the file format.');
+      }
+    }
+  };
+
+  // Toggle key visibility
   const toggleKeyVisibility = (keyId: string) => {
     setShowKey(prev => ({
       ...prev,
@@ -306,417 +395,349 @@ const ApiKeys: React.FC = () => {
     }));
   };
 
-  const maskKey = (key: string) => {
-    if (key.length <= 8) return key;
-    return key.substring(0, 4) + '•'.repeat(key.length - 8) + key.substring(key.length - 4);
-  };
+  // Get filtered API keys
+  const filteredApiKeys = apiKeys.filter(key => {
+    const matchesFilter = filter === 'all' || 
+      (filter === 'active' && key.status === 'active') ||
+      (filter === 'inactive' && key.status !== 'active');
+    
+    const matchesSearch = searchTerm === '' || 
+      key.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      key.platform.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      key.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const filteredKeys = apiKeys.filter(key => {
-    const matchesFilter = filter === 'all' || (filter === 'active' ? key.isActive : !key.isActive);
-    const matchesSearch = key.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         key.platform.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         key.description?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
+  // Get platform icon
   const getPlatformIcon = (platform: string) => {
     const IconComponent = platformIcons[platform as keyof typeof platformIcons] || CogIcon;
-    return IconComponent;
+    return <IconComponent className="h-5 w-5" />;
   };
 
+  // Get platform color
   const getPlatformColor = (platform: string) => {
     return platformColors[platform as keyof typeof platformColors] || 'text-gray-600';
   };
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">API Keys</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Manage API keys and database connections for your CRM platform
+  // Get status color
+  const getStatusColor = (status: ApiKey['status']) => {
+    switch (status) {
+      case 'active': return 'text-green-600 bg-green-100';
+      case 'inactive': return 'text-gray-600 bg-gray-100';
+      case 'expired': return 'text-red-600 bg-red-100';
+      case 'revoked': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Show password modal if not initialized
+  if (showPasswordModal) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="text-center">
+            <ShieldCheckIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Initialize API Key Service
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Enter your master password to encrypt and secure your API keys.
             </p>
           </div>
-          <div className="flex space-x-3">
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Master Password
+              </label>
+              <input
+                type="password"
+                value={masterPassword}
+                onChange={(e) => setMasterPassword(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleInitialize()}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="Enter master password"
+              />
+            </div>
+            
             <button
-              onClick={() => setShowDatabaseModal(true)}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600"
+              onClick={handleInitialize}
+              disabled={!masterPassword.trim() || loading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CircleStackIcon className="h-4 w-4 mr-2" />
-              Database Config
+              {loading ? 'Initializing...' : 'Initialize'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && apiKeys.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Error loading API keys</h3>
+            <p className="mt-1 text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">API Keys</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Manage and secure your API keys for various services
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            {apiKeys.length === 0 && (
+              <button
+                onClick={handleInitializePreconfiguredKeys}
+                className="px-3 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                <CogIcon className="h-4 w-4 inline mr-1" />
+                Setup Preconfigured Keys
+              </button>
+            )}
+            <button
+              onClick={handleValidateAllKeys}
+              className="px-3 py-2 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+            >
+              Validate All
             </button>
             <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+              onClick={handleExportKeys}
+              className="px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
             >
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <DocumentArrowDownIcon className="h-4 w-4 inline mr-1" />
+              Export
+            </button>
+            <label className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer">
+              <DocumentArrowUpIcon className="h-4 w-4 inline mr-1" />
+              Import
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportKeys}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <PlusIcon className="h-4 w-4 inline mr-1" />
               Add API Key
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Database Status */}
-      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <CircleStackIcon className={`h-8 w-8 ${databaseStatus?.isConnected ? 'text-green-600' : 'text-red-600'}`} />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                Database Connection
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {databaseStatus?.isConnected ? `Connected to ${databaseStatus.type}` : 'Not connected'}
-              </p>
+        {/* Analytics */}
+        {analytics && (
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analytics.totalKeys}</div>
+              <div className="text-sm text-blue-600 dark:text-blue-400">Total Keys</div>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{analytics.activeKeys}</div>
+              <div className="text-sm text-green-600 dark:text-green-400">Active</div>
+            </div>
+            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{analytics.expiredKeys}</div>
+              <div className="text-sm text-red-600 dark:text-red-400">Expired</div>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analytics.totalRequests}</div>
+              <div className="text-sm text-purple-600 dark:text-purple-400">Total Requests</div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            {databaseStatus?.isConnected ? (
-              <CheckCircleIcon className="h-5 w-5 text-green-600" />
-            ) : (
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
-            )}
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              Last checked: {new Date(databaseStatus?.lastChecked).toLocaleTimeString()}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Filters and Search */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search API keys..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-          />
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-2 text-sm font-medium rounded-md ${
-              filter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('active')}
-            className={`px-3 py-2 text-sm font-medium rounded-md ${
-              filter === 'active'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setFilter('inactive')}
-            className={`px-3 py-2 text-sm font-medium rounded-md ${
-              filter === 'inactive'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            Inactive
-          </button>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search API keys..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div className="flex space-x-2">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+            >
+              <option value="all">All Keys</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <button
+              onClick={refreshApiKeys}
+              className="px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            >
+              <ArrowPathIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* API Keys Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredKeys.map((apiKey) => {
-          const IconComponent = getPlatformIcon(apiKey.platform);
-          const colorClass = getPlatformColor(apiKey.platform);
-          
-          return (
-            <div key={apiKey.id} className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center">
-                  <IconComponent className={`h-6 w-6 ${colorClass}`} />
-                  <div className="ml-3">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                      {apiKey.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {platformOptions.find(p => p.value === apiKey.platform)?.label}
-                    </p>
+      {/* API Keys List */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            API Keys ({filteredApiKeys.length})
+          </h3>
+        </div>
+        
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          {filteredApiKeys.map((apiKey) => (
+            <div key={apiKey.id} className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`p-2 rounded-lg ${getPlatformColor(apiKey.platform)} bg-gray-100 dark:bg-gray-700`}>
+                    {getPlatformIcon(apiKey.platform)}
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">{apiKey.name}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{apiKey.platform}</p>
+                    {apiKey.description && (
+                      <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{apiKey.description}</p>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-1">
+                
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(apiKey.status)}`}>
+                    {apiKey.status}
+                  </span>
+                  <button
+                    onClick={() => toggleKeyVisibility(apiKey.id)}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    {showKey[apiKey.id] ? (
+                      <EyeSlashIcon className="h-4 w-4" />
+                    ) : (
+                      <EyeIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleValidateKey(apiKey.id)}
+                    disabled={validatingKeys.has(apiKey.id)}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
+                  >
+                    {validatingKeys.has(apiKey.id) ? (
+                      <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircleIcon className="h-4 w-4" />
+                    )}
+                  </button>
                   <button
                     onClick={() => setEditingKey(apiKey)}
-                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <PencilIcon className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteKey(apiKey.id)}
-                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                    className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
                 </div>
               </div>
-
-              {apiKey.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {apiKey.description}
-                </p>
-              )}
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">API Key</span>
-                  <div className="flex items-center space-x-2">
-                    <code className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
-                      {showKey[apiKey.id] ? apiKey.key : maskKey(apiKey.key)}
-                    </code>
-                    <button
-                      onClick={() => toggleKeyVisibility(apiKey.id)}
-                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                      {showKey[apiKey.id] ? (
-                        <EyeSlashIcon className="h-4 w-4" />
-                      ) : (
-                        <EyeIcon className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
+              
+              <div className="mt-4">
+                <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                  <span>Created: {formatDate(apiKey.createdAt)}</span>
+                  <span>Updated: {formatDate(apiKey.updatedAt)}</span>
+                  {apiKey.lastUsed && (
+                    <span>Last Used: {formatDate(apiKey.lastUsed)}</span>
+                  )}
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    apiKey.isActive
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                  }`}>
-                    {apiKey.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Environment</span>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    apiKey.environment === 'production'
-                      ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                      : apiKey.environment === 'staging'
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                  }`}>
-                    {apiKey.environment}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Usage Count</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {apiKey.usageCount.toLocaleString()}
-                  </span>
-                </div>
-
-                {apiKey.lastUsed && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Last Used</span>
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      {new Date(apiKey.lastUsed).toLocaleDateString()}
-                    </span>
+                
+                {showKey[apiKey.id] && (
+                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                    <div className="flex items-center justify-between">
+                      <code className="text-sm font-mono text-gray-800 dark:text-gray-200 break-all">
+                        {apiKey.key}
+                      </code>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(apiKey.key)}
+                        className="ml-2 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Copy
+                      </button>
+                    </div>
                   </div>
                 )}
-
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex flex-wrap gap-1">
-                    {apiKey.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-300 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {filteredKeys.length === 0 && (
-        <div className="text-center py-12">
-          <KeyIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No API keys found</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {searchTerm ? 'Try adjusting your search criteria.' : 'Get started by creating your first API key.'}
-          </p>
-          {!searchTerm && (
-            <div className="mt-6">
+          ))}
+        </div>
+        
+        {filteredApiKeys.length === 0 && (
+          <div className="p-12 text-center">
+            <KeyIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No API keys found
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Get started by setting up preconfigured API keys or adding your own
+            </p>
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={handleInitializePreconfiguredKeys}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                <CogIcon className="h-4 w-4 inline mr-1" />
+                Setup Preconfigured Keys
+              </button>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Add API Key
+                <PlusIcon className="h-4 w-4 inline mr-1" />
+                Add Custom API Key
               </button>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Create/Edit API Key Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
-            
-            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Create API Key
-                </h2>
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                </button>
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.target as HTMLFormElement);
-                  handleCreateKey({
-                    name: formData.get('name') as string,
-                    platform: formData.get('platform') as ApiKey['platform'],
-                    key: formData.get('key') as string,
-                    description: formData.get('description') as string,
-                    isActive: true,
-                    usageCount: 0,
-                    permissions: [],
-                    environment: formData.get('environment') as ApiKey['environment'],
-                    tags: (formData.get('tags') as string).split(',').map(tag => tag.trim()).filter(Boolean)
-                  });
-                }}
-                className="p-6 space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Platform
-                  </label>
-                  <select
-                    name="platform"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-                  >
-                    {platformOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    API Key
-                  </label>
-                  <input
-                    type="text"
-                    name="key"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Environment
-                  </label>
-                  <select
-                    name="environment"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value="development">Development</option>
-                    <option value="staging">Staging</option>
-                    <option value="production">Production</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tags (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    name="tags"
-                    placeholder="ai, production, ml"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
-                  >
-                    Create API Key
-                  </button>
-                </div>
-              </form>
-            </div>
           </div>
-        </div>
-      )}
-
-      {/* Database Configuration Modal */}
-      <DatabaseConfigModal
-        isOpen={showDatabaseModal}
-        onClose={() => setShowDatabaseModal(false)}
-        onSave={(config: DatabaseConfig) => {
-          console.log('Database configuration saved:', config);
-          setShowDatabaseModal(false);
-        }}
-      />
+        )}
+      </div>
     </div>
   );
 };
