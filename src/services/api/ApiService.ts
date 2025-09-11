@@ -1,4 +1,4 @@
-import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Campaign, ApiKey } from '../../types/schema';
+import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Campaign, ApiKey, Service } from '../../types/schema';
 import { getApiConfig, logApiConfig } from '../../config/api';
 
 export interface ApiResponse<T> {
@@ -327,6 +327,47 @@ export class ApiService {
 
   async deleteDeal(id: string): Promise<boolean> {
     const response = await this.request<{ deleted: boolean }>(`/deals/${id}`, {
+      method: 'DELETE',
+    });
+    return response.data.deleted;
+  }
+
+  // Services
+  async getServices(): Promise<Service[]> {
+    const response = await this.request<Service[]>('/services');
+    return response.data;
+  }
+
+  async getService(id: string): Promise<Service | null> {
+    try {
+      const response = await this.request<Service>(`/services/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async createService(service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<Service> {
+    const response = await this.request<Service>('/services', {
+      method: 'POST',
+      body: JSON.stringify(service),
+    });
+    return response.data;
+  }
+
+  async updateService(id: string, service: Partial<Service>): Promise<Service> {
+    const response = await this.request<Service>(`/services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(service),
+    });
+    return response.data;
+  }
+
+  async deleteService(id: string): Promise<boolean> {
+    const response = await this.request<{ deleted: boolean }>(`/services/${id}`, {
       method: 'DELETE',
     });
     return response.data.deleted;

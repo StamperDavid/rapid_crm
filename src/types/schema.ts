@@ -97,15 +97,36 @@ export interface Organization {
   updatedAt: string;
 }
 
+export interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: 'Registration' | 'Compliance' | 'Training' | 'Support';
+  basePrice: number;
+  estimatedDuration: string; // e.g., "1-2 business days", "2-4 weeks"
+  requirements: string[]; // What client needs to provide
+  deliverables: string[]; // What we provide
+  isActive: boolean;
+  
+  // System Fields
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Deal {
   id: string;
   title: string;
   description?: string;
   value: number;
-  stage: string;
+  stage: 'lead' | 'qualified' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
   probability: number;
   expectedCloseDate?: string;
   actualCloseDate?: string;
+  
+  // Service Information
+  serviceId: string; // Link to the service being sold
+  serviceName: string; // Cached service name for performance
+  customPrice?: number; // Override base service price if needed
   
   // System Info
   software?: string; // Source tracking (JotForm)

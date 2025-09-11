@@ -9,11 +9,9 @@ import Layout from './components/Layout';
 // Import modules directly (not lazy loaded for now)
 import DashboardModule from './modules/Dashboard/index';
 import Companies from './modules/CRM/pages/Companies';
+import CompanyDetail from './modules/CRM/pages/CompanyDetail';
+import Services from './modules/CRM/pages/Services';
 import Leads from './modules/CRM/pages/Leads';
-import Deals from './modules/CRM/pages/Deals';
-import Invoices from './modules/CRM/pages/Invoices';
-import Vehicles from './modules/CRM/pages/Vehicles';
-import Drivers from './modules/CRM/pages/Drivers';
 import Integrations from './modules/CRM/pages/Integrations';
 import UserManagement from './modules/CRM/pages/UserManagement';
 import Tasks from './modules/CRM/pages/Tasks';
@@ -55,11 +53,10 @@ function App() {
                   
                   {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
                   <Route path="/companies" element={<Companies />} />
+                  <Route path="/companies/:id" element={<CompanyDetail />} />
                   <Route path="/leads" element={<Leads />} />
-                  <Route path="/deals" element={<Deals />} />
-                  <Route path="/invoices" element={<Invoices />} />
-                  <Route path="/vehicles" element={<Vehicles />} />
-                  <Route path="/drivers" element={<Drivers />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/compliance" element={<ComplianceModule />} />
                   <Route path="/tasks" element={<Tasks />} />
                   <Route path="/conversations" element={<Conversations />} />
                   <Route path="/agents" element={<Agents />} />

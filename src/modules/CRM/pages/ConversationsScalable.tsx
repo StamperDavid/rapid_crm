@@ -18,9 +18,11 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ArrowPathIcon,
+  SpeakerWaveIcon,
 } from '@heroicons/react/24/outline';
 import { Conversation, Message, ConversationFilters, ConversationStats } from '../../../types/conversation';
 import { useConversations } from '../../../hooks/useConversations';
+import { useConversationAlerts } from '../../../hooks/useConversationAlerts';
 
 const ConversationsScalable: React.FC = () => {
   // Use the new conversations hook
@@ -45,6 +47,9 @@ const ConversationsScalable: React.FC = () => {
     refreshConversations,
     selectConversation
   } = useConversations();
+
+  // Use conversation alerts
+  const { simulateHandoff, simulateAgentIssue, clearAllAlerts, stopCurrentAlarms, alertCount, alerts, playNewConversationSound } = useConversationAlerts();
 
   // Local state for UI
   const [searchTerm, setSearchTerm] = useState('');
@@ -227,6 +232,52 @@ const ConversationsScalable: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            {/* Test Alert Buttons */}
+            <div className="flex items-center space-x-2 mr-4">
+              <button
+                onClick={simulateHandoff}
+                className="flex items-center px-3 py-1.5 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors"
+                title="Test Handoff Alert - Will trigger klaxon alarm"
+              >
+                <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                Test Handoff
+              </button>
+              <button
+                onClick={simulateAgentIssue}
+                className="flex items-center px-3 py-1.5 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-md transition-colors"
+                title="Test Agent Issue Alert - Will trigger klaxon alarm"
+              >
+                <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                Test Agent Issue
+              </button>
+              <button
+                onClick={playNewConversationSound}
+                className="flex items-center px-3 py-1.5 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
+                title="Test New Conversation Ding - Pleasant notification sound"
+              >
+                <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                Test New Conversation
+              </button>
+              {alertCount > 0 && (
+                <button
+                  onClick={clearAllAlerts}
+                  className="flex items-center px-3 py-1.5 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition-colors"
+                  title="Clear All Alerts"
+                >
+                  <XMarkIcon className="h-4 w-4 mr-1" />
+                  Clear Alerts ({alertCount})
+                </button>
+              )}
+              <button
+                onClick={stopCurrentAlarms}
+                className="flex items-center px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                title="Stop Currently Playing Alarms (keeps alert system active)"
+              >
+                <XMarkIcon className="h-4 w-4 mr-1" />
+                Stop Alarms
+              </button>
+            </div>
+            
             <button
               onClick={refreshConversations}
               className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"

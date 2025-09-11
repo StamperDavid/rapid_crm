@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead } from '../types/schema';
+import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Service } from '../types/schema';
 import { browserDatabaseService } from '../services/database/BrowserDatabaseService';
 
 // Define the context type
@@ -13,6 +13,8 @@ interface CRMContextType {
   setLeads: React.Dispatch<React.SetStateAction<Lead[]>>;
   deals: Deal[];
   setDeals: React.Dispatch<React.SetStateAction<Deal[]>>;
+  services: Service[];
+  setServices: React.Dispatch<React.SetStateAction<Service[]>>;
   vehicles: Vehicle[];
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   drivers: Driver[];
@@ -24,6 +26,7 @@ interface CRMContextType {
   refreshContacts: () => Promise<void>;
   refreshLeads: () => Promise<void>;
   refreshDeals: () => Promise<void>;
+  refreshServices: () => Promise<void>;
   refreshVehicles: () => Promise<void>;
   refreshDrivers: () => Promise<void>;
   
@@ -31,6 +34,7 @@ interface CRMContextType {
   createContact: (contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Person>;
   createLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Lead>;
   createDeal: (deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Deal>;
+  createService: (service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Service>;
   createVehicle: (vehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Vehicle>;
   createDriver: (driver: Omit<Driver, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Driver>;
   
@@ -38,6 +42,7 @@ interface CRMContextType {
   updateContact: (id: string, contact: Partial<Person>) => Promise<Person>;
   updateLead: (id: string, lead: Partial<Lead>) => Promise<Lead>;
   updateDeal: (id: string, deal: Partial<Deal>) => Promise<Deal>;
+  updateService: (id: string, service: Partial<Service>) => Promise<Service>;
   updateVehicle: (id: string, vehicle: Partial<Vehicle>) => Promise<Vehicle>;
   updateDriver: (id: string, driver: Partial<Driver>) => Promise<Driver>;
   
@@ -45,6 +50,7 @@ interface CRMContextType {
   deleteContact: (id: string) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   deleteDeal: (id: string) => Promise<void>;
+  deleteService: (id: string) => Promise<void>;
   deleteVehicle: (id: string) => Promise<void>;
   deleteDriver: (id: string) => Promise<void>;
 }
@@ -63,6 +69,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
   const [contacts, setContacts] = useState<Person[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +81,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setIsLoading(true);
         console.log('[CRMContext] Starting data load...');
         
-        const [companiesData, contactsData, leadsData, dealsData, vehiclesData, driversData] = await Promise.all([
+        const [companiesData, contactsData, leadsData, dealsData, servicesData, vehiclesData, driversData] = await Promise.all([
           browserDatabaseService.getCompanies().catch(err => {
             console.error('[CRMContext] Failed to load companies:', err);
             throw new Error(`Companies: ${err.message}`);
@@ -91,6 +98,10 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
             console.error('[CRMContext] Failed to load deals:', err);
             throw new Error(`Deals: ${err.message}`);
           }),
+          browserDatabaseService.getServices().catch(err => {
+            console.error('[CRMContext] Failed to load services:', err);
+            throw new Error(`Services: ${err.message}`);
+          }),
           browserDatabaseService.getVehicles().catch(err => {
             console.error('[CRMContext] Failed to load vehicles:', err);
             throw new Error(`Vehicles: ${err.message}`);
@@ -106,6 +117,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
           contacts: contactsData.length,
           leads: leadsData.length,
           deals: dealsData.length,
+          services: servicesData.length,
           vehicles: vehiclesData.length,
           drivers: driversData.length
         });
@@ -114,6 +126,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setContacts(contactsData);
         setLeads(leadsData);
         setDeals(dealsData);
+        setServices(servicesData);
         setVehicles(vehiclesData);
         setDrivers(driversData);
       } catch (error) {
@@ -123,6 +136,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setContacts([]);
         setLeads([]);
         setDeals([]);
+        setServices([]);
         setVehicles([]);
         setDrivers([]);
       } finally {
@@ -170,6 +184,16 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
       setDeals(data);
     } catch (error) {
       console.error('Failed to refresh deals:', error);
+      throw error;
+    }
+  };
+
+  const refreshServices = async () => {
+    try {
+      const data = await browserDatabaseService.getServices();
+      setServices(data);
+    } catch (error) {
+      console.error('Failed to refresh services:', error);
       throw error;
     }
   };
@@ -234,6 +258,17 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
       return newDeal;
     } catch (error) {
       console.error('Failed to create deal:', error);
+      throw error;
+    }
+  };
+
+  const createService = async (service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newService = await browserDatabaseService.createService(service);
+      setServices(prev => [...prev, newService]);
+      return newService;
+    } catch (error) {
+      console.error('Failed to create service:', error);
       throw error;
     }
   };
@@ -304,6 +339,17 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     }
   };
 
+  const updateService = async (id: string, service: Partial<Service>) => {
+    try {
+      const updatedService = await browserDatabaseService.updateService(id, service);
+      setServices(prev => prev.map(s => s.id === id ? updatedService : s));
+      return updatedService;
+    } catch (error) {
+      console.error('Failed to update service:', error);
+      throw error;
+    }
+  };
+
   const updateVehicle = async (id: string, vehicle: Partial<Vehicle>) => {
     try {
       const updatedVehicle = await browserDatabaseService.updateVehicle(id, vehicle);
@@ -366,6 +412,16 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     }
   };
 
+  const deleteService = async (id: string) => {
+    try {
+      await browserDatabaseService.deleteService(id);
+      setServices(prev => prev.filter(s => s.id !== id));
+    } catch (error) {
+      console.error('Failed to delete service:', error);
+      throw error;
+    }
+  };
+
   const deleteVehicle = async (id: string) => {
     try {
       await browserDatabaseService.deleteVehicle(id);
@@ -395,6 +451,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     setLeads,
     deals,
     setDeals,
+    services,
+    setServices,
     vehicles,
     setVehicles,
     drivers,
@@ -404,24 +462,28 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     refreshContacts,
     refreshLeads,
     refreshDeals,
+    refreshServices,
     refreshVehicles,
     refreshDrivers,
     createCompany,
     createContact,
     createLead,
     createDeal,
+    createService,
     createVehicle,
     createDriver,
     updateCompany,
     updateContact,
     updateLead,
     updateDeal,
+    updateService,
     updateVehicle,
     updateDriver,
     deleteCompany,
     deleteContact,
     deleteLead,
     deleteDeal,
+    deleteService,
     deleteVehicle,
     deleteDriver,
   };

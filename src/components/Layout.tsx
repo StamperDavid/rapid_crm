@@ -5,78 +5,52 @@ import {
   BuildingOfficeIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  DocumentTextIcon,
-  CogIcon,
-  ChartBarIcon,
   BellIcon,
   UserCircleIcon,
   SunIcon,
   MoonIcon,
   Bars3Icon,
   XMarkIcon,
-  UsersIcon,
   ClockIcon,
-  WrenchScrewdriverIcon,
   ChatBubbleLeftRightIcon,
-  CpuChipIcon,
-  KeyIcon,
-  CircleStackIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import EditorToolbar from './EditorToolbar';
 import Logo from './Logo';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
+import { useConversationAlerts } from '../hooks/useConversationAlerts';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const getNavigation = (hasUserManagement: boolean, hasAgentManagement: boolean, hasSchemaManagement: boolean, hasApiKeyManagement: boolean) => [
+const getNavigation = () => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
-  { name: 'Deals', href: '/deals', icon: CurrencyDollarIcon, color: 'text-orange-600' },
+  { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatBubbleLeftRightIcon, color: 'text-cyan-600' },
-  ...(hasAgentManagement ? [{ name: 'Agents', href: '/agents', icon: CpuChipIcon, color: 'text-violet-600' }] : []),
-  ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
-  ...(hasSchemaManagement ? [{ name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' }] : []),
-  ...(hasApiKeyManagement ? [{ name: 'API Keys', href: '/api-keys', icon: KeyIcon, color: 'text-yellow-600' }] : []),
-  { name: 'Database', href: '/database', icon: CircleStackIcon, color: 'text-slate-600' },
-  { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
-  { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [conversationNotifications, setConversationNotifications] = useState(0);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user, hasPermission } = useUser();
+  const { alertCount, clearAllAlerts } = useConversationAlerts();
   
-  const navigation = getNavigation(
-    hasPermission('canManageUsers'),
-    hasPermission('canManageAgents'),
-    hasPermission('canManageSchema'),
-    hasPermission('canManageApiKeys')
-  );
+  const navigation = getNavigation();
 
-  // Mock conversation notifications - in real app, this would come from WebSocket or polling
+  // Clear alerts when user navigates to conversations page
   useEffect(() => {
-    // Simulate checking for waiting conversations
-    const checkConversations = () => {
-      // Mock data - in real app, this would be an API call
-      const waitingCount = Math.floor(Math.random() * 3); // 0-2 notifications
-      setConversationNotifications(waitingCount);
-    };
-
-    checkConversations();
-    const interval = setInterval(checkConversations, 30000); // Check every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+    if (location.pathname === '/conversations') {
+      clearAllAlerts();
+    }
+  }, [location.pathname, clearAllAlerts]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -120,9 +94,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
                           )}
                         />
-                        {item.name === 'Conversations' && conversationNotifications > 0 && (
-                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                            {conversationNotifications}
+                        {item.name === 'Conversations' && alertCount > 0 && (
+                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                            {alertCount}
                           </span>
                         )}
                       </div>
@@ -182,9 +156,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           )}
                           aria-hidden="true"
                         />
-                        {item.name === 'Conversations' && conversationNotifications > 0 && (
-                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                            {conversationNotifications}
+                        {item.name === 'Conversations' && alertCount > 0 && (
+                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                            {alertCount}
                           </span>
                         )}
                       </div>
@@ -258,6 +232,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
         </div>
+
+        {/* Editor Toolbar - Only visible to editors */}
+        {(user?.role === 'admin' || user?.role === 'editor') && (
+          <EditorToolbar
+            hasUserManagement={hasPermission('canManageUsers')}
+            hasAgentManagement={hasPermission('canManageAgents')}
+            hasSchemaManagement={hasPermission('canManageSchema')}
+            hasApiKeyManagement={hasPermission('canManageApiKeys')}
+          />
+        )}
 
         {/* Main content */}
         <main className="py-8">

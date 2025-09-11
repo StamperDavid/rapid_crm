@@ -1,4 +1,4 @@
-import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Campaign, ApiKey } from '../../types/schema';
+import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Campaign, ApiKey, Service } from '../../types/schema';
 import { apiService } from '../api/ApiService';
 
 export interface IDatabaseService {
@@ -36,6 +36,13 @@ export interface IDatabaseService {
   createDeal(deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>): Promise<Deal>;
   updateDeal(id: string, deal: Partial<Deal>): Promise<Deal>;
   deleteDeal(id: string): Promise<boolean>;
+
+  // Services
+  getServices(): Promise<Service[]>;
+  getService(id: string): Promise<Service | null>;
+  createService(service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<Service>;
+  updateService(id: string, service: Partial<Service>): Promise<Service>;
+  deleteService(id: string): Promise<boolean>;
 
   // Invoices
   getInvoices(): Promise<Invoice[]>;
@@ -172,6 +179,27 @@ export class BrowserDatabaseService implements IDatabaseService {
 
   async deleteDeal(id: string): Promise<boolean> {
     return await this.apiService.deleteDeal(id);
+  }
+
+  // Services
+  async getServices(): Promise<Service[]> {
+    return await this.apiService.getServices();
+  }
+
+  async getService(id: string): Promise<Service | null> {
+    return await this.apiService.getService(id);
+  }
+
+  async createService(service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<Service> {
+    return await this.apiService.createService(service);
+  }
+
+  async updateService(id: string, service: Partial<Service>): Promise<Service> {
+    return await this.apiService.updateService(id, service);
+  }
+
+  async deleteService(id: string): Promise<boolean> {
+    return await this.apiService.deleteService(id);
   }
 
   // Invoices

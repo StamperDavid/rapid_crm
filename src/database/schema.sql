@@ -160,15 +160,38 @@ CREATE TABLE IF NOT EXISTS drivers (
 );
 
 -- Deals Table
+CREATE TABLE IF NOT EXISTS services (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL, -- 'Registration', 'Compliance', 'Training', 'Support'
+    base_price REAL NOT NULL,
+    estimated_duration TEXT NOT NULL,
+    requirements TEXT NOT NULL, -- JSON array
+    deliverables TEXT NOT NULL, -- JSON array
+    is_active INTEGER DEFAULT 1, -- 1 for active, 0 for inactive
+    
+    -- System Fields
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    -- No foreign key constraints for services table
+);
+
 CREATE TABLE IF NOT EXISTS deals (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
     value REAL NOT NULL,
-    stage TEXT NOT NULL, -- 'Prospecting', 'Qualification', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'
+    stage TEXT NOT NULL, -- 'lead', 'qualified', 'proposal', 'negotiation', 'closed-won', 'closed-lost'
     probability INTEGER DEFAULT 0, -- 0-100
     expected_close_date TEXT,
     actual_close_date TEXT,
+    
+    -- Service Information
+    service_id TEXT, -- Foreign key to services table
+    service_name TEXT, -- Cached service name for performance
+    custom_price REAL, -- Override base service price if needed
+    
     company_id TEXT NOT NULL, -- Foreign key to companies table
     contact_id TEXT, -- Foreign key to contacts table
     
@@ -177,7 +200,8 @@ CREATE TABLE IF NOT EXISTS deals (
     updated_at TEXT NOT NULL,
     
     FOREIGN KEY (company_id) REFERENCES companies(id),
-    FOREIGN KEY (contact_id) REFERENCES contacts(id)
+    FOREIGN KEY (contact_id) REFERENCES contacts(id),
+    FOREIGN KEY (service_id) REFERENCES services(id)
 );
 
 -- Invoices Table

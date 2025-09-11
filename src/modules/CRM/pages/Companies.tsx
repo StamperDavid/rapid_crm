@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BuildingOfficeIcon,
   PlusIcon,
@@ -14,6 +15,7 @@ import EntityForm from '../../../components/forms/EntityForm';
 
 const Companies: React.FC = () => {
   const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
+  const navigate = useNavigate();
   
   // Debug logging
   console.log('[Companies] Received companies data:', companies);
@@ -25,12 +27,7 @@ const Companies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<Organization | null>(null);
 
-  // Modal states for adding related entities
-  const [showAddContactModal, setShowAddContactModal] = useState(false);
-  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
-  const [showAddDriverModal, setShowAddDriverModal] = useState(false);
 
   // Filter companies based on search term and status
   const filteredCompanies = companies.filter(company => {
@@ -75,39 +72,6 @@ const Companies: React.FC = () => {
     } catch (error) {
       console.error('Error creating company:', error);
       alert('Error creating company. Please try again.');
-    }
-  };
-
-  const handleCreateContact = async (contactData: any) => {
-    try {
-      await createContact(contactData);
-      setShowAddContactModal(false);
-      alert('Contact created successfully!');
-    } catch (error) {
-      console.error('Error creating contact:', error);
-      alert('Error creating contact. Please try again.');
-    }
-  };
-
-  const handleCreateVehicle = async (vehicleData: any) => {
-    try {
-      await createVehicle(vehicleData);
-      setShowAddVehicleModal(false);
-      alert('Vehicle created successfully!');
-    } catch (error) {
-      console.error('Error creating vehicle:', error);
-      alert('Error creating vehicle. Please try again.');
-    }
-  };
-
-  const handleCreateDriver = async (driverData: any) => {
-    try {
-      await createDriver(driverData);
-      setShowAddDriverModal(false);
-      alert('Driver created successfully!');
-    } catch (error) {
-      console.error('Error creating driver:', error);
-      alert('Error creating driver. Please try again.');
     }
   };
 
@@ -162,61 +126,79 @@ const Companies: React.FC = () => {
           </div>
         </div>
 
-        {/* Companies Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCompanies.map((company) => {
-            const companyContacts = getCompanyContacts(company.id);
-            const companyVehicles = getCompanyVehicles(company.id);
-            const companyDrivers = getCompanyDrivers(company.id);
-            const companyDeals = getCompanyDeals(company.id);
-            const companyInvoices = getCompanyInvoices(company.id);
+        {/* Companies List */}
+        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredCompanies.map((company) => {
+              const companyContacts = getCompanyContacts(company.id);
+              const companyVehicles = getCompanyVehicles(company.id);
+              const companyDrivers = getCompanyDrivers(company.id);
+              const companyDeals = getCompanyDeals(company.id);
+              const companyInvoices = getCompanyInvoices(company.id);
 
-            return (
-              <div
-                key={company.id}
-                className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => setSelectedCompany(company)}
-              >
-                <div className="p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <BuildingOfficeIcon className="h-8 w-8 text-blue-600" />
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        {company.legalBusinessName}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        USDOT: {company.usdotNumber}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {company.physicalCity}, {company.physicalState}
-                      </p>
+              return (
+                <li key={company.id}>
+                  <div
+                    className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/companies/${company.id}`)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <BuildingOfficeIcon className="h-10 w-10 text-blue-600" />
+                        </div>
+                        <div className="ml-4">
+                          <div className="flex items-center">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                              {company.legalBusinessName}
+                            </h3>
+                            {company.dbaName && (
+                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                DBA: {company.dbaName}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <p className="mr-4">USDOT: {company.usdotNumber}</p>
+                            <p className="mr-4">EIN: {company.ein}</p>
+                            <p>{company.physicalCity}, {company.physicalState}</p>
+                          </div>
+                          <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <p className="mr-4">Classification: {company.classification}</p>
+                            <p className="mr-4">Operation: {company.operationType}</p>
+                            <p>Fleet: {company.numberOfVehicles} vehicles, {company.numberOfDrivers} drivers</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <UserGroupIcon className="h-4 w-4 mr-1" />
+                          {companyContacts.length}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <TruckIcon className="h-4 w-4 mr-1" />
+                          {companyVehicles.length}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <IdentificationIcon className="h-4 w-4 mr-1" />
+                          {companyDrivers.length}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+                          {companyDeals.length}
+                        </div>
+                        <div className="text-gray-400">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center text-gray-500 dark:text-gray-400">
-                      <UserGroupIcon className="h-4 w-4 mr-1" />
-                      {companyContacts.length} contacts
-                    </div>
-                    <div className="flex items-center text-gray-500 dark:text-gray-400">
-                      <TruckIcon className="h-4 w-4 mr-1" />
-                      {companyVehicles.length} vehicles
-                    </div>
-                    <div className="flex items-center text-gray-500 dark:text-gray-400">
-                      <IdentificationIcon className="h-4 w-4 mr-1" />
-                      {companyDrivers.length} drivers
-                    </div>
-                    <div className="flex items-center text-gray-500 dark:text-gray-400">
-                      <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-                      {companyDeals.length} deals
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
         {/* Empty State */}
@@ -250,36 +232,6 @@ const Companies: React.FC = () => {
           entityType="companies"
           onSave={handleCreateCompany}
           onCancel={() => setShowCreateModal(false)}
-        />
-      )}
-
-      {/* Create Contact Modal */}
-      {showAddContactModal && selectedCompany && (
-        <EntityForm
-          entityType="contacts"
-          initialData={{ companyId: selectedCompany.id }}
-          onSave={handleCreateContact}
-          onCancel={() => setShowAddContactModal(false)}
-        />
-      )}
-
-      {/* Create Vehicle Modal */}
-      {showAddVehicleModal && selectedCompany && (
-        <EntityForm
-          entityType="vehicles"
-          initialData={{ companyId: selectedCompany.id }}
-          onSave={handleCreateVehicle}
-          onCancel={() => setShowAddVehicleModal(false)}
-        />
-      )}
-
-      {/* Create Driver Modal */}
-      {showAddDriverModal && selectedCompany && (
-        <EntityForm
-          entityType="drivers"
-          initialData={{ companyId: selectedCompany.id }}
-          onSave={handleCreateDriver}
-          onCancel={() => setShowAddDriverModal(false)}
         />
       )}
     </div>

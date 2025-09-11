@@ -221,6 +221,21 @@ app.get('/api/companies', async (req, res) => {
       try {
         return {
           id: company.id || '',
+          // Address fields
+          physicalStreetAddress: company.physical_street_address || '',
+          physicalSuiteApt: company.physical_suite_apt || '',
+          physicalCity: company.physical_city || '',
+          physicalState: company.physical_state || '',
+          physicalCountry: company.physical_country || '',
+          physicalZip: company.physical_zip || '',
+          isMailingAddressSame: company.is_mailing_address_same || 'No',
+          mailingStreetAddress: company.mailing_street_address || '',
+          mailingSuiteApt: company.mailing_suite_apt || '',
+          mailingCity: company.mailing_city || '',
+          mailingState: company.mailing_state || '',
+          mailingCountry: company.mailing_country || '',
+          mailingZip: company.mailing_zip || '',
+          // Business fields
           legalBusinessName: company.legal_business_name || '',
           hasDba: company.has_dba || 'No',
           dbaName: company.dba_name || '',
@@ -243,19 +258,6 @@ app.get('/api/companies', async (req, res) => {
           regulatoryDetails: company.regulatory_details || '',
           hasDunsBradstreetNumber: company.has_duns_bradstreet_number || 'No',
           dunsBradstreetNumber: company.duns_bradstreet_number || '',
-          physicalStreetAddress: company.physical_street_address || '',
-          physicalSuiteApt: company.physical_suite_apt || '',
-          physicalCity: company.physical_city || '',
-          physicalState: company.physical_state || '',
-          physicalCountry: company.physical_country || 'United States',
-          physicalZip: company.physical_zip || '',
-          isMailingAddressSame: company.is_mailing_address_same || 'Yes',
-          mailingStreetAddress: company.mailing_street_address || '',
-          mailingSuiteApt: company.mailing_suite_apt || '',
-          mailingCity: company.mailing_city || '',
-          mailingState: company.mailing_state || '',
-          mailingCountry: company.mailing_country || 'United States',
-          mailingZip: company.mailing_zip || '',
           createdAt: company.created_at || '',
           updatedAt: company.updated_at || ''
         };
@@ -424,12 +426,42 @@ app.delete('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// Vehicles - SIMPLE SCHEMA (COMMENTED OUT - DUPLICATE ROUTES)
-/*
+// Vehicles
 app.get('/api/vehicles', async (req, res) => {
   try {
     const vehicles = await runQuery('SELECT * FROM vehicles');
-    res.json(vehicles);
+    
+    // Map database fields to frontend camelCase format
+    const mappedVehicles = vehicles.map(vehicle => ({
+      id: vehicle.id,
+      companyId: vehicle.company_id,
+      vin: vehicle.vin,
+      licensePlate: vehicle.license_plate,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      color: vehicle.color,
+      vehicleType: vehicle.vehicle_type,
+      gvwr: vehicle.gvwr,
+      emptyWeight: vehicle.empty_weight,
+      fuelType: vehicle.fuel_type,
+      registrationNumber: vehicle.registration_number,
+      registrationExpiry: vehicle.registration_expiry,
+      insuranceProvider: vehicle.insurance_provider,
+      insurancePolicyNumber: vehicle.insurance_policy_number,
+      insuranceExpiry: vehicle.insurance_expiry,
+      lastInspectionDate: vehicle.last_inspection_date,
+      nextInspectionDue: vehicle.next_inspection_due,
+      lastMaintenanceDate: vehicle.last_maintenance_date,
+      nextMaintenanceDue: vehicle.next_maintenance_due,
+      hasHazmatEndorsement: vehicle.has_hazmat_endorsement,
+      status: vehicle.status,
+      currentDriverId: vehicle.current_driver_id,
+      createdAt: vehicle.created_at,
+      updatedAt: vehicle.updated_at
+    }));
+    
+    res.json(mappedVehicles);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -441,7 +473,38 @@ app.get('/api/vehicles/:id', async (req, res) => {
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
-    res.json(vehicle);
+    
+    // Map database fields to frontend camelCase format
+    const mappedVehicle = {
+      id: vehicle.id,
+      companyId: vehicle.company_id,
+      vin: vehicle.vin,
+      licensePlate: vehicle.license_plate,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      color: vehicle.color,
+      vehicleType: vehicle.vehicle_type,
+      gvwr: vehicle.gvwr,
+      emptyWeight: vehicle.empty_weight,
+      fuelType: vehicle.fuel_type,
+      registrationNumber: vehicle.registration_number,
+      registrationExpiry: vehicle.registration_expiry,
+      insuranceProvider: vehicle.insurance_provider,
+      insurancePolicyNumber: vehicle.insurance_policy_number,
+      insuranceExpiry: vehicle.insurance_expiry,
+      lastInspectionDate: vehicle.last_inspection_date,
+      nextInspectionDue: vehicle.next_inspection_due,
+      lastMaintenanceDate: vehicle.last_maintenance_date,
+      nextMaintenanceDue: vehicle.next_maintenance_due,
+      hasHazmatEndorsement: vehicle.has_hazmat_endorsement,
+      status: vehicle.status,
+      currentDriverId: vehicle.current_driver_id,
+      createdAt: vehicle.created_at,
+      updatedAt: vehicle.updated_at
+    };
+    
+    res.json(mappedVehicle);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -493,7 +556,6 @@ app.delete('/api/vehicles/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-*/
 
 // Drivers
 app.get('/api/drivers', async (req, res) => {
@@ -627,6 +689,74 @@ app.put('/api/deals/:id', async (req, res) => {
 app.delete('/api/deals/:id', async (req, res) => {
   try {
     const result = await runExecute('DELETE FROM deals WHERE id = ?', [req.params.id]);
+    res.json({ deleted: result.changes > 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Services API endpoints
+app.get('/api/services', async (req, res) => {
+  try {
+    const services = await runQuery('SELECT * FROM services');
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/services/:id', async (req, res) => {
+  try {
+    const service = await runQueryOne('SELECT * FROM services WHERE id = ?', [req.params.id]);
+    if (!service) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+    res.json(service);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/services', async (req, res) => {
+  try {
+    const { name, description, category, basePrice, estimatedDuration, requirements, deliverables, isActive } = req.body;
+    
+    const result = await runExecute(`
+      INSERT INTO services (name, description, category, base_price, estimated_duration, requirements, deliverables, is_active, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `, [name, description, category, basePrice, estimatedDuration, JSON.stringify(requirements), JSON.stringify(deliverables), isActive]);
+    
+    const newService = await runQueryOne('SELECT * FROM services WHERE id = ?', [result.lastInsertRowid]);
+    res.status(201).json(newService);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/services/:id', async (req, res) => {
+  try {
+    const { name, description, category, basePrice, estimatedDuration, requirements, deliverables, isActive } = req.body;
+    
+    await runExecute(`
+      UPDATE services 
+      SET name = ?, description = ?, category = ?, base_price = ?, estimated_duration = ?, 
+          requirements = ?, deliverables = ?, is_active = ?, updated_at = datetime('now')
+      WHERE id = ?
+    `, [name, description, category, basePrice, estimatedDuration, JSON.stringify(requirements), JSON.stringify(deliverables), isActive, req.params.id]);
+    
+    const updatedService = await runQueryOne('SELECT * FROM services WHERE id = ?', [req.params.id]);
+    if (!updatedService) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+    res.json(updatedService);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/services/:id', async (req, res) => {
+  try {
+    const result = await runExecute('DELETE FROM services WHERE id = ?', [req.params.id]);
     res.json({ deleted: result.changes > 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -840,27 +970,7 @@ app.delete('/api/campaigns/:id', async (req, res) => {
   }
 });
 
-// Vehicles
-app.get('/api/vehicles', async (req, res) => {
-  try {
-    const vehicles = await runQuery('SELECT * FROM vehicles');
-    res.json(vehicles);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/api/vehicles/:id', async (req, res) => {
-  try {
-    const vehicle = await runQueryOne('SELECT * FROM vehicles WHERE id = ?', [req.params.id]);
-    if (!vehicle) {
-      return res.status(404).json({ error: 'Vehicle not found' });
-    }
-    res.json(vehicle);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// Vehicles - Duplicate endpoints removed
 
 app.post('/api/vehicles', async (req, res) => {
   try {
