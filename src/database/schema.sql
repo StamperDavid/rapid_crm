@@ -4,13 +4,21 @@
 -- Companies/Organizations Table
 CREATE TABLE IF NOT EXISTS companies (
     id TEXT PRIMARY KEY,
+    
+    -- Contact Details (Person entity)
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT NOT NULL,
+    preferred_contact_method TEXT DEFAULT 'Phone',
+    
     -- Physical Address
-    physical_street_address TEXT,
+    physical_street_address TEXT NOT NULL,
     physical_suite_apt TEXT,
-    physical_city TEXT,
-    physical_state TEXT,
+    physical_city TEXT NOT NULL,
+    physical_state TEXT NOT NULL,
     physical_country TEXT DEFAULT 'United States',
-    physical_zip TEXT,
+    physical_zip TEXT NOT NULL,
     
     -- Mailing Address
     is_mailing_address_same TEXT DEFAULT 'Yes',
@@ -22,38 +30,58 @@ CREATE TABLE IF NOT EXISTS companies (
     mailing_zip TEXT,
     
     -- Business Information
+    business_type TEXT NOT NULL,
+    business_started DATE,
+    desired_business_name TEXT,
     legal_business_name TEXT NOT NULL,
     has_dba TEXT DEFAULT 'No',
     dba_name TEXT,
-    business_type TEXT,
-    ein TEXT,
-    business_started DATE,
+    ein TEXT NOT NULL,
+    entity_types TEXT, -- JSON array for multiple select
     
-    -- Transportation Details
-    classification TEXT,
-    operation_type TEXT,
-    interstate_intrastate TEXT,
+    -- Transportation & Operations
+    business_classification TEXT NOT NULL,
+    transportation_operation_type TEXT NOT NULL,
+    carries_passengers TEXT NOT NULL,
+    transports_goods_for_hire TEXT NOT NULL,
+    engaged_in_interstate_commerce TEXT NOT NULL,
+    interstate_intrastate TEXT NOT NULL,
+    states_of_operation TEXT, -- JSON array for multiple select
+    operation_class TEXT NOT NULL,
+    has_usdot_number TEXT NOT NULL,
     usdot_number TEXT,
-    operation_class TEXT,
     
     -- Fleet Information
-    fleet_type TEXT,
-    number_of_vehicles INTEGER DEFAULT 0,
-    number_of_drivers INTEGER DEFAULT 0,
-    gvwr TEXT,
-    vehicle_types TEXT,
+    vehicle_fleet_type TEXT NOT NULL,
+    vehicle_types_used TEXT, -- JSON array for multiple select
+    number_of_drivers INTEGER NOT NULL DEFAULT 0,
+    driver_list TEXT,
+    number_of_vehicles INTEGER NOT NULL DEFAULT 0,
+    vehicle_list TEXT,
+    gvwr TEXT NOT NULL,
+    year_make_model TEXT,
     
     -- Cargo & Safety
-    cargo_types TEXT,
-    hazmat_required TEXT DEFAULT 'No',
+    cargo_types_transported TEXT NOT NULL,
+    hazmat_placard_required TEXT NOT NULL DEFAULT 'No',
     phmsa_work TEXT DEFAULT 'No',
-    regulatory_details TEXT, -- JSON array
+    
+    -- Regulatory Compliance
+    additional_regulatory_details TEXT, -- JSON array for multiple select
+    
+    -- Company Ownership
+    has_company_owner TEXT DEFAULT 'No',
+    company_owner_first_name TEXT,
+    company_owner_last_name TEXT,
+    company_owner_phone TEXT,
+    company_owner_email TEXT,
     
     -- Financial Information
     has_duns_bradstreet_number TEXT DEFAULT 'No',
     duns_bradstreet_number TEXT,
     
     -- System Fields
+    software TEXT, -- Source tracking
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -133,24 +161,70 @@ CREATE TABLE IF NOT EXISTS drivers (
     id TEXT PRIMARY KEY,
     company_id TEXT NOT NULL, -- Foreign key to companies table
     
-    -- Driver Name
-    driver_name TEXT NOT NULL, -- Single line text
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    phone TEXT,
-    email TEXT,
+    -- Basic Information
+    full_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT NOT NULL,
+    date_of_birth DATE NOT NULL,
+    social_security_number TEXT NOT NULL, -- Encrypted
     
-    -- License Information
-    license_number TEXT NOT NULL, -- CDL Number
-    license_class TEXT NOT NULL, -- 'Class A', 'Class B', 'Class C'
-    license_expiry TEXT NOT NULL,
-    medical_card_expiry TEXT NOT NULL,
+    -- Employment History
+    employment_history TEXT NOT NULL, -- Structured text (past 3-10 years with gaps explanation)
+    
+    -- Driving Experience
+    driving_experience TEXT, -- JSON array: CDL Class A, B, C, D, E, Other
+    
+    -- Accident/Violations History
+    accident_violations_history TEXT, -- Structured text
+    accident_violations_files TEXT, -- JSON array of file paths
+    
+    -- Motor Vehicle Record (MVR)
+    mvr_files TEXT, -- JSON array of file paths (PDF, TXT, Image)
+    mvr_initial_date DATE,
+    mvr_annual_date DATE,
+    
+    -- License/CDL Copy
+    license_cdl_files TEXT, -- JSON array of file paths (PDF, Image)
+    license_number TEXT,
+    license_expiry DATE,
+    endorsements TEXT, -- JSON array
+    restrictions TEXT, -- JSON array
+    
+    -- DOT Medical Certificate
+    dot_medical_certificate_expiry DATE,
+    medical_examiner_name TEXT,
+    medical_certificate_number TEXT,
+    medical_examination_report_files TEXT, -- JSON array of file paths (PDF, TXT)
+    
+    -- Road Test Certificate/CDL
+    road_test_certificate_files TEXT, -- JSON array of file paths (PDF, Image)
+    road_test_date DATE,
+    
+    -- Drug/Alcohol Test Results
+    drug_alcohol_test_results TEXT, -- JSON array with test type, date, results, file paths
+    last_drug_test_date DATE,
+    last_alcohol_test_date DATE,
+    
+    -- Annual Violation Certification
+    annual_violation_certification_files TEXT, -- JSON array of file paths (PDF)
+    last_annual_certification_date DATE,
+    
+    -- Safety Performance History
+    safety_performance_history_files TEXT, -- JSON array of file paths (PDF, TXT)
+    
+    -- Variances/Waivers
+    variances_waivers_files TEXT, -- JSON array of file paths (PDF)
+    has_variances_waivers TEXT DEFAULT 'No',
+    
+    -- Proof of Work Authorization
+    work_authorization_files TEXT, -- JSON array of file paths (PDF, Image)
+    has_work_authorization TEXT DEFAULT 'No',
     
     -- Employment Information
-    hire_date TEXT NOT NULL,
+    hire_date DATE,
     employment_status TEXT DEFAULT 'Active', -- 'Active', 'Inactive', 'Terminated'
     position TEXT DEFAULT 'Driver',
-    pay_type TEXT, -- 'Hourly', 'Salary', 'Mileage', 'Percentage'
     
     -- System Fields
     created_at TEXT NOT NULL,
@@ -399,6 +473,64 @@ CREATE TABLE IF NOT EXISTS client_profiles (
     updated_at TEXT NOT NULL
 );
 
+-- USDOT Applications Table (Read-only after creation)
+CREATE TABLE IF NOT EXISTS usdot_applications (
+    id TEXT PRIMARY KEY,
+    company_id TEXT NOT NULL, -- Foreign key to companies table
+    
+    -- Part 1: Company and Business Information
+    legal_business_name TEXT NOT NULL,
+    dba_name TEXT,
+    principal_address_street TEXT NOT NULL,
+    principal_address_city TEXT NOT NULL,
+    principal_address_state TEXT NOT NULL,
+    principal_address_zip TEXT NOT NULL,
+    mailing_address_is_different TEXT DEFAULT 'No',
+    mailing_address_street TEXT,
+    mailing_address_city TEXT,
+    mailing_address_state TEXT,
+    mailing_address_zip TEXT,
+    primary_contact_full_name TEXT,
+    primary_contact_title TEXT,
+    primary_contact_phone TEXT,
+    primary_contact_fax TEXT,
+    primary_contact_email TEXT,
+    company_official_full_name TEXT,
+    company_official_title TEXT,
+    company_official_phone TEXT,
+    company_official_email TEXT,
+    business_type TEXT NOT NULL,
+    ein TEXT NOT NULL,
+    duns_number TEXT,
+    
+    -- Part 2: Operations and Authority
+    operation_types TEXT, -- JSON array
+    carrier_operation_types TEXT, -- JSON array
+    
+    -- Part 3: Fleet and Cargo Information
+    power_units_owned INTEGER DEFAULT 0,
+    power_units_term_leased INTEGER DEFAULT 0,
+    power_units_trip_leased INTEGER DEFAULT 0,
+    drivers_employees INTEGER DEFAULT 0,
+    drivers_owner_operators INTEGER DEFAULT 0,
+    operation_classifications TEXT, -- JSON array
+    cargo_classifications TEXT, -- JSON array
+    hazardous_materials_classifications TEXT, -- JSON array
+    hazardous_materials_hm_classes TEXT, -- JSON array
+    
+    -- Part 4: Financial and Safety Information
+    marketer_of_transportation_services TEXT DEFAULT 'No',
+    application_date TEXT NOT NULL,
+    signature TEXT NOT NULL,
+    official_title TEXT NOT NULL,
+    
+    -- System Fields
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    is_read_only TEXT DEFAULT 'Yes', -- Always read-only after creation
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+);
+
 -- Agent Memory Banks Table
 CREATE TABLE IF NOT EXISTS agent_memory_banks (
     id TEXT PRIMARY KEY,
@@ -446,6 +578,12 @@ CREATE INDEX IF NOT EXISTS idx_leads_campaign ON leads(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_leads_company_id ON leads(company_id);
 CREATE INDEX IF NOT EXISTS idx_leads_converted_contact ON leads(converted_contact_id);
 CREATE INDEX IF NOT EXISTS idx_leads_converted_deal ON leads(converted_deal_id);
+
+-- Indexes for USDOT applications table
+CREATE INDEX IF NOT EXISTS idx_usdot_applications_company ON usdot_applications(company_id);
+CREATE INDEX IF NOT EXISTS idx_usdot_applications_legal_name ON usdot_applications(legal_business_name);
+CREATE INDEX IF NOT EXISTS idx_usdot_applications_ein ON usdot_applications(ein);
+CREATE INDEX IF NOT EXISTS idx_usdot_applications_created_at ON usdot_applications(created_at);
 
 -- Indexes for AI system tables
 CREATE INDEX IF NOT EXISTS idx_agents_type ON agents(type);

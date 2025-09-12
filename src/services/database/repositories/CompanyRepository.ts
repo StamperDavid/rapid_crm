@@ -1,5 +1,6 @@
 import { BaseRepository } from './BaseRepository';
 import { DatabaseService } from '../DatabaseService';
+import { Organization } from '../../../types/schema';
 
 export interface Company {
   id: string;

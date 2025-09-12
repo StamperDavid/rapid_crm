@@ -6,7 +6,7 @@ import {
   TableCellsIcon,
   CogIcon,
 } from '@heroicons/react/24/outline';
-import SchemaViewer from '../components/SchemaViewer';
+// SchemaViewer removed - using schemaService instead
 
 const DataManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState('companies');
@@ -80,13 +80,7 @@ const DataManagement: React.FC = () => {
         </nav>
       </div>
 
-      {/* Schema Viewer */}
-      <SchemaViewer
-        entityType={activeTab}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {/* Schema Viewer removed - using schemaService instead */}
 
       {/* Import Modal */}
       {showImportModal && (

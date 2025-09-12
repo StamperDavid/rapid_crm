@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
-import EntityForm from '../../../components/forms/EntityForm';
+import ComprehensiveCompanyForm from '../../../components/forms/ComprehensiveCompanyForm';
 
 const Companies: React.FC = () => {
   const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
@@ -228,8 +228,7 @@ const Companies: React.FC = () => {
 
       {/* Create Company Modal */}
       {showCreateModal && (
-        <EntityForm
-          entityType="companies"
+        <ComprehensiveCompanyForm
           onSave={handleCreateCompany}
           onCancel={() => setShowCreateModal(false)}
         />

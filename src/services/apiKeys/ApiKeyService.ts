@@ -1,6 +1,6 @@
 import { ApiKey } from '../../types/schema';
 import { encryptionService, EncryptionResult } from './EncryptionService';
-import { browserDatabaseService } from '../database/BrowserDatabaseService';
+import { getApiBaseUrl } from '../../config/api';
 
 export interface ApiKeyValidation {
   isValid: boolean;
@@ -36,6 +36,7 @@ export class ApiKeyService {
   private validations: Map<string, ApiKeyValidation> = new Map();
   private usage: Map<string, ApiKeyUsage> = new Map();
   private isInitialized = false;
+  private API_BASE = getApiBaseUrl();
 
   constructor() {
     this.loadApiKeys();
@@ -63,13 +64,14 @@ export class ApiKeyService {
   }
 
   /**
-   * Load API keys from storage
+   * Load API keys from YOUR database
    */
   private async loadApiKeys(): Promise<void> {
     try {
-      console.log('Loading API keys from real database...');
-      const apiKeysData = await browserDatabaseService.getApiKeys();
-      this.apiKeys = new Map(apiKeysData.map(key => [key.id, key]));
+      console.log('Loading API keys from YOUR database...');
+      const response = await fetch(`${this.API_BASE}/api-keys`);
+      const apiKeysData = await response.json();
+      this.apiKeys = new Map(apiKeysData.map((key: ApiKey) => [key.id, key]));
       this.validations = new Map();
       this.usage = new Map();
     } catch (error) {
@@ -118,7 +120,11 @@ export class ApiKeyService {
       };
 
       this.apiKeys.set(newApiKey.id, newApiKey);
-      await browserDatabaseService.createApiKey(newApiKey);
+      await fetch(`${this.API_BASE}/api-keys`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newApiKey)
+      });
       await this.saveApiKeys();
 
       return newApiKey;
@@ -167,7 +173,11 @@ export class ApiKeyService {
       }
 
       this.apiKeys.set(id, updatedApiKey);
-      await browserDatabaseService.updateApiKey(id, updatedApiKey);
+      await fetch(`${this.API_BASE}/api-keys/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedApiKey)
+      });
       await this.saveApiKeys();
       return updatedApiKey;
     } catch (error) {
@@ -183,7 +193,7 @@ export class ApiKeyService {
     const deleted = this.apiKeys.delete(id);
     this.validations.delete(id);
     this.usage.delete(id);
-    await browserDatabaseService.deleteApiKey(id);
+    await fetch(`${this.API_BASE}/api-keys/${id}`, { method: 'DELETE' });
     await this.saveApiKeys();
     return deleted;
   }

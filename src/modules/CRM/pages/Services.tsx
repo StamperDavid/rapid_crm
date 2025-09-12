@@ -16,13 +16,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { Service } from '../../../types/schema';
 import { useUser } from '../../../contexts/UserContext';
-import EditorToolbar from '../../../components/EditorToolbar';
 
 const Services: React.FC = () => {
   const navigate = useNavigate();
   const { hasPermission, hasRole } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Transportation Compliance Services Catalog
   const services: Service[] = [
@@ -339,7 +339,6 @@ const Services: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <EditorToolbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -353,7 +352,7 @@ const Services: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => navigate('/services/new')}
+              onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
@@ -409,8 +408,8 @@ const Services: React.FC = () => {
             const categoryColor = getCategoryColor(service.category);
             
             return (
-              <div key={service.id} className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                <div className="p-6">
+              <div key={service.id} className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden flex flex-col h-full">
+                <div className="p-6 flex-1 flex flex-col">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
                       <div className={`p-2 rounded-lg ${categoryColor}`}>
@@ -441,7 +440,7 @@ const Services: React.FC = () => {
                     {service.description}
                   </p>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-3 flex-1">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                         Requirements:
@@ -478,7 +477,7 @@ const Services: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 mt-auto">
                   <button
                     onClick={() => handleEditService(service)}
                     className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -501,6 +500,107 @@ const Services: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-400">
               Try adjusting your search or filter criteria.
             </p>
+          </div>
+        )}
+
+        {/* Create Service Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Create New Service
+                  </h3>
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Service Name
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter service name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter service description"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Category
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+                        <option value="Registration">Registration</option>
+                        <option value="Compliance">Compliance</option>
+                        <option value="Training">Training</option>
+                        <option value="Support">Support</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Base Price ($)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="299"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Estimated Duration
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="1-2 business days"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // TODO: Implement service creation logic
+                      setShowCreateModal(false);
+                    }}
+                    className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Create Service
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

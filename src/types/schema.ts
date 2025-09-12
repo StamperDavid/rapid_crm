@@ -31,6 +31,13 @@ export interface Person {
 export interface Organization {
   id: string;
   
+  // Contact Details (Person entity) - Required
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  preferredContactMethod: 'Phone' | 'Email' | 'Text';
+  
   // Physical Address (Required)
   physicalStreetAddress: string;
   physicalSuiteApt?: string;
@@ -88,13 +95,91 @@ export interface Organization {
   // Regulatory Compliance (Important)
   additionalRegulatoryDetails: string[]; // Multiple select
   
+  // Company Ownership (Important)
+  hasCompanyOwner: 'Yes' | 'No';
+  companyOwnerFirstName?: string;
+  companyOwnerLastName?: string;
+  companyOwnerPhone?: string;
+  companyOwnerEmail?: string;
+  
   // Financial Information (Important)
   hasDunsBradstreetNumber: 'Yes' | 'No';
   dunsBradstreetNumber?: string;
   
   // System Fields
+  software?: string; // Source tracking
   createdAt: string;
   updatedAt: string;
+}
+
+export interface USDOTApplication {
+  id: string;
+  companyId: string; // Link to the company this application belongs to
+  
+  // Part 1: Company and Business Information
+  legalBusinessName: string;
+  dbaName?: string;
+  principalAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  mailingAddress: {
+    isDifferent: boolean;
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+  primaryContact: {
+    fullName?: string;
+    title?: string;
+    phone?: string;
+    fax?: string;
+    email?: string;
+  };
+  companyOfficial: {
+    fullName?: string;
+    title?: string;
+    phone?: string;
+    email?: string;
+  };
+  businessType: 'Sole Proprietor' | 'Partnership' | 'Corporation' | 'LLC' | 'Other';
+  ein: string;
+  dunsNumber?: string;
+  
+  // Part 2: Operations and Authority
+  operationTypes: string[];
+  carrierOperationTypes: string[];
+  
+  // Part 3: Fleet and Cargo Information
+  powerUnits: {
+    owned: number;
+    termLeased: number;
+    tripLeased: number;
+  };
+  drivers: {
+    employees: number;
+    ownerOperators: number;
+  };
+  operationClassifications: string[];
+  cargoClassifications: string[];
+  hazardousMaterials: {
+    classifications: string[];
+    hmClasses: string[];
+  };
+  
+  // Part 4: Financial and Safety Information
+  marketerOfTransportationServices: boolean;
+  applicationDate: string;
+  signature: string;
+  officialTitle: string;
+  
+  // System Fields
+  createdAt: string;
+  updatedAt: string;
+  isReadOnly: boolean; // Always true after creation
 }
 
 export interface Service {
@@ -196,64 +281,75 @@ export interface Driver {
   id: string;
   companyId: string; // Link to the company that employs this driver
   
-  // Driver Name
-  driverName: string; // Single line text
+  // Basic Information (Required)
+  fullName: string;
+  address: string;
+  phone: string;
+  email: string;
+  dateOfBirth: string; // Date
+  socialSecurityNumber: string; // Encrypted
   
-  // Application & Documentation
-  applicationForEmployment?: string; // Attachment
-  backgroundChecks?: string; // Files
-  certificateOfReceiptForCompanyTestingPolicy?: string; // Files
-  certificateOfReceiptForCompanyWorkPolicy?: string; // Files
-  commercialDriversLicenseInformationSystemReports?: string; // Attachment
-  copyOfDriversLicense?: string; // Files
-  medicalCertificateCopy?: string; // Attachment
+  // Employment History (Required)
+  employmentHistory: string; // Structured text (past 3-10 years with gaps explanation)
   
-  // Disciplinary & Safety Records
-  disciplinaryAction?: string; // Long Text
-  goodFaithEffortInquiryIntoDrivingRecord?: string; // Long Text
-  goodFaithEffortSafetyPerformanceHistoryInvestigation?: string; // Single Line Text
-  inquiryIntoDrivingRecord?: string; // Single Line Text
-  inquiryToPreviousEmployers?: string; // Single Line Text
-  medicalExaminerNationalRegistryVerification?: string; // Single Line Text
-  motorVehicleReports?: string; // Single Line Text
+  // Driving Experience (Required)
+  drivingExperience: string[]; // Multi-Select: CDL Class A, B, C, D, E, Other
   
-  // Employment Documentation
-  driverEmploymentApplication?: string; // Attachment/Files
-  driversRoadTest?: string; // Attachment
-  certificationOfRoadTest?: string; // Single Line Text
-  annualDriversCertificateOfViolations?: string; // Single Line Text
-  annualReviewOfDrivingRecord?: string; // Single Line Text
-  checklistForMultipleEmployers?: string; // Single Line Text
+  // Accident/Violations History (Required)
+  accidentViolationsHistory: string; // Structured text
+  accidentViolationsFiles: string[]; // File uploads
   
-  // Legacy fields (keeping for backward compatibility)
-  firstName?: string;
-  lastName?: string;
-  dateOfBirth?: string;
-  ssn?: string; // Social Security Number (encrypted)
-  phone?: string;
-  email?: string;
-  address?: string;
+  // Motor Vehicle Record (MVR) (Required)
+  mvrFiles: string[]; // File uploads (PDF, TXT, Image)
+  mvrInitialDate?: string; // Date
+  mvrAnnualDate?: string; // Date
+  
+  // License/CDL Copy (Required)
+  licenseCdlFiles: string[]; // File uploads (PDF, Image)
   licenseNumber?: string;
-  licenseState?: string;
-  licenseClass?: 'A' | 'B' | 'C' | 'Other';
-  licenseExpiry?: string;
-  hasHazmatEndorsement?: 'Yes' | 'No';
-  hasPassengerEndorsement?: 'Yes' | 'No';
-  hasSchoolBusEndorsement?: 'Yes' | 'No';
-  hireDate?: string;
-  employmentStatus?: 'Active' | 'Inactive' | 'Terminated' | 'On Leave';
-  position?: 'Driver' | 'Owner-Operator' | 'Team Driver' | 'Other';
-  payType?: 'Hourly' | 'Mileage' | 'Percentage' | 'Salary';
-  medicalCardNumber?: string;
-  medicalCardExpiry?: string;
-  drugTestDate?: string;
-  nextDrugTestDue?: string;
-  backgroundCheckDate?: string;
-  nextBackgroundCheckDue?: string;
-  totalMilesDriven?: number;
-  accidentsInLast3Years?: number;
-  violationsInLast3Years?: number;
-  safetyRating?: 'Excellent' | 'Good' | 'Satisfactory' | 'Needs Improvement';
+  licenseExpiry?: string; // Date
+  endorsements: string[]; // JSON array
+  restrictions: string[]; // JSON array
+  
+  // DOT Medical Certificate (Required)
+  dotMedicalCertificateExpiry?: string; // Date
+  medicalExaminerName?: string;
+  medicalCertificateNumber?: string;
+  medicalExaminationReportFiles: string[]; // File uploads (PDF, TXT)
+  
+  // Road Test Certificate/CDL (Required)
+  roadTestCertificateFiles: string[]; // File uploads (PDF, Image)
+  roadTestDate?: string; // Date
+  
+  // Drug/Alcohol Test Results (Required)
+  drugAlcoholTestResults: Array<{
+    testType: 'Pre-employment' | 'Random' | 'Post-accident' | 'Reasonable Suspicion' | 'Return-to-duty';
+    date: string;
+    results: 'Pass' | 'Fail' | 'Refused';
+    filePath?: string;
+  }>;
+  lastDrugTestDate?: string; // Date
+  lastAlcoholTestDate?: string; // Date
+  
+  // Annual Violation Certification (Required)
+  annualViolationCertificationFiles: string[]; // File uploads (PDF)
+  lastAnnualCertificationDate?: string; // Date
+  
+  // Safety Performance History (Required)
+  safetyPerformanceHistoryFiles: string[]; // File uploads (PDF, TXT)
+  
+  // Variances/Waivers (Optional if applicable)
+  variancesWaiversFiles: string[]; // File uploads (PDF)
+  hasVariancesWaivers: 'Yes' | 'No';
+  
+  // Proof of Work Authorization (Optional/Conditional)
+  workAuthorizationFiles: string[]; // File uploads (PDF, Image)
+  hasWorkAuthorization: 'Yes' | 'No';
+  
+  // Employment Information
+  hireDate?: string; // Date
+  employmentStatus: 'Active' | 'Inactive' | 'Terminated';
+  position: string;
   
   // System Fields
   createdAt: string;

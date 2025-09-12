@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Service } from '../types/schema';
-import { browserDatabaseService } from '../services/database/BrowserDatabaseService';
+import { getApiBaseUrl } from '../config/api';
 
 // Define the context type
 interface CRMContextType {
@@ -74,39 +74,42 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from database on mount
+  // API base URL
+  const API_BASE = getApiBaseUrl();
+
+  // Load data from YOUR database on mount
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = async (retryCount = 0) => {
       try {
         setIsLoading(true);
-        console.log('[CRMContext] Starting data load...');
+        console.log(`[CRMContext] Starting data load from YOUR database... (attempt ${retryCount + 1})`);
         
         const [companiesData, contactsData, leadsData, dealsData, servicesData, vehiclesData, driversData] = await Promise.all([
-          browserDatabaseService.getCompanies().catch(err => {
+          fetch(`${API_BASE}/companies`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load companies:', err);
             throw new Error(`Companies: ${err.message}`);
           }),
-          browserDatabaseService.getContacts().catch(err => {
+          fetch(`${API_BASE}/contacts`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load contacts:', err);
             throw new Error(`Contacts: ${err.message}`);
           }),
-          browserDatabaseService.getLeads().catch(err => {
+          fetch(`${API_BASE}/leads`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load leads:', err);
             throw new Error(`Leads: ${err.message}`);
           }),
-          browserDatabaseService.getDeals().catch(err => {
+          fetch(`${API_BASE}/deals`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load deals:', err);
             throw new Error(`Deals: ${err.message}`);
           }),
-          browserDatabaseService.getServices().catch(err => {
+          fetch(`${API_BASE}/services`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load services:', err);
             throw new Error(`Services: ${err.message}`);
           }),
-          browserDatabaseService.getVehicles().catch(err => {
+          fetch(`${API_BASE}/vehicles`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load vehicles:', err);
             throw new Error(`Vehicles: ${err.message}`);
           }),
-          browserDatabaseService.getDrivers().catch(err => {
+          fetch(`${API_BASE}/drivers`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load drivers:', err);
             throw new Error(`Drivers: ${err.message}`);
           })
@@ -131,7 +134,15 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setDrivers(driversData);
       } catch (error) {
         console.error('[CRMContext] Failed to load data:', error);
-        // Set empty arrays as fallback
+        
+        // Retry logic - if it's a connection error and we haven't retried too many times
+        if (retryCount < 3 && (error instanceof Error && error.message.includes('Failed to fetch'))) {
+          console.log(`[CRMContext] Retrying in 2 seconds... (${retryCount + 1}/3)`);
+          setTimeout(() => loadData(retryCount + 1), 2000);
+          return;
+        }
+        
+        // Set empty arrays as fallback only after all retries failed
         setCompanies([]);
         setContacts([]);
         setLeads([]);
@@ -147,10 +158,11 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     loadData();
   }, []);
 
-  // Database operations functions
+  // Database operations functions - NOW USING YOUR DATABASE
   const refreshCompanies = async () => {
     try {
-      const data = await browserDatabaseService.getCompanies();
+      const response = await fetch(`${API_BASE}/companies`);
+      const data = await response.json();
       setCompanies(data);
     } catch (error) {
       console.error('Failed to refresh companies:', error);
@@ -160,7 +172,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshContacts = async () => {
     try {
-      const data = await browserDatabaseService.getContacts();
+      const response = await fetch(`${API_BASE}/contacts`);
+      const data = await response.json();
       setContacts(data);
     } catch (error) {
       console.error('Failed to refresh contacts:', error);
@@ -170,7 +183,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshLeads = async () => {
     try {
-      const data = await browserDatabaseService.getLeads();
+      const response = await fetch(`${API_BASE}/leads`);
+      const data = await response.json();
       setLeads(data);
     } catch (error) {
       console.error('Failed to refresh leads:', error);
@@ -180,7 +194,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshDeals = async () => {
     try {
-      const data = await browserDatabaseService.getDeals();
+      const response = await fetch(`${API_BASE}/deals`);
+      const data = await response.json();
       setDeals(data);
     } catch (error) {
       console.error('Failed to refresh deals:', error);
@@ -190,7 +205,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshServices = async () => {
     try {
-      const data = await browserDatabaseService.getServices();
+      const response = await fetch(`${API_BASE}/services`);
+      const data = await response.json();
       setServices(data);
     } catch (error) {
       console.error('Failed to refresh services:', error);
@@ -200,7 +216,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshVehicles = async () => {
     try {
-      const data = await browserDatabaseService.getVehicles();
+      const response = await fetch(`${API_BASE}/vehicles`);
+      const data = await response.json();
       setVehicles(data);
     } catch (error) {
       console.error('Failed to refresh vehicles:', error);
@@ -210,7 +227,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const refreshDrivers = async () => {
     try {
-      const data = await browserDatabaseService.getDrivers();
+      const response = await fetch(`${API_BASE}/drivers`);
+      const data = await response.json();
       setDrivers(data);
     } catch (error) {
       console.error('Failed to refresh drivers:', error);
@@ -220,7 +238,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createCompany = async (company: Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newCompany = await browserDatabaseService.createCompany(company);
+      const response = await fetch(`${API_BASE}/companies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(company)
+      });
+      const newCompany = await response.json();
       setCompanies(prev => [...prev, newCompany]);
       return newCompany;
     } catch (error) {
@@ -231,7 +254,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createContact = async (contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newContact = await browserDatabaseService.createContact(contact);
+      const response = await fetch(`${API_BASE}/contacts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contact)
+      });
+      const newContact = await response.json();
       setContacts(prev => [...prev, newContact]);
       return newContact;
     } catch (error) {
@@ -242,7 +270,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createLead = async (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newLead = await browserDatabaseService.createLead(lead);
+      const response = await fetch(`${API_BASE}/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lead)
+      });
+      const newLead = await response.json();
       setLeads(prev => [...prev, newLead]);
       return newLead;
     } catch (error) {
@@ -253,7 +286,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createDeal = async (deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newDeal = await browserDatabaseService.createDeal(deal);
+      const response = await fetch(`${API_BASE}/deals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(deal)
+      });
+      const newDeal = await response.json();
       setDeals(prev => [...prev, newDeal]);
       return newDeal;
     } catch (error) {
@@ -264,7 +302,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createService = async (service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newService = await browserDatabaseService.createService(service);
+      const response = await fetch(`${API_BASE}/services`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(service)
+      });
+      const newService = await response.json();
       setServices(prev => [...prev, newService]);
       return newService;
     } catch (error) {
@@ -275,7 +318,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createVehicle = async (vehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newVehicle = await browserDatabaseService.createVehicle(vehicle);
+      const response = await fetch(`${API_BASE}/vehicles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(vehicle)
+      });
+      const newVehicle = await response.json();
       setVehicles(prev => [...prev, newVehicle]);
       return newVehicle;
     } catch (error) {
@@ -286,7 +334,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const createDriver = async (driver: Omit<Driver, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newDriver = await browserDatabaseService.createDriver(driver);
+      const response = await fetch(`${API_BASE}/drivers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(driver)
+      });
+      const newDriver = await response.json();
       setDrivers(prev => [...prev, newDriver]);
       return newDriver;
     } catch (error) {
@@ -297,7 +350,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateCompany = async (id: string, company: Partial<Organization>) => {
     try {
-      const updatedCompany = await browserDatabaseService.updateCompany(id, company);
+      const response = await fetch(`${API_BASE}/companies/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(company)
+      });
+      const updatedCompany = await response.json();
       setCompanies(prev => prev.map(c => c.id === id ? updatedCompany : c));
       return updatedCompany;
     } catch (error) {
@@ -308,7 +366,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateContact = async (id: string, contact: Partial<Person>) => {
     try {
-      const updatedContact = await browserDatabaseService.updateContact(id, contact);
+      const response = await fetch(`${API_BASE}/contacts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contact)
+      });
+      const updatedContact = await response.json();
       setContacts(prev => prev.map(c => c.id === id ? updatedContact : c));
       return updatedContact;
     } catch (error) {
@@ -319,7 +382,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateLead = async (id: string, lead: Partial<Lead>) => {
     try {
-      const updatedLead = await browserDatabaseService.updateLead(id, lead);
+      const response = await fetch(`${API_BASE}/leads/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lead)
+      });
+      const updatedLead = await response.json();
       setLeads(prev => prev.map(l => l.id === id ? updatedLead : l));
       return updatedLead;
     } catch (error) {
@@ -330,7 +398,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateDeal = async (id: string, deal: Partial<Deal>) => {
     try {
-      const updatedDeal = await browserDatabaseService.updateDeal(id, deal);
+      const response = await fetch(`${API_BASE}/deals/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(deal)
+      });
+      const updatedDeal = await response.json();
       setDeals(prev => prev.map(d => d.id === id ? updatedDeal : d));
       return updatedDeal;
     } catch (error) {
@@ -341,7 +414,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateService = async (id: string, service: Partial<Service>) => {
     try {
-      const updatedService = await browserDatabaseService.updateService(id, service);
+      const response = await fetch(`${API_BASE}/services/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(service)
+      });
+      const updatedService = await response.json();
       setServices(prev => prev.map(s => s.id === id ? updatedService : s));
       return updatedService;
     } catch (error) {
@@ -352,7 +430,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateVehicle = async (id: string, vehicle: Partial<Vehicle>) => {
     try {
-      const updatedVehicle = await browserDatabaseService.updateVehicle(id, vehicle);
+      const response = await fetch(`${API_BASE}/vehicles/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(vehicle)
+      });
+      const updatedVehicle = await response.json();
       setVehicles(prev => prev.map(v => v.id === id ? updatedVehicle : v));
       return updatedVehicle;
     } catch (error) {
@@ -363,7 +446,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const updateDriver = async (id: string, driver: Partial<Driver>) => {
     try {
-      const updatedDriver = await browserDatabaseService.updateDriver(id, driver);
+      const response = await fetch(`${API_BASE}/drivers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(driver)
+      });
+      const updatedDriver = await response.json();
       setDrivers(prev => prev.map(d => d.id === id ? updatedDriver : d));
       return updatedDriver;
     } catch (error) {
@@ -374,7 +462,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteCompany = async (id: string) => {
     try {
-      await browserDatabaseService.deleteCompany(id);
+      await fetch(`${API_BASE}/companies/${id}`, { method: 'DELETE' });
       setCompanies(prev => prev.filter(c => c.id !== id));
     } catch (error) {
       console.error('Failed to delete company:', error);
@@ -384,7 +472,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteContact = async (id: string) => {
     try {
-      await browserDatabaseService.deleteContact(id);
+      await fetch(`${API_BASE}/contacts/${id}`, { method: 'DELETE' });
       setContacts(prev => prev.filter(c => c.id !== id));
     } catch (error) {
       console.error('Failed to delete contact:', error);
@@ -394,7 +482,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteLead = async (id: string) => {
     try {
-      await browserDatabaseService.deleteLead(id);
+      await fetch(`${API_BASE}/leads/${id}`, { method: 'DELETE' });
       setLeads(prev => prev.filter(l => l.id !== id));
     } catch (error) {
       console.error('Failed to delete lead:', error);
@@ -404,7 +492,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteDeal = async (id: string) => {
     try {
-      await browserDatabaseService.deleteDeal(id);
+      await fetch(`${API_BASE}/deals/${id}`, { method: 'DELETE' });
       setDeals(prev => prev.filter(d => d.id !== id));
     } catch (error) {
       console.error('Failed to delete deal:', error);
@@ -414,7 +502,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteService = async (id: string) => {
     try {
-      await browserDatabaseService.deleteService(id);
+      await fetch(`${API_BASE}/services/${id}`, { method: 'DELETE' });
       setServices(prev => prev.filter(s => s.id !== id));
     } catch (error) {
       console.error('Failed to delete service:', error);
@@ -424,7 +512,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteVehicle = async (id: string) => {
     try {
-      await browserDatabaseService.deleteVehicle(id);
+      await fetch(`${API_BASE}/vehicles/${id}`, { method: 'DELETE' });
       setVehicles(prev => prev.filter(v => v.id !== id));
     } catch (error) {
       console.error('Failed to delete vehicle:', error);
@@ -434,7 +522,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
 
   const deleteDriver = async (id: string) => {
     try {
-      await browserDatabaseService.deleteDriver(id);
+      await fetch(`${API_BASE}/drivers/${id}`, { method: 'DELETE' });
       setDrivers(prev => prev.filter(d => d.id !== id));
     } catch (error) {
       console.error('Failed to delete driver:', error);

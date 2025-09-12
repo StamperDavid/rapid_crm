@@ -11,18 +11,7 @@ import {
   CurrencyDollarIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';
-
-interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  clientName: string;
-  clientEmail: string;
-  amount: number;
-  status: 'draft' | 'sent' | 'paid' | 'overdue';
-  dueDate: string;
-  createdDate: string;
-  description: string;
-}
+import { Invoice } from '../../../types/schema';
 
 const Invoices: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([

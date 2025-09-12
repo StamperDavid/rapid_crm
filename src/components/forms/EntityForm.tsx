@@ -60,12 +60,66 @@ const EntityForm: React.FC<EntityFormProps> = ({
         defaults.companyId = '';
         break;
       case 'companies':
+        // Physical Address
+        defaults.physicalStreetAddress = '';
+        defaults.physicalSuiteApt = '';
+        defaults.physicalCity = '';
+        defaults.physicalState = '';
+        defaults.physicalCountry = 'United States';
+        defaults.physicalZip = '';
+        
+        // Mailing Address
+        defaults.isMailingAddressSame = 'Yes';
+        defaults.mailingStreetAddress = '';
+        defaults.mailingSuiteApt = '';
+        defaults.mailingCity = '';
+        defaults.mailingState = '';
+        defaults.mailingZip = '';
+        defaults.mailingCountry = 'United States';
+        
+        // Business Details
+        defaults.businessType = 'LLC';
+        defaults.businessStarted = '';
+        defaults.desiredBusinessName = '';
         defaults.legalBusinessName = '';
-        defaults.dba = '';
-        defaults.industry = '';
-        defaults.website = '';
-        defaults.phone = '';
-        defaults.email = '';
+        defaults.hasDBA = 'No';
+        defaults.dbaName = '';
+        defaults.ein = '';
+        defaults.entityTypes = [];
+        
+        // Transportation Details
+        defaults.businessClassification = 'Carrier';
+        defaults.transportationOperationType = 'Long-Haul';
+        defaults.carriesPassengers = 'No';
+        defaults.transportsGoodsForHire = 'Yes';
+        defaults.engagedInInterstateCommerce = 'Yes';
+        defaults.interstateIntrastate = 'Interstate';
+        defaults.statesOfOperation = [];
+        defaults.operationClass = '';
+        defaults.hasUSDOTNumber = 'No';
+        defaults.usdotNumber = '';
+        
+        // Fleet Details
+        defaults.vehicleFleetType = 'Owned';
+        defaults.vehicleTypesUsed = [];
+        defaults.numberOfDrivers = 0;
+        defaults.driverList = '';
+        defaults.numberOfVehicles = 0;
+        defaults.vehicleList = '';
+        defaults.gvwr = '';
+        defaults.yearMakeModel = '';
+        
+        // Cargo & Safety
+        defaults.cargoTypesTransported = 'General Freight';
+        defaults.hazmatPlacardRequired = 'No';
+        defaults.phmsaWork = 'No';
+        
+        // Regulatory Compliance
+        defaults.additionalRegulatoryDetails = [];
+        
+        // Financial Information
+        defaults.hasDunsBradstreetNumber = 'No';
+        defaults.dunsBradstreetNumber = '';
         break;
       case 'drivers':
         defaults.firstName = '';
@@ -246,6 +300,40 @@ const EntityForm: React.FC<EntityFormProps> = ({
       );
     }
 
+    if (type === 'multiselect') {
+      const options = (SELECT_OPTIONS as any)[field] || [];
+      const selectedValues = Array.isArray(value) ? value : [];
+      
+      return (
+        <div key={field}>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {label}
+          </label>
+          <div className="mt-1 space-y-2">
+            {options.map((option: any) => (
+              <div key={option.value} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectedValues.includes(option.value)}
+                  onChange={(e) => {
+                    const newValues = e.target.checked
+                      ? [...selectedValues, option.value]
+                      : selectedValues.filter((v: string) => v !== option.value);
+                    handleFieldChange(field, newValues);
+                  }}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
+          {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
+        </div>
+      );
+    }
+
     return (
       <div key={field}>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -270,9 +358,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
     if (field.includes('date') || field.includes('Date')) return 'date';
     if (field.includes('number') || field.includes('Number')) return 'number';
     if (field.includes('website') || field.includes('Website')) return 'url';
-    if ((SELECT_OPTIONS as any)[field]) return 'select';
-    if (field.includes('description') || field.includes('notes')) return 'textarea';
+    if (field.includes('description') || field.includes('notes') || field.includes('List')) return 'textarea';
     if (field.includes('is') || field.includes('has')) return 'checkbox';
+    
+    // Check for multi-select fields (array fields)
+    const multiSelectFields = ['entityTypes', 'statesOfOperation', 'vehicleTypesUsed', 'additionalRegulatoryDetails'];
+    if (multiSelectFields.includes(field)) return 'multiselect';
+    
+    if ((SELECT_OPTIONS as any)[field]) return 'select';
     return 'text';
   };
 

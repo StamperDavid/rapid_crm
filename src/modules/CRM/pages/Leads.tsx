@@ -22,11 +22,11 @@ import {
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
 import { Lead } from '../../../types/schema';
-import { leadService } from '../../../services/leads/LeadService';
+import { useCRM } from '../../../contexts/CRMContext';
 import LeadScoring from '../../../components/LeadScoring';
 
 const Leads: React.FC = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const { leads, isLoading } = useCRM();
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -34,7 +34,6 @@ const Leads: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
 
   // Form state for creating/editing leads
@@ -62,32 +61,26 @@ const Leads: React.FC = () => {
   });
 
   useEffect(() => {
-    loadLeads();
-    loadStats();
-  }, []);
-
-  useEffect(() => {
     filterLeads();
+    calculateStats();
   }, [leads, searchTerm, filterStatus, filterSource]);
 
-  const loadLeads = async () => {
-    try {
-      setIsLoading(true);
-      const leadsData = await leadService.getAllLeads();
-      setLeads(leadsData);
-    } catch (error) {
-      console.error('Error loading leads:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadStats = async () => {
-    try {
-      const statsData = await leadService.getLeadStats();
-      setStats(statsData);
-    } catch (error) {
-      console.error('Error loading stats:', error);
+  const calculateStats = () => {
+    if (leads.length > 0) {
+      const total = leads.length;
+      const byStatus = leads.reduce((acc, lead) => {
+        acc[lead.leadStatus] = (acc[lead.leadStatus] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const averageScore = leads.reduce((sum, lead) => sum + (lead.leadScore || 0), 0) / total;
+      const conversionRate = ((byStatus['Converted'] || 0) / total) * 100;
+      
+      setStats({
+        total,
+        byStatus,
+        averageScore,
+        conversionRate
+      });
     }
   };
 

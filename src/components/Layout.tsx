@@ -13,11 +13,13 @@ import {
   XMarkIcon,
   ClockIcon,
   ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import EditorToolbar from './EditorToolbar';
+import AdminToolbar from './AdminToolbar';
 import Logo from './Logo';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
@@ -31,6 +33,7 @@ const getNavigation = () => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
   { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
+  { name: 'Deals', href: '/deals', icon: DocumentTextIcon, color: 'text-indigo-600' },
   { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatBubbleLeftRightIcon, color: 'text-cyan-600' },
@@ -233,14 +236,60 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
 
-        {/* Editor Toolbar - Only visible to editors */}
-        {(user?.role === 'admin' || user?.role === 'editor') && (
-          <EditorToolbar
-            hasUserManagement={hasPermission('canManageUsers')}
-            hasAgentManagement={hasPermission('canManageAgents')}
-            hasSchemaManagement={hasPermission('canManageSchema')}
-            hasApiKeyManagement={hasPermission('canManageApiKeys')}
-          />
+        {/* Toolbars - Editor and Admin side by side */}
+        {((user?.role === 'admin' || user?.role === 'editor') || user?.role === 'admin') && (
+          <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center h-12">
+                {/* Left 50% - Editor Tools */}
+                <div className="flex items-center space-x-1 w-1/2">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-4">
+                    Editor Tools
+                  </span>
+                  <div className="flex items-center space-x-1">
+                    {/* Editor Tools */}
+                    {(user?.role === 'admin' || user?.role === 'editor') && (
+                      <EditorToolbar
+                        hasUserManagement={hasPermission('canManageUsers')}
+                        hasAgentManagement={hasPermission('canManageAgents')}
+                        hasSchemaManagement={hasPermission('canManageSchema')}
+                        hasApiKeyManagement={hasPermission('canManageApiKeys')}
+                      />
+                    )}
+                  </div>
+                </div>
+                
+                {/* Right 50% - Admin Tools (fills from right to left) */}
+                {user?.role === 'admin' && (
+                  <div className="flex items-center justify-end space-x-1 w-1/2">
+                    <AdminToolbar
+                      hasSystemAccess={hasPermission('canAccessSystem')}
+                      hasUserManagement={hasPermission('canManageUsers')}
+                      hasSystemMonitoring={hasPermission('canMonitorSystem')}
+                      hasAdvancedSettings={hasPermission('canManageAdvancedSettings')}
+                    />
+                    {/* Status indicator - Far right */}
+                    <div className="flex items-center space-x-2 ml-4">
+                      <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        Admin Mode
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Status indicator for non-admin users */}
+                {user?.role !== 'admin' && (
+                  <div className="flex items-center space-x-2 ml-auto">
+                    <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      Editor Mode
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Main content */}

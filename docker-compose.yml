@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Frontend (React + Nginx)
   frontend:
@@ -26,11 +24,17 @@ services:
     volumes:
       - ./instance:/app/instance
       - ./src/database:/app/src/database
+      - ./PycharmProjects/rapid_eld:/app/rapid_eld
     networks:
       - rapid-crm-network
     environment:
       - NODE_ENV=production
       - PORT=3001
+      # ELD Service Integration
+      - ELD_AUTOMATION_ENABLED=true
+      - ELD_COMPLIANCE_MONITORING=true
+      - IFTA_QUARTERLY_AUTOMATION=true
+      - AI_AGENT_INTEGRATION=true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]

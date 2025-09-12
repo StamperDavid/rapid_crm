@@ -24,3 +24,5 @@ EXPOSE 3001
 
 # Start development server with nodemon
 CMD ["npm", "run", "dev:server"]
+
+

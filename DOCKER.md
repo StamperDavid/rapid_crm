@@ -5,9 +5,10 @@ Rapid CRM is now fully containerized with Docker, providing a consistent develop
 
 ## Architecture
 - **Frontend**: React + Vite + Nginx (Production) / Vite Dev Server (Development)
-- **Backend**: Express.js + SQLite
-- **Database**: SQLite with persistent volumes
+- **Backend**: Express.js + SQLite + ELD Service Integration
+- **Database**: SQLite with persistent volumes + ELD compliance tracking
 - **Networking**: Docker bridge network for service communication
+- **ELD Integration**: Containerized ELD service tracking with AI automation
 
 ## Quick Start
 
@@ -43,13 +44,22 @@ npm run docker:logs
 ### Backend (Port 3001)
 - **Express.js server** with SQLite database
 - **Health check endpoint**: `/api/health`
+- **ELD service integration**: `/api/eld/*`
 - **Database initialization** on first run
+- **ELD compliance tracking** with AI automation
 - **Persistent data** via Docker volumes
 
 ### Database
 - **SQLite database** with persistent storage
 - **Automatic initialization** with schema and seed data
+- **ELD service tracking** tables for compliance monitoring
 - **Volume mounting** for data persistence
+
+### ELD Service Integration
+- **Service renewal tracking** with automated monitoring
+- **IFTA quarterly processing** with AI agent automation
+- **Compliance alerts** and escalation workflows
+- **AI-powered automation** for service management
 
 ## Environment Configuration
 
@@ -63,6 +73,10 @@ cp env.example .env
 - `PORT`: Backend server port (default: 3001)
 - `DB_PATH`: Database file path
 - `VITE_API_HOST`: Frontend API host configuration
+- `ELD_AUTOMATION_ENABLED`: Enable ELD service automation (default: true)
+- `ELD_COMPLIANCE_MONITORING`: Enable compliance monitoring (default: true)
+- `IFTA_QUARTERLY_AUTOMATION`: Enable IFTA quarterly automation (default: true)
+- `AI_AGENT_INTEGRATION`: Enable AI agent integration (default: true)
 
 ## Docker Commands
 

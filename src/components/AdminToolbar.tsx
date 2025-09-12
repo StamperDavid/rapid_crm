@@ -1,47 +1,50 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  UsersIcon,
+  ShieldCheckIcon,
+  Cog6ToothIcon,
+  ServerIcon,
+  ChartBarSquareIcon,
+  ExclamationTriangleIcon,
+  UserGroupIcon,
   WrenchScrewdriverIcon,
   KeyIcon,
   CircleStackIcon,
-  CogIcon,
-  ChartBarIcon,
-  CpuChipIcon,
-  GlobeAltIcon,
   SwatchIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 
-interface EditorToolbarProps {
+interface AdminToolbarProps {
+  hasSystemAccess: boolean;
   hasUserManagement: boolean;
-  hasAgentManagement: boolean;
-  hasSchemaManagement: boolean;
-  hasApiKeyManagement: boolean;
+  hasSystemMonitoring: boolean;
+  hasAdvancedSettings: boolean;
 }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({
+const AdminToolbar: React.FC<AdminToolbarProps> = ({
+  hasSystemAccess,
   hasUserManagement,
-  hasAgentManagement,
-  hasSchemaManagement,
-  hasApiKeyManagement,
+  hasSystemMonitoring,
+  hasAdvancedSettings,
 }) => {
   const location = useLocation();
 
-  const editorItems = [
-    ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
-    ...(hasAgentManagement ? [{ name: 'Agents', href: '/agents', icon: CpuChipIcon, color: 'text-violet-600' }] : []),
-    { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
-    { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
+  const adminItems = [
+    { name: 'Theme', href: '/theme', icon: SwatchIcon, color: 'text-rose-600' },
+    { name: 'Portal Designer', href: '/client-portal', icon: GlobeAltIcon, color: 'text-emerald-600' },
+    { name: 'Database', href: '/database', icon: CircleStackIcon, color: 'text-slate-600' },
+    { name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' },
+    { name: 'API Keys', href: '/api-keys', icon: KeyIcon, color: 'text-yellow-600' },
   ];
 
-  if (editorItems.length === 0) {
+  if (adminItems.length === 0) {
     return null;
   }
 
   return (
     <>
-      {editorItems.map((item) => {
+      {adminItems.map((item) => {
         const isActive = location.pathname === item.href;
         return (
           <Link
@@ -69,4 +72,4 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   );
 };
 
-export default EditorToolbar;
+export default AdminToolbar;

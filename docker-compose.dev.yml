@@ -41,3 +41,5 @@ services:
 networks:
   rapid-crm-dev-network:
     driver: bridge
+
+

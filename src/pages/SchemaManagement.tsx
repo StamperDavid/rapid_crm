@@ -38,75 +38,17 @@ const SchemaManagement: React.FC = () => {
     loadSchemas();
   }, []);
 
-  // Combine system and custom schemas
-  const allSchemas = [
-    // System schemas
-    {
-      id: 'companies',
-      name: 'Companies',
-      description: 'Company and organization information',
-      icon: BuildingOfficeIcon,
-      color: 'blue',
-      category: 'Core CRM',
-      isSystem: true,
-    },
-    {
-      id: 'contacts',
-      name: 'Contacts',
-      description: 'Individual contact information',
-      icon: UserGroupIcon,
-      color: 'green',
-      category: 'Core CRM',
-      isSystem: true,
-    },
-    {
-      id: 'drivers',
-      name: 'Drivers',
-      description: 'Driver and employee information',
-      icon: TruckIcon,
-      color: 'yellow',
-      category: 'Transportation',
-      isSystem: true,
-    },
-    {
-      id: 'vehicles',
-      name: 'Vehicles',
-      description: 'Vehicle and equipment information',
-      icon: TruckIcon,
-      color: 'purple',
-      category: 'Transportation',
-      isSystem: true,
-    },
-    {
-      id: 'deals',
-      name: 'Deals',
-      description: 'Sales opportunities and deals',
-      icon: CurrencyDollarIcon,
-      color: 'indigo',
-      category: 'Sales',
-      isSystem: true,
-    },
-    {
-      id: 'usdot_application_record',
-      name: 'USDOT Application Record',
-      description: 'USDOT application data collected from onboarding agent for robotic process automation',
-      icon: DocumentTextIcon,
-      color: 'orange',
-      category: 'Transportation',
-      isSystem: true,
-    },
-    // Add custom schemas from the service
-    ...schemas.map(schema => ({
-      id: schema.name,
-      name: schema.display_name,
-      description: schema.description || `Custom schema: ${schema.table_name}`,
-      icon: CogIcon,
-      color: 'gray',
-      category: 'Custom',
-      isSystem: false,
-      schemaData: schema,
-    }))
-  ];
+  // Use schemas from the service (no hardcoded duplicates)
+  const allSchemas = schemas.map(schema => ({
+    id: schema.name,
+    name: schema.display_name,
+    description: schema.description || `Custom schema: ${schema.table_name}`,
+    icon: CogIcon,
+    color: 'gray',
+    category: 'Custom',
+    isSystem: false,
+    schemaData: schema,
+  }));
 
   // Group schemas by category
   const groupedSchemas = allSchemas.reduce((groups, schema) => {
@@ -277,11 +219,22 @@ const SchemaManagement: React.FC = () => {
                       
                       <div className="mt-6 flex space-x-3">
                         <button
-                          onClick={() => handleEditSchema(entity.id)}
-                          className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          onClick={() => {
+                            if (entity.isSystem) {
+                              alert('System schemas are managed in the canonical schema.ts file and cannot be edited here.');
+                            } else {
+                              handleEditSchema(entity.id);
+                            }
+                          }}
+                          className={`flex-1 inline-flex items-center justify-center px-3 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            entity.isSystem 
+                              ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 cursor-not-allowed'
+                              : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-blue-500'
+                          }`}
+                          disabled={entity.isSystem}
                         >
                           <PencilIcon className="h-4 w-4 mr-2" />
-                          Edit Schema
+                          {entity.isSystem ? 'System Schema' : 'Edit Schema'}
                         </button>
                         <button
                           onClick={() => {
@@ -316,6 +269,7 @@ const SchemaManagement: React.FC = () => {
           entityType={selectedEntityType}
           onSave={handleSaveSchema}
           onCancel={handleCancelEdit}
+          initialFields={schemas.find(s => s.name === selectedEntityType)?.fields || []}
         />
       )}
 

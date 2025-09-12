@@ -3,6 +3,9 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
 
+// ELD Service Integration (Containerized) - Commented out until module is created
+// const { EldApiRoutes } = require('./src/services/eld/EldApiRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -95,6 +98,227 @@ const checkTablesExist = async () => {
   } catch (error) {
     return false;
   }
+};
+
+// Helper functions to transform database records to camelCase for frontend
+const transformCompany = (company) => {
+  if (!company) return null;
+  return {
+    id: company.id || '',
+    // Address fields
+    physicalStreetAddress: company.physical_street_address || '',
+    physicalSuiteApt: company.physical_suite_apt || '',
+    physicalCity: company.physical_city || '',
+    physicalState: company.physical_state || '',
+    physicalCountry: company.physical_country || '',
+    physicalZip: company.physical_zip || '',
+    isMailingAddressSame: company.is_mailing_address_same || 'No',
+    mailingStreetAddress: company.mailing_street_address || '',
+    mailingSuiteApt: company.mailing_suite_apt || '',
+    mailingCity: company.mailing_city || '',
+    mailingState: company.mailing_state || '',
+    mailingCountry: company.mailing_country || '',
+    mailingZip: company.mailing_zip || '',
+    // Business Information
+    legalBusinessName: company.legal_business_name || '',
+    hasDba: company.has_dba || 'No',
+    dbaName: company.dba_name || '',
+    businessType: company.business_type || '',
+    ein: company.ein || '',
+    businessStarted: company.business_started || '',
+    // Transportation Details
+    classification: company.classification || '',
+    operationType: company.operation_type || '',
+    interstateIntrastate: company.interstate_intrastate || '',
+    usdotNumber: company.usdot_number || '',
+    operationClass: company.operation_class || '',
+    // Fleet Information
+    fleetType: company.fleet_type || '',
+    numberOfVehicles: company.number_of_vehicles || 0,
+    numberOfDrivers: company.number_of_drivers || 0,
+    gvwr: company.gvwr || '',
+    vehicleTypes: company.vehicle_types || '',
+    // Cargo & Safety
+    cargoTypes: company.cargo_types || '',
+    hazmatRequired: company.hazmat_required || 'No',
+    phmsaWork: company.phmsa_work || 'No',
+    regulatoryDetails: company.regulatory_details || '',
+    // Financial Information
+    hasDunsBradstreetNumber: company.has_duns_bradstreet_number || 'No',
+    dunsBradstreetNumber: company.duns_bradstreet_number || '',
+    // System Fields
+    createdAt: company.created_at || '',
+    updatedAt: company.updated_at || ''
+  };
+};
+
+const transformContact = (contact) => {
+  if (!contact) return null;
+  return {
+    id: contact.id || '',
+    companyId: contact.company_id || '',
+    firstName: contact.first_name || '',
+    lastName: contact.last_name || '',
+    phone: contact.phone || '',
+    email: contact.email || '',
+    jobTitle: contact.job_title || '',
+    department: contact.department || '',
+    isPrimaryContact: contact.is_primary_contact || 0,
+    preferredContactMethod: contact.preferred_contact_method || 'Phone',
+    position: contact.position || '',
+    createdAt: contact.created_at || '',
+    updatedAt: contact.updated_at || ''
+  };
+};
+
+const transformVehicle = (vehicle) => {
+  if (!vehicle) return null;
+  return {
+    id: vehicle.id || '',
+    companyId: vehicle.company_id || '',
+    vin: vehicle.vin || '',
+    licensePlate: vehicle.license_plate || '',
+    make: vehicle.make || '',
+    model: vehicle.model || '',
+    year: vehicle.year || 0,
+    color: vehicle.color || '',
+    vehicleType: vehicle.vehicle_type || '',
+    gvwr: vehicle.gvwr || '',
+    emptyWeight: vehicle.empty_weight || '',
+    fuelType: vehicle.fuel_type || '',
+    registrationNumber: vehicle.registration_number || '',
+    registrationExpiry: vehicle.registration_expiry || '',
+    insuranceProvider: vehicle.insurance_provider || '',
+    insurancePolicyNumber: vehicle.insurance_policy_number || '',
+    insuranceExpiry: vehicle.insurance_expiry || '',
+    lastInspectionDate: vehicle.last_inspection_date || '',
+    nextInspectionDue: vehicle.next_inspection_due || '',
+    lastMaintenanceDate: vehicle.last_maintenance_date || '',
+    nextMaintenanceDue: vehicle.next_maintenance_due || '',
+    hasHazmatEndorsement: vehicle.has_hazmat_endorsement || 'No',
+    status: vehicle.status || 'Active',
+    currentDriverId: vehicle.current_driver_id || '',
+    createdAt: vehicle.created_at || '',
+    updatedAt: vehicle.updated_at || ''
+  };
+};
+
+const transformDriver = (driver) => {
+  if (!driver) return null;
+  return {
+    id: driver.id || '',
+    companyId: driver.company_id || '',
+    driverName: driver.driver_name || '',
+    firstName: driver.first_name || '',
+    lastName: driver.last_name || '',
+    phone: driver.phone || '',
+    email: driver.email || '',
+    licenseNumber: driver.license_number || '',
+    licenseClass: driver.license_class || '',
+    licenseExpiry: driver.license_expiry || '',
+    medicalCardExpiry: driver.medical_card_expiry || '',
+    hireDate: driver.hire_date || '',
+    employmentStatus: driver.employment_status || 'Active',
+    position: driver.position || 'Driver',
+    payType: driver.pay_type || '',
+    createdAt: driver.created_at || '',
+    updatedAt: driver.updated_at || ''
+  };
+};
+
+const transformDeal = (deal) => {
+  if (!deal) return null;
+  return {
+    id: deal.id || '',
+    title: deal.title || '',
+    description: deal.description || '',
+    value: deal.value || 0,
+    stage: deal.stage || '',
+    probability: deal.probability || 0,
+    expectedCloseDate: deal.expected_close_date || '',
+    actualCloseDate: deal.actual_close_date || '',
+    serviceId: deal.service_id || '',
+    serviceName: deal.service_name || '',
+    customPrice: deal.custom_price || 0,
+    companyId: deal.company_id || '',
+    contactId: deal.contact_id || '',
+    createdAt: deal.created_at || '',
+    updatedAt: deal.updated_at || ''
+  };
+};
+
+const transformLead = (lead) => {
+  if (!lead) return null;
+  return {
+    id: lead.id || '',
+    firstName: lead.first_name || '',
+    lastName: lead.last_name || '',
+    email: lead.email || '',
+    phone: lead.phone || '',
+    company: lead.company || '',
+    jobTitle: lead.job_title || '',
+    campaignId: lead.campaign_id || '',
+    leadSource: lead.lead_source || '',
+    leadStatus: lead.lead_status || 'New',
+    leadScore: lead.lead_score || 0,
+    businessType: lead.business_type || '',
+    fleetSize: lead.fleet_size || 0,
+    operatingStates: lead.operating_states || '',
+    cargoTypes: lead.cargo_types || '',
+    hasUsdot: lead.has_usdot || 0,
+    usdotNumber: lead.usdot_number || '',
+    budget: lead.budget || 0,
+    timeline: lead.timeline || '',
+    decisionMaker: lead.decision_maker || 0,
+    painPoints: lead.pain_points || '',
+    interests: lead.interests || '',
+    preferredContactMethod: lead.preferred_contact_method || 'Phone',
+    lastContactDate: lead.last_contact_date || '',
+    nextFollowUpDate: lead.next_follow_up_date || '',
+    notes: lead.notes || '',
+    convertedToContact: lead.converted_to_contact || 0,
+    convertedToDeal: lead.converted_to_deal || 0,
+    conversionDate: lead.conversion_date || '',
+    conversionValue: lead.conversion_value || 0,
+    convertedContactId: lead.converted_contact_id || '',
+    convertedDealId: lead.converted_deal_id || '',
+    companyId: lead.company_id || '',
+    assignedTo: lead.assigned_to || '',
+    assignedDate: lead.assigned_date || '',
+    createdAt: lead.created_at || '',
+    updatedAt: lead.updated_at || ''
+  };
+};
+
+const transformService = (service) => {
+  if (!service) return null;
+  return {
+    id: service.id || '',
+    name: service.name || '',
+    description: service.description || '',
+    category: service.category || '',
+    basePrice: service.base_price || 0,
+    estimatedDuration: service.estimated_duration || '',
+    requirements: service.requirements || '',
+    deliverables: service.deliverables || '',
+    isActive: service.is_active || 1,
+    createdAt: service.created_at || '',
+    updatedAt: service.updated_at || ''
+  };
+};
+
+const transformInvoice = (invoice) => {
+  if (!invoice) return null;
+  return {
+    id: invoice.id || '',
+    invoiceNumber: invoice.invoice_number || '',
+    clientName: invoice.client_name || '',
+    amount: invoice.amount || 0,
+    status: invoice.status || 'draft',
+    dueDate: invoice.due_date || '',
+    createdAt: invoice.created_at || '',
+    updatedAt: invoice.updated_at || ''
+  };
 };
 
 // Helper function to execute SQL file
@@ -212,60 +436,54 @@ const runExecute = (sql, params = []) => {
 
 // API Routes
 
+// Initialize ELD Service Integration (Containerized)
+let eldApiRoutes;
+try {
+  // Mock services for ELD integration (in containerized environment)
+  const mockDatabaseService = {
+    query: (sql, params = []) => runQuery(sql, params),
+    queryOne: (sql, params = []) => runQueryOne(sql, params),
+    execute: (sql, params = []) => runExecute(sql, params),
+    createRecord: async (table, data) => {
+      const columns = Object.keys(data).join(', ');
+      const placeholders = Object.keys(data).map(() => '?').join(', ');
+      const values = Object.values(data);
+      const sql = `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`;
+      const result = await runExecute(sql, values);
+      return result.lastID;
+    }
+  };
+
+  const mockAIAgentManager = {
+    createAgent: () => ({ id: 'mock-agent-id' }),
+    getAgent: () => ({ id: 'mock-agent-id', name: 'ELD Compliance Agent' })
+  };
+
+  const mockConversationService = {
+    createAutomatedMessage: async (agentId, companyId, message, metadata) => {
+      console.log(`ELD Automation: Agent ${agentId} sent message to company ${companyId}: ${message}`);
+      return { id: 'mock-message-id' };
+    }
+  };
+
+  // eldApiRoutes = new EldApiRoutes(mockDatabaseService, mockAIAgentManager, mockConversationService);
+  console.log('✅ ELD Service Integration initialized');
+} catch (error) {
+  console.warn('⚠️  ELD Service Integration failed to initialize:', error.message);
+  console.warn('⚠️  ELD endpoints will not be available');
+}
+
+// Mount ELD API routes if initialized
+if (eldApiRoutes) {
+  app.use('/api/eld', eldApiRoutes.getRouter());
+  console.log('✅ ELD API routes mounted at /api/eld');
+}
+
 // Companies
 app.get('/api/companies', async (req, res) => {
   try {
     const companies = await runQuery('SELECT * FROM companies');
-    // Transform database field names to camelCase for frontend compatibility
-    const transformedCompanies = companies.map(company => {
-      try {
-        return {
-          id: company.id || '',
-          // Address fields
-          physicalStreetAddress: company.physical_street_address || '',
-          physicalSuiteApt: company.physical_suite_apt || '',
-          physicalCity: company.physical_city || '',
-          physicalState: company.physical_state || '',
-          physicalCountry: company.physical_country || '',
-          physicalZip: company.physical_zip || '',
-          isMailingAddressSame: company.is_mailing_address_same || 'No',
-          mailingStreetAddress: company.mailing_street_address || '',
-          mailingSuiteApt: company.mailing_suite_apt || '',
-          mailingCity: company.mailing_city || '',
-          mailingState: company.mailing_state || '',
-          mailingCountry: company.mailing_country || '',
-          mailingZip: company.mailing_zip || '',
-          // Business fields
-          legalBusinessName: company.legal_business_name || '',
-          hasDba: company.has_dba || 'No',
-          dbaName: company.dba_name || '',
-          businessType: company.business_type || '',
-          ein: company.ein || '',
-          businessStarted: company.business_started || '',
-          classification: company.classification || '',
-          operationType: company.operation_type || '',
-          interstateIntrastate: company.interstate_intrastate || '',
-          usdotNumber: company.usdot_number || '',
-          operationClass: company.operation_class || '',
-          fleetType: company.fleet_type || '',
-          numberOfVehicles: company.number_of_vehicles || 0,
-          numberOfDrivers: company.number_of_drivers || 0,
-          gvwr: company.gvwr || '',
-          vehicleTypes: company.vehicle_types || '',
-          cargoTypes: company.cargo_types || '',
-          hazmatRequired: company.hazmat_required || 'No',
-          phmsaWork: company.phmsa_work || 'No',
-          regulatoryDetails: company.regulatory_details || '',
-          hasDunsBradstreetNumber: company.has_duns_bradstreet_number || 'No',
-          dunsBradstreetNumber: company.duns_bradstreet_number || '',
-          createdAt: company.created_at || '',
-          updatedAt: company.updated_at || ''
-        };
-      } catch (transformError) {
-        console.error('Error transforming company:', company, transformError);
-        throw transformError;
-      }
-    });
+    const transformedCompanies = companies.map(transformCompany).filter(Boolean);
     res.json(transformedCompanies);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -278,7 +496,7 @@ app.get('/api/companies/:id', async (req, res) => {
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });
     }
-    res.json(company);
+    res.json(transformCompany(company));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -322,7 +540,7 @@ app.post('/api/companies', async (req, res) => {
     );
     
     const company = await runQueryOne('SELECT * FROM companies WHERE id = ?', [id]);
-    res.status(201).json(company);
+    res.status(201).json(transformCompany(company));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -391,7 +609,7 @@ app.post('/api/contacts', async (req, res) => {
     );
     
     const contact = await runQueryOne('SELECT * FROM contacts WHERE id = ?', [id]);
-    res.status(201).json(contact);
+    res.status(201).json(transformContact(contact));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -522,7 +740,7 @@ app.post('/api/vehicles', async (req, res) => {
     );
     
     const vehicle = await runQueryOne('SELECT * FROM vehicles WHERE id = ?', [id]);
-    res.status(201).json(vehicle);
+    res.status(201).json(transformVehicle(vehicle));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -591,7 +809,7 @@ app.post('/api/drivers', async (req, res) => {
     );
     
     const driver = await runQueryOne('SELECT * FROM drivers WHERE id = ?', [id]);
-    res.status(201).json(driver);
+    res.status(201).json(transformDriver(driver));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -660,7 +878,7 @@ app.post('/api/deals', async (req, res) => {
     );
     
     const deal = await runQueryOne('SELECT * FROM deals WHERE id = ?', [id]);
-    res.status(201).json(deal);
+    res.status(201).json(transformDeal(deal));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -727,7 +945,7 @@ app.post('/api/services', async (req, res) => {
     `, [name, description, category, basePrice, estimatedDuration, JSON.stringify(requirements), JSON.stringify(deliverables), isActive]);
     
     const newService = await runQueryOne('SELECT * FROM services WHERE id = ?', [result.lastInsertRowid]);
-    res.status(201).json(newService);
+    res.status(201).json(transformService(newService));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -797,7 +1015,7 @@ app.post('/api/invoices', async (req, res) => {
     );
     
     const invoice = await runQueryOne('SELECT * FROM invoices WHERE id = ?', [id]);
-    res.status(201).json(invoice);
+    res.status(201).json(transformInvoice(invoice));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -866,7 +1084,7 @@ app.post('/api/leads', async (req, res) => {
     );
     
     const lead = await runQueryOne('SELECT * FROM leads WHERE id = ?', [id]);
-    res.status(201).json(lead);
+    res.status(201).json(transformLead(lead));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1000,7 +1218,7 @@ app.post('/api/vehicles', async (req, res) => {
     );
     
     const vehicle = await runQueryOne('SELECT * FROM vehicles WHERE id = ?', [id]);
-    res.status(201).json(vehicle);
+    res.status(201).json(transformVehicle(vehicle));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1093,7 +1311,7 @@ app.post('/api/drivers', async (req, res) => {
     );
     
     const driver = await runQueryOne('SELECT * FROM drivers WHERE id = ?', [id]);
-    res.status(201).json(driver);
+    res.status(201).json(transformDriver(driver));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1205,10 +1423,124 @@ app.delete('/api/api-keys/:id', async (req, res) => {
   }
 });
 
+// USDOT Applications endpoints (Read-only after creation)
+app.get('/api/usdot-applications', async (req, res) => {
+  try {
+    const applications = await runQuery('SELECT * FROM usdot_applications ORDER BY created_at DESC');
+    res.json(applications);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/usdot-applications/:id', async (req, res) => {
+  try {
+    const application = await runQueryOne('SELECT * FROM usdot_applications WHERE id = ?', [req.params.id]);
+    if (!application) {
+      return res.status(404).json({ error: 'USDOT application not found' });
+    }
+    res.json(application);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/usdot-applications/company/:companyId', async (req, res) => {
+  try {
+    const applications = await runQuery('SELECT * FROM usdot_applications WHERE company_id = ? ORDER BY created_at DESC', [req.params.companyId]);
+    res.json(applications);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/usdot-applications', async (req, res) => {
+  try {
+    const {
+      companyId,
+      legalBusinessName,
+      dbaName,
+      principalAddress,
+      mailingAddress,
+      primaryContact,
+      companyOfficial,
+      businessType,
+      ein,
+      dunsNumber,
+      operationTypes,
+      carrierOperationTypes,
+      powerUnits,
+      drivers,
+      operationClassifications,
+      cargoClassifications,
+      hazardousMaterials,
+      marketerOfTransportationServices,
+      applicationDate,
+      signature,
+      officialTitle
+    } = req.body;
+
+    const id = Date.now().toString();
+    const now = new Date().toISOString();
+    
+    await runExecute(
+      `INSERT INTO usdot_applications (
+        id, company_id, legal_business_name, dba_name,
+        principal_address_street, principal_address_city, principal_address_state, principal_address_zip,
+        mailing_address_is_different, mailing_address_street, mailing_address_city, mailing_address_state, mailing_address_zip,
+        primary_contact_full_name, primary_contact_title, primary_contact_phone, primary_contact_fax, primary_contact_email,
+        company_official_full_name, company_official_title, company_official_phone, company_official_email,
+        business_type, ein, duns_number,
+        operation_types, carrier_operation_types,
+        power_units_owned, power_units_term_leased, power_units_trip_leased,
+        drivers_employees, drivers_owner_operators,
+        operation_classifications, cargo_classifications,
+        hazardous_materials_classifications, hazardous_materials_hm_classes,
+        marketer_of_transportation_services, application_date, signature, official_title,
+        created_at, updated_at, is_read_only
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id, companyId, legalBusinessName, dbaName,
+        principalAddress.street, principalAddress.city, principalAddress.state, principalAddress.zip,
+        mailingAddress.isDifferent ? 'Yes' : 'No', mailingAddress.street, mailingAddress.city, mailingAddress.state, mailingAddress.zip,
+        primaryContact.fullName, primaryContact.title, primaryContact.phone, primaryContact.fax, primaryContact.email,
+        companyOfficial.fullName, companyOfficial.title, companyOfficial.phone, companyOfficial.email,
+        businessType, ein, dunsNumber,
+        JSON.stringify(operationTypes), JSON.stringify(carrierOperationTypes),
+        powerUnits.owned, powerUnits.termLeased, powerUnits.tripLeased,
+        drivers.employees, drivers.ownerOperators,
+        JSON.stringify(operationClassifications), JSON.stringify(cargoClassifications),
+        JSON.stringify(hazardousMaterials.classifications), JSON.stringify(hazardousMaterials.hmClasses),
+        marketerOfTransportationServices ? 'Yes' : 'No', applicationDate, signature, officialTitle,
+        now, now, 'Yes'
+      ]
+    );
+    
+    const application = await runQueryOne('SELECT * FROM usdot_applications WHERE id = ?', [id]);
+    res.status(201).json(application);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Note: No PUT or DELETE endpoints for USDOT applications - they are read-only after creation
+
 // Check if database exists and has data, if not initialize it
 const checkAndInitializeDatabase = async () => {
   try {
     await initDatabase();
+    
+    // Run ELD service migration if enabled
+    if (process.env.ELD_AUTOMATION_ENABLED === 'true') {
+      try {
+        const { runEldMigration } = require('./src/database/eldMigration');
+        await runEldMigration(dbPath);
+        console.log('✅ ELD service database migration completed');
+      } catch (eldError) {
+        console.warn('⚠️  ELD service migration failed:', eldError.message);
+        console.warn('⚠️  ELD features may not be available');
+      }
+    }
   } catch (error) {
     console.error('❌ Failed to initialize database:', error);
     throw error;

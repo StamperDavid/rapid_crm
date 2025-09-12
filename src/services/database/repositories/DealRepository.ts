@@ -1,5 +1,6 @@
 import { BaseRepository } from './BaseRepository';
 import { DatabaseService } from '../DatabaseService';
+import { Deal as SchemaDeal } from '../../../types/schema';
 
 export interface Deal {
   id: string;

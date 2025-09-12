@@ -115,6 +115,15 @@ class SchemaService {
           { id: (order++).toString(), name: 'mailingCountry', display_name: 'Mailing Country', field_type: 'select', is_required: false, is_unique: false, options: SELECT_OPTIONS.countries, order: order - 1 }
         );
 
+        // Contact Details (Person entity) - Required
+        fields.push(
+          { id: (order++).toString(), name: 'firstName', display_name: 'First Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'lastName', display_name: 'Last Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'phone', display_name: 'Phone', field_type: 'phone', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'email', display_name: 'Email', field_type: 'email', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'preferredContactMethod', display_name: 'Preferred Contact Method', field_type: 'select', is_required: true, is_unique: false, options: ['Phone', 'Email', 'Text'], order: order - 1 }
+        );
+
         // Business Information fields
         fields.push(
           { id: (order++).toString(), name: 'businessType', display_name: 'Business Type', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.businessType, order: order - 1 },
@@ -213,20 +222,97 @@ class SchemaService {
         break;
 
       case 'Driver':
-        // Driver Information fields
+        // Basic Information (Required)
         fields.push(
-          { id: (order++).toString(), name: 'driverName', display_name: 'Driver Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 }
+          { id: (order++).toString(), name: 'fullName', display_name: 'Full Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'address', display_name: 'Address/Contact Info', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'phone', display_name: 'Phone', field_type: 'phone', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'email', display_name: 'Email', field_type: 'email', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'dateOfBirth', display_name: 'Date of Birth', field_type: 'date', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'socialSecurityNumber', display_name: 'Social Security Number', field_type: 'text', is_required: true, is_unique: false, order: order - 1 }
         );
 
-        // Application & Documentation fields
+        // Employment History (Required)
         fields.push(
-          { id: (order++).toString(), name: 'applicationForEmployment', display_name: 'Application for Employment', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
-          { id: (order++).toString(), name: 'backgroundChecks', display_name: 'Background Checks', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
-          { id: (order++).toString(), name: 'certificateOfReceiptForCompanyTestingPolicy', display_name: 'Certificate of Receipt for Company Testing Policy', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
-          { id: (order++).toString(), name: 'certificateOfReceiptForCompanyWorkPolicy', display_name: 'Certificate of Receipt for Company Work Policy', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
-          { id: (order++).toString(), name: 'commercialDriversLicenseInformationSystemReports', display_name: 'Commercial Drivers License Information System Reports', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
-          { id: (order++).toString(), name: 'copyOfDriversLicense', display_name: 'Copy of Drivers License', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
-          { id: (order++).toString(), name: 'medicalCertificateCopy', display_name: 'Medical Certificate Copy', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 }
+          { id: (order++).toString(), name: 'employmentHistory', display_name: 'Employment History', field_type: 'textarea', is_required: true, is_unique: false, order: order - 1 }
+        );
+
+        // Driving Experience (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'drivingExperience', display_name: 'Driving Experience', field_type: 'multiselect', is_required: true, is_unique: false, options: ['CDL Class A', 'CDL Class B', 'CDL Class C', 'CDL Class D', 'CDL Class E', 'Other'], order: order - 1 }
+        );
+
+        // Accident/Violations History (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'accidentViolationsHistory', display_name: 'Accident/Violations History', field_type: 'textarea', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'accidentViolationsFiles', display_name: 'Accident/Violations Files', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Motor Vehicle Record (MVR) (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'mvrFiles', display_name: 'Motor Vehicle Record (MVR)', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'mvrInitialDate', display_name: 'MVR Initial Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'mvrAnnualDate', display_name: 'MVR Annual Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // License/CDL Copy (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'licenseCdlFiles', display_name: 'License/CDL Copy', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'licenseNumber', display_name: 'License Number', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'licenseExpiry', display_name: 'License Expiry', field_type: 'date', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'endorsements', display_name: 'Endorsements', field_type: 'multiselect', is_required: false, is_unique: false, options: ['Hazmat', 'Passenger', 'School Bus', 'Tanker', 'Double/Triple', 'Other'], order: order - 1 },
+          { id: (order++).toString(), name: 'restrictions', display_name: 'Restrictions', field_type: 'multiselect', is_required: false, is_unique: false, options: ['Air Brake', 'Manual Transmission', 'Automatic Transmission', 'Other'], order: order - 1 }
+        );
+
+        // DOT Medical Certificate (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'dotMedicalCertificateExpiry', display_name: 'DOT Medical Certificate Expiry', field_type: 'date', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'medicalExaminerName', display_name: 'Medical Examiner Name', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'medicalCertificateNumber', display_name: 'Medical Certificate Number', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'medicalExaminationReportFiles', display_name: 'Medical Examination Report', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 }
+        );
+
+        // Road Test Certificate/CDL (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'roadTestCertificateFiles', display_name: 'Road Test Certificate/CDL', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'roadTestDate', display_name: 'Road Test Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Drug/Alcohol Test Results (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'drugAlcoholTestResults', display_name: 'Drug/Alcohol Test Results', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'lastDrugTestDate', display_name: 'Last Drug Test Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'lastAlcoholTestDate', display_name: 'Last Alcohol Test Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Annual Violation Certification (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'annualViolationCertificationFiles', display_name: 'Annual Violation Certification', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'lastAnnualCertificationDate', display_name: 'Last Annual Certification Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Safety Performance History (Required)
+        fields.push(
+          { id: (order++).toString(), name: 'safetyPerformanceHistoryFiles', display_name: 'Safety Performance History', field_type: 'attachment', is_required: true, is_unique: false, order: order - 1 }
+        );
+
+        // Variances/Waivers (Optional if applicable)
+        fields.push(
+          { id: (order++).toString(), name: 'variancesWaiversFiles', display_name: 'Variances/Waivers', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'hasVariancesWaivers', display_name: 'Has Variances/Waivers?', field_type: 'select', is_required: false, is_unique: false, options: ['Yes', 'No'], order: order - 1 }
+        );
+
+        // Proof of Work Authorization (Optional/Conditional)
+        fields.push(
+          { id: (order++).toString(), name: 'workAuthorizationFiles', display_name: 'Proof of Work Authorization', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'hasWorkAuthorization', display_name: 'Has Work Authorization?', field_type: 'select', is_required: false, is_unique: false, options: ['Yes', 'No'], order: order - 1 }
+        );
+
+        // Employment Information
+        fields.push(
+          { id: (order++).toString(), name: 'hireDate', display_name: 'Hire Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'employmentStatus', display_name: 'Employment Status', field_type: 'select', is_required: true, is_unique: false, options: ['Active', 'Inactive', 'Terminated'], order: order - 1 },
+          { id: (order++).toString(), name: 'position', display_name: 'Position', field_type: 'text', is_required: true, is_unique: false, order: order - 1 }
         );
 
         // System fields
