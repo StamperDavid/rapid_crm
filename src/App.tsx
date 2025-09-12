@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
 import { CRMProvider } from './contexts/CRMContext';
 import { ClientProvider } from './contexts/ClientContext';
+import { UIStateProvider } from './contexts/UIStateContext';
 import Layout from './components/Layout';
 
 // Import modules directly (not lazy loaded for now)
@@ -28,6 +29,7 @@ import DataManagement from './pages/DataManagement';
 import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
+import UIDemo from './pages/UIDemo';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -48,7 +50,8 @@ function App() {
       <UserProvider>
         <CRMProvider>
           <ClientProvider>
-            <QueryClientProvider client={queryClient}>
+            <UIStateProvider>
+              <QueryClientProvider client={queryClient}>
               <Router>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
                 <Layout>
@@ -80,6 +83,9 @@ function App() {
                     {/* Client Portal Designer - Editor access only */}
                     <Route path="/client-portal" element={<ClientPortalDesigner />} />
                     
+                    {/* UI Demo - Advanced UI Assistant Demo */}
+                    <Route path="/ui-demo" element={<UIDemo />} />
+                    
                     {/* Legacy routes for backward compatibility */}
                     <Route path="/data" element={<DataManagement />} />
                     <Route path="/schema" element={<SchemaManagement />} />
@@ -100,12 +106,13 @@ function App() {
                   }}
                 />
               </div>
-              </Router>
-            </QueryClientProvider>
-          </ClientProvider>
-        </CRMProvider>
-      </UserProvider>
-    </ThemeProvider>
+            </Router>
+          </QueryClientProvider>
+            </UIStateProvider>
+        </ClientProvider>
+      </CRMProvider>
+    </UserProvider>
+  </ThemeProvider>
   );
 }
 

@@ -24,29 +24,6 @@ interface PortalLayout {
   visible: boolean;
 }
 
-interface ChatbotAvatar {
-  id: string;
-  name: string;
-  appearance: {
-    skinColor: string;
-    hairColor: string;
-    eyeColor: string;
-    clothingColor: string;
-    gender: 'male' | 'female' | 'neutral';
-  };
-  voice: {
-    enabled: boolean;
-    voiceType: string;
-    speed: number;
-    pitch: number;
-  };
-  animations: {
-    idle: boolean;
-    talking: boolean;
-    listening: boolean;
-    thinking: boolean;
-  };
-}
 
 interface ComplianceSettings {
   emailAddress: string;
@@ -56,7 +33,7 @@ interface ComplianceSettings {
 }
 
 const ClientPortalDesigner: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'layout' | 'chatbot' | 'compliance' | 'preview'>('layout');
+  const [activeTab, setActiveTab] = useState<'layout' | 'compliance' | 'preview'>('layout');
   const [portalLayout, setPortalLayout] = useState<PortalLayout[]>([
     {
       id: 'header',
@@ -105,29 +82,6 @@ const ClientPortalDesigner: React.FC = () => {
     },
   ]);
 
-  const [chatbotAvatar, setChatbotAvatar] = useState<ChatbotAvatar>({
-    id: 'default-avatar',
-    name: 'Alex',
-    appearance: {
-      skinColor: '#FDBCB4',
-      hairColor: '#8B4513',
-      eyeColor: '#4169E1',
-      clothingColor: '#2E8B57',
-      gender: 'neutral',
-    },
-    voice: {
-      enabled: true,
-      voiceType: 'default',
-      speed: 1.0,
-      pitch: 1.0,
-    },
-    animations: {
-      idle: true,
-      talking: false,
-      listening: false,
-      thinking: false,
-    },
-  });
 
   const [complianceSettings, setComplianceSettings] = useState<ComplianceSettings>({
     emailAddress: 'compliance@yourcompany.com',
@@ -137,8 +91,6 @@ const ClientPortalDesigner: React.FC = () => {
   });
 
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
-  const [isListening, setIsListening] = useState(false);
 
   // Available client data fields
   const availableFields = [
@@ -162,31 +114,15 @@ const ClientPortalDesigner: React.FC = () => {
     ));
   };
 
-  const handleAvatarChange = (updates: Partial<ChatbotAvatar>) => {
-    setChatbotAvatar(prev => ({ ...prev, ...updates }));
-  };
 
   const handleComplianceChange = (updates: Partial<ComplianceSettings>) => {
     setComplianceSettings(prev => ({ ...prev, ...updates }));
   };
 
-  const toggleVoice = () => {
-    setIsVoiceEnabled(!isVoiceEnabled);
-  };
-
-  const startListening = () => {
-    setIsListening(true);
-    // TODO: Implement speech recognition
-  };
-
-  const stopListening = () => {
-    setIsListening(false);
-    // TODO: Stop speech recognition
-  };
 
   const saveDesign = () => {
     // TODO: Save portal design to database
-    console.log('Saving portal design:', { portalLayout, chatbotAvatar, complianceSettings });
+    console.log('Saving portal design:', { portalLayout, complianceSettings });
   };
 
   const TabButton: React.FC<{ tab: typeof activeTab; icon: React.ReactNode; label: string }> = ({ 
@@ -217,7 +153,7 @@ const ClientPortalDesigner: React.FC = () => {
               Client Portal Designer
             </h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Design your client portal layout, chatbot avatar, and compliance features
+              Design your client portal layout and compliance features
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -252,11 +188,6 @@ const ClientPortalDesigner: React.FC = () => {
             label="Layout Designer"
           />
           <TabButton
-            tab="chatbot"
-            icon={<ChatBubbleLeftRightIcon className="h-4 w-4" />}
-            label="Chatbot Avatar"
-          />
-          <TabButton
             tab="compliance"
             icon={<EnvelopeIcon className="h-4 w-4" />}
             label="Compliance"
@@ -279,18 +210,6 @@ const ClientPortalDesigner: React.FC = () => {
           />
         )}
         
-        {activeTab === 'chatbot' && (
-          <ChatbotAvatarDesigner
-            avatar={chatbotAvatar}
-            onAvatarChange={handleAvatarChange}
-            isVoiceEnabled={isVoiceEnabled}
-            isListening={isListening}
-            onToggleVoice={toggleVoice}
-            onStartListening={startListening}
-            onStopListening={stopListening}
-          />
-        )}
-        
         {activeTab === 'compliance' && (
           <ComplianceDesigner
             settings={complianceSettings}
@@ -302,7 +221,6 @@ const ClientPortalDesigner: React.FC = () => {
         {activeTab === 'preview' && (
           <LivePreview
             portalLayout={portalLayout}
-            chatbotAvatar={chatbotAvatar}
             complianceSettings={complianceSettings}
             isPreviewMode={isPreviewMode}
           />

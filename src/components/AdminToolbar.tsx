@@ -12,6 +12,7 @@ import {
   CircleStackIcon,
   SwatchIcon,
   GlobeAltIcon,
+  CpuChipIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 
@@ -31,6 +32,7 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
   const location = useLocation();
 
   const adminItems = [
+    { name: 'UI Demo', href: '/ui-demo', icon: CpuChipIcon, color: 'text-purple-600' },
     { name: 'Theme', href: '/theme', icon: SwatchIcon, color: 'text-rose-600' },
     { name: 'Portal Designer', href: '/client-portal', icon: GlobeAltIcon, color: 'text-emerald-600' },
     { name: 'Database', href: '/database', icon: CircleStackIcon, color: 'text-slate-600' },

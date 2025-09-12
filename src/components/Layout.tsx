@@ -23,6 +23,7 @@ import AdminToolbar from './AdminToolbar';
 import Logo from './Logo';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
+import AdvancedUIAssistant from './AdvancedUIAssistant';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
 
 interface LayoutProps {
@@ -302,6 +303,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Admin Recovery System - Always Available */}
       <AdminRecovery />
+      
+      {/* Advanced UI Assistant */}
+      <AdvancedUIAssistant />
     </div>
   );
 };

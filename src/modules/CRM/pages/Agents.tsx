@@ -17,7 +17,6 @@ import {
   ArrowPathIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import AgentBuilder from '../../../components/AgentBuilder';
 import AdvancedAgentBuilder from '../../../components/AdvancedAgentBuilder';
 import AgentMemoryDemo from '../../../components/AgentMemoryDemo';
 import AgentTrainingManager from '../../../components/AgentTrainingManager';
@@ -171,14 +170,13 @@ const Agents: React.FC = () => {
   } = useAIAgents();
   
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAdvancedBuilder, setShowAdvancedBuilder] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [showTrainingManager, setShowTrainingManager] = useState(false);
   const [showRPATrainingManager, setShowRPATrainingManager] = useState(false);
   const [trainingAgent, setTrainingAgent] = useState<Agent | null>(null);
   const [rpaTrainingAgent, setRPATrainingAgent] = useState<Agent | null>(null);
+  const [showMemoryDemo, setShowMemoryDemo] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive' | 'training'>('all');
 
   const filteredAgents = agents.filter(agent => {
@@ -236,17 +234,14 @@ const Agents: React.FC = () => {
     }
   };
 
-  const handleCreateAgent = () => {
-    setShowCreateModal(true);
-  };
-
   const handleCreateAdvancedAgent = () => {
+    setEditingAgent(null);
     setShowAdvancedBuilder(true);
   };
 
   const handleEditAgent = (agent: Agent) => {
     setEditingAgent(agent);
-    setShowCreateModal(true);
+    setShowAdvancedBuilder(true);
   };
 
   const handleDeleteAgent = async (agentId: string) => {
@@ -281,14 +276,14 @@ const Agents: React.FC = () => {
         // Create new agent
         await createAgent(agentConfig);
       }
-      setShowCreateModal(false);
+      setShowAdvancedBuilder(false);
     } catch (error) {
       console.error('Failed to save agent:', error);
     }
   };
 
-  const handleCloseModal = () => {
-    setShowCreateModal(false);
+  const handleCloseAdvancedBuilder = () => {
+    setShowAdvancedBuilder(false);
     setEditingAgent(null);
   };
 
@@ -316,11 +311,20 @@ const Agents: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Agents</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Build and manage AI agents for your platform
-          </p>
+        <div className="flex items-center space-x-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Agents</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Build and manage AI agents for your platform
+            </p>
+          </div>
+          <button
+            onClick={() => setShowMemoryDemo(!showMemoryDemo)}
+            className="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <CpuChipIcon className="h-4 w-4 mr-2" />
+            Memory Demo
+          </button>
         </div>
         <button
           onClick={refreshAgents}
@@ -329,22 +333,13 @@ const Agents: React.FC = () => {
           <ArrowPathIcon className="h-4 w-4 mr-2" />
           Refresh
         </button>
-        <div className="flex space-x-3">
-          <button
-            onClick={handleCreateAdvancedAgent}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-          >
-            <SparklesIcon className="h-4 w-4 mr-2" />
-            Advanced Agent Builder
-          </button>
-          <button
-            onClick={handleCreateAgent}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Create Agent
-          </button>
-        </div>
+        <button
+          onClick={handleCreateAdvancedAgent}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+        >
+          <SparklesIcon className="h-4 w-4 mr-2" />
+          {editingAgent ? 'Edit Agent' : 'Create Agent'}
+        </button>
       </div>
 
       {/* Stats */}
@@ -551,10 +546,10 @@ const Agents: React.FC = () => {
           {filter === 'all' && (
             <div className="mt-6">
               <button
-                onClick={handleCreateAgent}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={handleCreateAdvancedAgent}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
+                <SparklesIcon className="h-4 w-4 mr-2" />
                 Create Agent
               </button>
             </div>
@@ -563,21 +558,16 @@ const Agents: React.FC = () => {
       )}
 
       {/* Agent Memory Demo Section */}
-      <div className="mt-8">
-        <AgentMemoryDemo />
-      </div>
+      {showMemoryDemo && (
+        <div className="mt-8">
+          <AgentMemoryDemo />
+        </div>
+      )}
 
       {/* Advanced Agent Builder Modal */}
       <AdvancedAgentBuilder
         isOpen={showAdvancedBuilder}
-        onClose={() => setShowAdvancedBuilder(false)}
-        onSave={handleSaveAgent}
-      />
-
-      {/* Agent Builder Modal */}
-      <AgentBuilder
-        isOpen={showCreateModal}
-        onClose={handleCloseModal}
+        onClose={handleCloseAdvancedBuilder}
         onSave={handleSaveAgent}
         editingAgent={editingAgent}
       />
