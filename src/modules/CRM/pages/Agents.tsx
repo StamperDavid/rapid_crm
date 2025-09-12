@@ -18,7 +18,7 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import AgentBuilder from '../../../components/AgentBuilder';
-import IntelligentAgentBuilder from '../../../components/IntelligentAgentBuilder';
+import AdvancedAgentBuilder from '../../../components/AdvancedAgentBuilder';
 import AgentMemoryDemo from '../../../components/AgentMemoryDemo';
 import AgentTrainingManager from '../../../components/AgentTrainingManager';
 import RPATrainingManager from '../../../components/RPATrainingManager';
@@ -172,7 +172,7 @@ const Agents: React.FC = () => {
   
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showIntelligentBuilder, setShowIntelligentBuilder] = useState(false);
+  const [showAdvancedBuilder, setShowAdvancedBuilder] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [showTrainingManager, setShowTrainingManager] = useState(false);
@@ -240,8 +240,8 @@ const Agents: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const handleCreateIntelligentAgent = () => {
-    setShowIntelligentBuilder(true);
+  const handleCreateAdvancedAgent = () => {
+    setShowAdvancedBuilder(true);
   };
 
   const handleEditAgent = (agent: Agent) => {
@@ -331,11 +331,11 @@ const Agents: React.FC = () => {
         </button>
         <div className="flex space-x-3">
           <button
-            onClick={handleCreateIntelligentAgent}
+            onClick={handleCreateAdvancedAgent}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
           >
             <SparklesIcon className="h-4 w-4 mr-2" />
-            AI Agent Builder
+            Advanced Agent Builder
           </button>
           <button
             onClick={handleCreateAgent}
@@ -567,10 +567,10 @@ const Agents: React.FC = () => {
         <AgentMemoryDemo />
       </div>
 
-      {/* Intelligent Agent Builder Modal */}
-      <IntelligentAgentBuilder
-        isOpen={showIntelligentBuilder}
-        onClose={() => setShowIntelligentBuilder(false)}
+      {/* Advanced Agent Builder Modal */}
+      <AdvancedAgentBuilder
+        isOpen={showAdvancedBuilder}
+        onClose={() => setShowAdvancedBuilder(false)}
         onSave={handleSaveAgent}
       />
 

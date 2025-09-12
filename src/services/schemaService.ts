@@ -1,5 +1,22 @@
 // Real database schema service
 // This service now connects to the actual SQLite database
+// Import the actual schema types to ensure synchronization
+import { 
+  Organization, 
+  Person, 
+  Vehicle, 
+  Driver, 
+  Deal, 
+  Invoice, 
+  Service,
+  ORGANIZATION_FIELD_GROUPS,
+  PERSON_FIELD_GROUPS,
+  DRIVER_FIELD_GROUPS,
+  ORGANIZATION_VALIDATION_RULES,
+  PERSON_VALIDATION_RULES,
+  DRIVER_VALIDATION_RULES,
+  SELECT_OPTIONS
+} from '../types/schema';
 
 export interface FieldDefinition {
   id: string;
@@ -69,21 +86,312 @@ class SchemaService {
     this.initializeDefaultSchemas();
   }
 
+  // Helper function to generate field definitions from TypeScript interface
+  private generateFieldsFromInterface(interfaceName: string): FieldDefinition[] {
+    const fields: FieldDefinition[] = [];
+    let order = 1;
+
+    // Generate fields based on the interface
+    switch (interfaceName) {
+      case 'Organization':
+        // Physical Address fields
+        fields.push(
+          { id: (order++).toString(), name: 'physicalStreetAddress', display_name: 'Physical Street Address', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'physicalSuiteApt', display_name: 'Physical Suite/Apt', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'physicalCity', display_name: 'Physical City', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'physicalState', display_name: 'Physical State', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.states, order: order - 1 },
+          { id: (order++).toString(), name: 'physicalCountry', display_name: 'Physical Country', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.countries, order: order - 1 },
+          { id: (order++).toString(), name: 'physicalZip', display_name: 'Physical ZIP Code', field_type: 'text', is_required: true, is_unique: false, order: order - 1 }
+        );
+
+        // Mailing Address fields
+        fields.push(
+          { id: (order++).toString(), name: 'isMailingAddressSame', display_name: 'Is Mailing Address Same?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'mailingStreetAddress', display_name: 'Mailing Street Address', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'mailingSuiteApt', display_name: 'Mailing Suite/Apt', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'mailingCity', display_name: 'Mailing City', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'mailingState', display_name: 'Mailing State', field_type: 'select', is_required: false, is_unique: false, options: SELECT_OPTIONS.states, order: order - 1 },
+          { id: (order++).toString(), name: 'mailingZip', display_name: 'Mailing ZIP Code', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'mailingCountry', display_name: 'Mailing Country', field_type: 'select', is_required: false, is_unique: false, options: SELECT_OPTIONS.countries, order: order - 1 }
+        );
+
+        // Business Information fields
+        fields.push(
+          { id: (order++).toString(), name: 'businessType', display_name: 'Business Type', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.businessType, order: order - 1 },
+          { id: (order++).toString(), name: 'businessStarted', display_name: 'Business Started Date', field_type: 'date', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'desiredBusinessName', display_name: 'Desired Business Name', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'legalBusinessName', display_name: 'Legal Business Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'hasDBA', display_name: 'Has DBA?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.hasDBA, order: order - 1 },
+          { id: (order++).toString(), name: 'dbaName', display_name: 'DBA Name', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'ein', display_name: 'EIN (Federal Tax ID)', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'entityTypes', display_name: 'Entity Types', field_type: 'multiselect', is_required: true, is_unique: false, options: ['Carrier', 'Broker', 'Freight Forwarder'], order: order - 1 }
+        );
+
+        // Transportation & Operations fields
+        fields.push(
+          { id: (order++).toString(), name: 'businessClassification', display_name: 'Business Classification', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.businessClassification, order: order - 1 },
+          { id: (order++).toString(), name: 'transportationOperationType', display_name: 'Transportation Operation Type', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.transportationOperationType, order: order - 1 },
+          { id: (order++).toString(), name: 'carriesPassengers', display_name: 'Carries Passengers?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'transportsGoodsForHire', display_name: 'Transports Goods for Hire?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'engagedInInterstateCommerce', display_name: 'Engaged in Interstate Commerce?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'interstateIntrastate', display_name: 'Interstate/Intrastate', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.interstateIntrastate, order: order - 1 },
+          { id: (order++).toString(), name: 'statesOfOperation', display_name: 'States of Operation', field_type: 'multiselect', is_required: true, is_unique: false, options: SELECT_OPTIONS.states, order: order - 1 },
+          { id: (order++).toString(), name: 'operationClass', display_name: 'Operation Class', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'hasUSDOTNumber', display_name: 'Has USDOT Number?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'usdotNumber', display_name: 'USDOT Number', field_type: 'text', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Fleet Information fields
+        fields.push(
+          { id: (order++).toString(), name: 'vehicleFleetType', display_name: 'Vehicle Fleet Type', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.vehicleFleetType, order: order - 1 },
+          { id: (order++).toString(), name: 'vehicleTypesUsed', display_name: 'Vehicle Types Used', field_type: 'multiselect', is_required: true, is_unique: false, options: SELECT_OPTIONS.vehicleTypesUsed, order: order - 1 },
+          { id: (order++).toString(), name: 'numberOfDrivers', display_name: 'Number of Drivers', field_type: 'number', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'driverList', display_name: 'Driver List', field_type: 'textarea', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'numberOfVehicles', display_name: 'Number of Vehicles', field_type: 'number', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'vehicleList', display_name: 'Vehicle List', field_type: 'textarea', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'gvwr', display_name: 'GVWR (Gross Vehicle Weight Rating)', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'yearMakeModel', display_name: 'Year/Make/Model', field_type: 'text', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Cargo & Safety fields
+        fields.push(
+          { id: (order++).toString(), name: 'cargoTypesTransported', display_name: 'Cargo Types Transported', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.cargoTypesTransported, order: order - 1 },
+          { id: (order++).toString(), name: 'hazmatPlacardRequired', display_name: 'Hazmat Placard Required?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'phmsaWork', display_name: 'PHMSA Work?', field_type: 'select', is_required: false, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 }
+        );
+
+        // Regulatory Compliance fields
+        fields.push(
+          { id: (order++).toString(), name: 'additionalRegulatoryDetails', display_name: 'Additional Regulatory Details', field_type: 'multiselect', is_required: false, is_unique: false, options: SELECT_OPTIONS.additionalRegulatoryDetails, order: order - 1 }
+        );
+
+        // Financial Information fields
+        fields.push(
+          { id: (order++).toString(), name: 'hasDunsBradstreetNumber', display_name: 'Has DUNS Bradstreet Number?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 },
+          { id: (order++).toString(), name: 'dunsBradstreetNumber', display_name: 'DUNS Bradstreet Number', field_type: 'text', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // System fields
+        fields.push(
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+
+      case 'Person':
+        // Contact Details fields
+        fields.push(
+          { id: (order++).toString(), name: 'firstName', display_name: 'First Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'lastName', display_name: 'Last Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'phone', display_name: 'Phone', field_type: 'phone', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'email', display_name: 'Email', field_type: 'email', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'preferredContactMethod', display_name: 'Preferred Contact Method', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.preferredContactMethod, order: order - 1 }
+        );
+
+        // Role & Position fields
+        fields.push(
+          { id: (order++).toString(), name: 'isPrimaryContact', display_name: 'Is Primary Contact?', field_type: 'boolean', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'position', display_name: 'Position', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'department', display_name: 'Department', field_type: 'text', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Company Owner Details fields
+        fields.push(
+          { id: (order++).toString(), name: 'isCompanyOwner', display_name: 'Is Company Owner?', field_type: 'boolean', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'companyOwnerFirstName', display_name: 'Company Owner First Name', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'companyOwnerLastName', display_name: 'Company Owner Last Name', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'companyOwnerPhone', display_name: 'Company Owner Phone', field_type: 'phone', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'companyOwnerEmail', display_name: 'Company Owner Email', field_type: 'email', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // System fields
+        fields.push(
+          { id: (order++).toString(), name: 'companyId', display_name: 'Company ID', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+
+      case 'Driver':
+        // Driver Information fields
+        fields.push(
+          { id: (order++).toString(), name: 'driverName', display_name: 'Driver Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 }
+        );
+
+        // Application & Documentation fields
+        fields.push(
+          { id: (order++).toString(), name: 'applicationForEmployment', display_name: 'Application for Employment', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'backgroundChecks', display_name: 'Background Checks', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'certificateOfReceiptForCompanyTestingPolicy', display_name: 'Certificate of Receipt for Company Testing Policy', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'certificateOfReceiptForCompanyWorkPolicy', display_name: 'Certificate of Receipt for Company Work Policy', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'commercialDriversLicenseInformationSystemReports', display_name: 'Commercial Drivers License Information System Reports', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'copyOfDriversLicense', display_name: 'Copy of Drivers License', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'medicalCertificateCopy', display_name: 'Medical Certificate Copy', field_type: 'attachment', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // System fields
+        fields.push(
+          { id: (order++).toString(), name: 'companyId', display_name: 'Company ID', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+
+      case 'Vehicle':
+        // Vehicle Identification fields
+        fields.push(
+          { id: (order++).toString(), name: 'vin', display_name: 'VIN', field_type: 'text', is_required: true, is_unique: true, order: order - 1 },
+          { id: (order++).toString(), name: 'licensePlate', display_name: 'License Plate', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'make', display_name: 'Make', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'model', display_name: 'Model', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'year', display_name: 'Year', field_type: 'number', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'color', display_name: 'Color', field_type: 'text', is_required: false, is_unique: false, order: order - 1 }
+        );
+
+        // Vehicle Specifications fields
+        fields.push(
+          { id: (order++).toString(), name: 'vehicleType', display_name: 'Vehicle Type', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.vehicleType, order: order - 1 },
+          { id: (order++).toString(), name: 'gvwr', display_name: 'GVWR', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'emptyWeight', display_name: 'Empty Weight', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'fuelType', display_name: 'Fuel Type', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.fuelType, order: order - 1 }
+        );
+
+        // Status fields
+        fields.push(
+          { id: (order++).toString(), name: 'status', display_name: 'Status', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.vehicleStatus, order: order - 1 },
+          { id: (order++).toString(), name: 'hasHazmatEndorsement', display_name: 'Has Hazmat Endorsement?', field_type: 'select', is_required: true, is_unique: false, options: SELECT_OPTIONS.yesNo, order: order - 1 }
+        );
+
+        // System fields
+        fields.push(
+          { id: (order++).toString(), name: 'companyId', display_name: 'Company ID', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+
+      case 'Deal':
+        fields.push(
+          { id: (order++).toString(), name: 'title', display_name: 'Deal Title', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'description', display_name: 'Description', field_type: 'textarea', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'value', display_name: 'Deal Value', field_type: 'currency', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'stage', display_name: 'Stage', field_type: 'select', is_required: true, is_unique: false, options: ['lead', 'qualified', 'proposal', 'negotiation', 'closed-won', 'closed-lost'], order: order - 1 },
+          { id: (order++).toString(), name: 'probability', display_name: 'Probability (%)', field_type: 'number', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'serviceId', display_name: 'Service ID', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'serviceName', display_name: 'Service Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'companyId', display_name: 'Company ID', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'contactId', display_name: 'Contact ID', field_type: 'text', is_required: false, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+
+      case 'Invoice':
+        fields.push(
+          { id: (order++).toString(), name: 'invoiceNumber', display_name: 'Invoice Number', field_type: 'text', is_required: true, is_unique: true, order: order - 1 },
+          { id: (order++).toString(), name: 'clientName', display_name: 'Client Name', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'amount', display_name: 'Amount', field_type: 'currency', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'status', display_name: 'Status', field_type: 'select', is_required: true, is_unique: false, options: ['draft', 'sent', 'paid', 'overdue'], order: order - 1 },
+          { id: (order++).toString(), name: 'dueDate', display_name: 'Due Date', field_type: 'date', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+
+      case 'Service':
+        fields.push(
+          { id: (order++).toString(), name: 'name', display_name: 'Service Name', field_type: 'text', is_required: true, is_unique: true, order: order - 1 },
+          { id: (order++).toString(), name: 'description', display_name: 'Description', field_type: 'textarea', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'category', display_name: 'Category', field_type: 'select', is_required: true, is_unique: false, options: ['Registration', 'Compliance', 'Training', 'Support'], order: order - 1 },
+          { id: (order++).toString(), name: 'basePrice', display_name: 'Base Price', field_type: 'currency', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'estimatedDuration', display_name: 'Estimated Duration', field_type: 'text', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'isActive', display_name: 'Is Active?', field_type: 'boolean', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'createdAt', display_name: 'Created At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 },
+          { id: (order++).toString(), name: 'updatedAt', display_name: 'Updated At', field_type: 'datetime', is_required: true, is_unique: false, order: order - 1 }
+        );
+        break;
+    }
+
+    return fields;
+  }
+
   private initializeDefaultSchemas() {
     if (this.schemas.length === 0) {
-      // Add some default schemas
+      // Generate schemas from TypeScript interfaces to ensure synchronization
       const defaultSchemas: SchemaDefinition[] = [
         {
           id: '1',
           name: 'companies',
           display_name: 'Companies',
-          description: 'Company and organization information',
+          description: 'Company and organization information with comprehensive transportation business details',
           table_name: 'companies',
-          fields: [
-            { id: '1', name: 'name', display_name: 'Company Name', field_type: 'text', is_required: true, is_unique: false, order: 1 },
-            { id: '2', name: 'industry', display_name: 'Industry', field_type: 'text', is_required: false, is_unique: false, order: 2 },
-            { id: '3', name: 'email', display_name: 'Email', field_type: 'email', is_required: false, is_unique: false, order: 3 },
-          ],
+          fields: this.generateFieldsFromInterface('Organization'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_system: true
+        },
+        {
+          id: '2',
+          name: 'contacts',
+          display_name: 'Contacts',
+          description: 'Individual contact information with company relationships',
+          table_name: 'contacts',
+          fields: this.generateFieldsFromInterface('Person'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_system: true
+        },
+        {
+          id: '3',
+          name: 'drivers',
+          display_name: 'Drivers',
+          description: 'Driver and employee information with comprehensive documentation tracking',
+          table_name: 'drivers',
+          fields: this.generateFieldsFromInterface('Driver'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_system: true
+        },
+        {
+          id: '4',
+          name: 'vehicles',
+          display_name: 'Vehicles',
+          description: 'Vehicle and equipment information with specifications and compliance tracking',
+          table_name: 'vehicles',
+          fields: this.generateFieldsFromInterface('Vehicle'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_system: true
+        },
+        {
+          id: '5',
+          name: 'deals',
+          display_name: 'Deals',
+          description: 'Sales opportunities and deals with service relationships',
+          table_name: 'deals',
+          fields: this.generateFieldsFromInterface('Deal'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_system: true
+        },
+        {
+          id: '6',
+          name: 'invoices',
+          display_name: 'Invoices',
+          description: 'Invoice creation, management, and payment tracking',
+          table_name: 'invoices',
+          fields: this.generateFieldsFromInterface('Invoice'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_system: true
+        },
+        {
+          id: '7',
+          name: 'services',
+          display_name: 'Services',
+          description: 'Transportation compliance and registration services offered',
+          table_name: 'services',
+          fields: this.generateFieldsFromInterface('Service'),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           is_system: true

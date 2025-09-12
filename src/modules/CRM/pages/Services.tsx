@@ -11,12 +11,16 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import { Service } from '../../../types/schema';
+import { useUser } from '../../../contexts/UserContext';
+import EditorToolbar from '../../../components/EditorToolbar';
 
 const Services: React.FC = () => {
   const navigate = useNavigate();
+  const { hasPermission, hasRole } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
@@ -328,8 +332,14 @@ const Services: React.FC = () => {
     navigate(`/deals/new?serviceId=${service.id}&serviceName=${encodeURIComponent(service.name)}&price=${service.basePrice}`);
   };
 
+  const handleEditService = (service: Service) => {
+    // Navigate to edit service page
+    navigate(`/services/edit/${service.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <EditorToolbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -343,11 +353,11 @@ const Services: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => navigate('/deals/new')}
+              onClick={() => navigate('/services/new')}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
-              Create Deal
+              Create Service
             </button>
           </div>
         </div>
@@ -470,11 +480,11 @@ const Services: React.FC = () => {
                 
                 <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                   <button
-                    onClick={() => handleCreateDeal(service)}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    onClick={() => handleEditService(service)}
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
-                    <CurrencyDollarIcon className="h-4 w-4 mr-2" />
-                    Create Deal
+                    <PencilIcon className="h-4 w-4 mr-2" />
+                    Edit Service
                   </button>
                 </div>
               </div>
