@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Development Frontend (Vite dev server)
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend-dev
+    networks:
+      - rapid-crm-dev-network
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001
+    command: npm run dev
+
+  # Development Backend (Express with hot reload)
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./instance:/app/instance
+    networks:
+      - rapid-crm-dev-network
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    command: npm run dev:server
+
+networks:
+  rapid-crm-dev-network:
+    driver: bridge

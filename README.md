@@ -2,6 +2,30 @@
 
 A modern, best-in-class **Transportation & Logistics CRM** system built with React, TypeScript, and Tailwind CSS. Rapid CRM provides a comprehensive platform specifically designed for transportation companies, carriers, brokers, and freight forwarders to manage their business operations, compliance, and customer relationships.
 
+## 🐳 Docker Containerization
+
+Rapid CRM is fully containerized with Docker for consistent development and production environments.
+
+### Quick Start with Docker
+```bash
+# Production deployment
+npm run docker:build
+npm run docker:up
+
+# Development environment
+npm run docker:dev
+
+# View logs
+npm run docker:logs
+```
+
+**Access Points:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001/api
+- Health Check: http://localhost:3001/api/health
+
+For detailed Docker setup and configuration, see [DOCKER.md](./DOCKER.md).
+
 ## 🚀 Features
 
 ### Core CRM Modules

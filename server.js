@@ -1215,6 +1215,15 @@ const checkAndInitializeDatabase = async () => {
   }
 };
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Initialize database and start server
 validateDatabase()
   .then(() => checkAndInitializeDatabase())
