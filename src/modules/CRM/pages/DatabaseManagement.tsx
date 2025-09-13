@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
-  CircleStackIcon,
+  DatabaseIcon,
   PlusIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   InformationCircleIcon,
   CloudIcon,
   ServerIcon,
   ShieldCheckIcon,
-  DocumentArrowDownIcon,
-  DocumentArrowUpIcon,
+  DocumentDownloadIcon,
+  DocumentAddIcon,
   TrashIcon,
   EyeIcon,
   CogIcon,
   PencilIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import DatabaseConfigModal from '../../../components/DatabaseConfigModal';
 import { databaseConnectionService, DatabaseConfig } from '../../../services/databaseConnection';
 import { databaseManager } from '../../../services/database/DatabaseManager';
@@ -152,26 +152,26 @@ const DatabaseManagement: React.FC = () => {
       case 'connected':
         return <CheckCircleIcon className="h-4 w-4" />;
       case 'disconnected':
-        return <ExclamationTriangleIcon className="h-4 w-4" />;
+        return <ExclamationIcon className="h-4 w-4" />;
       case 'error':
-        return <ExclamationTriangleIcon className="h-4 w-4" />;
+        return <ExclamationIcon className="h-4 w-4" />;
       default:
-        return <ExclamationTriangleIcon className="h-4 w-4" />;
+        return <ExclamationIcon className="h-4 w-4" />;
     }
   };
 
   const getDatabaseIcon = (type: string) => {
     switch (type) {
       case 'postgresql':
-        return <CircleStackIcon className="h-5 w-5 text-blue-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-blue-600" />;
       case 'mongodb':
-        return <CircleStackIcon className="h-5 w-5 text-green-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-green-600" />;
       case 'mysql':
         return <ServerIcon className="h-5 w-5 text-orange-600" />;
       case 'sqlite':
-        return <CircleStackIcon className="h-5 w-5 text-gray-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-gray-600" />;
       default:
-        return <CircleStackIcon className="h-5 w-5 text-gray-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-gray-600" />;
     }
   };
 
@@ -283,7 +283,7 @@ const DatabaseManagement: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <CircleStackIcon className="h-6 w-6 text-blue-600" />
+                <DatabaseIcon className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -323,7 +323,7 @@ const DatabaseManagement: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ArrowPathIcon className="h-6 w-6 text-purple-600" />
+                <RefreshIcon className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -453,7 +453,7 @@ const DatabaseManagement: React.FC = () => {
         <div className="px-6 py-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center">
-              <DocumentArrowDownIcon className="mx-auto h-12 w-12 text-blue-600" />
+              <DocumentDownloadIcon className="mx-auto h-12 w-12 text-blue-600" />
               <h4 className="mt-2 text-lg font-medium text-slate-900 dark:text-slate-100">
                 Create Backup
               </h4>
@@ -466,7 +466,7 @@ const DatabaseManagement: React.FC = () => {
                   disabled={isLoading}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                 >
-                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                  <DocumentDownloadIcon className="h-4 w-4 mr-2" />
                   Create Backup
                 </button>
               </div>
@@ -476,7 +476,7 @@ const DatabaseManagement: React.FC = () => {
             </div>
 
             <div className="text-center">
-              <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-green-600" />
+              <DocumentAddIcon className="mx-auto h-12 w-12 text-green-600" />
               <h4 className="mt-2 text-lg font-medium text-slate-900 dark:text-slate-100">
                 Restore Backup
               </h4>
@@ -489,7 +489,7 @@ const DatabaseManagement: React.FC = () => {
                   disabled={isLoading}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                 >
-                  <DocumentArrowUpIcon className="h-4 w-4 mr-2" />
+                  <DocumentAddIcon className="h-4 w-4 mr-2" />
                   Restore Backup
                 </button>
               </div>
@@ -531,7 +531,7 @@ const DatabaseManagement: React.FC = () => {
             <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
               <div className="p-6">
                 <div className="flex items-center mb-4">
-                  <DocumentArrowDownIcon className="h-6 w-6 text-blue-600 mr-2" />
+                  <DocumentDownloadIcon className="h-6 w-6 text-blue-600 mr-2" />
                   <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
                     Create Database Backup
                   </h3>
@@ -568,7 +568,7 @@ const DatabaseManagement: React.FC = () => {
             <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
               <div className="p-6">
                 <div className="flex items-center mb-4">
-                  <DocumentArrowUpIcon className="h-6 w-6 text-green-600 mr-2" />
+                  <DocumentAddIcon className="h-6 w-6 text-green-600 mr-2" />
                   <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
                     Restore Database Backup
                   </h3>

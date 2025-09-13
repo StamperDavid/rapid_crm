@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   CogIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   UserGroupIcon,
   TruckIcon,
   CurrencyDollarIcon,
@@ -10,7 +10,7 @@ import {
   PencilIcon,
   TrashIcon,
   DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import SchemaEditor from '../components/SchemaEditor';
 import { schemaService, SchemaDefinition } from '../services/schemaService';
 

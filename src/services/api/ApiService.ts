@@ -477,17 +477,17 @@ export class ApiService {
 
   // API Keys
   async getApiKeys(): Promise<ApiKey[]> {
-    const response = await this.request<ApiKey[]>('/api-keys');
+    const response = await this.request<ApiKey[]>('/api/api-keys');
     return response.data;
   }
 
   async getApiKey(id: string): Promise<ApiKey | null> {
-    const response = await this.request<ApiKey>(`/api-keys/${id}`);
+    const response = await this.request<ApiKey>(`/api/api-keys/${id}`);
     return response.data;
   }
 
   async createApiKey(apiKey: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiKey> {
-    const response = await this.request<ApiKey>('/api-keys', {
+    const response = await this.request<ApiKey>('/api/api-keys', {
       method: 'POST',
       body: JSON.stringify(apiKey),
     });
@@ -495,7 +495,7 @@ export class ApiService {
   }
 
   async updateApiKey(id: string, apiKey: Partial<ApiKey>): Promise<ApiKey> {
-    const response = await this.request<ApiKey>(`/api-keys/${id}`, {
+    const response = await this.request<ApiKey>(`/api/api-keys/${id}`, {
       method: 'PUT',
       body: JSON.stringify(apiKey),
     });
@@ -503,7 +503,7 @@ export class ApiService {
   }
 
   async deleteApiKey(id: string): Promise<boolean> {
-    const response = await this.request<{ deleted: boolean }>(`/api-keys/${id}`, {
+    const response = await this.request<{ deleted: boolean }>(`/api/api-keys/${id}`, {
       method: 'DELETE',
     });
     return response.data.deleted;

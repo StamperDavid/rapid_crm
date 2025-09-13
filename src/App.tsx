@@ -29,7 +29,7 @@ import DataManagement from './pages/DataManagement';
 import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
-import UIDemo from './pages/UIDemo';
+import AIAdminPage from './pages/AIAdminPage';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -69,7 +69,7 @@ function App() {
                     <Route path="/tasks" element={<Tasks />} />
                     <Route path="/conversations" element={<Conversations />} />
                     <Route path="/agents" element={<Agents />} />
-                    <Route path="/api-keys" element={<ApiKeys />} />
+                    <Route path="/settings/api-keys" element={<ApiKeys />} />
                     <Route path="/database" element={<DatabaseManagement />} />
                     <Route path="/integrations" element={<Integrations />} />
                     <Route path="/users" element={<UserManagement />} />
@@ -83,8 +83,8 @@ function App() {
                     {/* Client Portal Designer - Editor access only */}
                     <Route path="/client-portal" element={<ClientPortalDesigner />} />
                     
-                    {/* UI Demo - Advanced UI Assistant Demo */}
-                    <Route path="/ui-demo" element={<UIDemo />} />
+                    {/* AI Administration - Admin access only */}
+                    <Route path="/admin/ai-control" element={<AIAdminPage />} />
                     
                     {/* Legacy routes for backward compatibility */}
                     <Route path="/data" element={<DataManagement />} />

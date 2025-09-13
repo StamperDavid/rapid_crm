@@ -6,10 +6,10 @@ import {
   EyeIcon,
   CogIcon,
   CheckIcon,
-  XMarkIcon,
+  XIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface FieldDefinition {
   id: string;
@@ -150,7 +150,7 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </button>
           </div>
 

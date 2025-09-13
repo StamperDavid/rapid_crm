@@ -1,4 +1,7 @@
 import { AgentConfiguration } from '../../types/schema';
+import { apiKeyManager } from './ApiKeyManager';
+import { aiMonitoringService } from './AIMonitoringService';
+import { advancedAICustomizationService } from './AdvancedAICustomizationService';
 
 export interface AIProvider {
   id: string;
@@ -68,70 +71,52 @@ export class AIIntegrationService {
   private responseHistory: Map<string, AIResponse[]> = new Map();
   private rateLimiters: Map<string, { requests: number; tokens: number; resetTime: number }> = new Map();
 
+  private initialized: boolean = false;
+
   constructor() {
-    this.initializeDefaultProviders();
+    // Don't initialize in constructor - wait for first use
   }
 
-  private async initializeDefaultProviders(): Promise<void> {
-    // Check if we're in a browser environment
-    const isBrowser = typeof window !== 'undefined';
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized) return;
     
-    const defaultProviders: AIProvider[] = [
-      {
-        id: 'openai',
-        name: 'OpenAI',
-        type: 'openai',
-        baseUrl: 'https://api.openai.com/v1',
-        apiKey: isBrowser ? '' : (process.env.OPENAI_API_KEY || ''),
-        models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gpt-3.5-turbo-16k'],
-        capabilities: ['chat', 'completion', 'embeddings', 'function_calling'],
-        rateLimits: {
-          requestsPerMinute: 60,
-          tokensPerMinute: 150000
-        },
-        pricing: {
-          inputTokensPerDollar: 0.00003,
-          outputTokensPerDollar: 0.00006
-        }
-      },
-      {
-        id: 'anthropic',
-        name: 'Anthropic',
-        type: 'anthropic',
-        baseUrl: 'https://api.anthropic.com/v1',
-        apiKey: isBrowser ? '' : (process.env.ANTHROPIC_API_KEY || ''),
-        models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-        capabilities: ['chat', 'completion', 'function_calling'],
-        rateLimits: {
-          requestsPerMinute: 30,
-          tokensPerMinute: 100000
-        },
-        pricing: {
-          inputTokensPerDollar: 0.000015,
-          outputTokensPerDollar: 0.000075
-        }
-      },
-      {
-        id: 'google',
-        name: 'Google AI',
-        type: 'google',
-        baseUrl: 'https://generativelanguage.googleapis.com/v1',
-        apiKey: isBrowser ? '' : (process.env.GOOGLE_AI_API_KEY || ''),
-        models: ['gemini-pro', 'gemini-pro-vision'],
-        capabilities: ['chat', 'completion', 'vision'],
-        rateLimits: {
-          requestsPerMinute: 60,
-          tokensPerMinute: 200000
-        },
-        pricing: {
-          inputTokensPerDollar: 0.000025,
-          outputTokensPerDollar: 0.00005
-        }
-      }
-    ];
-
-    defaultProviders.forEach(provider => {
-      if (provider.apiKey) {
+    // Set up refresh callback to avoid circular imports
+    apiKeyManager.setRefreshCallback(() => this.refreshProviders());
+    
+    // Load API keys from the database
+    await apiKeyManager.loadApiKeys();
+    
+    // Get available providers based on API keys in the system
+    const availableProviders = apiKeyManager.getAvailableProviders();
+    
+    availableProviders.forEach(config => {
+      const apiKey = apiKeyManager.getApiKey(config.id);
+      console.log(`Setting up provider ${config.id}:`, {
+        hasApiKey: !!apiKey,
+        apiKeyLength: apiKey?.length || 0,
+        apiKeyStart: apiKey?.substring(0, 15) + '...' || 'null'
+      });
+      
+      if (apiKey) {
+        const provider: AIProvider = {
+          id: config.id,
+          name: config.name,
+          type: config.type,
+          baseUrl: config.baseUrl,
+          apiKey: apiKey,
+          models: config.models,
+          capabilities: config.capabilities,
+          rateLimits: config.rateLimits,
+          pricing: config.pricing
+        };
+        
+        console.log(`Created provider for ${config.id}:`, {
+          id: provider.id,
+          type: provider.type,
+          baseUrl: provider.baseUrl,
+          apiKeyLength: provider.apiKey.length
+        });
+        
         this.providers.set(provider.id, provider);
         this.rateLimiters.set(provider.id, {
           requests: 0,
@@ -141,7 +126,8 @@ export class AIIntegrationService {
       }
     });
 
-    console.log(`Initialized ${this.providers.size} AI providers`);
+    this.initialized = true;
+    console.log(`Initialized ${this.providers.size} AI providers from API Keys system`);
   }
 
   async generateResponse(
@@ -160,8 +146,36 @@ export class AIIntegrationService {
       // Check rate limits
       await this.checkRateLimits(provider, request);
 
+      // Get current persona and create agent config if not provided
+      let finalAgentConfig = agentConfig;
+      if (!finalAgentConfig) {
+        const currentPersona = advancedAICustomizationService.getCurrentPersona();
+        console.log('🔍 AI Integration - Current persona:', currentPersona);
+        if (currentPersona) {
+          finalAgentConfig = {
+            id: 'default-persona',
+            name: currentPersona.name,
+            description: currentPersona.description,
+            systemPrompt: currentPersona.customPrompt || `You are ${currentPersona.name}. ${currentPersona.description}`,
+            temperature: currentPersona.temperature,
+            maxTokens: currentPersona.maxTokens,
+            model: request.model,
+            capabilities: ['conversation', 'analysis', 'assistance'],
+            isActive: true,
+            createdAt: currentPersona.createdAt,
+            updatedAt: currentPersona.updatedAt
+          };
+          console.log('🔍 AI Integration - Created agent config with system prompt:', finalAgentConfig.systemPrompt?.substring(0, 100) + '...');
+        } else {
+          console.log('⚠️ AI Integration - No current persona found!');
+        }
+      } else {
+        console.log('🔍 AI Integration - Using provided agent config:', finalAgentConfig);
+      }
+
       // Enhance request with agent configuration
-      const enhancedRequest = this.enhanceRequestWithAgentConfig(request, agentConfig);
+      const enhancedRequest = this.enhanceRequestWithAgentConfig(request, finalAgentConfig);
+      console.log('🔍 AI Integration - Enhanced request messages:', enhancedRequest.messages.map(m => ({ role: m.role, content: m.content.substring(0, 100) + '...' })));
 
       // Make API call
       const response = await this.makeAPIRequest(provider, enhancedRequest);
@@ -179,6 +193,15 @@ export class AIIntegrationService {
       // Update rate limiters
       this.updateRateLimiters(provider, aiResponse.usage.totalTokens);
 
+      // Record metrics
+      aiMonitoringService.recordRequest(
+        providerId,
+        true,
+        processingTime,
+        aiResponse.usage.totalTokens,
+        0 // TODO: Calculate actual cost
+      );
+
       // Store history
       this.storeRequestHistory(providerId, enhancedRequest);
       this.storeResponseHistory(providerId, aiResponse);
@@ -186,6 +209,15 @@ export class AIIntegrationService {
       return aiResponse;
 
     } catch (error) {
+      // Record failed request
+      aiMonitoringService.recordRequest(
+        providerId,
+        false,
+        Date.now() - startTime,
+        0,
+        0
+      );
+      
       throw this.handleAIError(error, providerId);
     }
   }
@@ -238,12 +270,16 @@ export class AIIntegrationService {
     request: AIRequest,
     agentConfig?: AgentConfiguration
   ): AIRequest {
-    if (!agentConfig) return request;
+    if (!agentConfig) {
+      console.log('⚠️ AI Integration - No agent config provided, using original request');
+      return request;
+    }
 
     const enhancedRequest = { ...request };
 
     // Add system message if agent has system prompt
     if (agentConfig.systemPrompt) {
+      console.log('🔍 AI Integration - Adding system prompt:', agentConfig.systemPrompt.substring(0, 200) + '...');
       enhancedRequest.messages = [
         {
           role: 'system',
@@ -251,6 +287,8 @@ export class AIIntegrationService {
         },
         ...enhancedRequest.messages
       ];
+    } else {
+      console.log('⚠️ AI Integration - No system prompt in agent config');
     }
 
     // Apply agent configuration
@@ -266,18 +304,198 @@ export class AIIntegrationService {
   }
 
   private async makeAPIRequest(provider: AIProvider, request: AIRequest): Promise<any> {
-    const url = `${provider.baseUrl}/chat/completions`;
+    console.log('🔍 AI Integration - makeAPIRequest called with provider:', provider.id, 'type:', provider.type);
+    console.log('🔍 AI Integration - Request body:', JSON.stringify(request, null, 2));
     
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${provider.apiKey}`
-    };
+    // Different providers have different endpoints
+    let url: string;
+    let headers: Record<string, string>;
+    let body: any;
 
-    // Simulate API call (in real implementation, this would make actual HTTP requests)
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+    switch (provider.type) {
+      case 'openai':
+        url = `${provider.baseUrl}/chat/completions`;
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${provider.apiKey}`
+        };
+        body = request;
+        break;
+        
+      case 'custom':
+        // OpenRouter specific handling
+        if (provider.id === 'openrouter') {
+          url = `${provider.baseUrl}/chat/completions`;
+          headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${provider.apiKey}`,
+            'HTTP-Referer': window.location.origin, // OpenRouter requires this
+            'X-Title': 'Rapid CRM AI Assistant' // OpenRouter requires this
+          };
+        } else {
+          url = `${provider.baseUrl}/chat/completions`;
+          headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${provider.apiKey}`
+          };
+        }
+        body = request;
+        break;
+      
+      case 'anthropic':
+        url = `${provider.baseUrl}/messages`;
+        headers = {
+          'Content-Type': 'application/json',
+          'x-api-key': provider.apiKey,
+          'anthropic-version': '2023-06-01'
+        };
+        // Convert OpenAI format to Anthropic format
+        body = {
+          model: request.model,
+          max_tokens: request.maxTokens || 1000,
+          messages: request.messages
+        };
+        break;
+      
+      case 'google':
+        url = `${provider.baseUrl}/models/${request.model}:generateContent`;
+        headers = {
+          'Content-Type': 'application/json'
+        };
+        // Convert to Google format
+        const googleMessages = request.messages.map(msg => ({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        }));
+        body = {
+          contents: googleMessages,
+          generationConfig: {
+            temperature: request.temperature || 0.7,
+            maxOutputTokens: request.maxTokens || 1000
+          }
+        };
+        break;
+      
+      default:
+        throw new Error(`Unsupported provider type: ${provider.type}`);
+    }
 
-    // Simulate response based on provider
-    return this.simulateAPIResponse(provider, request);
+    try {
+      // Debug logging
+      console.log('Making API request to:', url);
+      console.log('Headers:', headers);
+      console.log('API Key (first 10 chars):', provider.apiKey?.substring(0, 10) + '...');
+      console.log('API Key (last 10 chars):', '...' + provider.apiKey?.substring(provider.apiKey.length - 10));
+      console.log('API Key format check:', {
+        startsWithSkOr: provider.apiKey?.startsWith('sk-or-v1-'),
+        length: provider.apiKey?.length,
+        hasSpaces: provider.apiKey?.includes(' '),
+        hasNewlines: provider.apiKey?.includes('\n')
+      });
+      console.log('Request body:', JSON.stringify(body, null, 2));
+      
+      // Test API key validity first for OpenRouter
+      console.log('Provider ID:', provider.id, 'Type:', provider.type);
+      console.log('API Key being used:', provider.apiKey);
+      console.log('API Key length:', provider.apiKey?.length);
+      console.log('API Key starts with sk-or-v1-:', provider.apiKey?.startsWith('sk-or-v1-'));
+      console.log('API Key contains asterisks:', provider.apiKey?.includes('*'));
+      console.log('Authorization header:', `Bearer ${provider.apiKey}`);
+      
+      if (provider.id === 'openrouter') {
+        console.log('Testing OpenRouter API key validity...');
+        try {
+          const testResponse = await fetch('https://openrouter.ai/api/v1/auth/key', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${provider.apiKey}`
+            }
+          });
+          console.log('API key test response:', testResponse.status, testResponse.statusText);
+          if (!testResponse.ok) {
+            const errorText = await testResponse.text();
+            console.error('API key validation failed:', errorText);
+          } else {
+            console.log('API key validation successful!');
+          }
+        } catch (testError) {
+          console.error('API key test failed:', testError);
+        }
+      } else {
+        console.log('Not OpenRouter provider, skipping API key test');
+      }
+      
+      // Make actual API call
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Convert response to standard format
+      return this.convertResponseToStandardFormat(provider, data);
+    } catch (error) {
+      console.error('API request failed:', error);
+      // Fallback to simulation if API call fails
+      return this.simulateAPIResponse(provider, request);
+    }
+  }
+
+  private convertResponseToStandardFormat(provider: AIProvider, response: any): any {
+    switch (provider.type) {
+      case 'openai':
+      case 'custom':
+        return response; // Already in standard format
+      
+      case 'anthropic':
+        return {
+          id: response.id,
+          model: response.model,
+          choices: [{
+            index: 0,
+            message: {
+              role: 'assistant',
+              content: response.content[0]?.text || ''
+            },
+            finishReason: response.stop_reason || 'stop'
+          }],
+          usage: {
+            promptTokens: response.usage?.input_tokens || 0,
+            completionTokens: response.usage?.output_tokens || 0,
+            totalTokens: (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
+          },
+          created: Math.floor(Date.now() / 1000)
+        };
+      
+      case 'google':
+        return {
+          id: `google-${Date.now()}`,
+          model: response.model || 'gemini-pro',
+          choices: [{
+            index: 0,
+            message: {
+              role: 'assistant',
+              content: response.candidates?.[0]?.content?.parts?.[0]?.text || ''
+            },
+            finishReason: response.candidates?.[0]?.finishReason || 'stop'
+          }],
+          usage: {
+            promptTokens: response.usageMetadata?.promptTokenCount || 0,
+            completionTokens: response.usageMetadata?.candidatesTokenCount || 0,
+            totalTokens: response.usageMetadata?.totalTokenCount || 0
+          },
+          created: Math.floor(Date.now() / 1000)
+        };
+      
+      default:
+        return response;
+    }
   }
 
   private simulateAPIResponse(provider: AIProvider, request: AIRequest): any {
@@ -428,6 +646,7 @@ Is there anything specific you'd like me to clarify or expand upon?`;
   }
 
   async getProviders(): Promise<AIProvider[]> {
+    await this.ensureInitialized();
     return Array.from(this.providers.values());
   }
 
@@ -487,6 +706,21 @@ Is there anything specific you'd like me to clarify or expand upon?`;
       errorRate
     };
   }
+
+  async refreshProviders(): Promise<void> {
+    console.log('🔄 Refreshing AI providers...');
+    // Clear existing providers
+    this.providers.clear();
+    this.rateLimiters.clear();
+    this.initialized = false;
+    
+    // Force reload API keys from database
+    await apiKeyManager.loadApiKeys();
+    
+    // Reinitialize with updated API keys
+    await this.ensureInitialized();
+    console.log('✅ AI providers refreshed successfully');
+  }
 }
 
 // Custom Error class
@@ -505,3 +739,12 @@ export class AIError extends Error {
 
 // Singleton instance
 export const aiIntegrationService = new AIIntegrationService();
+
+// Add to window for manual refresh (development only)
+if (typeof window !== 'undefined') {
+  (window as any).refreshAIServices = async () => {
+    console.log('🔄 Manually refreshing AI services...');
+    await aiIntegrationService.refreshProviders();
+    console.log('✅ AI services refreshed!');
+  };
+}

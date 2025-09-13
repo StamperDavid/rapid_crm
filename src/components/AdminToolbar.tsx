@@ -2,18 +2,17 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ShieldCheckIcon,
-  Cog6ToothIcon,
+  CogIcon,
   ServerIcon,
-  ChartBarSquareIcon,
-  ExclamationTriangleIcon,
+  ChartBarIcon,
+  ExclamationIcon,
   UserGroupIcon,
-  WrenchScrewdriverIcon,
   KeyIcon,
-  CircleStackIcon,
-  SwatchIcon,
+  DatabaseIcon,
+  ColorSwatchIcon,
   GlobeAltIcon,
-  CpuChipIcon,
-} from '@heroicons/react/24/outline';
+  ChipIcon,
+} from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 
 interface AdminToolbarProps {
@@ -32,12 +31,12 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
   const location = useLocation();
 
   const adminItems = [
-    { name: 'UI Demo', href: '/ui-demo', icon: CpuChipIcon, color: 'text-purple-600' },
-    { name: 'Theme', href: '/theme', icon: SwatchIcon, color: 'text-rose-600' },
+    { name: 'Theme', href: '/theme', icon: ColorSwatchIcon, color: 'text-rose-600' },
     { name: 'Portal Designer', href: '/client-portal', icon: GlobeAltIcon, color: 'text-emerald-600' },
-    { name: 'Database', href: '/database', icon: CircleStackIcon, color: 'text-slate-600' },
-    { name: 'Schema', href: '/schema', icon: WrenchScrewdriverIcon, color: 'text-amber-600' },
-    { name: 'API Keys', href: '/api-keys', icon: KeyIcon, color: 'text-yellow-600' },
+    { name: 'Database', href: '/database', icon: DatabaseIcon, color: 'text-slate-600' },
+    { name: 'Schema', href: '/schema', icon: CogIcon, color: 'text-amber-600' },
+    { name: 'API Keys', href: '/settings/api-keys', icon: KeyIcon, color: 'text-yellow-600' },
+    { name: 'AI Control', href: '/admin/ai-control', icon: ChipIcon, color: 'text-purple-600' },
   ];
 
   if (adminItems.length === 0) {

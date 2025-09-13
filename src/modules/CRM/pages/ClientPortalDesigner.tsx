@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   EyeIcon,
   CogIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   UserIcon,
   DocumentTextIcon,
-  EnvelopeIcon,
+  MailIcon,
   MicrophoneIcon,
-  SpeakerWaveIcon,
+  SpeakerphoneIcon,
   PlayIcon,
   PauseIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CheckIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface PortalLayout {
   id: string;
@@ -189,7 +189,7 @@ const ClientPortalDesigner: React.FC = () => {
           />
           <TabButton
             tab="compliance"
-            icon={<EnvelopeIcon className="h-4 w-4" />}
+            icon={<MailIcon className="h-4 w-4" />}
             label="Compliance"
           />
           <TabButton
@@ -360,7 +360,7 @@ const ChatbotAvatarDesigner: React.FC<{
                 }`}
               >
                 {isVoiceEnabled ? (
-                  <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                  <SpeakerphoneIcon className="h-4 w-4 mr-1" />
                 ) : (
                   <MicrophoneIcon className="h-4 w-4 mr-1" />
                 )}

@@ -1,14 +1,14 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { 
-  CloudArrowUpIcon, 
-  DocumentArrowDownIcon, 
-  XMarkIcon,
+  CloudUploadIcon, 
+  DocumentDownloadIcon, 
+  XIcon,
   EyeIcon,
   TrashIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   InformationCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { 
   importExportService, 
   FileImportResult, 
@@ -240,7 +240,7 @@ const FileImportExport: React.FC<FileImportExportProps> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+        <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400" />
         <div className="mt-4">
           <p className="text-lg font-medium text-gray-900">
             Drop files here or click to browse
@@ -275,7 +275,7 @@ const FileImportExport: React.FC<FileImportExportProps> = ({
             onClick={downloadTemplate}
             className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-500"
           >
-            <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+            <DocumentDownloadIcon className="h-4 w-4 mr-2" />
             Download Template
           </button>
         </div>
@@ -317,7 +317,7 @@ const FileImportExport: React.FC<FileImportExportProps> = ({
                     onClick={() => removeFile(index)}
                     className="p-2 text-red-400 hover:text-red-600"
                   >
-                    <XMarkIcon className="h-4 w-4" />
+                    <XIcon className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -351,7 +351,7 @@ const FileImportExport: React.FC<FileImportExportProps> = ({
                     {result.success ? (
                       <CheckCircleIcon className="h-5 w-5 text-green-400" />
                     ) : (
-                      <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+                      <ExclamationIcon className="h-5 w-5 text-red-400" />
                     )}
                   </div>
                   <div className="ml-3 flex-1">
@@ -397,7 +397,7 @@ const FileImportExport: React.FC<FileImportExportProps> = ({
                     onClick={() => setShowPreview(false)}
                     className="text-gray-400 hover:text-gray-600"
                   >
-                    <XMarkIcon className="h-6 w-6" />
+                    <XIcon className="h-6 w-6" />
                   </button>
                 </div>
                 

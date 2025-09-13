@@ -5,13 +5,13 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XMarkIcon,
+  SearchIcon,
+  FilterIcon,
+  XIcon,
   DocumentTextIcon,
   CalendarIcon,
   ChartBarIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Deal } from '../../../types/schema';
 
 const Deals: React.FC = () => {
@@ -293,7 +293,7 @@ const Deals: React.FC = () => {
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                <SearchIcon className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
@@ -331,7 +331,7 @@ const Deals: React.FC = () => {
               }}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <FunnelIcon className="h-4 w-4 mr-2" />
+              <FilterIcon className="h-4 w-4 mr-2" />
               Clear Filters
             </button>
           </div>
@@ -432,7 +432,7 @@ const Deals: React.FC = () => {
                   }}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               

@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
-  UserPlusIcon,
+  UserAddIcon,
   PlusIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XMarkIcon,
+  SearchIcon,
+  FilterIcon,
+  XIcon,
   PhoneIcon,
-  EnvelopeIcon,
+  MailIcon,
   CalendarIcon,
   ChartBarIcon,
   UserIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   CurrencyDollarIcon,
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon
-} from '@heroicons/react/24/outline';
+  TrendingUpIcon,
+  TrendingDownIcon
+} from '@heroicons/react/outline';
 import { Lead } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
 import LeadScoring from '../../../components/LeadScoring';
@@ -322,7 +322,7 @@ const Leads: React.FC = () => {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <UserPlusIcon className="h-6 w-6 text-purple-400" />
+                  <UserAddIcon className="h-6 w-6 text-purple-400" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -348,7 +348,7 @@ const Leads: React.FC = () => {
               Search
             </label>
             <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
+              <SearchIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
@@ -428,13 +428,13 @@ const Leads: React.FC = () => {
                       </div>
                       
                       <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <EnvelopeIcon className="flex-shrink-0 mr-1.5 h-4 w-4" />
+                        <MailIcon className="flex-shrink-0 mr-1.5 h-4 w-4" />
                         <span className="truncate">{lead.email}</span>
                         <PhoneIcon className="ml-4 flex-shrink-0 mr-1.5 h-4 w-4" />
                         <span className="truncate">{lead.phone}</span>
                         {lead.company && (
                           <>
-                            <BuildingOfficeIcon className="ml-4 flex-shrink-0 mr-1.5 h-4 w-4" />
+                            <OfficeBuildingIcon className="ml-4 flex-shrink-0 mr-1.5 h-4 w-4" />
                             <span className="truncate">{lead.company}</span>
                           </>
                         )}
@@ -495,7 +495,7 @@ const Leads: React.FC = () => {
 
         {filteredLeads.length === 0 && (
           <div className="text-center py-12">
-            <UserPlusIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <UserAddIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No leads found</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Get started by creating a new lead.
@@ -530,7 +530,7 @@ const Leads: React.FC = () => {
                   }}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
 
@@ -737,7 +737,7 @@ const Leads: React.FC = () => {
                   onClick={() => setSelectedLead(null)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
 

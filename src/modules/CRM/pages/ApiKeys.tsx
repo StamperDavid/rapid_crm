@@ -1,36 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   KeyIcon,
   PlusIcon,
   EyeIcon,
-  EyeSlashIcon,
+  EyeOffIcon,
   TrashIcon,
   PencilIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  CircleStackIcon,
-  CpuChipIcon,
+  ExclamationIcon,
+  DatabaseIcon,
+  ChipIcon,
   CloudIcon,
   ServerIcon,
-  LinkIcon,
+  GlobeAltIcon,
   CogIcon,
   ShieldCheckIcon,
-  XMarkIcon,
-  ArrowPathIcon,
-  DocumentArrowDownIcon,
-  DocumentArrowUpIcon,
-} from '@heroicons/react/24/outline';
+  XIcon,
+  RefreshIcon,
+  DocumentDownloadIcon,
+  DocumentAddIcon,
+} from '@heroicons/react/outline';
 import { useApiKeys } from '../../../hooks/useApiKeys';
+import { useAIProviders } from '../../../hooks/useAIProviders';
 
 // Import ApiKey from schema
 import { ApiKey } from '../../../types/schema';
 
 const platformOptions = [
   { value: 'google', label: 'Google Cloud', icon: CloudIcon, color: 'text-blue-600' },
-  { value: 'openai', label: 'OpenAI', icon: CpuChipIcon, color: 'text-green-600' },
-  { value: 'anthropic', label: 'Anthropic', icon: CpuChipIcon, color: 'text-orange-600' },
-  { value: 'openrouter', label: 'OpenRouter', icon: CpuChipIcon, color: 'text-cyan-600' },
-  { value: 'kixie', label: 'Kixie', icon: LinkIcon, color: 'text-purple-600' },
+  { value: 'openai', label: 'OpenAI', icon: ChipIcon, color: 'text-green-600' },
+  { value: 'anthropic', label: 'Anthropic', icon: ChipIcon, color: 'text-orange-600' },
+  { value: 'openrouter', label: 'OpenRouter', icon: ChipIcon, color: 'text-cyan-600' },
+  { value: 'kixie', label: 'Kixie', icon: GlobeAltIcon, color: 'text-purple-600' },
   { value: 'stripe', label: 'Stripe', icon: ServerIcon, color: 'text-indigo-500' },
   { value: 'quickbooks', label: 'QuickBooks', icon: CloudIcon, color: 'text-blue-500' },
   { value: 'custom', label: 'Custom', icon: CogIcon, color: 'text-gray-600' },
@@ -38,10 +39,10 @@ const platformOptions = [
 
 const platformIcons = {
   google: CloudIcon,
-  openai: CpuChipIcon,
-  anthropic: CpuChipIcon,
-  openrouter: CpuChipIcon,
-  kixie: LinkIcon,
+  openai: ChipIcon,
+  anthropic: ChipIcon,
+  openrouter: ChipIcon,
+  kixie: GlobeAltIcon,
   stripe: ServerIcon,
   quickbooks: CloudIcon,
   custom: CogIcon,
@@ -78,6 +79,7 @@ const ApiKeys: React.FC = () => {
     importApiKeys,
     refreshApiKeys
   } = useApiKeys();
+  const { refreshProviders } = useAIProviders();
 
   // Preconfigured API keys with blank values for user to fill in
   const preconfiguredApiKeys: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>[] = [
@@ -234,6 +236,39 @@ const ApiKeys: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [validatingKeys, setValidatingKeys] = useState<Set<string>>(new Set());
 
+  // Merge existing API keys with preconfigured templates
+  const allApiKeys = useMemo(() => {
+    const existingKeyNames = new Set(apiKeys.map(key => key.name));
+    const missingPreconfigured = preconfiguredApiKeys.filter(
+      template => !existingKeyNames.has(template.name)
+    );
+    
+    // Convert preconfigured templates to full ApiKey objects with temporary IDs
+    const templateKeys: ApiKey[] = missingPreconfigured.map((template, index) => ({
+      ...template,
+      id: `template-${index}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+    
+    return [...apiKeys, ...templateKeys];
+  }, [apiKeys, preconfiguredApiKeys]);
+
+  // Calculate analytics based on all API keys (including templates)
+  const allAnalytics = useMemo(() => {
+    const totalKeys = allApiKeys.length;
+    const activeKeys = allApiKeys.filter(key => key.status === 'active').length;
+    const expiredKeys = allApiKeys.filter(key => key.status === 'expired').length;
+    const totalRequests = allApiKeys.reduce((sum, key) => sum + (key.usageCount || 0), 0);
+    
+    return {
+      totalKeys,
+      activeKeys,
+      expiredKeys,
+      totalRequests
+    };
+  }, [allApiKeys]);
+
   // Auto-initialize the service without password requirement
   useEffect(() => {
     const autoInitialize = async () => {
@@ -249,9 +284,15 @@ const ApiKeys: React.FC = () => {
     autoInitialize();
   }, [isInitialized, initialize]);
 
-  // Initialize preconfigured API keys
+  // Initialize preconfigured API keys (only if they don't already exist)
   const handleInitializePreconfiguredKeys = async () => {
     try {
+      // Check if any API keys already exist
+      if (apiKeys.length > 0) {
+        alert('API keys already exist! Use the "Add API Key" button to add new ones.');
+        return;
+      }
+
       for (const keyData of preconfiguredApiKeys) {
         await createApiKey(keyData);
       }
@@ -265,8 +306,15 @@ const ApiKeys: React.FC = () => {
   // Handle creating a new API key
   const handleCreateKey = async (keyData: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await createApiKey(keyData);
+      console.log('handleCreateKey called with:', keyData);
+      console.log('createApiKey function:', createApiKey);
+      const result = await createApiKey(keyData);
+      console.log('API key created successfully:', result);
       setShowCreateModal(false);
+      // Refresh AI providers with new API key
+      await refreshProviders();
+      // Refresh the API keys list
+      await refreshApiKeys();
     } catch (error) {
       console.error('Error creating API key:', error);
     }
@@ -275,8 +323,14 @@ const ApiKeys: React.FC = () => {
   // Handle updating an API key
   const handleUpdateKey = async (id: string, updates: Partial<ApiKey>) => {
     try {
-      await updateApiKey(id, updates);
+      console.log('handleUpdateKey called with id:', id, 'updates:', updates);
+      const result = await updateApiKey(id, updates);
+      console.log('API key updated successfully:', result);
       setEditingKey(null);
+      // Refresh AI providers with updated API key
+      await refreshProviders();
+      // Refresh the API keys list
+      await refreshApiKeys();
     } catch (error) {
       console.error('Error updating API key:', error);
     }
@@ -360,7 +414,7 @@ const ApiKeys: React.FC = () => {
   };
 
   // Get filtered API keys
-  const filteredApiKeys = apiKeys.filter(key => {
+  const filteredApiKeys = allApiKeys.filter(key => {
     const matchesFilter = filter === 'all' || 
       (filter === 'active' && key.status === 'active') ||
       (filter === 'inactive' && key.status !== 'active');
@@ -408,7 +462,7 @@ const ApiKeys: React.FC = () => {
 
   // Skip password modal - auto-initialize instead
 
-  if (loading && apiKeys.length === 0) {
+  if (loading && allApiKeys.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -420,7 +474,7 @@ const ApiKeys: React.FC = () => {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
         <div className="flex">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <ExclamationIcon className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">Error loading API keys</h3>
             <p className="mt-1 text-sm text-red-700">{error}</p>
@@ -442,15 +496,6 @@ const ApiKeys: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            {apiKeys.length === 0 && (
-              <button
-                onClick={handleInitializePreconfiguredKeys}
-                className="px-3 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
-              >
-                <CogIcon className="h-4 w-4 inline mr-1" />
-                Setup Preconfigured Keys
-              </button>
-            )}
             <button
               onClick={handleValidateAllKeys}
               className="px-3 py-2 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
@@ -461,11 +506,11 @@ const ApiKeys: React.FC = () => {
               onClick={handleExportKeys}
               className="px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
             >
-              <DocumentArrowDownIcon className="h-4 w-4 inline mr-1" />
+              <DocumentDownloadIcon className="h-4 w-4 inline mr-1" />
               Export
             </button>
             <label className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer">
-              <DocumentArrowUpIcon className="h-4 w-4 inline mr-1" />
+              <DocumentAddIcon className="h-4 w-4 inline mr-1" />
               Import
               <input
                 type="file"
@@ -475,7 +520,12 @@ const ApiKeys: React.FC = () => {
               />
             </label>
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => {
+                console.log('Add API Key button clicked, clearing editingKey');
+                setEditingKey(null);
+                setShowCreateModal(true);
+                console.log('editingKey should now be null');
+              }}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               <PlusIcon className="h-4 w-4 inline mr-1" />
@@ -485,26 +535,24 @@ const ApiKeys: React.FC = () => {
         </div>
 
         {/* Analytics */}
-        {analytics && (
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analytics.totalKeys}</div>
-              <div className="text-sm text-blue-600 dark:text-blue-400">Total Keys</div>
-            </div>
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{analytics.activeKeys}</div>
-              <div className="text-sm text-green-600 dark:text-green-400">Active</div>
-            </div>
-            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{analytics.expiredKeys}</div>
-              <div className="text-sm text-red-600 dark:text-red-400">Expired</div>
-            </div>
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analytics.totalRequests}</div>
-              <div className="text-sm text-purple-600 dark:text-purple-400">Total Requests</div>
-            </div>
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{allAnalytics.totalKeys}</div>
+            <div className="text-sm text-blue-600 dark:text-blue-400">Total Keys</div>
           </div>
-        )}
+          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{allAnalytics.activeKeys}</div>
+            <div className="text-sm text-green-600 dark:text-green-400">Active</div>
+          </div>
+          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{allAnalytics.expiredKeys}</div>
+            <div className="text-sm text-red-600 dark:text-red-400">Expired</div>
+          </div>
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{allAnalytics.totalRequests}</div>
+            <div className="text-sm text-purple-600 dark:text-purple-400">Total Requests</div>
+          </div>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -533,7 +581,7 @@ const ApiKeys: React.FC = () => {
               onClick={refreshApiKeys}
               className="px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
-              <ArrowPathIcon className="h-5 w-5" />
+              <RefreshIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -573,7 +621,7 @@ const ApiKeys: React.FC = () => {
                     className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     {showKey[apiKey.id] ? (
-                      <EyeSlashIcon className="h-4 w-4" />
+                      <EyeOffIcon className="h-4 w-4" />
                     ) : (
                       <EyeIcon className="h-4 w-4" />
                     )}
@@ -584,7 +632,7 @@ const ApiKeys: React.FC = () => {
                     className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
                   >
                     {validatingKeys.has(apiKey.id) ? (
-                      <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                      <RefreshIcon className="h-4 w-4 animate-spin" />
                     ) : (
                       <CheckCircleIcon className="h-4 w-4" />
                     )}
@@ -637,30 +685,143 @@ const ApiKeys: React.FC = () => {
           <div className="p-12 text-center">
             <KeyIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No API keys found
+              No API keys match your filter
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Get started by setting up preconfigured API keys or adding your own
+              Try adjusting your search or filter criteria
             </p>
-            <div className="flex justify-center space-x-3">
-              <button
-                onClick={handleInitializePreconfiguredKeys}
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-              >
-                <CogIcon className="h-4 w-4 inline mr-1" />
-                Setup Preconfigured Keys
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                <PlusIcon className="h-4 w-4 inline mr-1" />
-                Add Custom API Key
-              </button>
-            </div>
           </div>
         )}
       </div>
+
+      {/* Create/Edit API Key Modal */}
+      {(showCreateModal || editingKey) && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                {editingKey ? 'Edit API Key' : 'Add New API Key'}
+              </h3>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                console.log('Form submitted!');
+                console.log('Current editingKey state:', editingKey);
+                console.log('editingKey type:', typeof editingKey);
+                console.log('editingKey is null:', editingKey === null);
+                console.log('editingKey is undefined:', editingKey === undefined);
+                const formData = new FormData(e.target as HTMLFormElement);
+                const keyData = {
+                  name: formData.get('name') as string,
+                  platform: formData.get('platform') as ApiKey['platform'],
+                  key: formData.get('key') as string,
+                  description: formData.get('description') as string,
+                  status: 'active' as const,
+                  environment: 'production' as const,
+                  permissions: [],
+                  tags: [],
+                  usageCount: 0
+                };
+                
+                console.log('Key data:', keyData);
+                
+                if (editingKey) {
+                  console.log('Updating API key:', editingKey.id);
+                  // Check if this is a template key (starts with 'template-')
+                  if (editingKey.id.startsWith('template-')) {
+                    console.log('Template key detected, creating new API key instead of updating');
+                    handleCreateKey(keyData);
+                  } else {
+                    updateApiKey(editingKey.id, keyData);
+                  }
+                  setEditingKey(null);
+                } else {
+                  console.log('Creating new API key');
+                  handleCreateKey(keyData);
+                }
+              }}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      defaultValue={editingKey?.name || ''}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Platform
+                    </label>
+                    <select
+                      name="platform"
+                      defaultValue={editingKey?.platform || 'custom'}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    >
+                      {platformOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      API Key
+                    </label>
+                    <textarea
+                      name="key"
+                      defaultValue={editingKey?.key || ''}
+                      required
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      placeholder="Paste your API key here..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      name="description"
+                      defaultValue={editingKey?.description || ''}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      placeholder="Optional description..."
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setEditingKey(null);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  >
+                    {editingKey ? 'Update' : 'Create'} API Key
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

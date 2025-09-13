@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BuildingOfficeIcon, 
+  OfficeBuildingIcon, 
   TruckIcon, 
   UserIcon, 
   DocumentTextIcon,
   PlusIcon,
-  XMarkIcon,
+  XIcon,
   CheckCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Organization, Person, Vehicle, Driver } from '../../types/schema';
 import { useCRM } from '../../contexts/CRMContext';
 import { USDOTApplicationService } from '../../services/usdot/USDOTApplicationService';
@@ -123,7 +123,7 @@ const ComprehensiveCompanyForm: React.FC<ComprehensiveCompanyFormProps> = ({
   const [showUsdotForm, setShowUsdotForm] = useState(false);
 
   const steps = [
-    { number: 1, title: 'Company Information', icon: BuildingOfficeIcon },
+    { number: 1, title: 'Company Information', icon: OfficeBuildingIcon },
     { number: 2, title: 'USDOT Application', icon: DocumentTextIcon },
     { number: 3, title: 'Fleet & Personnel', icon: TruckIcon },
     { number: 4, title: 'Review & Submit', icon: CheckCircleIcon }
@@ -607,7 +607,7 @@ const ComprehensiveCompanyForm: React.FC<ComprehensiveCompanyFormProps> = ({
                   onClick={() => removeContact(contact.id)}
                   className="text-red-600 hover:text-red-800"
                 >
-                  <XMarkIcon className="h-4 w-4" />
+                  <XIcon className="h-4 w-4" />
                 </button>
               </div>
             ))}
@@ -650,7 +650,7 @@ const ComprehensiveCompanyForm: React.FC<ComprehensiveCompanyFormProps> = ({
                   onClick={() => removeVehicle(vehicle.id)}
                   className="text-red-600 hover:text-red-800"
                 >
-                  <XMarkIcon className="h-4 w-4" />
+                  <XIcon className="h-4 w-4" />
                 </button>
               </div>
             ))}
@@ -693,7 +693,7 @@ const ComprehensiveCompanyForm: React.FC<ComprehensiveCompanyFormProps> = ({
                   onClick={() => removeDriver(driver.id)}
                   className="text-red-600 hover:text-red-800"
                 >
-                  <XMarkIcon className="h-4 w-4" />
+                  <XIcon className="h-4 w-4" />
                 </button>
               </div>
             ))}

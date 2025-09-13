@@ -1,6 +1,35 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ApiKey } from '../types/schema';
-import { apiKeyService, ApiKeyValidation, ApiKeyUsage, ApiKeyAnalytics } from '../services/apiKeys';
+import { ApiKeyManager } from '../services/ai/ApiKeyManager';
+
+export interface ApiKeyValidation {
+  isValid: boolean;
+  error?: string;
+  lastChecked?: string;
+}
+
+export interface ApiKeyUsage {
+  apiKeyId: string;
+  requests: number;
+  lastUsed: string;
+  rateLimitRemaining?: number;
+  rateLimitReset?: string;
+}
+
+export interface ApiKeyAnalytics {
+  totalKeys: number;
+  activeKeys: number;
+  expiredKeys: number;
+  revokedKeys: number;
+  totalRequests: number;
+  averageRequestsPerKey: number;
+  topUsedKeys: Array<{
+    keyId: string;
+    name: string;
+    requests: number;
+  }>;
+  usageByPlatform: Record<string, number>;
+}
 
 export interface UseApiKeysReturn {
   apiKeys: ApiKey[];
@@ -51,7 +80,8 @@ export const useApiKeys = (): UseApiKeysReturn => {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiKeyService.getApiKeys();
+      await ApiKeyManager.getInstance().loadApiKeys();
+      const data = ApiKeyManager.getInstance().getAllApiKeys();
       setApiKeys(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load API keys');
@@ -62,18 +92,31 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const loadAnalytics = useCallback(async () => {
     try {
-      const data = await apiKeyService.getAnalytics();
-      setAnalytics(data);
+      // Simple analytics based on loaded keys
+      const totalKeys = apiKeys.length;
+      const activeKeys = apiKeys.filter(key => key.status === 'active').length;
+      const expiredKeys = apiKeys.filter(key => key.status === 'expired').length;
+      const totalRequests = apiKeys.reduce((sum, key) => sum + (key.usageCount || 0), 0);
+      
+      setAnalytics({
+        totalKeys,
+        activeKeys,
+        expiredKeys,
+        revokedKeys: 0,
+        totalRequests,
+        averageRequestsPerKey: totalKeys > 0 ? totalRequests / totalKeys : 0,
+        topUsedKeys: [],
+        usageByPlatform: {}
+      });
     } catch (err) {
       console.error('Failed to load API key analytics:', err);
     }
-  }, []);
+  }, [apiKeys]);
 
   const initialize = useCallback(async (masterPassword: string): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-      await apiKeyService.initialize(masterPassword);
       setIsInitialized(true);
       await loadApiKeys();
       await loadAnalytics();
@@ -87,9 +130,17 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const createApiKey = useCallback(async (apiKeyData: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiKey> => {
     try {
-      const newApiKey = await apiKeyService.createApiKey(apiKeyData);
-      setApiKeys(prev => [newApiKey, ...prev]);
+      console.log('useApiKeys: Creating API key...');
+      const newApiKey = await ApiKeyManager.getInstance().createApiKey(apiKeyData);
+      console.log('useApiKeys: API key created, updating state...');
+      setApiKeys(prev => {
+        console.log('useApiKeys: Previous keys:', prev);
+        const updated = [newApiKey, ...prev];
+        console.log('useApiKeys: Updated keys:', updated);
+        return updated;
+      });
       await loadAnalytics();
+      console.log('useApiKeys: State updated successfully');
       return newApiKey;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create API key');
@@ -99,7 +150,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const updateApiKey = useCallback(async (id: string, updates: Partial<ApiKey>): Promise<ApiKey | null> => {
     try {
-      const updated = await apiKeyService.updateApiKey(id, updates);
+      const updated = await ApiKeyManager.getInstance().updateApiKey(id, updates);
       if (updated) {
         setApiKeys(prev => prev.map(key => key.id === id ? updated : key));
         await loadAnalytics();
@@ -113,7 +164,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const deleteApiKey = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const deleted = await apiKeyService.deleteApiKey(id);
+      const deleted = await ApiKeyManager.getInstance().deleteApiKey(id);
       if (deleted) {
         setApiKeys(prev => prev.filter(key => key.id !== id));
         await loadAnalytics();
@@ -127,7 +178,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const getDecryptedApiKey = useCallback(async (id: string): Promise<string | null> => {
     try {
-      return await apiKeyService.getDecryptedApiKey(id);
+      return await ApiKeyManager.getInstance().getDecryptedApiKey(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to decrypt API key');
       return null;
@@ -136,7 +187,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const validateApiKey = useCallback(async (id: string): Promise<ApiKeyValidation> => {
     try {
-      const validation = await apiKeyService.validateApiKey(id);
+      const validation = await ApiKeyManager.getInstance().validateApiKey(id);
       // Refresh the API key to show updated validation status
       await loadApiKeys();
       return validation;
@@ -148,7 +199,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const validateAllApiKeys = useCallback(async (): Promise<Map<string, ApiKeyValidation>> => {
     try {
-      const validations = await apiKeyService.validateAllApiKeys();
+      const validations = await ApiKeyManager.getInstance().validateAllApiKeys();
       await loadApiKeys();
       return validations;
     } catch (err) {
@@ -159,7 +210,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const recordUsage = useCallback(async (apiKeyId: string, requests: number = 1): Promise<void> => {
     try {
-      await apiKeyService.recordUsage(apiKeyId, requests);
+      await ApiKeyManager.getInstance().recordUsage(apiKeyId, requests);
       await loadAnalytics();
     } catch (err) {
       console.error('Failed to record API key usage:', err);
@@ -168,7 +219,7 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const getUsageStats = useCallback(async (apiKeyId?: string): Promise<ApiKeyUsage | ApiKeyUsage[]> => {
     try {
-      return await apiKeyService.getUsageStats(apiKeyId);
+      return await ApiKeyManager.getInstance().getUsageStats(apiKeyId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get usage stats');
       return apiKeyId ? {
@@ -184,12 +235,12 @@ export const useApiKeys = (): UseApiKeysReturn => {
   }, [loadAnalytics]);
 
   const generateApiKey = useCallback((platform: string): string => {
-    return apiKeyService.generateApiKey(platform);
+    return ApiKeyManager.getInstance().generateApiKey(platform);
   }, []);
 
   const exportApiKeys = useCallback(async (): Promise<string> => {
     try {
-      return await apiKeyService.exportApiKeys();
+      return await ApiKeyManager.getInstance().exportApiKeys();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to export API keys');
       throw err;
@@ -198,15 +249,17 @@ export const useApiKeys = (): UseApiKeysReturn => {
 
   const importApiKeys = useCallback(async (importData: string): Promise<number> => {
     try {
-      const importedCount = await apiKeyService.importApiKeys(importData);
+      const beforeCount = apiKeys.length;
+      await ApiKeyManager.getInstance().importApiKeys(importData);
       await loadApiKeys();
       await loadAnalytics();
-      return importedCount;
+      const afterCount = apiKeys.length;
+      return afterCount - beforeCount;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to import API keys');
       throw err;
     }
-  }, [loadApiKeys, loadAnalytics]);
+  }, [loadApiKeys, loadAnalytics, apiKeys.length]);
 
   const refreshApiKeys = useCallback(async (): Promise<void> => {
     await loadApiKeys();

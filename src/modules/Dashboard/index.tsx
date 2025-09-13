@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-} from '@heroicons/react/24/outline';
+  TrendingUpIcon,
+  TrendingDownIcon,
+} from '@heroicons/react/outline';
 import { useCRM } from '../../contexts/CRMContext';
 
 const DashboardModule: React.FC = () => {
@@ -48,7 +48,7 @@ const DashboardModule: React.FC = () => {
     {
       name: 'Total Companies',
       value: stats?.companies || 0,
-      icon: BuildingOfficeIcon,
+      icon: OfficeBuildingIcon,
       change: '+12%',
       changeType: 'increase' as const,
       href: '/companies',
@@ -161,9 +161,9 @@ const DashboardModule: React.FC = () => {
                         stat.changeType === 'increase' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {stat.changeType === 'increase' ? (
-                          <ArrowTrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-emerald-500" />
+                          <TrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-emerald-500" />
                         ) : (
-                          <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" />
+                          <TrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" />
                         )}
                         <span className="sr-only">
                           {stat.changeType === 'increase' ? 'Increased' : 'Decreased'} by

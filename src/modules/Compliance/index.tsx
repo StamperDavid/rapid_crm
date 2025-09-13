@@ -3,19 +3,19 @@ import {
   ShieldCheckIcon,
   DocumentTextIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   TruckIcon,
   UserIcon,
-  DocumentCheckIcon,
+  ClipboardCheckIcon,
   ChartBarIcon,
   BellIcon,
   PlusIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon,
-} from '@heroicons/react/24/outline';
+  RefreshIcon,
+} from '@heroicons/react/outline';
 
 interface ComplianceRecord {
   id: string;
@@ -182,7 +182,7 @@ const ComplianceModule: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
+                <ExclamationIcon className="h-6 w-6 text-yellow-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -360,7 +360,7 @@ const ComplianceModule: React.FC = () => {
               <div key={doc.id} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <DocumentCheckIcon className="h-6 w-6 text-blue-600" />
+                    <ClipboardCheckIcon className="h-6 w-6 text-blue-600" />
                     <div>
                       <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         {doc.name}
@@ -400,7 +400,7 @@ const ComplianceModule: React.FC = () => {
             Compliance Alerts
           </h3>
           <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-            <ArrowPathIcon className="h-4 w-4 mr-2" />
+            <RefreshIcon className="h-4 w-4 mr-2" />
             Refresh
           </button>
         </div>

@@ -1358,7 +1358,22 @@ app.delete('/api/drivers/:id', async (req, res) => {
 app.get('/api/api-keys', async (req, res) => {
   try {
     const apiKeys = await runQuery('SELECT * FROM api_keys');
-    res.json(apiKeys);
+    // Transform database fields to match frontend ApiKey interface
+    const transformedApiKeys = apiKeys.map(apiKey => ({
+      id: apiKey.id,
+      name: apiKey.name,
+      platform: apiKey.provider.toLowerCase(),
+      key: apiKey.key_value,
+      description: apiKey.description || '',
+      status: 'active',
+      environment: 'production',
+      permissions: [],
+      tags: [],
+      usageCount: 0,
+      createdAt: apiKey.created_at,
+      updatedAt: apiKey.updated_at
+    }));
+    res.json(transformedApiKeys);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1378,17 +1393,45 @@ app.get('/api/api-keys/:id', async (req, res) => {
 
 app.post('/api/api-keys', async (req, res) => {
   try {
-    const { name, keyValue, provider } = req.body;
-    const id = Date.now().toString();
+    const apiKeyData = req.body;
+    
+    // Handle both old format (name, platform, key, description) and new format (full ApiKey object)
+    const name = apiKeyData.name;
+    const platform = apiKeyData.platform;
+    const key = apiKeyData.key;
+    const description = apiKeyData.description || '';
+    
+    // Check if an API key with this name already exists
+    const existingKey = await runQueryOne('SELECT * FROM api_keys WHERE name = ?', [name]);
+    if (existingKey) {
+      return res.status(409).json({ error: 'API key with this name already exists' });
+    }
+    
+    const id = apiKeyData.id || Date.now().toString();
     const now = new Date().toISOString();
     
     await runExecute(
       'INSERT INTO api_keys (id, name, key_value, provider, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, name, keyValue, provider, now, now]
+      [id, name, key, platform, now, now]
     );
     
     const apiKey = await runQueryOne('SELECT * FROM api_keys WHERE id = ?', [id]);
-    res.status(201).json(apiKey);
+    // Transform to match frontend interface
+    const transformedApiKey = {
+      id: apiKey.id,
+      name: apiKey.name,
+      platform: apiKey.provider.toLowerCase(),
+      key: apiKey.key_value,
+      description: apiKey.description || '',
+      status: 'active',
+      environment: 'production',
+      permissions: [],
+      tags: [],
+      usageCount: 0,
+      createdAt: apiKey.created_at,
+      updatedAt: apiKey.updated_at
+    };
+    res.status(201).json(transformedApiKey);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1396,19 +1439,41 @@ app.post('/api/api-keys', async (req, res) => {
 
 app.put('/api/api-keys/:id', async (req, res) => {
   try {
-    const { name, keyValue, provider } = req.body;
+    const apiKeyData = req.body;
+    
+    // Handle both old format and new format
+    const name = apiKeyData.name;
+    const platform = apiKeyData.platform;
+    const key = apiKeyData.key;
+    const description = apiKeyData.description || '';
+    
     const now = new Date().toISOString();
     
     await runExecute(
       'UPDATE api_keys SET name = ?, key_value = ?, provider = ?, updated_at = ? WHERE id = ?',
-      [name, keyValue, provider, now, req.params.id]
+      [name, key, platform, now, req.params.id]
     );
     
     const apiKey = await runQueryOne('SELECT * FROM api_keys WHERE id = ?', [req.params.id]);
     if (!apiKey) {
       return res.status(404).json({ error: 'API key not found' });
     }
-    res.json(apiKey);
+    // Transform to match frontend interface
+    const transformedApiKey = {
+      id: apiKey.id,
+      name: apiKey.name,
+      platform: apiKey.provider.toLowerCase(),
+      key: apiKey.key_value,
+      description: apiKey.description || '',
+      status: 'active',
+      environment: 'production',
+      permissions: [],
+      tags: [],
+      usageCount: 0,
+      createdAt: apiKey.created_at,
+      updatedAt: apiKey.updated_at
+    };
+    res.json(transformedApiKey);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

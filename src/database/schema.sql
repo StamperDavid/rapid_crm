@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS drivers (
     FOREIGN KEY (company_id) REFERENCES companies(id)
 );
 
--- Deals Table
+-- Services Table
 CREATE TABLE IF NOT EXISTS services (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -247,7 +247,7 @@ CREATE TABLE IF NOT EXISTS services (
     
     -- System Fields
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
     -- No foreign key constraints for services table
 );
 
@@ -597,3 +597,16 @@ CREATE INDEX IF NOT EXISTS idx_persistent_contexts_conversation ON persistent_co
 CREATE INDEX IF NOT EXISTS idx_client_profiles_client ON client_profiles(client_id);
 CREATE INDEX IF NOT EXISTS idx_agent_memory_agent ON agent_memory_banks(agent_id);
 CREATE INDEX IF NOT EXISTS idx_agent_memory_type ON agent_memory_banks(memory_type);
+
+-- API Keys Table
+CREATE TABLE IF NOT EXISTS api_keys (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    key_value TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- Index for API keys table
+CREATE INDEX IF NOT EXISTS idx_api_keys_provider ON api_keys(provider);

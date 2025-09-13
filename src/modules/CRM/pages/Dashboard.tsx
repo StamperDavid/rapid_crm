@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BuildingOfficeIcon,
-  MagnifyingGlassIcon,
+  OfficeBuildingIcon,
+  SearchIcon,
   PlusIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  FunnelIcon,
+  FilterIcon,
   PhoneIcon,
-  EnvelopeIcon,
+  MailIcon,
   MapPinIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 const CRMDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,7 +111,7 @@ const CRMDashboard: React.FC = () => {
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                <SearchIcon className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
@@ -149,7 +149,7 @@ const CRMDashboard: React.FC = () => {
               }}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <FunnelIcon className="h-4 w-4 mr-2" />
+              <FilterIcon className="h-4 w-4 mr-2" />
               Clear Filters
             </button>
           </div>
@@ -165,7 +165,7 @@ const CRMDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <BuildingOfficeIcon className="h-10 w-10 text-gray-400" />
+                      <OfficeBuildingIcon className="h-10 w-10 text-gray-400" />
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center">
@@ -215,7 +215,7 @@ const CRMDashboard: React.FC = () => {
                 </div>
                 <div className="mt-2">
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <EnvelopeIcon className="flex-shrink-0 mr-1.5 h-4 w-4" />
+                    <MailIcon className="flex-shrink-0 mr-1.5 h-4 w-4" />
                     <p className="truncate">{client.email}</p>
                   </div>
                   <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   PlusIcon,
-  CpuChipIcon,
-  ChatBubbleLeftRightIcon,
+  ChipIcon,
+  ChatIcon,
   UserIcon,
   CogIcon,
   PlayIcon,
@@ -11,12 +11,12 @@ import {
   PencilIcon,
   EyeIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   SparklesIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import AdvancedAgentBuilder from '../../../components/AdvancedAgentBuilder';
 import AgentMemoryDemo from '../../../components/AgentMemoryDemo';
 import AgentTrainingManager from '../../../components/AgentTrainingManager';
@@ -188,7 +188,7 @@ const Agents: React.FC = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center space-x-2">
-          <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-600" />
+          <RefreshIcon className="h-5 w-5 animate-spin text-blue-600" />
           <span className="text-slate-600 dark:text-slate-400">Loading AI Agents...</span>
         </div>
       </div>
@@ -199,7 +199,7 @@ const Agents: React.FC = () => {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
         <div className="flex">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <ExclamationIcon className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
               Error Loading AI Agents
@@ -226,11 +226,11 @@ const Agents: React.FC = () => {
   const getTypeIcon = (type: Agent['type']) => {
     switch (type) {
       case 'onboarding': return UserIcon;
-      case 'customer_service': return ChatBubbleLeftRightIcon;
+      case 'customer_service': return ChatIcon;
       case 'sales': return CurrencyDollarIcon;
       case 'support': return CogIcon;
-      case 'custom': return CpuChipIcon;
-      default: return CpuChipIcon;
+      case 'custom': return ChipIcon;
+      default: return ChipIcon;
     }
   };
 
@@ -322,7 +322,7 @@ const Agents: React.FC = () => {
             onClick={() => setShowMemoryDemo(!showMemoryDemo)}
             className="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            <CpuChipIcon className="h-4 w-4 mr-2" />
+            <ChipIcon className="h-4 w-4 mr-2" />
             Memory Demo
           </button>
         </div>
@@ -330,7 +330,7 @@ const Agents: React.FC = () => {
           onClick={refreshAgents}
           className="inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
         >
-          <ArrowPathIcon className="h-4 w-4 mr-2" />
+          <RefreshIcon className="h-4 w-4 mr-2" />
           Refresh
         </button>
         <button
@@ -347,7 +347,7 @@ const Agents: React.FC = () => {
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <CpuChipIcon className="h-6 w-6 text-blue-600" />
+              <ChipIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Agents</p>
@@ -384,7 +384,7 @@ const Agents: React.FC = () => {
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-              <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600" />
+              <ChatIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Conversations</p>
@@ -509,7 +509,7 @@ const Agents: React.FC = () => {
                     className="px-3 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-md transition-colors"
                     title="Train RPA Agent"
                   >
-                    <CpuChipIcon className="h-4 w-4" />
+                    <ChipIcon className="h-4 w-4" />
                   </button>
                 ) : (
                   <button
@@ -517,7 +517,7 @@ const Agents: React.FC = () => {
                     className="px-3 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
                     title="Train Agent"
                   >
-                    <CpuChipIcon className="h-4 w-4" />
+                    <ChipIcon className="h-4 w-4" />
                   </button>
                 )}
                 <button
@@ -535,7 +535,7 @@ const Agents: React.FC = () => {
 
       {filteredAgents.length === 0 && (
         <div className="text-center py-12">
-          <CpuChipIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <ChipIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No agents found</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {filter === 'all' 

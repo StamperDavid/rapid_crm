@@ -1,54 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
   UsersIcon,
   CurrencyDollarIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   TruckIcon,
   DocumentTextIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   EyeIcon,
-  ArrowDownTrayIcon,
+  DownloadIcon,
   CalendarIcon,
-  FunnelIcon,
+  FilterIcon,
   PlusIcon,
-  PresentationChartLineIcon,
-  TableCellsIcon,
-  DocumentChartBarIcon,
-  CpuChipIcon,
+  TableIcon,
+  ChipIcon,
   ShieldCheckIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   GlobeAltIcon,
-  LightBulbIcon,
-  TrophyIcon,
   MinusIcon,
   PlayIcon,
   PauseIcon,
   StopIcon,
-  AdjustmentsHorizontalIcon,
-  MagnifyingGlassIcon,
+  AdjustmentsIcon,
+  SearchIcon,
   BellIcon,
   ShareIcon,
   PrinterIcon,
-  CloudArrowDownIcon,
-  CloudArrowUpIcon,
+  CloudDownloadIcon,
+  CloudIcon,
   SparklesIcon,
-  RocketLaunchIcon,
+  PaperClipIcon,
   StarIcon,
   FireIcon,
   BoltIcon,
-  TagIcon,
-  ChartPieIcon,
-  ChartBarSquareIcon,
-  SignalIcon,
+  WifiIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
-  GlobeAmericasIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface Report {
   id: string;
@@ -528,9 +520,9 @@ const AnalyticsModule: React.FC = () => {
       case 'marketing':
         return <GlobeAltIcon className="h-5 w-5 text-pink-600" />;
       case 'competitive':
-        return <TrophyIcon className="h-5 w-5 text-yellow-600" />;
+        return <StarIcon className="h-5 w-5 text-yellow-600" />;
       case 'agents':
-        return <CpuChipIcon className="h-5 w-5 text-indigo-600" />;
+        return <ChipIcon className="h-5 w-5 text-indigo-600" />;
       default:
         return <ChartBarIcon className="h-5 w-5 text-gray-600" />;
     }
@@ -539,9 +531,9 @@ const AnalyticsModule: React.FC = () => {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />;
+        return <TrendingUpIcon className="h-4 w-4 text-green-500" />;
       case 'down':
-        return <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />;
+        return <TrendingDownIcon className="h-4 w-4 text-red-500" />;
       default:
         return <MinusIcon className="h-4 w-4 text-gray-500" />;
     }
@@ -597,7 +589,7 @@ const AnalyticsModule: React.FC = () => {
               {realTimeMode ? 'Live' : 'Start Live'}
             </button>
             <div className="flex items-center space-x-2">
-              <SignalIcon className="h-5 w-5" />
+              <WifiIcon className="h-5 w-5" />
               <span className="text-sm">Data Freshness: {realTimeMode ? 'Real-time' : '5 min ago'}</span>
             </div>
             </div>
@@ -664,7 +656,7 @@ const AnalyticsModule: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg">
               <div className="flex items-center space-x-3">
-                <LightBulbIcon className="h-6 w-6 text-green-600" />
+                <ExclamationIcon className="h-6 w-6 text-green-600" />
                 <div>
                   <h4 className="font-medium text-slate-900 dark:text-slate-100">Revenue Optimization</h4>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -675,7 +667,7 @@ const AnalyticsModule: React.FC = () => {
             </div>
             <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
               <div className="flex items-center space-x-3">
-                <RocketLaunchIcon className="h-6 w-6 text-purple-600" />
+                <PaperClipIcon className="h-6 w-6 text-purple-600" />
                 <div>
                   <h4 className="font-medium text-slate-900 dark:text-slate-100">Market Opportunity</h4>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -705,7 +697,7 @@ const AnalyticsModule: React.FC = () => {
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
           <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-            <CloudArrowDownIcon className="h-4 w-4 mr-2" />
+            <CloudDownloadIcon className="h-4 w-4 mr-2" />
             Export Data
           </button>
           <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700">
@@ -720,10 +712,10 @@ const AnalyticsModule: React.FC = () => {
         <nav className="-mb-px flex space-x-8">
           {[
             { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-            { id: 'reports', name: 'Reports', icon: DocumentChartBarIcon },
-            { id: 'dashboards', name: 'Dashboards', icon: PresentationChartLineIcon },
-            { id: 'competitive', name: 'Competitive Intel', icon: TrophyIcon },
-            { id: 'agents', name: 'Agent Performance', icon: CpuChipIcon },
+            { id: 'reports', name: 'Reports', icon: DocumentTextIcon },
+            { id: 'dashboards', name: 'Dashboards', icon: ChartBarIcon },
+            { id: 'competitive', name: 'Competitive Intel', icon: StarIcon },
+            { id: 'agents', name: 'Agent Performance', icon: ChipIcon },
             { id: 'marketing', name: 'Marketing Analytics', icon: GlobeAltIcon },
             { id: 'custom', name: 'Custom Builder', icon: PlusIcon },
           ].map((tab) => {
@@ -750,7 +742,7 @@ const AnalyticsModule: React.FC = () => {
       {activeTab === 'overview' && renderOverview()}
       {activeTab === 'reports' && (
         <div className="text-center py-12">
-          <DocumentChartBarIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <DocumentTextIcon className="mx-auto h-12 w-12 text-slate-400" />
           <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">Advanced Reports</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Comprehensive reporting with AI insights and automated scheduling
@@ -759,7 +751,7 @@ const AnalyticsModule: React.FC = () => {
       )}
       {activeTab === 'dashboards' && (
         <div className="text-center py-12">
-          <PresentationChartLineIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <ChartBarIcon className="mx-auto h-12 w-12 text-slate-400" />
           <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">Interactive Dashboards</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Drag-and-drop dashboard builder with real-time data visualization
@@ -768,7 +760,7 @@ const AnalyticsModule: React.FC = () => {
       )}
       {activeTab === 'competitive' && (
         <div className="text-center py-12">
-          <TrophyIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <StarIcon className="mx-auto h-12 w-12 text-slate-400" />
           <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">Competitive Intelligence</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Market positioning analysis and competitor benchmarking
@@ -777,7 +769,7 @@ const AnalyticsModule: React.FC = () => {
       )}
       {activeTab === 'agents' && (
         <div className="text-center py-12">
-          <CpuChipIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <ChipIcon className="mx-auto h-12 w-12 text-slate-400" />
           <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">AI Agent Performance</h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Comprehensive agent analytics with learning curve analysis

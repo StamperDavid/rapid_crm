@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import {
-  XMarkIcon,
-  CpuChipIcon,
+  XIcon,
+  ChipIcon,
   DocumentTextIcon,
   CogIcon,
   PlayIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   InformationCircleIcon,
   PlusIcon,
   TrashIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   EyeIcon,
   PencilIcon,
   UserIcon,
   MicrophoneIcon,
-  SpeakerWaveIcon,
+  SpeakerphoneIcon,
   PauseIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useAgentBuilder } from '../hooks/useAgentBuilder';
 import { Agent } from '../types/schema';
 import KnowledgeBaseManager from './KnowledgeBaseManager';
@@ -627,7 +627,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
           </div>
               {knowledgeBaseLoading ? (
                 <div className="flex items-center space-x-2">
-                  <ArrowPathIcon className="h-4 w-4 animate-spin text-blue-600" />
+                  <RefreshIcon className="h-4 w-4 animate-spin text-blue-600" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">Loading knowledge bases...</span>
                   </div>
               ) : knowledgeBases.length === 0 ? (
@@ -703,7 +703,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
           return (
             <div className="space-y-6">
               <div className="text-center py-8">
-                <CpuChipIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
+                <ChipIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Training Setup</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                   Configure training data and parameters for your agent
@@ -712,7 +712,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   onClick={() => setShowTrainingManager(true)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <CpuChipIcon className="h-4 w-4 mr-2" />
+                  <ChipIcon className="h-4 w-4 mr-2" />
                   Open Training Manager
                 </button>
               </div>
@@ -743,7 +743,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
           return (
             <div className="space-y-6">
               <div className="text-center py-8">
-                <CpuChipIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
+                <ChipIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Training Setup</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                   Configure training data and parameters for your agent
@@ -752,7 +752,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   onClick={() => setShowTrainingManager(true)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <CpuChipIcon className="h-4 w-4 mr-2" />
+                  <ChipIcon className="h-4 w-4 mr-2" />
                   Open Training Manager
                 </button>
               </div>
@@ -818,7 +818,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
               >
                 {isValidating ? (
                   <>
-                    <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                    <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
                     Validating...
                   </>
                 ) : (
@@ -840,7 +840,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   {validationResult.isValid ? (
                     <CheckCircleIcon className="h-5 w-5 text-green-400" />
                   ) : (
-                    <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+                    <ExclamationIcon className="h-5 w-5 text-red-400" />
                   )}
                   <div className="ml-3">
                     <h3 className={`text-sm font-medium ${
@@ -922,7 +922,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
               >
                 {isValidating ? (
                   <>
-                    <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                    <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
                     Validating...
                   </>
                 ) : (
@@ -944,7 +944,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                   {validationResult.isValid ? (
                     <CheckCircleIcon className="h-5 w-5 text-green-400" />
                   ) : (
-                    <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+                    <ExclamationIcon className="h-5 w-5 text-red-400" />
                   )}
                   <div className="ml-3">
                     <h3 className={`text-sm font-medium ${
@@ -1010,7 +1010,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </button>
           </div>
 
@@ -1178,7 +1178,7 @@ const ChatbotAvatarDesigner: React.FC<{
                 }`}
               >
                 {isVoiceEnabled ? (
-                  <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                  <SpeakerphoneIcon className="h-4 w-4 mr-1" />
                 ) : (
                   <MicrophoneIcon className="h-4 w-4 mr-1" />
                 )}

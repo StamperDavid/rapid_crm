@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  MagnifyingGlassIcon, 
-  XMarkIcon,
+  SearchIcon, 
+  XIcon,
   UserGroupIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   CurrencyDollarIcon,
   DocumentTextIcon,
   ClockIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface SearchResult {
   id: string;
@@ -101,7 +101,7 @@ const GlobalSearch: React.FC = () => {
           title: company.legalBusinessName,
           subtitle: `${company.businessClassification} • ${company.physicalCity} • USDOT: ${company.usdotNumber}`,
           url: `/companies`,
-          icon: BuildingOfficeIcon,
+          icon: OfficeBuildingIcon,
           relevance: company.legalBusinessName.toLowerCase().includes(query) ? 100 : 80
         });
       }
@@ -246,7 +246,7 @@ const GlobalSearch: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
       >
-        <MagnifyingGlassIcon className="h-4 w-4" />
+        <SearchIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Search...</span>
         <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-gray-500 bg-gray-200 dark:bg-gray-600 dark:text-gray-400 rounded">
           /
@@ -259,7 +259,7 @@ const GlobalSearch: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4">
             {/* Search Input */}
             <div className="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 mr-3" />
+              <SearchIcon className="h-5 w-5 text-gray-400 mr-3" />
               <input
                 ref={inputRef}
                 type="text"
@@ -274,7 +274,7 @@ const GlobalSearch: React.FC = () => {
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <XMarkIcon className="h-5 w-5" />
+                <XIcon className="h-5 w-5" />
               </button>
             </div>
 
@@ -318,7 +318,7 @@ const GlobalSearch: React.FC = () => {
                 </div>
               ) : query ? (
                 <div className="px-4 py-8 text-center">
-                  <MagnifyingGlassIcon className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <SearchIcon className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     No results found for "{query}"
                   </p>
@@ -328,7 +328,7 @@ const GlobalSearch: React.FC = () => {
                 </div>
               ) : (
                 <div className="px-4 py-8 text-center">
-                  <MagnifyingGlassIcon className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <SearchIcon className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Start typing to search across all your data
                   </p>

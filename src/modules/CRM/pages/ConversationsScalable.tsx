@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   UserIcon,
-  CpuChipIcon,
-  ExclamationTriangleIcon,
+  ChipIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   ClockIcon,
   EyeIcon,
-  HandRaisedIcon,
+  HandIcon,
   PhoneIcon,
-  EnvelopeIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XMarkIcon,
+  MailIcon,
+  SearchIcon,
+  FilterIcon,
+  XIcon,
   PaperAirplaneIcon,
-  EllipsisVerticalIcon,
+  DotsVerticalIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  ArrowPathIcon,
-  SpeakerWaveIcon,
-} from '@heroicons/react/24/outline';
+  RefreshIcon,
+  SpeakerphoneIcon,
+} from '@heroicons/react/outline';
 import { Conversation, Message, ConversationFilters, ConversationStats } from '../../../types/conversation';
 import { useConversations } from '../../../hooks/useConversations';
 import { useConversationAlerts } from '../../../hooks/useConversationAlerts';
@@ -207,7 +207,7 @@ const ConversationsScalable: React.FC = () => {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
         <div className="flex">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <ExclamationIcon className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">Error loading conversations</h3>
             <p className="mt-1 text-sm text-red-700">{error}</p>
@@ -239,7 +239,7 @@ const ConversationsScalable: React.FC = () => {
                 className="flex items-center px-3 py-1.5 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors"
                 title="Test Handoff Alert - Will trigger klaxon alarm"
               >
-                <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                <SpeakerphoneIcon className="h-4 w-4 mr-1" />
                 Test Handoff
               </button>
               <button
@@ -247,7 +247,7 @@ const ConversationsScalable: React.FC = () => {
                 className="flex items-center px-3 py-1.5 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-md transition-colors"
                 title="Test Agent Issue Alert - Will trigger klaxon alarm"
               >
-                <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                <SpeakerphoneIcon className="h-4 w-4 mr-1" />
                 Test Agent Issue
               </button>
               <button
@@ -255,7 +255,7 @@ const ConversationsScalable: React.FC = () => {
                 className="flex items-center px-3 py-1.5 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
                 title="Test New Conversation Ding - Pleasant notification sound"
               >
-                <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                <SpeakerphoneIcon className="h-4 w-4 mr-1" />
                 Test New Conversation
               </button>
               {alertCount > 0 && (
@@ -264,7 +264,7 @@ const ConversationsScalable: React.FC = () => {
                   className="flex items-center px-3 py-1.5 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition-colors"
                   title="Clear All Alerts"
                 >
-                  <XMarkIcon className="h-4 w-4 mr-1" />
+                  <XIcon className="h-4 w-4 mr-1" />
                   Clear Alerts ({alertCount})
                 </button>
               )}
@@ -273,7 +273,7 @@ const ConversationsScalable: React.FC = () => {
                 className="flex items-center px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
                 title="Stop Currently Playing Alarms (keeps alert system active)"
               >
-                <XMarkIcon className="h-4 w-4 mr-1" />
+                <XIcon className="h-4 w-4 mr-1" />
                 Stop Alarms
               </button>
             </div>
@@ -282,7 +282,7 @@ const ConversationsScalable: React.FC = () => {
               onClick={refreshConversations}
               className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <ArrowPathIcon className="h-5 w-5" />
+              <RefreshIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -316,7 +316,7 @@ const ConversationsScalable: React.FC = () => {
           {/* Search and Filters */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search conversations..."
@@ -379,7 +379,7 @@ const ConversationsScalable: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-1">
                     {conversation.assignedAgent && (
-                      <CpuChipIcon className="h-4 w-4 text-blue-500" />
+                      <ChipIcon className="h-4 w-4 text-blue-500" />
                     )}
                     {conversation.messages.length > 0 && (
                       <span className="text-xs text-gray-400">
@@ -484,7 +484,7 @@ const ConversationsScalable: React.FC = () => {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <ChatIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Select a conversation
                 </h3>

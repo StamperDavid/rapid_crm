@@ -127,8 +127,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   const updateCustomTheme = (settings: CustomThemeSettings) => {
+    console.log('ThemeContext - updating custom theme:', settings);
+    console.log('ThemeContext - logo URL:', settings.logoUrl);
     setCustomTheme(settings);
     localStorage.setItem('customTheme', JSON.stringify(settings));
+    console.log('ThemeContext - custom theme saved to localStorage');
   };
 
   const applyCustomTheme = () => {

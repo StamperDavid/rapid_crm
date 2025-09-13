@@ -5,13 +5,13 @@ import {
   DocumentTextIcon,
   CurrencyDollarIcon,
   ShieldCheckIcon,
-  DocumentArrowDownIcon,
-  ChatBubbleLeftRightIcon,
+  DocumentDownloadIcon,
+  ChatIcon,
   UserIcon,
-  ArrowRightOnRectangleIcon,
+  LogoutIcon,
   EyeIcon,
   CogIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useClient } from '../contexts/ClientContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -46,11 +46,11 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     }
 
     if (client.permissions.canViewDocuments) {
-      nav.push({ name: 'Documents', href: '/client/documents', icon: DocumentArrowDownIcon, color: 'text-indigo-600' });
+      nav.push({ name: 'Documents', href: '/client/documents', icon: DocumentDownloadIcon, color: 'text-indigo-600' });
     }
 
     if (client.permissions.canSubmitRequests) {
-      nav.push({ name: 'Support', href: '/client/support', icon: ChatBubbleLeftRightIcon, color: 'text-cyan-600' });
+      nav.push({ name: 'Support', href: '/client/support', icon: ChatIcon, color: 'text-cyan-600' });
     }
 
     return nav;
@@ -172,7 +172,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
             onClick={handleLogout}
             className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
           >
-            <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
+            <LogoutIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
             Logout
           </button>
         </div>

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
-  CircleStackIcon,
-  DocumentArrowDownIcon,
-  DocumentArrowUpIcon,
-  TableCellsIcon,
+  DatabaseIcon,
+  DocumentDownloadIcon,
+  DocumentAddIcon,
+  TableIcon,
   CogIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 // SchemaViewer removed - using schemaService instead
 
 const DataManagement: React.FC = () => {
@@ -13,11 +13,11 @@ const DataManagement: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
 
   const tabs = [
-    { id: 'companies', name: 'Companies', icon: TableCellsIcon },
-    { id: 'contacts', name: 'Contacts', icon: TableCellsIcon },
-    { id: 'drivers', name: 'Drivers', icon: TableCellsIcon },
-    { id: 'vehicles', name: 'Vehicles', icon: TableCellsIcon },
-    { id: 'deals', name: 'Deals', icon: TableCellsIcon },
+    { id: 'companies', name: 'Companies', icon: TableIcon },
+    { id: 'contacts', name: 'Contacts', icon: TableIcon },
+    { id: 'drivers', name: 'Drivers', icon: TableIcon },
+    { id: 'vehicles', name: 'Vehicles', icon: TableIcon },
+    { id: 'deals', name: 'Deals', icon: TableIcon },
   ];
 
   const handleCreate = (data: any) => {
@@ -47,11 +47,11 @@ const DataManagement: React.FC = () => {
             onClick={() => setShowImportModal(true)}
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            <DocumentArrowUpIcon className="h-4 w-4 mr-2" />
+            <DocumentAddIcon className="h-4 w-4 mr-2" />
             Import Data
           </button>
           <button className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+            <DocumentDownloadIcon className="h-4 w-4 mr-2" />
             Export Data
           </button>
         </div>
@@ -119,7 +119,7 @@ const DataManagement: React.FC = () => {
                   </label>
                   <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
                     <div className="space-y-1 text-center">
-                      <CircleStackIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <DatabaseIcon className="mx-auto h-12 w-12 text-gray-400" />
                       <div className="flex text-sm text-gray-600 dark:text-gray-400">
                         <label className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                           <span>Upload a file</span>

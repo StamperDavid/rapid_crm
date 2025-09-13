@@ -10,7 +10,7 @@ import {
   XCircleIcon,
   CurrencyDollarIcon,
   CalendarIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Invoice } from '../../../types/schema';
 
 const Invoices: React.FC = () => {

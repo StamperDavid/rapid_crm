@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-  XMarkIcon,
-  CircleStackIcon,
+  XIcon,
+  DatabaseIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   InformationCircleIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CloudIcon,
   ServerIcon,
   ShieldCheckIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { databaseConnectionService, databasePresets, DatabaseConfig, ConnectionTestResult } from '../services/databaseConnection';
 
 interface DatabaseConfigModalProps {
@@ -100,15 +100,15 @@ const DatabaseConfigModal: React.FC<DatabaseConfigModalProps> = ({ isOpen, onClo
   const getDatabaseIcon = (type: string) => {
     switch (type) {
       case 'postgresql':
-        return <CircleStackIcon className="h-5 w-5 text-blue-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-blue-600" />;
       case 'mongodb':
-        return <CircleStackIcon className="h-5 w-5 text-green-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-green-600" />;
       case 'mysql':
         return <ServerIcon className="h-5 w-5 text-orange-600" />;
       case 'sqlite':
-        return <CircleStackIcon className="h-5 w-5 text-gray-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-gray-600" />;
       default:
-        return <CircleStackIcon className="h-5 w-5 text-gray-600" />;
+        return <DatabaseIcon className="h-5 w-5 text-gray-600" />;
     }
   };
 
@@ -123,7 +123,7 @@ const DatabaseConfigModal: React.FC<DatabaseConfigModalProps> = ({ isOpen, onClo
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
             <div className="flex items-center">
-              <CircleStackIcon className="h-6 w-6 mr-2 text-blue-600" />
+              <DatabaseIcon className="h-6 w-6 mr-2 text-blue-600" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Database Configuration
               </h2>
@@ -132,7 +132,7 @@ const DatabaseConfigModal: React.FC<DatabaseConfigModalProps> = ({ isOpen, onClo
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </button>
           </div>
 
@@ -350,7 +350,7 @@ const DatabaseConfigModal: React.FC<DatabaseConfigModalProps> = ({ isOpen, onClo
                     className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isTesting ? (
-                      <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <CheckCircleIcon className="h-4 w-4 mr-2" />
                     )}
@@ -368,7 +368,7 @@ const DatabaseConfigModal: React.FC<DatabaseConfigModalProps> = ({ isOpen, onClo
                       {testResult.success ? (
                         <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5" />
                       ) : (
-                        <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5" />
+                        <ExclamationIcon className="h-5 w-5 text-red-600 mt-0.5" />
                       )}
                       <div className="ml-3">
                         <h4 className={`text-sm font-medium ${

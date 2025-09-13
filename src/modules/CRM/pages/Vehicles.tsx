@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import {
   TruckIcon,
   PlusIcon,
-  MagnifyingGlassIcon,
+  SearchIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  FunnelIcon,
+  FilterIcon,
   CalendarIcon,
-  WrenchScrewdriverIcon,
+  CogIcon,
   ShieldCheckIcon,
   DocumentTextIcon,
   UserIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Vehicle } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
 import EntityForm from '../../../components/forms/EntityForm';
@@ -102,7 +102,7 @@ const Vehicles: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search vehicles by make, model, VIN, or license plate..."

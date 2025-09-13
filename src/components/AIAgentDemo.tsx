@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAIAgents, useAIAgent } from '../hooks/useAIAgents';
 import { 
-  CpuChipIcon, 
-  ChatBubbleLeftRightIcon, 
+  ChipIcon, 
+  ChatIcon, 
   ChartBarIcon,
   UserIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ArrowPathIcon,
+  ExclamationIcon,
+  RefreshIcon,
   StarIcon,
   HandThumbUpIcon,
   HandThumbDownIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 const AIAgentDemo: React.FC = () => {
   const { agents, loading, error, systemHealth, refreshAgents, refreshSystemHealth } = useAIAgents();
@@ -77,9 +77,9 @@ const AIAgentDemo: React.FC = () => {
       case 'sales':
         return <ChartBarIcon className="h-5 w-5" />;
       case 'custom':
-        return <CpuChipIcon className="h-5 w-5" />;
+        return <ChipIcon className="h-5 w-5" />;
       default:
-        return <ChatBubbleLeftRightIcon className="h-5 w-5" />;
+        return <ChatIcon className="h-5 w-5" />;
     }
   };
 
@@ -98,7 +98,7 @@ const AIAgentDemo: React.FC = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center space-x-2">
-          <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-600" />
+          <RefreshIcon className="h-5 w-5 animate-spin text-blue-600" />
           <span className="text-slate-600 dark:text-slate-400">Loading AI Agents...</span>
         </div>
       </div>
@@ -109,7 +109,7 @@ const AIAgentDemo: React.FC = () => {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
         <div className="flex">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <ExclamationIcon className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
               Error Loading AI Agents
@@ -136,7 +136,7 @@ const AIAgentDemo: React.FC = () => {
               onClick={refreshSystemHealth}
               className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200"
             >
-              <ArrowPathIcon className="h-4 w-4 mr-1" />
+              <RefreshIcon className="h-4 w-4 mr-1" />
               Refresh
             </button>
           </div>
@@ -239,7 +239,7 @@ const AIAgentDemo: React.FC = () => {
                 <div className="h-96 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg p-4 mb-4 space-y-4">
                   {responses.length === 0 ? (
                     <div className="text-center text-slate-500 dark:text-slate-400">
-                      <ChatBubbleLeftRightIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <ChatIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                       <p>Start a conversation with {selectedAgent.name}</p>
                     </div>
                   ) : (
@@ -295,7 +295,7 @@ const AIAgentDemo: React.FC = () => {
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? (
-                      <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                      <RefreshIcon className="h-4 w-4 animate-spin" />
                     ) : (
                       'Send'
                     )}
@@ -304,7 +304,7 @@ const AIAgentDemo: React.FC = () => {
               </>
             ) : (
               <div className="text-center text-slate-500 dark:text-slate-400">
-                <CpuChipIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <ChipIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p>Select an agent to start chatting</p>
               </div>
             )}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   UserGroupIcon,
   TruckIcon,
   IdentificationIcon,
@@ -11,9 +11,9 @@ import {
   TrashIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  DocumentCheckIcon,
+  ClipboardCheckIcon,
   LockClosedIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useCRM } from '../../../contexts/CRMContext';
 import { USDOTApplicationService } from '../../../services/usdot/USDOTApplicationService';
 // import USDOTApplicationViewer from '../../../components/USDOTApplicationViewer';
@@ -111,7 +111,7 @@ const CompanyDetail: React.FC = () => {
           </button>
           
           <div className="flex items-center">
-            <BuildingOfficeIcon className="h-12 w-12 text-blue-600 mr-4" />
+            <OfficeBuildingIcon className="h-12 w-12 text-blue-600 mr-4" />
             <div>
               <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
                 {company.legalBusinessName}

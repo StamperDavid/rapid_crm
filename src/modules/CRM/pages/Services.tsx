@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   PlusIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
+  SearchIcon,
+  FilterIcon,
   DocumentTextIcon,
   ShieldCheckIcon,
   AcademicCapIcon,
-  LifebuoyIcon,
+  SupportIcon,
   CurrencyDollarIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   PencilIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Service } from '../../../types/schema';
 import { useUser } from '../../../contexts/UserContext';
 
@@ -306,7 +306,7 @@ const Services: React.FC = () => {
       case 'Training':
         return AcademicCapIcon;
       case 'Support':
-        return LifebuoyIcon;
+        return SupportIcon;
       default:
         return DocumentTextIcon;
     }
@@ -370,7 +370,7 @@ const Services: React.FC = () => {
                   Search Services
                 </label>
                 <div className="relative">
-                  <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
                     value={searchTerm}
@@ -448,7 +448,7 @@ const Services: React.FC = () => {
                       <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                         {service.requirements.slice(0, 3).map((req, index) => (
                           <li key={index} className="flex items-start">
-                            <ExclamationTriangleIcon className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                            <ExclamationIcon className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
                             {req}
                           </li>
                         ))}

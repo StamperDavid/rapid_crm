@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   MicrophoneIcon, 
-  SpeakerWaveIcon, 
+  SpeakerphoneIcon, 
   PlayIcon, 
   PauseIcon,
-  ChatBubbleLeftRightIcon 
-} from '@heroicons/react/24/outline';
+  ChatIcon 
+} from '@heroicons/react/outline';
 
 interface ChatbotAvatarProps {
   name: string;
@@ -292,7 +292,7 @@ const AnimatedChatbotAvatar: React.FC<ChatbotAvatarProps> = ({
               : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
           }`}
         >
-          <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+          <SpeakerphoneIcon className="h-4 w-4 mr-1" />
           Voice
         </button>
 

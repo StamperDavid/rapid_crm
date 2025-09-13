@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ChartBarIcon, 
-  CpuChipIcon, 
+  ChipIcon, 
   ServerIcon, 
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   ClockIcon,
-  CircleStackIcon,
+  DatabaseIcon,
   CloudIcon,
   ShieldCheckIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   TruckIcon,
   DocumentTextIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   EyeIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface SystemMetric {
   id: string;
@@ -43,7 +43,7 @@ const SystemMonitoringModule: React.FC = () => {
       value: '45%',
       status: 'healthy',
       trend: 'stable',
-      icon: CpuChipIcon,
+      icon: ChipIcon,
       color: 'text-blue-500',
       description: 'System CPU utilization'
     },
@@ -73,7 +73,7 @@ const SystemMonitoringModule: React.FC = () => {
       value: '8/50',
       status: 'healthy',
       trend: 'stable',
-      icon: CircleStackIcon,
+      icon: DatabaseIcon,
       color: 'text-indigo-500',
       description: 'Active database connections'
     },
@@ -103,7 +103,7 @@ const SystemMonitoringModule: React.FC = () => {
       value: 23,
       status: 'healthy',
       trend: 'up',
-      icon: ChatBubbleLeftRightIcon,
+      icon: ChatIcon,
       color: 'text-orange-500',
       description: 'Ongoing customer conversations'
     },
@@ -163,8 +163,8 @@ const SystemMonitoringModule: React.FC = () => {
 
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'error': return ExclamationTriangleIcon;
-      case 'warning': return ExclamationTriangleIcon;
+      case 'error': return ExclamationIcon;
+      case 'warning': return ExclamationIcon;
       case 'info': return CheckCircleIcon;
       default: return CheckCircleIcon;
     }
@@ -193,7 +193,7 @@ const SystemMonitoringModule: React.FC = () => {
           disabled={isRefreshing}
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
-          <ArrowPathIcon className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshIcon className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>

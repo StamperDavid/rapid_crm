@@ -1,24 +1,24 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   UserIcon,
-  CpuChipIcon,
-  ExclamationTriangleIcon,
+  ChipIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   ClockIcon,
   EyeIcon,
-  HandRaisedIcon,
+  HandIcon,
   PhoneIcon,
-  EnvelopeIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XMarkIcon,
+  MailIcon,
+  SearchIcon,
+  FilterIcon,
+  XIcon,
   PaperAirplaneIcon,
-  EllipsisVerticalIcon,
+  DotsVerticalIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  ArrowPathIcon,
-} from '@heroicons/react/24/outline';
+  RefreshIcon,
+} from '@heroicons/react/outline';
 import { Conversation, Message, ConversationFilters, ConversationStats } from '../../../types/conversation';
 import { mockConversationService } from '../../../services/conversationService';
 
@@ -354,7 +354,7 @@ const ConversationsScalable: React.FC = () => {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="space-y-3">
               <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search conversations..."
@@ -414,7 +414,7 @@ const ConversationsScalable: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-1 ml-2">
                     {conversation.status === 'waiting_for_agent' && (
-                      <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
+                      <ExclamationIcon className="h-4 w-4 text-yellow-500" />
                     )}
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(conversation.status)}`}>
                       {conversation.status.replace('_', ' ')}
@@ -445,7 +445,7 @@ const ConversationsScalable: React.FC = () => {
               <div ref={loadMoreRef} className="p-4 text-center">
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <ArrowPathIcon className="h-4 w-4 animate-spin text-gray-400" />
+                    <RefreshIcon className="h-4 w-4 animate-spin text-gray-400" />
                     <span className="ml-2 text-sm text-gray-500">Loading...</span>
                   </div>
                 ) : (
@@ -508,7 +508,7 @@ const ConversationsScalable: React.FC = () => {
                         disabled={isHandingOff}
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                       >
-                        <HandRaisedIcon className="h-4 w-4 mr-2" />
+                        <HandIcon className="h-4 w-4 mr-2" />
                         {isHandingOff ? 'Taking Over...' : 'Take Over'}
                       </button>
                     )}
@@ -532,7 +532,7 @@ const ConversationsScalable: React.FC = () => {
                     }`}>
                       {message.type === 'handoff_request' && (
                         <div className="flex items-center mb-2">
-                          <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
+                          <ExclamationIcon className="h-4 w-4 mr-1" />
                           <span className="text-xs font-medium">Handoff Request</span>
                         </div>
                       )}
@@ -572,7 +572,7 @@ const ConversationsScalable: React.FC = () => {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <ChatIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   Select a conversation
                 </h3>

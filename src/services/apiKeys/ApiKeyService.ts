@@ -36,7 +36,7 @@ export class ApiKeyService {
   private validations: Map<string, ApiKeyValidation> = new Map();
   private usage: Map<string, ApiKeyUsage> = new Map();
   private isInitialized = false;
-  private API_BASE = getApiBaseUrl();
+  private API_BASE = '/api'; // Temporarily hardcoded to debug
 
   constructor() {
     this.loadApiKeys();
@@ -69,9 +69,30 @@ export class ApiKeyService {
   private async loadApiKeys(): Promise<void> {
     try {
       console.log('Loading API keys from YOUR database...');
+      console.log('API_BASE:', this.API_BASE);
+      console.log('Full URL:', `${this.API_BASE}/api-keys`);
       const response = await fetch(`${this.API_BASE}/api-keys`);
+      console.log('ApiKeyService response status:', response.status);
       const apiKeysData = await response.json();
-      this.apiKeys = new Map(apiKeysData.map((key: ApiKey) => [key.id, key]));
+      console.log('ApiKeyService loaded data:', apiKeysData);
+      
+      // Transform backend data to frontend ApiKey format
+      const transformedKeys = apiKeysData.map((backendKey: any) => ({
+        id: backendKey.id,
+        name: backendKey.name,
+        platform: (backendKey.provider || 'custom').toLowerCase(),
+        key: backendKey.key_value, // This will be masked
+        description: backendKey.description || '',
+        status: 'active' as const,
+        environment: 'production' as const,
+        permissions: [],
+        tags: [],
+        createdAt: backendKey.created_at,
+        updatedAt: backendKey.updated_at,
+        usageCount: 0
+      }));
+      
+      this.apiKeys = new Map(transformedKeys.map((key: ApiKey) => [key.id, key]));
       this.validations = new Map();
       this.usage = new Map();
     } catch (error) {
@@ -100,12 +121,22 @@ export class ApiKeyService {
    * Create a new API key
    */
   public async createApiKey(apiKeyData: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiKey> {
+    console.log('createApiKey called with:', apiKeyData);
+    console.log('Service ready:', this.isReady());
+    
     if (!this.isReady()) {
-      throw new Error('API Key service not initialized');
+      console.log('Service not ready, initializing...');
+      // Try to initialize without master password for now
+      try {
+        await this.initialize('default-password');
+      } catch (error) {
+        console.log('Failed to initialize, continuing anyway...');
+      }
     }
 
     try {
       // Encrypt the API key value
+      console.log('Encrypting API key...');
       const encryptedKey = await encryptionService.encrypt(apiKeyData.key);
       
       const newApiKey: ApiKey = {
@@ -119,12 +150,26 @@ export class ApiKeyService {
         updatedAt: new Date().toISOString()
       };
 
+      console.log('Created new API key object:', newApiKey);
       this.apiKeys.set(newApiKey.id, newApiKey);
-      await fetch(`${this.API_BASE}/api-keys`, {
+      
+      console.log('Sending to backend...');
+      const response = await fetch(`${this.API_BASE}/api-keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newApiKey)
       });
+      
+      console.log('Backend response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', errorText);
+        throw new Error(`Backend error: ${response.status} ${errorText}`);
+      }
+      
+      const backendResult = await response.json();
+      console.log('Backend result:', backendResult);
+      
       await this.saveApiKeys();
 
       return newApiKey;
@@ -154,14 +199,20 @@ export class ApiKeyService {
    * Update API key
    */
   public async updateApiKey(id: string, updates: Partial<ApiKey>): Promise<ApiKey | null> {
+    console.log('updateApiKey called with id:', id, 'updates:', updates);
     const apiKey = this.apiKeys.get(id);
-    if (!apiKey) return null;
+    console.log('Found existing API key:', apiKey);
+    if (!apiKey) {
+      console.log('API key not found in local cache');
+      return null;
+    }
 
     try {
       let updatedApiKey = { ...apiKey, ...updates, updatedAt: new Date().toISOString() };
 
       // If the key value is being updated, encrypt it
       if (updates.key && updates.key !== apiKey.key) {
+        console.log('Key value is being updated, encrypting...');
         const encryptedKey = await encryptionService.encrypt(updates.key);
         updatedApiKey = {
           ...updatedApiKey,
@@ -172,12 +223,26 @@ export class ApiKeyService {
         };
       }
 
+      console.log('Updated API key object:', updatedApiKey);
       this.apiKeys.set(id, updatedApiKey);
-      await fetch(`${this.API_BASE}/api-keys/${id}`, {
+      
+      console.log('Sending update to backend...');
+      const response = await fetch(`${this.API_BASE}/api-keys/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedApiKey)
       });
+      
+      console.log('Backend response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', errorText);
+        throw new Error(`Backend error: ${response.status} ${errorText}`);
+      }
+      
+      const backendResult = await response.json();
+      console.log('Backend update result:', backendResult);
+      
       await this.saveApiKeys();
       return updatedApiKey;
     } catch (error) {

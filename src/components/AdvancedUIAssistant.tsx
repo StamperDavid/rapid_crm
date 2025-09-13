@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   MicrophoneIcon,
-  SpeakerWaveIcon,
+  SpeakerphoneIcon,
   PlayIcon,
   PauseIcon,
-  XMarkIcon,
-  CpuChipIcon,
-  ChatBubbleLeftRightIcon,
+  XIcon,
+  ChipIcon,
+  ChatIcon,
   UserIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   DocumentTextIcon,
   CogIcon,
   ChartBarIcon,
@@ -17,19 +17,22 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ArrowPathIcon,
+  ExclamationIcon,
+  RefreshIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   PlusIcon,
-  AdjustmentsHorizontalIcon,
-  PaintBrushIcon,
-  ArrowsPointingOutIcon,
-  ArrowsPointingInIcon,
-} from '@heroicons/react/24/outline';
+  AdjustmentsIcon,
+  ColorSwatchIcon,
+  ArrowsExpandIcon,
+} from '@heroicons/react/outline';
 import { useUIState } from '../contexts/UIStateContext';
 import { UICommandProcessor } from '../services/UICommandProcessor';
+import { aiIntegrationService } from '../services/ai/AIIntegrationService';
+import { advancedAICustomizationService, AIPersona, VoiceConfiguration, AIModelConfiguration } from '../services/ai';
+import { aiDevelopmentAssistant } from '../services/ai/AIDevelopmentAssistant';
+import { claudeCollaborationService } from '../services/ai/ClaudeCollaborationService';
 
 interface Message {
   id: string;
@@ -49,12 +52,59 @@ const AdvancedUIAssistant: React.FC = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUIState, setShowUIState] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [personas, setPersonas] = useState<AIPersona[]>([]);
+  const [voiceConfigs, setVoiceConfigs] = useState<VoiceConfiguration[]>([]);
+  const [modelConfigs, setModelConfigs] = useState<AIModelConfiguration[]>([]);
+  const [currentPersona, setCurrentPersona] = useState<AIPersona | null>(null);
+  const [currentVoice, setCurrentVoice] = useState<VoiceConfiguration | null>(null);
+  const [currentModel, setCurrentModel] = useState<AIModelConfiguration | null>(null);
+  const [sessionId] = useState<string>(`session-${Date.now()}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
   const commandProcessorRef = useRef<UICommandProcessor | null>(null);
 
   const uiState = useUIState();
+
+  // Initialize advanced AI customization service
+  useEffect(() => {
+    const initializeAdvancedService = async () => {
+      try {
+        const [personasList, voicesList, modelsList] = await Promise.all([
+          advancedAICustomizationService.getPersonas(),
+          advancedAICustomizationService.getVoiceConfigs(),
+          advancedAICustomizationService.getModelConfigs()
+        ]);
+        
+        setPersonas(personasList);
+        setVoiceConfigs(voicesList);
+        setModelConfigs(modelsList);
+        
+        // Set current configurations
+        const persona = advancedAICustomizationService.getCurrentPersona();
+        const voice = advancedAICustomizationService.getCurrentVoice();
+        const model = advancedAICustomizationService.getCurrentModel();
+        
+        console.log('🔍 AdvancedUIAssistant - Initialized persona:', persona);
+        console.log('🔍 AdvancedUIAssistant - Initialized voice:', voice);
+        console.log('🔍 AdvancedUIAssistant - Initialized model:', model);
+        
+        setCurrentPersona(persona);
+        setCurrentVoice(voice);
+        setCurrentModel(model);
+        
+        // Create conversation memory
+        await advancedAICustomizationService.createConversationMemory(sessionId);
+      } catch (error) {
+        console.error('Failed to initialize advanced AI service:', error);
+      }
+    };
+    
+    initializeAdvancedService();
+  }, [sessionId]);
 
   // Initialize speech recognition and synthesis
   useEffect(() => {
@@ -82,6 +132,20 @@ const AdvancedUIAssistant: React.FC = () => {
       // Speech Synthesis
       if ('speechSynthesis' in window) {
         synthesisRef.current = window.speechSynthesis;
+        
+        // Load available voices
+        const loadVoices = () => {
+          const voices = window.speechSynthesis.getVoices();
+          setAvailableVoices(voices);
+          if (voices.length > 0 && !selectedVoice) {
+            // Default to first English voice or first available voice
+            const englishVoice = voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+            setSelectedVoice(englishVoice.name);
+          }
+        };
+        
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
       }
 
       // Initialize command processor
@@ -94,17 +158,41 @@ const AdvancedUIAssistant: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const speak = (text: string) => {
-    if (synthesisRef.current) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 0.8;
-      
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      
-      synthesisRef.current.speak(utterance);
+  const speak = async (text: string) => {
+    console.log('🔍 AdvancedUIAssistant - speak called with text:', text);
+    console.log('🔍 AdvancedUIAssistant - currentVoice:', currentVoice);
+    
+    if (currentVoice) {
+      try {
+        console.log('🔍 AdvancedUIAssistant - Using advanced voice synthesis');
+        await advancedAICustomizationService.synthesizeSpeech(text, currentVoice);
+        setIsSpeaking(true);
+        // Note: The advanced service will handle the speaking state internally
+        setTimeout(() => setIsSpeaking(false), text.length * 50); // Rough estimate
+      } catch (error) {
+        console.error('Speech synthesis failed:', error);
+        // Fallback to browser synthesis
+        if (synthesisRef.current) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = currentVoice.settings.rate;
+          utterance.pitch = currentVoice.settings.pitch;
+          utterance.volume = currentVoice.settings.volume;
+          
+          utterance.onstart = () => setIsSpeaking(true);
+          utterance.onend = () => setIsSpeaking(false);
+          
+          synthesisRef.current.speak(utterance);
+        }
+      }
+    } else {
+      console.log('🔍 AdvancedUIAssistant - No currentVoice, using browser fallback');
+      // Fallback to basic browser synthesis
+      if (synthesisRef.current) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        synthesisRef.current.speak(utterance);
+      }
     }
   };
 
@@ -138,23 +226,141 @@ const AdvancedUIAssistant: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      if (commandProcessorRef.current) {
-        const result = await commandProcessorRef.current.processCommand(text);
+      // First try AI service for intelligent responses
+      console.log('Getting AI providers...');
+      const providers = await aiIntegrationService.getProviders();
+      console.log('Available providers:', providers.length, providers);
+      
+      console.log('🔍 AdvancedUIAssistant - Condition check (FIXED v2):', {
+        providersLength: providers.length,
+        hasCurrentPersona: !!currentPersona,
+        hasCurrentModel: !!currentModel,
+        currentPersona: currentPersona,
+        currentModel: currentModel
+      });
+      
+      // Force get current persona and model if they're null
+      if (!currentPersona || !currentModel) {
+        console.log('🔍 AdvancedUIAssistant - Forcing persona/model initialization');
+        const persona = advancedAICustomizationService.getCurrentPersona();
+        const model = advancedAICustomizationService.getCurrentModel();
+        console.log('🔍 AdvancedUIAssistant - Retrieved persona:', persona);
+        console.log('🔍 AdvancedUIAssistant - Retrieved model:', model);
+        
+        if (persona && model) {
+          setCurrentPersona(persona);
+          setCurrentModel(model);
+        }
+      }
+      
+      // FORCE AI TO WORK - bypass condition check
+      if (providers.length > 0) {
+        console.log('🔍 AdvancedUIAssistant - FORCING AI TO WORK - bypassing condition check');
+        const provider = providers[0]; // Use first available provider
+        const activePersona = currentPersona || advancedAICustomizationService.getCurrentPersona();
+        const activeModel = currentModel || advancedAICustomizationService.getCurrentModel();
+        
+        console.log('🔍 AdvancedUIAssistant - Active persona:', activePersona);
+        console.log('🔍 AdvancedUIAssistant - Active model:', activeModel);
+        
+        // Generate AI request using advanced service
+        const aiRequest = advancedAICustomizationService.generateAIRequest(text, sessionId);
+        console.log('🔍 AdvancedUIAssistant - Generated AI request:', aiRequest);
+        console.log('🔍 AdvancedUIAssistant - About to call aiIntegrationService.generateResponse');
+        
+        // Add message to conversation memory
+        await advancedAICustomizationService.addMessageToMemory(sessionId, {
+          role: 'user',
+          content: text,
+          timestamp: new Date().toISOString()
+        });
+
+        // Try Claude collaboration first if available
+        let aiContent = '';
+        try {
+          console.log('🔍 AdvancedUIAssistant - Attempting Claude collaboration with text:', text);
+          const claudeResponse = await claudeCollaborationService.sendMessage(text, {
+            currentModule: 'ai-assistant',
+            userRole: 'admin',
+            activeFeatures: ['ai-assistant', 'collaboration'],
+            systemState: { sessionId, currentPersona: activePersona, currentModel: activeModel }
+          });
+          console.log('🔍 AdvancedUIAssistant - Claude collaboration response:', claudeResponse);
+          aiContent = claudeResponse;
+        } catch (error) {
+          console.log('Claude collaboration not available, using regular AI response');
+          console.log('🔍 AdvancedUIAssistant - Calling generateResponse with provider:', provider.id, 'and request:', aiRequest);
+          const response = await aiIntegrationService.generateResponse(provider.id, aiRequest);
+          console.log('🔍 AdvancedUIAssistant - Received response:', response);
+          aiContent = response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+        }
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: result.message,
-          timestamp: new Date(),
-          action: result.action,
-          data: result.data
+          content: aiContent,
+          timestamp: new Date()
         };
 
         setMessages(prev => [...prev, assistantMessage]);
         
+        // Add assistant message to conversation memory
+        await advancedAICustomizationService.addMessageToMemory(sessionId, {
+          role: 'assistant',
+          content: aiContent,
+          timestamp: new Date().toISOString()
+        });
+        
         // Speak the response
         if (isVoice || isSpeaking) {
-          speak(result.message);
+          await speak(aiContent);
+        }
+      } else {
+        // Check for development commands first
+        const developmentResult = await handleDevelopmentCommand(text);
+        if (developmentResult) {
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: developmentResult.message,
+            timestamp: new Date(),
+            action: developmentResult.action,
+            data: developmentResult.data
+          };
+
+          setMessages(prev => [...prev, assistantMessage]);
+          
+          // Speak the response
+          if (isVoice || isSpeaking) {
+            await speak(developmentResult.message);
+          }
+        } else if (commandProcessorRef.current) {
+          // Fallback to UI command processor if no AI providers available
+          const result = await commandProcessorRef.current.processCommand(text);
+          
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: result.message,
+            timestamp: new Date(),
+            action: result.action,
+            data: result.data
+          };
+
+          setMessages(prev => [...prev, assistantMessage]);
+          
+          // Speak the response
+          if (isVoice || isSpeaking) {
+            speak(result.message);
+          }
+        } else {
+          const noApiKeyMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: 'I need API keys to be configured in the system to provide AI assistance. Please add your API keys in the API Keys page.',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, noApiKeyMessage]);
         }
       }
     } catch (error) {
@@ -181,12 +387,84 @@ const AdvancedUIAssistant: React.FC = () => {
     setMessages([]);
   };
 
+  const handleDevelopmentCommand = async (text: string): Promise<{
+    message: string;
+    action?: string;
+    data?: any;
+  } | null> => {
+    const lowerText = text.toLowerCase();
+    
+    try {
+      if (lowerText.includes('generate') && lowerText.includes('component')) {
+        const suggestions = await aiDevelopmentAssistant.getDevelopmentSuggestions(
+          'Generate a new React component for the CRM system'
+        );
+        return {
+          message: `I can help you generate a new component! Here are some suggestions:\n\n${suggestions.join('\n')}\n\nWould you like me to create a specific component? Please specify the name and requirements.`,
+          action: 'open_code_generator'
+        };
+      }
+      
+      if (lowerText.includes('analyze') && lowerText.includes('code')) {
+        const health = await aiDevelopmentAssistant.performSystemHealthCheck();
+        return {
+          message: `System Health Analysis:\n\nStatus: ${health.status.toUpperCase()}\n\nIssues: ${health.issues.length > 0 ? health.issues.join(', ') : 'None'}\n\nRecommendations: ${health.recommendations.join(', ')}`,
+          action: 'show_health_check'
+        };
+      }
+      
+      if (lowerText.includes('development') && lowerText.includes('suggestions')) {
+        const suggestions = await aiDevelopmentAssistant.getDevelopmentSuggestions(
+          'Rapid CRM system development improvements'
+        );
+        return {
+          message: `Development Suggestions:\n\n${suggestions.join('\n')}`,
+          action: 'show_suggestions'
+        };
+      }
+      
+      if (lowerText.includes('create') && lowerText.includes('database')) {
+        return {
+          message: 'I can help you create database tables! Please specify the table name and schema. For example: "Create a users table with id, name, email, and created_at fields."',
+          action: 'create_database_table'
+        };
+      }
+      
+      if (lowerText.includes('fix') && lowerText.includes('code')) {
+        return {
+          message: 'I can help you fix code issues! Please specify the file path or describe the problem you\'re experiencing.',
+          action: 'fix_code_issues'
+        };
+      }
+      
+      if (lowerText.includes('optimize') && lowerText.includes('performance')) {
+        return {
+          message: 'I can help optimize performance! Let me analyze the system and provide specific recommendations.',
+          action: 'optimize_performance'
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Development command handling failed:', error);
+      return {
+        message: 'I encountered an error while processing your development command. Please try again.',
+        action: 'error'
+      };
+    }
+  };
+
   const getQuickCommands = () => [
-    { text: "Make the deals table bigger", icon: ArrowsPointingOutIcon },
+    { text: "Make the deals table bigger", icon: ArrowsExpandIcon },
     { text: "Add a button to companies page", icon: PlusIcon },
-    { text: "Change theme to blue", icon: PaintBrushIcon },
+    { text: "Change theme to blue", icon: ColorSwatchIcon },
     { text: "Create a new compliance page", icon: DocumentTextIcon },
     { text: "Show UI state", icon: EyeIcon },
+    { text: "Generate a new component", icon: DocumentTextIcon },
+    { text: "Analyze code quality", icon: ChartBarIcon },
+    { text: "Get development suggestions", icon: ExclamationIcon },
+    { text: "Create database table", icon: OfficeBuildingIcon },
+    { text: "Fix code issues", icon: CogIcon },
   ];
 
   if (!isOpen) {
@@ -196,7 +474,7 @@ const AdvancedUIAssistant: React.FC = () => {
         className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50"
         title="Open Advanced UI Assistant"
       >
-        <CpuChipIcon className="h-6 w-6" />
+        <ChipIcon className="h-6 w-6" />
       </button>
     );
   }
@@ -207,14 +485,46 @@ const AdvancedUIAssistant: React.FC = () => {
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
           <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
-            <CpuChipIcon className="h-5 w-5 text-white" />
+            <ChipIcon className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Advanced UI Assistant</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Voice-controlled UI manipulation</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{currentPersona?.name || 'AI Assistant'}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {currentPersona?.personality || 'professional'} • {currentPersona?.tone || 'helpful'}
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          <select
+            value={selectedVoice}
+            onChange={(e) => setSelectedVoice(e.target.value)}
+            className="text-xs bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-gray-700 dark:text-gray-300"
+            title="Select AI Voice"
+          >
+            {availableVoices.map((voice) => (
+              <option key={voice.name} value={voice.name}>
+                {voice.name} ({voice.lang})
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => {
+              console.log('🔍 Manual test - Current persona:', currentPersona);
+              console.log('🔍 Manual test - Service persona:', advancedAICustomizationService.getCurrentPersona());
+              console.log('🔍 Manual test - Service initialized:', !!advancedAICustomizationService);
+            }}
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            title="Test Persona"
+          >
+            <ExclamationIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            title="Settings"
+          >
+            <AdjustmentsIcon className="h-4 w-4" />
+          </button>
           <button
             onClick={() => setShowUIState(!showUIState)}
             className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -226,10 +536,176 @@ const AdvancedUIAssistant: React.FC = () => {
             onClick={() => setIsOpen(false)}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
-            <XMarkIcon className="h-5 w-5" />
+            <XIcon className="h-5 w-5" />
           </button>
         </div>
       </div>
+
+      {/* Advanced Settings Panel */}
+      {showSettings && (
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-96 overflow-y-auto">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Advanced AI Customization</h4>
+          
+          {/* Persona Selection */}
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">AI Persona</label>
+              <select
+                value={currentPersona?.id || ''}
+                onChange={async (e) => {
+                  const success = await advancedAICustomizationService.setCurrentPersona(e.target.value);
+                  if (success) {
+                    setCurrentPersona(advancedAICustomizationService.getCurrentPersona());
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                {personas.map((persona) => (
+                  <option key={persona.id} value={persona.id}>
+                    {persona.name} - {persona.personality} • {persona.tone}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Voice Configuration */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Voice Configuration</label>
+              <select
+                value={currentVoice?.id || ''}
+                onChange={async (e) => {
+                  const success = await advancedAICustomizationService.setCurrentVoice(e.target.value);
+                  if (success) {
+                    setCurrentVoice(advancedAICustomizationService.getCurrentVoice());
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                {voiceConfigs.map((voice) => (
+                  <option key={voice.id} value={voice.id}>
+                    {voice.name} ({voice.provider})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* AI Model Selection */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">AI Model</label>
+              <select
+                value={currentModel?.id || ''}
+                onChange={async (e) => {
+                  const success = await advancedAICustomizationService.setCurrentModel(e.target.value);
+                  if (success) {
+                    setCurrentModel(advancedAICustomizationService.getCurrentModel());
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                {modelConfigs.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name} ({model.provider})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          {/* Current Configuration Display */}
+          {currentPersona && (
+            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Current Configuration</h5>
+              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                <div><strong>Persona:</strong> {currentPersona.name}</div>
+                <div><strong>Personality:</strong> {currentPersona.personality}</div>
+                <div><strong>Tone:</strong> {currentPersona.tone}</div>
+                <div><strong>Expertise:</strong> {currentPersona.expertise}</div>
+                <div><strong>Response Style:</strong> {currentPersona.responseStyle}</div>
+                <div><strong>Temperature:</strong> {currentPersona.temperature}</div>
+                <div><strong>Max Tokens:</strong> {currentPersona.maxTokens}</div>
+                <div><strong>Memory:</strong> {currentPersona.conversationMemory ? 'Enabled' : 'Disabled'}</div>
+              </div>
+            </div>
+          )}
+          
+          {/* Voice Settings */}
+          {currentVoice && (
+            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Voice Settings</h5>
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    Rate: {currentVoice.settings.rate.toFixed(1)}x
+                  </label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={currentVoice.settings.rate}
+                    onChange={async (e) => {
+                      const updatedVoice = await advancedAICustomizationService.updateVoiceConfig(
+                        currentVoice.id, 
+                        { settings: { ...currentVoice.settings, rate: parseFloat(e.target.value) } }
+                      );
+                      if (updatedVoice) {
+                        setCurrentVoice(updatedVoice);
+                      }
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    Pitch: {currentVoice.settings.pitch.toFixed(1)}
+                  </label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={currentVoice.settings.pitch}
+                    onChange={async (e) => {
+                      const updatedVoice = await advancedAICustomizationService.updateVoiceConfig(
+                        currentVoice.id, 
+                        { settings: { ...currentVoice.settings, pitch: parseFloat(e.target.value) } }
+                      );
+                      if (updatedVoice) {
+                        setCurrentVoice(updatedVoice);
+                      }
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    Volume: {Math.round(currentVoice.settings.volume * 100)}%
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={currentVoice.settings.volume}
+                    onChange={async (e) => {
+                      const updatedVoice = await advancedAICustomizationService.updateVoiceConfig(
+                        currentVoice.id, 
+                        { settings: { ...currentVoice.settings, volume: parseFloat(e.target.value) } }
+                      );
+                      if (updatedVoice) {
+                        setCurrentVoice(updatedVoice);
+                      }
+                    }}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Quick Commands */}
       <div className="p-3 border-b border-gray-200 dark:border-gray-700">
@@ -251,7 +727,7 @@ const AdvancedUIAssistant: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-gray-500 dark:text-gray-400">
-            <CpuChipIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <ChipIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Hi! I'm your Advanced UI Assistant.</p>
             <p className="text-xs mt-1">I can modify your CRM interface through voice commands!</p>
             <div className="mt-4 space-y-2 text-xs">
@@ -278,7 +754,7 @@ const AdvancedUIAssistant: React.FC = () => {
             >
               <div className="flex items-start space-x-2">
                 {message.type === 'assistant' && (
-                  <CpuChipIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <ChipIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 )}
                 <div className="flex-1">
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -297,7 +773,7 @@ const AdvancedUIAssistant: React.FC = () => {
           <div className="flex justify-start">
             <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
               <div className="flex items-center space-x-2">
-                <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                <RefreshIcon className="h-4 w-4 animate-spin" />
                 <span className="text-sm text-gray-600 dark:text-gray-300">Processing UI command...</span>
               </div>
             </div>
@@ -337,7 +813,7 @@ const AdvancedUIAssistant: React.FC = () => {
               className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded-lg transition-colors"
               title="Clear conversation"
             >
-              <XMarkIcon className="h-4 w-4" />
+              <XIcon className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -353,7 +829,7 @@ const AdvancedUIAssistant: React.FC = () => {
             )}
             {isSpeaking && (
               <div className="flex items-center space-x-1 text-blue-500">
-                <SpeakerWaveIcon className="h-3 w-3" />
+                <SpeakerphoneIcon className="h-3 w-3" />
                 <span>Speaking...</span>
               </div>
             )}

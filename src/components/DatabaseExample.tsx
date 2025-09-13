@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { databaseManager } from '../services/database/DatabaseManager';
 import { useDatabase } from '../hooks/useDatabase';
 import { 
-  CircleStackIcon, 
+  DatabaseIcon, 
   PlusIcon, 
   TrashIcon, 
   PencilIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
+  ExclamationIcon
+} from '@heroicons/react/outline';
 
 const DatabaseExample: React.FC = () => {
   const { isInitialized, isInitializing, error, health, stats, refresh } = useDatabase();
@@ -85,7 +85,7 @@ const DatabaseExample: React.FC = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center space-x-2">
-          <CircleStackIcon className="h-5 w-5 animate-spin text-blue-600" />
+          <DatabaseIcon className="h-5 w-5 animate-spin text-blue-600" />
           <span className="text-slate-600 dark:text-slate-400">Initializing Database...</span>
         </div>
       </div>
@@ -96,7 +96,7 @@ const DatabaseExample: React.FC = () => {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
         <div className="flex">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+          <ExclamationIcon className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
               Database Error
@@ -116,7 +116,7 @@ const DatabaseExample: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <CircleStackIcon className="h-6 w-6 text-blue-600" />
+            <DatabaseIcon className="h-6 w-6 text-blue-600" />
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
               Database Status
             </h3>
@@ -189,7 +189,7 @@ const DatabaseExample: React.FC = () => {
         {loading && (
           <div className="flex items-center justify-center py-4">
             <div className="flex items-center space-x-2">
-              <CircleStackIcon className="h-4 w-4 animate-spin text-blue-600" />
+              <DatabaseIcon className="h-4 w-4 animate-spin text-blue-600" />
               <span className="text-slate-600 dark:text-slate-400">Loading...</span>
             </div>
           </div>
@@ -224,7 +224,7 @@ const DatabaseExample: React.FC = () => {
 
         {companies.length === 0 && !loading && (
           <div className="text-center py-8">
-            <CircleStackIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+            <DatabaseIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
             <p className="text-slate-500 dark:text-slate-400">No companies found</p>
             <p className="text-sm text-slate-400 dark:text-slate-500">Create your first company to get started</p>
           </div>

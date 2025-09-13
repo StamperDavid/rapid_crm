@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   HomeIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
   BellIcon,
   UserCircleIcon,
   SunIcon,
   MoonIcon,
-  Bars3Icon,
-  XMarkIcon,
+  MenuIcon,
+  XIcon,
   ClockIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
@@ -32,12 +32,12 @@ interface LayoutProps {
 
 const getNavigation = () => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
-  { name: 'Companies', href: '/companies', icon: BuildingOfficeIcon, color: 'text-purple-600' },
+  { name: 'Companies', href: '/companies', icon: OfficeBuildingIcon, color: 'text-purple-600' },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
   { name: 'Deals', href: '/deals', icon: DocumentTextIcon, color: 'text-indigo-600' },
   { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
-  { name: 'Conversations', href: '/conversations', icon: ChatBubbleLeftRightIcon, color: 'text-cyan-600' },
+  { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -71,7 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   onClick={() => setSidebarOpen(false)}
                   className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               
@@ -132,7 +132,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex w-64 flex-col fixed inset-y-0 z-40">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-sm">
           {/* Logo section */}
-          <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex h-16 shrink-0 items-start px-6 pt-5 border-b border-slate-200 dark:border-slate-700">
             <Logo variant={theme} className="h-8" />
           </div>
           
@@ -201,7 +201,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+            <MenuIcon className="h-6 w-6" aria-hidden="true" />
           </button>
 
           {/* Separator */}

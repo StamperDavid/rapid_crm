@@ -3,12 +3,12 @@ import {
   DocumentTextIcon,
   CurrencyDollarIcon,
   ShieldCheckIcon,
-  DocumentArrowDownIcon,
-  ChatBubbleLeftRightIcon,
+  DocumentDownloadIcon,
+  ChatIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+  ExclamationIcon,
+} from '@heroicons/react/outline';
 import { useClient } from '../../../contexts/ClientContext';
 import { useCRM } from '../../../contexts/CRMContext';
 
@@ -132,7 +132,7 @@ const ClientDashboard: React.FC = () => {
     {
       name: 'Documents',
       value: 12, // Mock data
-      icon: DocumentArrowDownIcon,
+      icon: DocumentDownloadIcon,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100 dark:bg-purple-900',
     },
@@ -172,7 +172,7 @@ const ClientDashboard: React.FC = () => {
       case 'upcoming':
         return <ClockIcon className="h-5 w-5 text-blue-500" />;
       case 'warning':
-        return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />;
+        return <ExclamationIcon className="h-5 w-5 text-yellow-500" />;
       default:
         return <ClockIcon className="h-5 w-5 text-gray-500" />;
     }
@@ -346,7 +346,7 @@ const ClientDashboard: React.FC = () => {
               {client.permissions.canSubmitRequests && (
                 <button className="w-full flex items-center justify-between p-3 text-left border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex items-center">
-                    <ChatBubbleLeftRightIcon className="h-5 w-5 text-cyan-600 mr-3" />
+                    <ChatIcon className="h-5 w-5 text-cyan-600 mr-3" />
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       Contact Support
                     </span>

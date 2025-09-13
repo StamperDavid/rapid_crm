@@ -2,15 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   UsersIcon,
-  WrenchScrewdriverIcon,
-  KeyIcon,
-  CircleStackIcon,
   CogIcon,
+  KeyIcon,
+  DatabaseIcon,
   ChartBarIcon,
-  CpuChipIcon,
+  ChipIcon,
   GlobeAltIcon,
-  SwatchIcon,
-} from '@heroicons/react/24/outline';
+  ColorSwatchIcon,
+} from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 
 interface EditorToolbarProps {
@@ -30,7 +29,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
   const editorItems = [
     ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
-    ...(hasAgentManagement ? [{ name: 'Agents', href: '/agents', icon: CpuChipIcon, color: 'text-violet-600' }] : []),
+    ...(hasAgentManagement ? [{ name: 'Agents', href: '/agents', icon: ChipIcon, color: 'text-violet-600' }] : []),
     { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
     { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
   ];

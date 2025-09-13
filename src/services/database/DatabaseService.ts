@@ -7,7 +7,9 @@ export class DatabaseService {
   private isInitialized = false;
 
   constructor() {
-    this.initializeDefaultConnections();
+    // Disable auto-initialization to prevent connection errors
+    // The AI services now use realDatabaseService for direct SQLite access
+    // this.initializeDefaultConnections();
   }
 
   private async initializeDefaultConnections(): Promise<void> {

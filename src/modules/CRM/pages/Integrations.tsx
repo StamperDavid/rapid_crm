@@ -4,17 +4,17 @@ import {
   CheckCircleIcon, 
   XCircleIcon, 
   PlusIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CurrencyDollarIcon,
   DocumentTextIcon,
   CreditCardIcon,
   ChartBarIcon,
-  XMarkIcon,
+  XIcon,
   PencilIcon,
   TrashIcon,
   ShieldCheckIcon,
   TruckIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useUser } from '../../../contexts/UserContext';
 
 const Integrations: React.FC = () => {
@@ -337,7 +337,7 @@ const Integrations: React.FC = () => {
                         Disconnect
                       </button>
                       <button className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                        <ArrowPathIcon className="h-4 w-4" />
+                        <RefreshIcon className="h-4 w-4" />
                       </button>
                     </>
                   ) : (
@@ -407,7 +407,7 @@ const Integrations: React.FC = () => {
                   onClick={() => setShowAddIntegrationModal(false)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               
@@ -473,7 +473,7 @@ const Integrations: React.FC = () => {
                           onClick={() => handleRemoveFeature(index)}
                           className="px-2 py-2 text-red-600 hover:text-red-800"
                         >
-                          <XMarkIcon className="h-4 w-4" />
+                          <XIcon className="h-4 w-4" />
                         </button>
                       )}
                     </div>
@@ -517,7 +517,7 @@ const Integrations: React.FC = () => {
                   onClick={() => setShowAddCategoryModal(false)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               

@@ -4,16 +4,16 @@ import {
   PlusIcon,
   TrashIcon,
   EyeIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XMarkIcon,
+  SearchIcon,
+  FilterIcon,
+  XIcon,
   PhoneIcon,
-  EnvelopeIcon,
-  BuildingOfficeIcon,
+  MailIcon,
+  OfficeBuildingIcon,
   IdentificationIcon,
   CheckCircleIcon,
   XCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Person, SELECT_OPTIONS } from '../../../types/schema';
 
 const Contacts: React.FC = () => {
@@ -205,7 +205,7 @@ const Contacts: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <BuildingOfficeIcon className="h-6 w-6 text-green-400" />
+                <OfficeBuildingIcon className="h-6 w-6 text-green-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -265,7 +265,7 @@ const Contacts: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <EnvelopeIcon className="h-6 w-6 text-indigo-400" />
+                <MailIcon className="h-6 w-6 text-indigo-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -291,7 +291,7 @@ const Contacts: React.FC = () => {
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                <SearchIcon className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
@@ -328,7 +328,7 @@ const Contacts: React.FC = () => {
               }}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <FunnelIcon className="h-4 w-4 mr-2" />
+              <FilterIcon className="h-4 w-4 mr-2" />
               Clear Filters
             </button>
           </div>
@@ -368,7 +368,7 @@ const Contacts: React.FC = () => {
                       
                       <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <EnvelopeIcon className="h-4 w-4 mr-2" />
+                          <MailIcon className="h-4 w-4 mr-2" />
                           {contact.email}
                         </div>
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -380,7 +380,7 @@ const Contacts: React.FC = () => {
                       {!contact.isCompanyOwner && contact.companyOwnerFirstName && (
                         <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                            <BuildingOfficeIcon className="h-4 w-4 mr-2" />
+                            <OfficeBuildingIcon className="h-4 w-4 mr-2" />
                             <span className="font-medium">Company Owner:</span>
                           </div>
                           <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -388,7 +388,7 @@ const Contacts: React.FC = () => {
                           </div>
                           <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                              <EnvelopeIcon className="h-3 w-3 mr-1" />
+                              <MailIcon className="h-3 w-3 mr-1" />
                               {contact.companyOwnerEmail}
                             </div>
                             <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
@@ -449,7 +449,7 @@ const Contacts: React.FC = () => {
                   onClick={() => setSelectedContact(null)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               
@@ -459,7 +459,7 @@ const Contacts: React.FC = () => {
                   <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Contact Information</h4>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex items-center">
-                      <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-3" />
+                      <MailIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
                         <p className="text-sm text-gray-900 dark:text-gray-100">{selectedContact.email}</p>
@@ -507,7 +507,7 @@ const Contacts: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex items-center">
-                        <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-3" />
+                        <MailIcon className="h-5 w-5 text-gray-400 mr-3" />
                         <div>
                           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Owner Email</p>
                           <p className="text-sm text-gray-900 dark:text-gray-100">{selectedContact.companyOwnerEmail}</p>
@@ -570,7 +570,7 @@ const Contacts: React.FC = () => {
                   onClick={() => setShowCreateModal(false)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               

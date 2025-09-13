@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DocumentTextIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   UserIcon,
   TruckIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
   PlusIcon,
   TrashIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useCRM } from '../../../contexts/CRMContext';
 
 interface USDOTApplicationData {
@@ -656,9 +656,9 @@ const USDOTApplication: React.FC = () => {
   );
 
   const steps = [
-    { number: 1, title: 'Company Information', icon: BuildingOfficeIcon },
+    { number: 1, title: 'Company Information', icon: OfficeBuildingIcon },
     { number: 2, title: 'Operations & Authority', icon: TruckIcon },
-    { number: 3, title: 'Fleet & Cargo', icon: ExclamationTriangleIcon },
+    { number: 3, title: 'Fleet & Cargo', icon: ExclamationIcon },
     { number: 4, title: 'Financial & Safety', icon: CheckCircleIcon }
   ];
 

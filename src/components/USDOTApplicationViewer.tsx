@@ -2,12 +2,12 @@ import React from 'react';
 import { USDOTApplication } from '../types/schema';
 import {
   DocumentTextIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   TruckIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   LockClosedIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface USDOTApplicationViewerProps {
   application: USDOTApplication;
@@ -64,7 +64,7 @@ const USDOTApplicationViewer: React.FC<USDOTApplicationViewerProps> = ({
       )}
 
       {/* Part 1: Company and Business Information */}
-      {renderSection('Company and Business Information', BuildingOfficeIcon, (
+      {renderSection('Company and Business Information', OfficeBuildingIcon, (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -108,7 +108,7 @@ const USDOTApplicationViewer: React.FC<USDOTApplicationViewerProps> = ({
       ))}
 
       {/* Principal Address */}
-      {renderSection('Principal Place of Business Address', BuildingOfficeIcon, (
+      {renderSection('Principal Place of Business Address', OfficeBuildingIcon, (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -142,7 +142,7 @@ const USDOTApplicationViewer: React.FC<USDOTApplicationViewerProps> = ({
 
       {/* Mailing Address (if different) */}
       {application.mailingAddress.isDifferent && (
-        renderSection('Mailing Address', BuildingOfficeIcon, (
+        renderSection('Mailing Address', OfficeBuildingIcon, (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -216,7 +216,7 @@ const USDOTApplicationViewer: React.FC<USDOTApplicationViewerProps> = ({
 
       {/* Part 3: Fleet and Cargo Information */}
       {application.operationTypes.includes('Motor Carrier') && (
-        renderSection('Fleet and Cargo Information', ExclamationTriangleIcon, (
+        renderSection('Fleet and Cargo Information', ExclamationIcon, (
           <div className="space-y-6">
             {/* Fleet Information */}
             <div>

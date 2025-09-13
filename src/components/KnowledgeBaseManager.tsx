@@ -5,11 +5,11 @@ import {
   TrashIcon,
   PencilIcon,
   EyeIcon,
-  ArrowUpTrayIcon,
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  UploadIcon,
+  DownloadIcon,
+  SearchIcon,
+  XIcon,
+} from '@heroicons/react/outline';
 import { useAgentBuilder } from '../hooks/useAgentBuilder';
 
 interface KnowledgeBaseManagerProps {
@@ -125,7 +125,7 @@ const KnowledgeBaseManager: React.FC<KnowledgeBaseManagerProps> = ({
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </button>
           </div>
 
@@ -133,7 +133,7 @@ const KnowledgeBaseManager: React.FC<KnowledgeBaseManagerProps> = ({
           <div className="flex items-center justify-between mb-6">
             <div className="flex-1 max-w-lg">
               <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search knowledge bases..."
@@ -352,10 +352,10 @@ const KnowledgeBaseManager: React.FC<KnowledgeBaseManagerProps> = ({
                     </span>
                     <div className="flex space-x-1">
                       <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <ArrowUpTrayIcon className="h-4 w-4" />
+                        <UploadIcon className="h-4 w-4" />
                       </button>
                       <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <ArrowDownTrayIcon className="h-4 w-4" />
+                        <DownloadIcon className="h-4 w-4" />
                       </button>
                     </div>
                   </div>

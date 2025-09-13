@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { 
   ShieldCheckIcon, 
   KeyIcon, 
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   XCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 const AdminRecovery: React.FC = () => {
   const [showRecovery, setShowRecovery] = useState(false);
@@ -140,7 +140,7 @@ const AdminRecovery: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500 mb-2" />
+            <ExclamationIcon className="h-5 w-5 text-yellow-500 mb-2" />
             <p className="text-sm text-gray-600 dark:text-gray-400">
               This is an emergency admin recovery system. Use only if you've lost admin access.
             </p>

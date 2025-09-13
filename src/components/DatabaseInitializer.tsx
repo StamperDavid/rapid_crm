@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { databaseManager } from '../services/database/DatabaseManager';
 import { 
-  CircleStackIcon, 
+  DatabaseIcon, 
   CheckCircleIcon, 
-  ExclamationTriangleIcon,
-  ArrowPathIcon,
+  ExclamationIcon,
+  RefreshIcon,
   XCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface DatabaseStatus {
   isInitialized: boolean;
@@ -81,7 +81,7 @@ const DatabaseInitializer: React.FC = () => {
 
   const getStatusIcon = () => {
     if (status.isInitializing) {
-      return <ArrowPathIcon className="h-5 w-5 text-blue-500 animate-spin" />;
+      return <RefreshIcon className="h-5 w-5 text-blue-500 animate-spin" />;
     }
     
     if (status.error) {
@@ -92,7 +92,7 @@ const DatabaseInitializer: React.FC = () => {
       return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
     }
     
-    return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />;
+    return <ExclamationIcon className="h-5 w-5 text-yellow-500" />;
   };
 
   const getStatusText = () => {
@@ -131,7 +131,7 @@ const DatabaseInitializer: React.FC = () => {
     <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <CircleStackIcon className="h-6 w-6 text-blue-600" />
+          <DatabaseIcon className="h-6 w-6 text-blue-600" />
           <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
             Database Status
           </h3>
@@ -143,7 +143,7 @@ const DatabaseInitializer: React.FC = () => {
             disabled={!status.isInitialized || status.isInitializing}
             className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ArrowPathIcon className="h-4 w-4 mr-1" />
+            <RefreshIcon className="h-4 w-4 mr-1" />
             Refresh
           </button>
           
@@ -171,7 +171,7 @@ const DatabaseInitializer: React.FC = () => {
         {status.error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
             <div className="flex">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+              <ExclamationIcon className="h-5 w-5 text-red-400" />
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
                   Database Error

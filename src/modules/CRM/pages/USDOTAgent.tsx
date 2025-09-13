@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   UserIcon,
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   TruckIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
   MicrophoneIcon,
-  SpeakerWaveIcon,
+  SpeakerphoneIcon,
   DocumentTextIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useCRM } from '../../../contexts/CRMContext';
 
 interface USDOTApplicationData {
@@ -494,7 +494,7 @@ const USDOTAgent: React.FC = () => {
           </button>
           
           <div className="flex items-center">
-            <ChatBubbleLeftRightIcon className="h-12 w-12 text-blue-600 mr-4" />
+            <ChatIcon className="h-12 w-12 text-blue-600 mr-4" />
             <div>
               <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
                 USDOT Application Agent

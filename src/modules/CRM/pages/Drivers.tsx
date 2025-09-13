@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import {
   UserIcon,
   PlusIcon,
-  MagnifyingGlassIcon,
+  SearchIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  FunnelIcon,
+  FilterIcon,
   CalendarIcon,
   IdentificationIcon,
   ShieldCheckIcon,
   PhoneIcon,
-  EnvelopeIcon
-} from '@heroicons/react/24/outline';
+  MailIcon
+} from '@heroicons/react/outline';
 import { Driver } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
 import EntityForm from '../../../components/forms/EntityForm';
@@ -110,7 +110,7 @@ const Drivers: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search drivers by name, license number, or email..."

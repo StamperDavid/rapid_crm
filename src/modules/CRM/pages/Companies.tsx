@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BuildingOfficeIcon,
+  OfficeBuildingIcon,
   PlusIcon,
-  MagnifyingGlassIcon,
+  SearchIcon,
   UserGroupIcon,
   TruckIcon,
   IdentificationIcon,
   CurrencyDollarIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
 import ComprehensiveCompanyForm from '../../../components/forms/ComprehensiveCompanyForm';
@@ -103,7 +103,7 @@ const Companies: React.FC = () => {
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search companies..."
@@ -145,7 +145,7 @@ const Companies: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <BuildingOfficeIcon className="h-10 w-10 text-blue-600" />
+                          <OfficeBuildingIcon className="h-10 w-10 text-blue-600" />
                         </div>
                         <div className="ml-4">
                           <div className="flex items-center">
@@ -204,7 +204,7 @@ const Companies: React.FC = () => {
         {/* Empty State */}
         {filteredCompanies.length === 0 && (
           <div className="text-center py-12">
-            <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <OfficeBuildingIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
               No companies found
             </h3>

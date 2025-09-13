@@ -14,10 +14,10 @@ import {
   ChartBarIcon,
   CogIcon,
   BellIcon,
-  ArrowPathIcon,
-  ExclamationTriangleIcon,
-  ArrowDownTrayIcon,
-} from '@heroicons/react/24/outline';
+  RefreshIcon,
+  ExclamationIcon,
+  DownloadIcon,
+} from '@heroicons/react/outline';
 import { useUser } from '../../../contexts/UserContext';
 
 interface User {
@@ -609,7 +609,7 @@ const UserManagement: React.FC = () => {
           </p>
         </div>
         <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+          <DownloadIcon className="h-4 w-4 mr-2" />
           Export Logs
         </button>
       </div>
@@ -699,7 +699,7 @@ const UserManagement: React.FC = () => {
 
         <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-6">
           <div className="flex items-center space-x-3">
-            <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
+            <ExclamationIcon className="h-8 w-8 text-red-600" />
             <div>
               <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 Failed Login Protection

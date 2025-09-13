@@ -3,13 +3,13 @@ import {
   PlusIcon, 
   CheckCircleIcon, 
   ClockIcon, 
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CalendarIcon,
   UserIcon,
   PencilIcon,
   TrashIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+  XIcon
+} from '@heroicons/react/outline';
 
 interface Task {
   id: string;
@@ -107,7 +107,7 @@ const Tasks: React.FC = () => {
 
   const getPriorityIcon = (priority: Task['priority']) => {
     switch (priority) {
-      case 'high': return <ExclamationTriangleIcon className="h-4 w-4" />;
+      case 'high': return <ExclamationIcon className="h-4 w-4" />;
       case 'medium': return <ClockIcon className="h-4 w-4" />;
       case 'low': return <CheckCircleIcon className="h-4 w-4" />;
     }
@@ -246,7 +246,7 @@ const Tasks: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-6 w-6 text-blue-400" />
+                <ExclamationIcon className="h-6 w-6 text-blue-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -286,7 +286,7 @@ const Tasks: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-6 w-6 text-red-400" />
+                <ExclamationIcon className="h-6 w-6 text-red-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -449,7 +449,7 @@ const Tasks: React.FC = () => {
                   }}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               

@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import {
-  XMarkIcon,
-  DocumentArrowUpIcon,
+  XIcon,
+  DocumentAddIcon,
   PlayIcon,
   PauseIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   ChartBarIcon,
-  CpuChipIcon,
+  ChipIcon,
   ClockIcon,
   DocumentTextIcon,
   EyeIcon,
   TrashIcon,
   PlusIcon,
-  CloudArrowUpIcon,
+  CloudUploadIcon,
   BeakerIcon,
-  RocketLaunchIcon,
-} from '@heroicons/react/24/outline';
+  PaperAirplaneIcon,
+} from '@heroicons/react/outline';
 
 interface TrainingData {
   id: string;
@@ -258,7 +258,7 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
       {/* Upload Section */}
       <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
         <div className="text-center">
-          <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400" />
           <div className="mt-4">
             <label htmlFor="file-upload" className="cursor-pointer">
               <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
@@ -280,7 +280,7 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
           </div>
           {isUploading && (
             <div className="mt-4 flex items-center justify-center">
-              <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-600 mr-2" />
+              <RefreshIcon className="h-5 w-5 animate-spin text-blue-600 mr-2" />
               <span className="text-sm text-gray-600 dark:text-gray-400">Uploading...</span>
             </div>
           )}
@@ -342,7 +342,7 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
         >
           {isTraining ? (
             <>
-              <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
               Starting...
             </>
           ) : (
@@ -448,7 +448,7 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
         >
           {isTesting ? (
             <>
-              <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
               Testing...
             </>
           ) : (
@@ -512,7 +512,7 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-center mb-4">
-            <RocketLaunchIcon className="h-8 w-8 text-blue-600 mr-3" />
+            <PaperAirplaneIcon className="h-8 w-8 text-blue-600 mr-3" />
             <div>
               <h4 className="text-lg font-medium text-gray-900 dark:text-white">Production Deployment</h4>
               <p className="text-sm text-gray-500 dark:text-gray-400">Deploy to live environment</p>
@@ -588,7 +588,7 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </button>
           </div>
 
@@ -597,9 +597,9 @@ const AgentTrainingManager: React.FC<AgentTrainingManagerProps> = ({
             <nav className="-mb-px flex space-x-8">
               {[
                 { id: 'data', name: 'Training Data', icon: DocumentTextIcon },
-                { id: 'training', name: 'Training Jobs', icon: CpuChipIcon },
+                { id: 'training', name: 'Training Jobs', icon: ChipIcon },
                 { id: 'testing', name: 'Model Testing', icon: BeakerIcon },
-                { id: 'deployment', name: 'Deployment', icon: RocketLaunchIcon }
+                { id: 'deployment', name: 'Deployment', icon: PaperAirplaneIcon }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (

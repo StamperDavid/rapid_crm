@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
 import {
-  XMarkIcon,
+  XIcon,
   DocumentTextIcon,
-  LightBulbIcon,
-  ChatBubbleLeftRightIcon,
-  PencilSquareIcon,
-  ArrowPathIcon,
+  ExclamationIcon,
+  ChatIcon,
+  PencilIcon,
+  RefreshIcon,
   CogIcon,
-  CodeBracketIcon,
   CloudIcon,
-  DocumentArrowUpIcon,
-  CpuChipIcon,
+  DocumentAddIcon,
+  ChipIcon,
   UserIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
   TruckIcon,
   CheckCircleIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface AdvancedAgentBuilderProps {
   isOpen: boolean;
@@ -189,7 +188,7 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <LightBulbIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
+              <ExclamationIcon className="mx-auto h-12 w-12 text-blue-600 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Choose Your Building Mode
               </h3>
@@ -207,7 +206,7 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600 mb-3" />
+                <ChatIcon className="h-8 w-8 text-blue-600 mb-3" />
                 <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Conversational AI
                 </h4>
@@ -224,7 +223,7 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <PencilSquareIcon className="h-8 w-8 text-blue-600 mb-3" />
+                <PencilIcon className="h-8 w-8 text-blue-600 mb-3" />
                 <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Direct Text Input
                 </h4>
@@ -369,14 +368,14 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
                 onClick={() => setShowExportOptions(true)}
                 className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
               >
-                <ArrowPathIcon className="h-4 w-4 mr-2" />
+                <RefreshIcon className="h-4 w-4 mr-2" />
                 Export
               </button>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <XMarkIcon className="h-6 w-6" />
+                <XIcon className="h-6 w-6" />
               </button>
             </div>
           </div>
@@ -441,7 +440,7 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
                   onClick={() => setShowExportOptions(false)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XIcon className="h-6 w-6" />
                 </button>
               </div>
               
@@ -461,7 +460,7 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
                       <div className="text-sm text-gray-500 dark:text-gray-400">Export agent settings and configuration</div>
                     </div>
                   </div>
-                  <ArrowPathIcon className="h-4 w-4 text-gray-400" />
+                  <RefreshIcon className="h-4 w-4 text-gray-400" />
                 </button>
                 
                 <button
@@ -469,13 +468,13 @@ module.exports = ${agentConfig.name?.replace(/[^a-zA-Z0-9]/g, '') || 'CustomAgen
                   className="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center">
-                    <CodeBracketIcon className="h-5 w-5 text-purple-600 mr-3" />
+                    <DocumentTextIcon className="h-5 w-5 text-purple-600 mr-3" />
                     <div className="text-left">
                       <div className="font-medium text-gray-900 dark:text-white">JavaScript Code</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">Export as executable JavaScript class</div>
                     </div>
                   </div>
-                  <ArrowPathIcon className="h-4 w-4 text-gray-400" />
+                  <RefreshIcon className="h-4 w-4 text-gray-400" />
                 </button>
               </div>
               

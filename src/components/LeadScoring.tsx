@@ -3,11 +3,11 @@ import { Lead } from '../types/schema';
 import { LeadScoringService, LeadScore } from '../services/leads/LeadScoringService';
 import {
   ChartBarIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   LightBulbIcon,
   CheckCircleIcon,
   XCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface LeadScoringProps {
   lead: Lead;
@@ -132,13 +132,13 @@ const LeadScoring: React.FC<LeadScoringProps> = ({ lead, showDetails = false }) 
       {score.riskFactors.length > 0 && (
         <div>
           <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3 flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mr-2" />
+            <ExclamationIcon className="h-5 w-5 text-red-500 mr-2" />
             Risk Factors
           </h4>
           <ul className="space-y-2">
             {score.riskFactors.map((risk, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <ExclamationIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{risk}</span>
               </li>
             ))}

@@ -3,10 +3,10 @@ import {
   DocumentIcon, 
   PhotoIcon, 
   VideoCameraIcon, 
-  SpeakerWaveIcon,
+  SpeakerphoneIcon,
   ArchiveBoxIcon,
   PlusIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import FileImportExport from './FileImportExport';
 import { FileCategory, ComplianceDocumentType } from '../services/importExportService';
 
@@ -31,7 +31,7 @@ const FileManager: React.FC<FileManagerProps> = ({
     { key: 'vehicle_documents', label: 'Vehicle Documents', icon: <DocumentIcon className="h-5 w-5" /> },
     { key: 'business_licenses', label: 'Business Licenses', icon: <DocumentIcon className="h-5 w-5" /> },
     { key: 'financial_documents', label: 'Financial Documents', icon: <DocumentIcon className="h-5 w-5" /> },
-    { key: 'communication_records', label: 'Communication Records', icon: <SpeakerWaveIcon className="h-5 w-5" /> },
+    { key: 'communication_records', label: 'Communication Records', icon: <SpeakerphoneIcon className="h-5 w-5" /> },
     { key: 'training_materials', label: 'Training Materials', icon: <DocumentIcon className="h-5 w-5" /> },
     { key: 'audit_documents', label: 'Audit Documents', icon: <DocumentIcon className="h-5 w-5" /> },
     { key: 'other', label: 'Other Files', icon: <ArchiveBoxIcon className="h-5 w-5" /> }

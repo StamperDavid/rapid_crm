@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  PaintBrushIcon,
-  PhotoIcon,
-  SwatchIcon,
+  ColorSwatchIcon,
+  PhotographIcon,
   DocumentTextIcon,
   EyeIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CheckIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ThemeSettings {
@@ -109,19 +108,35 @@ const ThemeCustomizer: React.FC = () => {
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log('Logo upload - file selected:', file);
+    
     if (file) {
+      console.log('Logo upload - file details:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         const logoUrl = e.target?.result as string;
+        console.log('Logo upload - data URL generated:', logoUrl.substring(0, 100) + '...');
         handleSettingChange('logoUrl', logoUrl);
+        console.log('Logo upload - settings updated:', settings);
+      };
+      reader.onerror = (error) => {
+        console.error('Logo upload - FileReader error:', error);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const saveSettings = () => {
+    console.log('Saving theme settings:', settings);
+    console.log('Logo URL being saved:', settings.logoUrl);
     updateCustomTheme(settings);
     setHasChanges(false);
+    console.log('Theme settings saved successfully');
     // TODO: Save to database
   };
 
@@ -212,7 +227,7 @@ const ThemeCustomizer: React.FC = () => {
               onClick={toggleTheme}
               className="flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
-              <SwatchIcon className="h-4 w-4 mr-2" />
+              <ColorSwatchIcon className="h-4 w-4 mr-2" />
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </button>
           </div>
@@ -225,7 +240,7 @@ const ThemeCustomizer: React.FC = () => {
           {/* Brand Colors */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center mb-4">
-              <PaintBrushIcon className="h-5 w-5 text-blue-600 mr-2" />
+              <ColorSwatchIcon className="h-5 w-5 text-blue-600 mr-2" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Brand Colors
               </h2>
@@ -252,7 +267,7 @@ const ThemeCustomizer: React.FC = () => {
           {/* Background Colors */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center mb-4">
-              <SwatchIcon className="h-5 w-5 text-green-600 mr-2" />
+              <ColorSwatchIcon className="h-5 w-5 text-green-600 mr-2" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Background Colors
               </h2>
@@ -354,7 +369,7 @@ const ThemeCustomizer: React.FC = () => {
           {/* Logo */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center mb-4">
-              <PhotoIcon className="h-5 w-5 text-orange-600 mr-2" />
+              <PhotographIcon className="h-5 w-5 text-orange-600 mr-2" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Logo
               </h2>
@@ -394,7 +409,7 @@ const ThemeCustomizer: React.FC = () => {
           {/* Border & Shadow */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center mb-4">
-              <SwatchIcon className="h-5 w-5 text-teal-600 mr-2" />
+              <ColorSwatchIcon className="h-5 w-5 text-teal-600 mr-2" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Border & Shadow
               </h2>
@@ -523,7 +538,7 @@ const ThemeCustomizer: React.FC = () => {
                 onClick={resetSettings}
                 className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
               >
-                <ArrowPathIcon className="h-4 w-4 mr-2" />
+                <RefreshIcon className="h-4 w-4 mr-2" />
                 Reset to Default
               </button>
             </div>

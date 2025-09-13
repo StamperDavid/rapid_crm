@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
-  CpuChipIcon,
+  ChipIcon,
   UserIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   ClockIcon,
   StarIcon,
   DocumentTextIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   CheckCircleIcon,
   CalendarIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   EyeIcon,
   TrashIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 import { agentService } from '../services/ai/AgentService';
 import { persistentConversationService } from '../services/conversations/PersistentConversationService';
 import { persistentConversationDatabase } from '../services/database/PersistentConversationDatabase';
@@ -251,7 +251,7 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <CpuChipIcon className="h-8 w-8 text-blue-600 mr-3" />
+          <ChipIcon className="h-8 w-8 text-blue-600 mr-3" />
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               Agent Memory Demo
@@ -378,7 +378,7 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                <RefreshIcon className="h-4 w-4 animate-spin" />
               ) : (
                 'Send'
               )}
@@ -446,7 +446,7 @@ const AgentMemoryDemo: React.FC<AgentMemoryDemoProps> = ({ className = '' }) => 
                   <div className="space-y-1">
                     {agentInsights.commonIssues.slice(0, 3).map((issue: string, index: number) => (
                       <div key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <ExclamationTriangleIcon className="h-4 w-4 mr-2 text-orange-500" />
+                        <ExclamationIcon className="h-4 w-4 mr-2 text-orange-500" />
                         {issue}
                       </div>
                     ))}

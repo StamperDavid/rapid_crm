@@ -42,7 +42,11 @@ export function getApiConfig(): ApiConfig {
  * Get the current API base URL
  */
 export function getApiBaseUrl(): string {
-  return getApiConfig().baseUrl;
+  const config = getApiConfig();
+  console.log('[getApiBaseUrl] Config:', config);
+  console.log('[getApiBaseUrl] Environment:', import.meta.env.MODE);
+  console.log('[getApiBaseUrl] DEV:', import.meta.env.DEV);
+  return config.baseUrl;
 }
 
 /**

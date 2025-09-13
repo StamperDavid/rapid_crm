@@ -9,8 +9,14 @@ interface LogoProps {
 const Logo: React.FC<LogoProps> = ({ className = '' }) => {
   const { customTheme } = useTheme();
 
+  // Debug logging
+  console.log('Logo component - customTheme:', customTheme);
+  console.log('Logo component - logoUrl:', customTheme?.logoUrl);
+  console.log('Logo component - logoHeight:', customTheme?.logoHeight);
+
   // If custom logo is set, use it
   if (customTheme?.logoUrl) {
+    console.log('Using custom logo:', customTheme.logoUrl);
     return (
       <div className={`flex items-center ${className}`}>
         <div className="flex-shrink-0">
@@ -22,6 +28,13 @@ const Logo: React.FC<LogoProps> = ({ className = '' }) => {
               maxWidth: '200px'
             }}
             className="object-contain"
+            onError={(e) => {
+              console.error('Logo image failed to load:', customTheme.logoUrl);
+              console.error('Error event:', e);
+            }}
+            onLoad={() => {
+              console.log('Logo image loaded successfully:', customTheme.logoUrl);
+            }}
           />
         </div>
       </div>

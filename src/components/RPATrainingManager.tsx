@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
-  XMarkIcon,
+  XIcon,
   PlayIcon,
   PauseIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   UserIcon,
-  QrCodeIcon,
+  QrcodeIcon,
   ShieldCheckIcon,
   ClockIcon,
   DocumentTextIcon,
   EyeIcon,
   TrashIcon,
   PlusIcon,
-  CloudArrowUpIcon,
+  CloudUploadIcon,
   BeakerIcon,
-  RocketLaunchIcon,
-  HandRaisedIcon,
+  PaperAirplaneIcon,
+  HandIcon,
   ArrowRightIcon,
   StopIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 interface FieldMapping {
   id: string;
@@ -591,7 +591,7 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
       case 'mfa':
         return ShieldCheckIcon;
       case 'qr_code':
-        return QrCodeIcon;
+        return QrcodeIcon;
       case 'document_upload':
         return DocumentTextIcon;
       case 'payment':
@@ -599,7 +599,7 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
       case 'signature':
         return UserIcon;
       default:
-        return HandRaisedIcon;
+        return HandIcon;
     }
   };
 
@@ -610,7 +610,7 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">USDOT Application RPA Workflow</h3>
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
           <div className="flex">
-            <HandRaisedIcon className="h-5 w-5 text-blue-400" />
+            <HandIcon className="h-5 w-5 text-blue-400" />
             <div className="ml-3">
               <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
                 Human-in-the-Loop RPA
@@ -709,7 +709,7 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
         >
           {isTraining ? (
             <>
-              <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
               Starting...
             </>
           ) : (
@@ -1063,7 +1063,7 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
         >
           {isTesting ? (
             <>
-              <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshIcon className="h-4 w-4 mr-2 animate-spin" />
               Testing...
             </>
           ) : (
@@ -1143,7 +1143,7 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </button>
           </div>
 
@@ -1153,8 +1153,8 @@ const RPATrainingManager: React.FC<RPATrainingManagerProps> = ({
               {[
                 { id: 'workflow', name: 'Workflow Design', icon: DocumentTextIcon },
                 { id: 'training', name: 'Training Sessions', icon: PlayIcon },
-                { id: 'handoffs', name: 'Handoff Events', icon: HandRaisedIcon },
-                { id: 'intelligence', name: 'AI Intelligence', icon: CpuChipIcon },
+                { id: 'handoffs', name: 'Handoff Events', icon: HandIcon },
+                { id: 'intelligence', name: 'AI Intelligence', icon: ChipIcon },
                 { id: 'testing', name: 'Testing', icon: BeakerIcon }
               ].map((tab) => {
                 const Icon = tab.icon;
