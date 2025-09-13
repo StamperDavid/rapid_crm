@@ -30,6 +30,8 @@ import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIAdminPage from './pages/AIAdminPage';
+import ClientPortal from './pages/ClientPortal';
+import OnboardingAgent from './pages/OnboardingAgent';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -82,6 +84,10 @@ function App() {
                     
                     {/* Client Portal Designer - Editor access only */}
                     <Route path="/client-portal" element={<ClientPortalDesigner />} />
+                    
+                    {/* Live Client Portal - For testing onboarding agent */}
+                    <Route path="/portal" element={<ClientPortal />} />
+                    <Route path="/onboarding" element={<OnboardingAgent />} />
                     
                     {/* AI Administration - Admin access only */}
                     <Route path="/admin/ai-control" element={<AIAdminPage />} />

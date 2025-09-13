@@ -33,6 +33,7 @@ import { aiIntegrationService } from '../services/ai/AIIntegrationService';
 import { advancedAICustomizationService, AIPersona, VoiceConfiguration, AIModelConfiguration } from '../services/ai';
 import { aiDevelopmentAssistant } from '../services/ai/AIDevelopmentAssistant';
 import { claudeCollaborationService } from '../services/ai/ClaudeCollaborationService';
+import { chatHistoryService } from '../services/ai/ChatHistoryService';
 
 interface Message {
   id: string;
@@ -176,11 +177,31 @@ const AdvancedUIAssistant: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Function to properly close the popup and stop all audio
+  const closePopup = () => {
+    // Stop any ongoing speech synthesis
+    if (synthesisRef.current && 'speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      console.log('🔍 AdvancedUIAssistant - Speech synthesis cancelled on close');
+    }
+    
+    // Stop any ongoing speech recognition
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      console.log('🔍 AdvancedUIAssistant - Speech recognition stopped on close');
+    }
+    
+    // Close the popup
+    setIsOpen(false);
+    console.log('🔍 AdvancedUIAssistant - Popup closed');
+  };
+
   // Handle escape key to close popup
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
-        setIsOpen(false);
+        closePopup();
       }
     };
 
@@ -276,6 +297,7 @@ const AdvancedUIAssistant: React.FC = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    chatHistoryService.addMessage(userMessage);
     setInputText('');
     setIsProcessing(true);
 
@@ -357,6 +379,7 @@ const AdvancedUIAssistant: React.FC = () => {
         };
 
         setMessages(prev => [...prev, assistantMessage]);
+        chatHistoryService.addMessage(assistantMessage);
         
         // Add assistant message to conversation memory
         await advancedAICustomizationService.addMessageToMemory(sessionId, {
@@ -382,6 +405,7 @@ const AdvancedUIAssistant: React.FC = () => {
           };
 
           setMessages(prev => [...prev, assistantMessage]);
+          chatHistoryService.addMessage(assistantMessage);
           
           // Speak the response
           console.log('🔍 AdvancedUIAssistant - Speaking development result:', developmentResult.message.substring(0, 50) + '...');
@@ -400,6 +424,7 @@ const AdvancedUIAssistant: React.FC = () => {
           };
 
           setMessages(prev => [...prev, assistantMessage]);
+          chatHistoryService.addMessage(assistantMessage);
           
           // Speak the response
           console.log('🔍 AdvancedUIAssistant - Speaking command result:', result.message.substring(0, 50) + '...');
@@ -412,6 +437,7 @@ const AdvancedUIAssistant: React.FC = () => {
             timestamp: new Date()
           };
           setMessages(prev => [...prev, noApiKeyMessage]);
+          chatHistoryService.addMessage(noApiKeyMessage);
         }
       }
     } catch (error) {
@@ -422,6 +448,7 @@ const AdvancedUIAssistant: React.FC = () => {
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
+      chatHistoryService.addMessage(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -535,7 +562,7 @@ const AdvancedUIAssistant: React.FC = () => {
       {/* Backdrop for click-outside-to-close */}
       <div 
         className="fixed inset-0 bg-black bg-opacity-20 z-40"
-        onClick={() => setIsOpen(false)}
+        onClick={closePopup}
       />
       
       {/* AI Assistant Popup */}
@@ -607,7 +634,7 @@ const AdvancedUIAssistant: React.FC = () => {
             <EyeIcon className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={closePopup}
             className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
             title="Close AI Assistant"
           >

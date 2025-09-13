@@ -24,6 +24,7 @@ import Logo from './Logo';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
 import AdvancedUIAssistant from './AdvancedUIAssistant';
+import AICollaborationMonitor from './AICollaborationMonitor';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
 
 interface LayoutProps {

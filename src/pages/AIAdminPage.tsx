@@ -1,8 +1,9 @@
 ﻿import React, { useState, useEffect } from 'react';
 import {
   ChipIcon, ChartBarIcon, CogIcon, ExclamationIcon, CheckCircleIcon, RefreshIcon, PlayIcon,
-  PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon,
+  PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon, ChatIcon,
 } from '@heroicons/react/outline';
+import AICollaborationMonitor from '../components/AICollaborationMonitor';
 
 const AIAdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -255,8 +256,11 @@ const AIAdminPage: React.FC = () => {
           {activeTab === 'monitoring' && (
             <div className="space-y-6">
               <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI System Monitoring</h3>
-                <p className="text-gray-600 dark:text-gray-400">Monitoring features will be implemented here.</p>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">AI System Monitoring</h3>
+                </div>
+                <AICollaborationMonitor embedded={true} userChatHistory={[]} />
+                <p className="text-gray-600 dark:text-gray-400">Monitor real-time AI-to-AI collaboration and system performance.</p>
               </div>
             </div>
           )}

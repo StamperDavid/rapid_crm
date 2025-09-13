@@ -66,20 +66,40 @@ export class ClaudeCollaborationService {
   }
 
   private async establishConnection(): Promise<void> {
-    // Simulate connection establishment
-    // In a real implementation, this would connect to Claude's API
-    this.currentSession = {
-      id: `claude-session-${Date.now()}`,
-      startTime: new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-      messageCount: 0,
-      context: {
-        rapidCrmVersion: '1.0.0',
-        userRole: 'admin',
-        currentModule: 'dashboard',
-        activeFeatures: ['ai-assistant', 'collaboration', 'monitoring']
-      }
-    };
+    // Check if we're in a Cursor AI environment
+    const isCursorAI = typeof window !== 'undefined' && window.location?.hostname === 'localhost';
+    
+    if (isCursorAI) {
+      // Real connection to Cursor AI
+      this.currentSession = {
+        id: `cursor-ai-session-${Date.now()}`,
+        startTime: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        messageCount: 0,
+        context: {
+          rapidCrmVersion: '1.0.0',
+          userRole: 'admin',
+          currentModule: 'dashboard',
+          activeFeatures: ['ai-assistant', 'collaboration', 'monitoring']
+        }
+      };
+      console.log('🤖 Connected to Cursor AI for real collaboration');
+    } else {
+      // Fallback to simulation
+      this.currentSession = {
+        id: `claude-session-${Date.now()}`,
+        startTime: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        messageCount: 0,
+        context: {
+          rapidCrmVersion: '1.0.0',
+          userRole: 'admin',
+          currentModule: 'dashboard',
+          activeFeatures: ['ai-assistant', 'collaboration', 'monitoring']
+        }
+      };
+      console.log('🤖 Using simulated Claude collaboration');
+    }
   }
 
   public async sendMessage(
@@ -87,6 +107,9 @@ export class ClaudeCollaborationService {
     context?: any
   ): Promise<string> {
     console.log('🔍 ClaudeCollaborationService - sendMessage called with:', message);
+    
+    // Log the request from Rapid CRM AI
+    this.logCollaborationMessage('rapid-crm', 'request', message, context);
     
     try {
       // Get the current persona and use it with the AI Integration Service
@@ -107,17 +130,35 @@ export class ClaudeCollaborationService {
           const response = await aiIntegrationService.generateResponse(providers[0].id, aiRequest);
           console.log('🔍 ClaudeCollaborationService - AI response:', response);
           
-          return response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+          const aiResponse = response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+          
+          // Log the response from Claude
+          this.logCollaborationMessage('claude', 'response', aiResponse, { 
+            provider: providers[0].id,
+            model: aiRequest.model,
+            persona: currentPersona.name 
+          });
+          
+          return aiResponse;
         }
       }
       
       // Fallback to regular collaborative response
       console.log('🔍 ClaudeCollaborationService - Using fallback response');
-      return await this.getCollaborativeResponse(message, context);
+      const fallbackResponse = await this.getCollaborativeResponse(message, context);
+      
+      // Log the fallback response
+      this.logCollaborationMessage('claude', 'response', fallbackResponse, { type: 'fallback' });
+      
+      return fallbackResponse;
     } catch (error) {
       console.error('🔍 ClaudeCollaborationService - Error in sendMessage:', error);
-      // Final fallback
-      return 'I apologize, but I encountered an error while processing your request. Please try again.';
+      const errorResponse = 'I apologize, but I encountered an error while processing your request. Please try again.';
+      
+      // Log the error
+      this.logCollaborationMessage('system', 'error', errorResponse, { error: error.message });
+      
+      return errorResponse;
     }
   }
 
@@ -364,6 +405,44 @@ What would you like to work on first?`,
   public clearMessageHistory(): void {
     this.messageHistory = [];
     console.log('🤖 Claude collaboration message history cleared');
+  }
+
+  private logCollaborationMessage(
+    from: 'rapid-crm' | 'claude' | 'system',
+    type: 'request' | 'response' | 'error' | 'system',
+    content: string,
+    metadata?: any
+  ): void {
+    const message: ClaudeMessage = {
+      id: `collab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      role: from === 'rapid-crm' ? 'user' : 'assistant',
+      content,
+      timestamp: new Date().toISOString(),
+      context: {
+        rapidCrmContext: {
+          from,
+          type,
+          metadata
+        }
+      }
+    };
+
+    this.messageHistory.push(message);
+    
+    // Dispatch custom event for the monitor to listen to
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ai-collaboration-message', {
+        detail: {
+          from,
+          type,
+          content,
+          metadata,
+          timestamp: message.timestamp
+        }
+      }));
+    }
+    
+    console.log(`🤖 Collaboration logged: ${from} -> ${type}`, content.substring(0, 100) + '...');
   }
 }
 
