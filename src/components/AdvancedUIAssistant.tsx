@@ -48,6 +48,12 @@ const AdvancedUIAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [voiceSettings, setVoiceSettings] = useState({
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    enabled: true
+  });
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -195,23 +201,15 @@ const AdvancedUIAssistant: React.FC = () => {
       
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Apply voice settings if available
-      if (currentVoice) {
-        utterance.rate = currentVoice.settings.rate || 1.0;
-        utterance.pitch = currentVoice.settings.pitch || 1.0;
-        utterance.volume = currentVoice.settings.volume || 1.0;
-        console.log('🔍 AdvancedUIAssistant - Applied voice settings:', {
-          rate: utterance.rate,
-          pitch: utterance.pitch,
-          volume: utterance.volume
-        });
-      } else {
-        // Default settings
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        utterance.volume = 0.8;
-        console.log('🔍 AdvancedUIAssistant - Using default voice settings');
-      }
+      // Apply voice settings
+      utterance.rate = voiceSettings.rate;
+      utterance.pitch = voiceSettings.pitch;
+      utterance.volume = voiceSettings.volume;
+      console.log('🔍 AdvancedUIAssistant - Applied voice settings:', {
+        rate: utterance.rate,
+        pitch: utterance.pitch,
+        volume: utterance.volume
+      });
       
       // Try to select a voice if available
       if (selectedVoice && availableVoices.length > 0) {
@@ -568,6 +566,7 @@ const AdvancedUIAssistant: React.FC = () => {
               </option>
             ))}
           </select>
+          
           <button
             onClick={() => {
               console.log('🔍 Manual test - Current persona:', currentPersona);
