@@ -1612,6 +1612,78 @@ const checkAndInitializeDatabase = async () => {
   }
 };
 
+// Theme API endpoints
+app.get('/api/theme', async (req, res) => {
+  try {
+    const db = new sqlite3.Database(dbPath);
+    const themeData = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM theme_settings WHERE id = 1', (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row);
+        }
+      });
+    });
+    
+    db.close();
+    
+    if (themeData) {
+      res.json({
+        theme: themeData.theme || 'light',
+        customTheme: themeData.custom_theme ? JSON.parse(themeData.custom_theme) : null
+      });
+    } else {
+      res.json({
+        theme: 'light',
+        customTheme: null
+      });
+    }
+  } catch (error) {
+    console.error('Error loading theme:', error);
+    res.status(500).json({ error: 'Failed to load theme' });
+  }
+});
+
+app.post('/api/theme', async (req, res) => {
+  try {
+    const { theme, customTheme } = req.body;
+    const db = new sqlite3.Database(dbPath);
+    
+    // Create theme_settings table if it doesn't exist
+    await new Promise((resolve, reject) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS theme_settings (
+          id INTEGER PRIMARY KEY,
+          theme TEXT DEFAULT 'light',
+          custom_theme TEXT,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    
+    // Insert or update theme settings
+    await new Promise((resolve, reject) => {
+      db.run(`
+        INSERT OR REPLACE INTO theme_settings (id, theme, custom_theme, updated_at)
+        VALUES (1, ?, ?, CURRENT_TIMESTAMP)
+      `, [theme, customTheme ? JSON.stringify(customTheme) : null], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    
+    db.close();
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving theme:', error);
+    res.status(500).json({ error: 'Failed to save theme' });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 

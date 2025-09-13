@@ -132,20 +132,32 @@ const AdvancedUIAssistant: React.FC = () => {
       // Speech Synthesis
       if ('speechSynthesis' in window) {
         synthesisRef.current = window.speechSynthesis;
+        console.log('🔍 AdvancedUIAssistant - Speech synthesis initialized');
         
         // Load available voices
         const loadVoices = () => {
           const voices = window.speechSynthesis.getVoices();
+          console.log('🔍 AdvancedUIAssistant - Available voices:', voices.length, voices.map(v => v.name));
           setAvailableVoices(voices);
+          
           if (voices.length > 0 && !selectedVoice) {
             // Default to first English voice or first available voice
             const englishVoice = voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-            setSelectedVoice(englishVoice.name);
+            if (englishVoice) {
+              setSelectedVoice(englishVoice.name);
+              console.log('🔍 AdvancedUIAssistant - Default voice selected:', englishVoice.name);
+            }
           }
         };
         
+        // Load voices immediately and on change
         loadVoices();
         window.speechSynthesis.onvoiceschanged = loadVoices;
+        
+        // Also try to load voices after a short delay (some browsers need this)
+        setTimeout(loadVoices, 100);
+      } else {
+        console.error('🔍 AdvancedUIAssistant - Speech synthesis not supported in this browser');
       }
 
       // Initialize command processor
@@ -158,41 +170,85 @@ const AdvancedUIAssistant: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Handle escape key to close popup
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => document.removeEventListener('keydown', handleEscapeKey);
+    }
+  }, [isOpen]);
+
   const speak = async (text: string) => {
     console.log('🔍 AdvancedUIAssistant - speak called with text:', text);
     console.log('🔍 AdvancedUIAssistant - currentVoice:', currentVoice);
+    console.log('🔍 AdvancedUIAssistant - synthesisRef.current:', synthesisRef.current);
     
-    if (currentVoice) {
-      try {
-        console.log('🔍 AdvancedUIAssistant - Using advanced voice synthesis');
-        await advancedAICustomizationService.synthesizeSpeech(text, currentVoice);
-        setIsSpeaking(true);
-        // Note: The advanced service will handle the speaking state internally
-        setTimeout(() => setIsSpeaking(false), text.length * 50); // Rough estimate
-      } catch (error) {
-        console.error('Speech synthesis failed:', error);
-        // Fallback to browser synthesis
-        if (synthesisRef.current) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = currentVoice.settings.rate;
-          utterance.pitch = currentVoice.settings.pitch;
-          utterance.volume = currentVoice.settings.volume;
-          
-          utterance.onstart = () => setIsSpeaking(true);
-          utterance.onend = () => setIsSpeaking(false);
-          
-          synthesisRef.current.speak(utterance);
+    // Always use browser speech synthesis for now (most reliable)
+    if (synthesisRef.current && 'speechSynthesis' in window) {
+      console.log('🔍 AdvancedUIAssistant - Using browser speech synthesis');
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Apply voice settings if available
+      if (currentVoice) {
+        utterance.rate = currentVoice.settings.rate || 1.0;
+        utterance.pitch = currentVoice.settings.pitch || 1.0;
+        utterance.volume = currentVoice.settings.volume || 1.0;
+        console.log('🔍 AdvancedUIAssistant - Applied voice settings:', {
+          rate: utterance.rate,
+          pitch: utterance.pitch,
+          volume: utterance.volume
+        });
+      } else {
+        // Default settings
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 0.8;
+        console.log('🔍 AdvancedUIAssistant - Using default voice settings');
+      }
+      
+      // Try to select a voice if available
+      if (selectedVoice && availableVoices.length > 0) {
+        const voice = availableVoices.find(v => v.name === selectedVoice);
+        if (voice) {
+          utterance.voice = voice;
+          console.log('🔍 AdvancedUIAssistant - Selected voice:', voice.name);
         }
       }
-    } else {
-      console.log('🔍 AdvancedUIAssistant - No currentVoice, using browser fallback');
-      // Fallback to basic browser synthesis
-      if (synthesisRef.current) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
+      
+      // Set up event handlers
+      utterance.onstart = () => {
+        console.log('🔍 AdvancedUIAssistant - Speech started');
+        setIsSpeaking(true);
+      };
+      
+      utterance.onend = () => {
+        console.log('🔍 AdvancedUIAssistant - Speech ended');
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('🔍 AdvancedUIAssistant - Speech error:', event);
+        setIsSpeaking(false);
+      };
+      
+      // Speak the text
+      try {
         synthesisRef.current.speak(utterance);
+        console.log('🔍 AdvancedUIAssistant - Speech synthesis initiated');
+      } catch (error) {
+        console.error('🔍 AdvancedUIAssistant - Failed to start speech:', error);
+        setIsSpeaking(false);
       }
+    } else {
+      console.error('🔍 AdvancedUIAssistant - Speech synthesis not available');
+      setIsSpeaking(false);
     }
   };
 
@@ -311,10 +367,9 @@ const AdvancedUIAssistant: React.FC = () => {
           timestamp: new Date().toISOString()
         });
         
-        // Speak the response
-        if (isVoice || isSpeaking) {
-          await speak(aiContent);
-        }
+        // Speak the response (always speak AI responses)
+        console.log('🔍 AdvancedUIAssistant - Speaking AI response:', aiContent.substring(0, 50) + '...');
+        await speak(aiContent);
       } else {
         // Check for development commands first
         const developmentResult = await handleDevelopmentCommand(text);
@@ -331,9 +386,8 @@ const AdvancedUIAssistant: React.FC = () => {
           setMessages(prev => [...prev, assistantMessage]);
           
           // Speak the response
-          if (isVoice || isSpeaking) {
-            await speak(developmentResult.message);
-          }
+          console.log('🔍 AdvancedUIAssistant - Speaking development result:', developmentResult.message.substring(0, 50) + '...');
+          await speak(developmentResult.message);
         } else if (commandProcessorRef.current) {
           // Fallback to UI command processor if no AI providers available
           const result = await commandProcessorRef.current.processCommand(text);
@@ -350,9 +404,8 @@ const AdvancedUIAssistant: React.FC = () => {
           setMessages(prev => [...prev, assistantMessage]);
           
           // Speak the response
-          if (isVoice || isSpeaking) {
-            speak(result.message);
-          }
+          console.log('🔍 AdvancedUIAssistant - Speaking command result:', result.message.substring(0, 50) + '...');
+          await speak(result.message);
         } else {
           const noApiKeyMessage: Message = {
             id: (Date.now() + 1).toString(),
@@ -480,7 +533,15 @@ const AdvancedUIAssistant: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-[500px] h-[700px] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col">
+    <>
+      {/* Backdrop for click-outside-to-close */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-20 z-40"
+        onClick={() => setIsOpen(false)}
+      />
+      
+      {/* AI Assistant Popup */}
+      <div className="fixed bottom-6 right-6 w-[500px] h-[700px] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
@@ -519,6 +580,20 @@ const AdvancedUIAssistant: React.FC = () => {
             <ExclamationIcon className="h-4 w-4" />
           </button>
           <button
+            onClick={() => {
+              console.log('🔍 Voice test - Testing voice functionality');
+              console.log('🔍 Voice test - Available voices:', availableVoices.length);
+              console.log('🔍 Voice test - Selected voice:', selectedVoice);
+              console.log('🔍 Voice test - Current voice config:', currentVoice);
+              console.log('🔍 Voice test - Speech synthesis available:', !!synthesisRef.current);
+              speak('Hello! This is a test of the voice functionality. Can you hear me?');
+            }}
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            title="Test Voice"
+          >
+            <SpeakerphoneIcon className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => setShowSettings(!showSettings)}
             className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             title="Settings"
@@ -534,7 +609,8 @@ const AdvancedUIAssistant: React.FC = () => {
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+            title="Close AI Assistant"
           >
             <XIcon className="h-5 w-5" />
           </button>
@@ -837,10 +913,11 @@ const AdvancedUIAssistant: React.FC = () => {
           <span>Press Enter to send</span>
         </div>
       </div>
+      </div>
 
       {/* UI State Debug Panel */}
       {showUIState && (
-        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-10">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg max-w-md max-h-96 overflow-auto">
             <h3 className="font-semibold mb-2">UI State Debug</h3>
             <pre className="text-xs text-gray-600 dark:text-gray-400">
@@ -855,7 +932,7 @@ const AdvancedUIAssistant: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

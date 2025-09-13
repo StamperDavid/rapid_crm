@@ -7,9 +7,8 @@ export class DatabaseService {
   private isInitialized = false;
 
   constructor() {
-    // Disable auto-initialization to prevent connection errors
-    // The AI services now use realDatabaseService for direct SQLite access
-    // this.initializeDefaultConnections();
+    // Initialize default connections for database management UI
+    this.initializeDefaultConnections();
   }
 
   private async initializeDefaultConnections(): Promise<void> {
@@ -36,7 +35,22 @@ export class DatabaseService {
     return [
       {
         id: 'primary',
-        name: 'Primary Database',
+        name: 'Rapid CRM SQLite Database',
+        type: 'sqlite',
+        host: 'localhost',
+        port: 0,
+        database: 'rapid_crm.db',
+        username: '',
+        password: '',
+        ssl: false,
+        connectionLimit: 20,
+        timeout: 30000,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'backup',
+        name: 'Backup Database',
         type: 'postgresql',
         host: (isBrowser ? 'localhost' : (process.env.DB_HOST || 'localhost')),
         port: parseInt(isBrowser ? '5432' : (process.env.DB_PORT || '5432')),
@@ -46,7 +60,7 @@ export class DatabaseService {
         ssl: isBrowser ? false : (process.env.DB_SSL === 'true'),
         connectionLimit: 20,
         timeout: 30000,
-        isActive: true,
+        isActive: false,
         createdAt: new Date().toISOString()
       }
     ];

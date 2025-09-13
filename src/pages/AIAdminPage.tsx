@@ -1,103 +1,20 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
-  ChipIcon,
-  ChartBarIcon,
-  CogIcon,
-  ExclamationIcon,
-  CheckCircleIcon,
-  RefreshIcon,
-  PlayIcon,
-  PauseIcon,
-  EyeIcon,
-  ShieldCheckIcon,
-  GlobeAltIcon,
+  ChipIcon, ChartBarIcon, CogIcon, ExclamationIcon, CheckCircleIcon, RefreshIcon, PlayIcon,
+  PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon,
 } from '@heroicons/react/outline';
 
-import { 
-  aiIntegrationService,
-  claudeCollaborationService,
-  aiMonitoringService,
-  AIMetrics,
-  AIProviderMetrics,
-  AIAlert
-} from '../services/ai';
-
-interface AIAdminPageProps {}
-
-const AIAdminPage: React.FC<AIAdminPageProps> = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'monitoring' | 'configuration' | 'collaboration' | 'advanced'>('overview');
-  const [metrics, setMetrics] = useState<AIMetrics | null>(null);
-  const [providerMetrics, setProviderMetrics] = useState<AIProviderMetrics[]>([]);
-  const [alerts, setAlerts] = useState<AIAlert[]>([]);
+const AIAdminPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    loadData();
-    startAutoRefresh();
-    
-    return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-    };
-  }, []);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [metricsData, providerData, alertsData] = await Promise.all([
-        Promise.resolve(aiMonitoringService.getMetrics()),
-        Promise.resolve(aiMonitoringService.getProviderMetrics()),
-        Promise.resolve(aiMonitoringService.getAlerts())
-      ]);
-      
-      setMetrics(metricsData);
-      setProviderMetrics(providerData);
-      setAlerts(alertsData);
-    } catch (error) {
-      console.error('Failed to load AI admin data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const startAutoRefresh = () => {
-    const interval = setInterval(loadData, 5000); // Refresh every 5 seconds
-    setRefreshInterval(interval);
-  };
-
-  const stopAutoRefresh = () => {
-    if (refreshInterval) {
-      clearInterval(refreshInterval);
-      setRefreshInterval(null);
-    }
-  };
-
-  const getHealthStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'text-green-600 bg-green-100';
-      case 'warning': return 'text-yellow-600 bg-yellow-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getAlertSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'low': return 'text-blue-600 bg-blue-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
+  const [metrics, setMetrics] = useState(null);
+  const [alerts, setAlerts] = useState([]);
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
     { id: 'monitoring', name: 'Monitoring', icon: EyeIcon },
     { id: 'configuration', name: 'Configuration', icon: CogIcon },
-    { id: 'collaboration', name: 'Collaboration', icon: GlobeAltIcon },
+    { id: 'collaboration', name: 'Collaboration', icon: UserIcon },
     { id: 'advanced', name: 'Advanced', icon: CogIcon },
   ];
 
@@ -118,30 +35,12 @@ const AIAdminPage: React.FC<AIAdminPageProps> = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={loadData}
                 disabled={isLoading}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
               >
                 <RefreshIcon className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
-              {refreshInterval ? (
-                <button
-                  onClick={stopAutoRefresh}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  <PauseIcon className="h-4 w-4 mr-2" />
-                  Pause Auto-Refresh
-                </button>
-              ) : (
-                <button
-                  onClick={startAutoRefresh}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  <PlayIcon className="h-4 w-4 mr-2" />
-                  Start Auto-Refresh
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -261,135 +160,36 @@ const AIAdminPage: React.FC<AIAdminPageProps> = () => {
 
           {activeTab === 'monitoring' && (
             <div className="space-y-6">
-              {/* Metrics Overview */}
-              {metrics && (
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Performance Metrics</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Average Response Time</dt>
-                      <dd className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
-                        {metrics.averageResponseTime.toFixed(0)}ms
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tokens Used</dt>
-                      <dd className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
-                        {metrics.totalTokensUsed.toLocaleString()}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Error Rate</dt>
-                      <dd className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
-                        {(metrics.errorRate * 100).toFixed(1)}%
-                      </dd>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Provider Metrics */}
-              {providerMetrics.length > 0 && (
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Provider Performance</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                      <thead className="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Provider
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Requests
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Success Rate
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Avg Response Time
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Tokens Used
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {providerMetrics.map((provider) => (
-                          <tr key={provider.providerId}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                              {provider.providerName}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {provider.requests}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {(provider.successRate * 100).toFixed(1)}%
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {provider.averageResponseTime.toFixed(0)}ms
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {provider.tokensUsed.toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI System Monitoring</h3>
+                <p className="text-gray-600 dark:text-gray-400">Monitoring features will be implemented here.</p>
+              </div>
             </div>
           )}
 
-          {activeTab === 'alerts' && (
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">System Alerts</h3>
-              <div className="space-y-4">
-                {alerts.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400">No alerts at this time.</p>
-                ) : (
-                  alerts.map((alert) => (
-                    <div
-                      key={alert.id}
-                      className={`p-4 rounded-lg border-l-4 ${
-                        alert.severity === 'critical' ? 'border-red-500 bg-red-50 dark:bg-red-900/20' :
-                        alert.severity === 'high' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' :
-                        alert.severity === 'medium' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' :
-                        'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getAlertSeverityColor(alert.severity)}`}>
-                              {alert.severity.toUpperCase()}
-                            </span>
-                            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                              {new Date(alert.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-                          <h4 className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
-                            {alert.title}
-                          </h4>
-                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            {alert.message}
-                          </p>
-                        </div>
-                        {!alert.resolved && (
-                          <button
-                            onClick={() => {
-                              aiMonitoringService.resolveAlert(alert.id);
-                              loadData();
-                            }}
-                            className="ml-4 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                          >
-                            Mark as Resolved
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
+          {activeTab === 'configuration' && (
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Configuration</h3>
+                <p className="text-gray-600 dark:text-gray-400">Configuration options will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'collaboration' && (
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Collaboration</h3>
+                <p className="text-gray-600 dark:text-gray-400">Collaboration features will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'advanced' && (
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Advanced Settings</h3>
+                <p className="text-gray-600 dark:text-gray-400">Advanced settings will be implemented here.</p>
               </div>
             </div>
           )}
