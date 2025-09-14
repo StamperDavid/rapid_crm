@@ -2,30 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   MicrophoneIcon,
   SpeakerphoneIcon,
-  PlayIcon,
-  PauseIcon,
   XIcon,
   ChipIcon,
-  ChatIcon,
-  UserIcon,
-  OfficeBuildingIcon,
-  DocumentTextIcon,
-  CogIcon,
-  ChartBarIcon,
-  TruckIcon,
-  UserGroupIcon,
-  CurrencyDollarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  ExclamationIcon,
   RefreshIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  PlusIcon,
-  AdjustmentsIcon,
-  ColorSwatchIcon,
-  ArrowsExpandIcon,
 } from '@heroicons/react/outline';
 import { useUIState } from '../contexts/UIStateContext';
 import { UICommandProcessor } from '../services/UICommandProcessor';
@@ -58,10 +37,8 @@ const AdvancedUIAssistant: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showUIState, setShowUIState] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [showSettings, setShowSettings] = useState(false);
   const [personas, setPersonas] = useState<AIPersona[]>([]);
   const [voiceConfigs, setVoiceConfigs] = useState<VoiceConfiguration[]>([]);
   const [modelConfigs, setModelConfigs] = useState<AIModelConfiguration[]>([]);
@@ -532,18 +509,6 @@ const AdvancedUIAssistant: React.FC = () => {
     }
   };
 
-  const getQuickCommands = () => [
-    { text: "Make the deals table bigger", icon: ArrowsExpandIcon },
-    { text: "Add a button to companies page", icon: PlusIcon },
-    { text: "Change theme to blue", icon: ColorSwatchIcon },
-    { text: "Create a new compliance page", icon: DocumentTextIcon },
-    { text: "Show UI state", icon: EyeIcon },
-    { text: "Generate a new component", icon: DocumentTextIcon },
-    { text: "Analyze code quality", icon: ChartBarIcon },
-    { text: "Get development suggestions", icon: ExclamationIcon },
-    { text: "Create database table", icon: OfficeBuildingIcon },
-    { text: "Fix code issues", icon: CogIcon },
-  ];
 
   if (!isOpen) {
     return (
@@ -595,45 +560,6 @@ const AdvancedUIAssistant: React.FC = () => {
           </select>
           
           <button
-            onClick={() => {
-              console.log('🔍 Manual test - Current persona:', currentPersona);
-              console.log('🔍 Manual test - Service persona:', advancedAICustomizationService.getCurrentPersona());
-              console.log('🔍 Manual test - Service initialized:', !!advancedAICustomizationService);
-            }}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            title="Test Persona"
-          >
-            <ExclamationIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => {
-              console.log('🔍 Voice test - Testing voice functionality');
-              console.log('🔍 Voice test - Available voices:', availableVoices.length);
-              console.log('🔍 Voice test - Selected voice:', selectedVoice);
-              console.log('🔍 Voice test - Current voice config:', currentVoice);
-              console.log('🔍 Voice test - Speech synthesis available:', !!synthesisRef.current);
-              speak('Hello! This is a test of the voice functionality. Can you hear me?');
-            }}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            title="Test Voice"
-          >
-            <SpeakerphoneIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            title="Settings"
-          >
-            <AdjustmentsIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowUIState(!showUIState)}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            title="Toggle UI State"
-          >
-            <EyeIcon className="h-4 w-4" />
-          </button>
-          <button
             onClick={closePopup}
             className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
             title="Close AI Assistant"
@@ -643,202 +569,15 @@ const AdvancedUIAssistant: React.FC = () => {
         </div>
       </div>
 
-      {/* Advanced Settings Panel */}
-      {showSettings && (
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-96 overflow-y-auto">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Advanced AI Customization</h4>
-          
-          {/* Persona Selection */}
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">AI Persona</label>
-              <select
-                value={currentPersona?.id || ''}
-                onChange={async (e) => {
-                  const success = await advancedAICustomizationService.setCurrentPersona(e.target.value);
-                  if (success) {
-                    setCurrentPersona(advancedAICustomizationService.getCurrentPersona());
-                  }
-                }}
-                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                {personas.map((persona) => (
-                  <option key={persona.id} value={persona.id}>
-                    {persona.name} - {persona.personality} • {persona.tone}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Voice Configuration */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Voice Configuration</label>
-              <select
-                value={currentVoice?.id || ''}
-                onChange={async (e) => {
-                  const success = await advancedAICustomizationService.setCurrentVoice(e.target.value);
-                  if (success) {
-                    setCurrentVoice(advancedAICustomizationService.getCurrentVoice());
-                  }
-                }}
-                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                {voiceConfigs.map((voice) => (
-                  <option key={voice.id} value={voice.id}>
-                    {voice.name} ({voice.provider})
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* AI Model Selection */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">AI Model</label>
-              <select
-                value={currentModel?.id || ''}
-                onChange={async (e) => {
-                  const success = await advancedAICustomizationService.setCurrentModel(e.target.value);
-                  if (success) {
-                    setCurrentModel(advancedAICustomizationService.getCurrentModel());
-                  }
-                }}
-                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                {modelConfigs.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.name} ({model.provider})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          {/* Current Configuration Display */}
-          {currentPersona && (
-            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Current Configuration</h5>
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <div><strong>Persona:</strong> {currentPersona.name}</div>
-                <div><strong>Personality:</strong> {currentPersona.personality}</div>
-                <div><strong>Tone:</strong> {currentPersona.tone}</div>
-                <div><strong>Expertise:</strong> {currentPersona.expertise}</div>
-                <div><strong>Response Style:</strong> {currentPersona.responseStyle}</div>
-                <div><strong>Temperature:</strong> {currentPersona.temperature}</div>
-                <div><strong>Max Tokens:</strong> {currentPersona.maxTokens}</div>
-                <div><strong>Memory:</strong> {currentPersona.conversationMemory ? 'Enabled' : 'Disabled'}</div>
-              </div>
-            </div>
-          )}
-          
-          {/* Voice Settings */}
-          {currentVoice && (
-            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Voice Settings</h5>
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    Rate: {currentVoice.settings.rate.toFixed(1)}x
-                  </label>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2"
-                    step="0.1"
-                    value={currentVoice.settings.rate}
-                    onChange={async (e) => {
-                      const updatedVoice = await advancedAICustomizationService.updateVoiceConfig(
-                        currentVoice.id, 
-                        { settings: { ...currentVoice.settings, rate: parseFloat(e.target.value) } }
-                      );
-                      if (updatedVoice) {
-                        setCurrentVoice(updatedVoice);
-                      }
-                    }}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    Pitch: {currentVoice.settings.pitch.toFixed(1)}
-                  </label>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2"
-                    step="0.1"
-                    value={currentVoice.settings.pitch}
-                    onChange={async (e) => {
-                      const updatedVoice = await advancedAICustomizationService.updateVoiceConfig(
-                        currentVoice.id, 
-                        { settings: { ...currentVoice.settings, pitch: parseFloat(e.target.value) } }
-                      );
-                      if (updatedVoice) {
-                        setCurrentVoice(updatedVoice);
-                      }
-                    }}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    Volume: {Math.round(currentVoice.settings.volume * 100)}%
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={currentVoice.settings.volume}
-                    onChange={async (e) => {
-                      const updatedVoice = await advancedAICustomizationService.updateVoiceConfig(
-                        currentVoice.id, 
-                        { settings: { ...currentVoice.settings, volume: parseFloat(e.target.value) } }
-                      );
-                      if (updatedVoice) {
-                        setCurrentVoice(updatedVoice);
-                      }
-                    }}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Quick Commands */}
-      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex flex-wrap gap-2">
-          {getQuickCommands().map((cmd, index) => (
-            <button
-              key={index}
-              onClick={() => handleSendMessage(cmd.text)}
-              className="flex items-center space-x-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              <cmd.icon className="h-3 w-3" />
-              <span>{cmd.text}</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-gray-500 dark:text-gray-400">
             <ChipIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Hi! I'm your Advanced UI Assistant.</p>
-            <p className="text-xs mt-1">I can modify your CRM interface through voice commands!</p>
-            <div className="mt-4 space-y-2 text-xs">
-              <p className="font-medium">Try saying:</p>
-              <p>• "Make the deals table bigger"</p>
-              <p>• "Add a button to the companies page"</p>
-              <p>• "Change the theme to blue"</p>
-              <p>• "Create a new compliance page"</p>
-            </div>
+            <p className="text-sm">Hi! I'm your AI Assistant.</p>
+            <p className="text-xs mt-1">I can help you with your CRM tasks and coordinate with Claude.</p>
           </div>
         )}
         
@@ -941,23 +680,6 @@ const AdvancedUIAssistant: React.FC = () => {
       </div>
       </div>
 
-      {/* UI State Debug Panel */}
-      {showUIState && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg max-w-md max-h-96 overflow-auto">
-            <h3 className="font-semibold mb-2">UI State Debug</h3>
-            <pre className="text-xs text-gray-600 dark:text-gray-400">
-              {JSON.stringify(uiState.uiState, null, 2)}
-            </pre>
-            <button
-              onClick={() => setShowUIState(false)}
-              className="mt-2 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 };

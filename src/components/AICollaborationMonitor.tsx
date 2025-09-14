@@ -43,20 +43,26 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
       const response = await fetch('http://localhost:3001/api/ai/collaborate');
       if (response.ok) {
         const data = await response.json();
+        console.log('🔍 AI Collaboration API Response:', data);
         if (data.success && data.messages) {
           // Transform API messages to match the expected format
           const formattedMessages = data.messages.map((msg: any) => ({
             id: msg.id || `msg_${Date.now()}_${Math.random()}`,
             timestamp: msg.timestamp,
             type: msg.sender === 'claude' ? 'response' : 'request',
-            from: msg.sender === 'claude' ? 'claude' : 'rapid-crm',
+            from: msg.sender === 'claude' ? 'claude' : 'rapid-crm-ai',
             content: msg.content,
             status: 'completed' as const,
-            metadata: msg.context ? JSON.parse(msg.context) : undefined
+            metadata: msg.context ? (typeof msg.context === 'string' ? JSON.parse(msg.context) : msg.context) : undefined
           }));
+          console.log('🔍 Formatted AI Collaboration Messages:', formattedMessages);
           setMessages(formattedMessages);
           return;
+        } else {
+          console.log('🔍 No messages found in API response');
         }
+      } else {
+        console.error('🔍 API response not ok:', response.status);
       }
       
       // Fallback to local service if API fails
