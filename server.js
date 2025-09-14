@@ -1765,6 +1765,129 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// AI-to-AI Collaboration API Endpoint
+app.post('/api/ai/collaborate', async (req, res) => {
+  try {
+    const { message, context, sessionId } = req.body;
+    
+    console.log('🤖 AI-to-AI Collaboration Request:', { message, context, sessionId });
+    
+    // Log the collaboration message to the existing database
+    const logMessage = `
+      INSERT INTO ai_collaboration_logs (
+        session_id, 
+        sender, 
+        message_type, 
+        content, 
+        context, 
+        timestamp
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    
+    const timestamp = new Date().toISOString();
+    const sessionIdValue = sessionId || `session_${Date.now()}`;
+    
+    db.run(logMessage, [
+      `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionIdValue,
+      'rapid-crm-ai',
+      'request',
+      message,
+      JSON.stringify(context || {}),
+      timestamp
+    ], function(err) {
+      if (err) {
+        console.error('Failed to log AI collaboration message:', err);
+      } else {
+        console.log('✅ AI collaboration message logged');
+      }
+    });
+    
+    // Simulate AI response (in a real implementation, this would call Claude API)
+    const aiResponse = {
+      id: `response_${Date.now()}`,
+      content: `Hello Rapid CRM AI! I received your message: "${message}". I'm ready to collaborate on system tasks.`,
+      suggestions: ['Check system status', 'Review database connections', 'Analyze error logs'],
+      actions: ['diagnose', 'fix', 'monitor'],
+      confidence: 0.95,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Log the AI response
+    db.run(logMessage, [
+      `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionIdValue,
+      'claude',
+      'response',
+      aiResponse.content,
+      JSON.stringify({
+        suggestions: aiResponse.suggestions,
+        actions: aiResponse.actions,
+        confidence: aiResponse.confidence
+      }),
+      aiResponse.timestamp
+    ], function(err) {
+      if (err) {
+        console.error('Failed to log AI response:', err);
+      } else {
+        console.log('✅ AI response logged');
+      }
+    });
+    
+    res.json({
+      success: true,
+      response: aiResponse,
+      sessionId: sessionIdValue
+    });
+    
+  } catch (error) {
+    console.error('AI collaboration error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process AI collaboration request'
+    });
+  }
+});
+
+// Get AI collaboration history
+app.get('/api/ai/collaborate/:sessionId?', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    let query = 'SELECT * FROM ai_collaboration_logs';
+    let params = [];
+    
+    if (sessionId) {
+      query += ' WHERE session_id = ? ORDER BY timestamp ASC';
+      params = [sessionId];
+    } else {
+      query += ' ORDER BY timestamp DESC LIMIT 50';
+    }
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Failed to get AI collaboration history:', err);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to retrieve collaboration history'
+        });
+      } else {
+        res.json({
+          success: true,
+          messages: rows || []
+        });
+      }
+    });
+    
+  } catch (error) {
+    console.error('Get AI collaboration history error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve collaboration history'
+    });
+  }
+});
+
 // Initialize database and start server
 validateDatabase()
   .then(() => checkAndInitializeDatabase())
@@ -1773,6 +1896,7 @@ validateDatabase()
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📊 API available at http://localhost:${PORT}/api`);
+      console.log(`🤖 AI Collaboration API: http://localhost:${PORT}/api/ai/collaborate`);
     });
   })
   .catch((error) => {

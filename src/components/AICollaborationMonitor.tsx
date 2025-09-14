@@ -37,24 +37,65 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
   const [activeTab, setActiveTab] = useState<'ai-to-ai' | 'user-chat'>('ai-to-ai');
   const [chatHistory, setChatHistory] = useState<any[]>([]);
 
+  const loadCollaborationHistory = async () => {
+    try {
+      // Fetch AI-to-AI communication history from the API
+      const response = await fetch('http://localhost:3001/api/ai/collaborate');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.messages) {
+          // Transform API messages to match the expected format
+          const formattedMessages = data.messages.map((msg: any) => ({
+            id: msg.id || `msg_${Date.now()}_${Math.random()}`,
+            timestamp: msg.timestamp,
+            type: msg.sender === 'claude' ? 'response' : 'request',
+            from: msg.sender === 'claude' ? 'claude' : 'rapid-crm',
+            content: msg.content,
+            status: 'completed' as const,
+            metadata: msg.context ? JSON.parse(msg.context) : undefined
+          }));
+          setMessages(formattedMessages);
+          return;
+        }
+      }
+      
+      // Fallback to local service if API fails
+      const history = claudeCollaborationService.getMessageHistory();
+      const formattedMessages = history.map(msg => ({
+        id: msg.id,
+        timestamp: msg.timestamp,
+        type: msg.role === 'user' ? 'request' : 'response',
+        from: msg.role === 'user' ? 'rapid-crm' : 'claude',
+        content: msg.content,
+        status: 'completed' as const,
+        metadata: msg.context
+      }));
+      setMessages(formattedMessages);
+    } catch (error) {
+      console.error('Failed to load collaboration history:', error);
+      // Fallback to local service
+      const history = claudeCollaborationService.getMessageHistory();
+      const formattedMessages = history.map(msg => ({
+        id: msg.id,
+        timestamp: msg.timestamp,
+        type: msg.role === 'user' ? 'request' : 'response',
+        from: msg.role === 'user' ? 'rapid-crm' : 'claude',
+        content: msg.content,
+        status: 'completed' as const,
+        metadata: msg.context
+      }));
+      setMessages(formattedMessages);
+    }
+  };
+
   useEffect(() => {
     // Check collaboration status
     const status = claudeCollaborationService.getCollaborationStatus();
     setIsConnected(status.isConnected);
     setSessionInfo(status.session);
 
-    // Get message history
-    const history = claudeCollaborationService.getMessageHistory();
-    const formattedMessages = history.map(msg => ({
-      id: msg.id,
-      timestamp: msg.timestamp,
-      type: msg.role === 'user' ? 'request' : 'response',
-      from: msg.role === 'user' ? 'rapid-crm' : 'claude',
-      content: msg.content,
-      status: 'completed' as const,
-      metadata: msg.context
-    }));
-    setMessages(formattedMessages);
+    // Load AI-to-AI communication history from API
+    loadCollaborationHistory();
 
     // Listen for real-time collaboration messages
     const handleCollaborationMessage = (event: CustomEvent) => {

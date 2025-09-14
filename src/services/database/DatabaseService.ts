@@ -28,10 +28,8 @@ export class DatabaseService {
   }
 
   private async loadDefaultConfigs(): Promise<DatabaseConfig[]> {
-    // In a real implementation, this would load from environment variables or config files
-    // For browser environment, use fallback values since process.env is not available
-    const isBrowser = typeof window !== 'undefined';
-    
+    // Only return the primary SQLite database connection
+    // No hardcoded PostgreSQL or other database connections
     return [
       {
         id: 'primary',
@@ -46,21 +44,6 @@ export class DatabaseService {
         connectionLimit: 20,
         timeout: 30000,
         isActive: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'backup',
-        name: 'Backup Database',
-        type: 'postgresql',
-        host: (isBrowser ? 'localhost' : (process.env.DB_HOST || 'localhost')),
-        port: parseInt(isBrowser ? '5432' : (process.env.DB_PORT || '5432')),
-        database: (isBrowser ? 'rapid_crm' : (process.env.DB_NAME || 'rapid_crm')),
-        username: (isBrowser ? 'postgres' : (process.env.DB_USER || 'postgres')),
-        password: (isBrowser ? 'password' : (process.env.DB_PASSWORD || 'password')),
-        ssl: isBrowser ? false : (process.env.DB_SSL === 'true'),
-        connectionLimit: 20,
-        timeout: 30000,
-        isActive: false,
         createdAt: new Date().toISOString()
       }
     ];
@@ -91,8 +74,9 @@ export class DatabaseService {
     // Simulate connection delay
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Simulate connection success/failure
-    const success = Math.random() > 0.1; // 90% success rate
+    // Always succeed for primary SQLite connection, simulate failure for others
+    const isPrimary = connection.id === 'primary' || connection.config.type === 'sqlite';
+    const success = isPrimary || Math.random() > 0.1; // 100% success for SQLite, 90% for others
     
     if (success) {
       connection.isConnected = true;

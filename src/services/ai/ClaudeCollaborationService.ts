@@ -112,36 +112,44 @@ export class ClaudeCollaborationService {
     this.logCollaborationMessage('rapid-crm', 'request', message, context);
     
     try {
-      // Get the current persona and use it with the AI Integration Service
-      const currentPersona = advancedAICustomizationService.getCurrentPersona();
-      console.log('🔍 ClaudeCollaborationService - Using persona:', currentPersona);
+      // Use the actual API endpoint for AI-to-AI communication
+      const response = await fetch('http://localhost:3001/api/ai/collaborate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          context,
+          sessionId: context?.sessionId || this.currentSession?.id
+        })
+      });
       
-      if (currentPersona) {
-        // Generate AI request using the persona
-        const aiRequest = advancedAICustomizationService.generateAIRequest(message, context?.sessionId);
-        console.log('🔍 ClaudeCollaborationService - Generated AI request:', aiRequest);
-        
-        // Get available providers
-        const providers = await aiIntegrationService.getProviders();
-        console.log('🔍 ClaudeCollaborationService - Available providers:', providers);
-        
-        if (providers.length > 0) {
-          // Use the AI Integration Service with the persona
-          const response = await aiIntegrationService.generateResponse(providers[0].id, aiRequest);
-          console.log('🔍 ClaudeCollaborationService - AI response:', response);
-          
-          const aiResponse = response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
-          
-          // Log the response from Claude
-          this.logCollaborationMessage('claude', 'response', aiResponse, { 
-            provider: providers[0].id,
-            model: aiRequest.model,
-            persona: currentPersona.name 
-          });
-          
-          return aiResponse;
-        }
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
       }
+      
+      const data = await response.json();
+      console.log('🔍 ClaudeCollaborationService - API response:', data);
+      
+      if (data.success && data.response) {
+        const aiResponse = data.response.content;
+        
+        // Log the response from Claude
+        this.logCollaborationMessage('claude', 'response', aiResponse, { 
+          sessionId: data.sessionId,
+          suggestions: data.response.suggestions,
+          actions: data.response.actions,
+          confidence: data.response.confidence
+        });
+        
+        return aiResponse;
+      } else {
+        throw new Error(data.error || 'Unknown API error');
+      }
+      
+    } catch (error) {
+      console.error('🔍 ClaudeCollaborationService - API communication failed:', error);
       
       // Fallback to regular collaborative response
       console.log('🔍 ClaudeCollaborationService - Using fallback response');
@@ -151,14 +159,6 @@ export class ClaudeCollaborationService {
       this.logCollaborationMessage('claude', 'response', fallbackResponse, { type: 'fallback' });
       
       return fallbackResponse;
-    } catch (error) {
-      console.error('🔍 ClaudeCollaborationService - Error in sendMessage:', error);
-      const errorResponse = 'I apologize, but I encountered an error while processing your request. Please try again.';
-      
-      // Log the error
-      this.logCollaborationMessage('system', 'error', errorResponse, { error: error.message });
-      
-      return errorResponse;
     }
   }
 

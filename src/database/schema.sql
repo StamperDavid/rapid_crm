@@ -610,3 +610,18 @@ CREATE TABLE IF NOT EXISTS api_keys (
 
 -- Index for API keys table
 CREATE INDEX IF NOT EXISTS idx_api_keys_provider ON api_keys(provider);
+
+-- AI Collaboration Logs Table
+CREATE TABLE IF NOT EXISTS ai_collaboration_logs (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    message_type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    context TEXT,
+    timestamp TEXT NOT NULL
+);
+
+-- Index for AI collaboration logs table
+CREATE INDEX IF NOT EXISTS idx_ai_collaboration_logs_session ON ai_collaboration_logs(session_id);
+CREATE INDEX IF NOT EXISTS idx_ai_collaboration_logs_timestamp ON ai_collaboration_logs(timestamp);
