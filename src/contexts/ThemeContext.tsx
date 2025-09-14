@@ -62,9 +62,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             setTheme(themeData.theme || 'light');
             if (themeData.customTheme) {
               setCustomTheme(themeData.customTheme);
+              console.log('Custom theme loaded from database:', themeData.customTheme);
             }
             console.log('Theme loaded from database:', themeData);
             return;
+          } else {
+            console.log('Database theme response not ok:', response.status, response.statusText);
           }
         } catch (dbError) {
           console.log('Database theme loading failed, using localStorage fallback:', dbError);
@@ -81,7 +84,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         // Load custom theme settings
         const savedCustomTheme = localStorage.getItem('customTheme');
         if (savedCustomTheme) {
-          setCustomTheme(JSON.parse(savedCustomTheme));
+          try {
+            const parsedCustomTheme = JSON.parse(savedCustomTheme);
+            setCustomTheme(parsedCustomTheme);
+            console.log('Custom theme loaded from localStorage:', parsedCustomTheme);
+          } catch (parseError) {
+            console.error('Error parsing custom theme from localStorage:', parseError);
+          }
         }
       } catch (error) {
         console.error('Error loading theme:', error);
@@ -99,7 +108,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         
         // Save to database
         try {
-          await fetch('/api/theme', {
+          const response = await fetch('/api/theme', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -109,11 +118,20 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
               customTheme
             }),
           });
-          console.log('Theme saved to database successfully');
+          
+          if (response.ok) {
+            console.log('Theme saved to database successfully');
+          } else {
+            throw new Error(`Database save failed: ${response.status} ${response.statusText}`);
+          }
         } catch (dbError) {
           console.log('Database theme saving failed, using localStorage fallback:', dbError);
           // Fallback to localStorage
           localStorage.setItem('theme', theme);
+          if (customTheme) {
+            localStorage.setItem('customTheme', JSON.stringify(customTheme));
+            console.log('Custom theme saved to localStorage as fallback');
+          }
         }
         
         // Apply theme to DOM

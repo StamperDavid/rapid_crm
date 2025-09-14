@@ -2,6 +2,8 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
+const multer = require('multer');
+const fs = require('fs');
 
 // ELD Service Integration (Containerized) - Commented out until module is created
 // const { EldApiRoutes } = require('./src/services/eld/EldApiRoutes');
@@ -12,6 +14,41 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    // Create uploads directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
 
 // Database setup
 const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
@@ -1681,6 +1718,41 @@ app.post('/api/theme', async (req, res) => {
   } catch (error) {
     console.error('Error saving theme:', error);
     res.status(500).json({ error: 'Failed to save theme' });
+  }
+});
+
+// Logo upload endpoint
+app.post('/api/upload-logo', upload.single('logo'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Generate a unique filename
+    const fileExtension = path.extname(req.file.originalname);
+    const fileName = `logo_${Date.now()}${fileExtension}`;
+    const filePath = path.join(__dirname, 'public', 'uploads', fileName);
+
+    // Move the file to the uploads directory
+    fs.renameSync(req.file.path, filePath);
+
+    // Return the URL path for the uploaded file
+    const logoUrl = `/uploads/${fileName}`;
+    
+    console.log('Logo uploaded successfully:', {
+      originalName: req.file.originalname,
+      fileName: fileName,
+      logoUrl: logoUrl
+    });
+
+    res.json({ 
+      success: true, 
+      logoUrl: logoUrl,
+      fileName: fileName
+    });
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    res.status(500).json({ error: 'Failed to upload logo' });
   }
 });
 

@@ -90,11 +90,13 @@ const ThemeCustomizer: React.FC = () => {
   useEffect(() => {
     // Load saved theme settings from ThemeContext
     if (customTheme) {
+      console.log('Loading custom theme from context:', customTheme);
       setSettings({ ...defaultTheme, ...customTheme });
     } else {
       const savedSettings = localStorage.getItem('customTheme');
       if (savedSettings) {
         const parsedSettings = JSON.parse(savedSettings);
+        console.log('Loading custom theme from localStorage:', parsedSettings);
         setSettings({ ...defaultTheme, ...parsedSettings });
         updateCustomTheme(parsedSettings);
       }
@@ -106,7 +108,7 @@ const ThemeCustomizer: React.FC = () => {
     setHasChanges(true);
   };
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     console.log('Logo upload - file selected:', file);
     
@@ -117,17 +119,28 @@ const ThemeCustomizer: React.FC = () => {
         type: file.type
       });
       
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const logoUrl = e.target?.result as string;
-        console.log('Logo upload - data URL generated:', logoUrl.substring(0, 100) + '...');
-        handleSettingChange('logoUrl', logoUrl);
-        console.log('Logo upload - settings updated:', settings);
-      };
-      reader.onerror = (error) => {
-        console.error('Logo upload - FileReader error:', error);
-      };
-      reader.readAsDataURL(file);
+      // Create FormData to upload the file
+      const formData = new FormData();
+      formData.append('logo', file);
+      
+      try {
+        const response = await fetch('/api/upload-logo', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Logo upload - server response:', result);
+          handleSettingChange('logoUrl', result.logoUrl);
+        } else {
+          console.error('Logo upload - server error:', response.statusText);
+          alert('Failed to upload logo. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logo upload - network error:', error);
+        alert('Failed to upload logo. Please check your connection.');
+      }
     }
   };
 
@@ -386,12 +399,14 @@ const ThemeCustomizer: React.FC = () => {
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
               </div>
-              {settings.logoUrl && (
+              {settings.logoUrl ? (
                 <div className="flex items-center space-x-4">
                   <img
                     src={settings.logoUrl}
                     alt="Logo preview"
                     className="h-8 border border-gray-300 dark:border-gray-600 rounded"
+                    onLoad={() => console.log('Logo loaded successfully')}
+                    onError={() => console.error('Logo failed to load:', settings.logoUrl)}
                   />
                   <NumberInput
                     label="Logo Height"
@@ -401,6 +416,10 @@ const ThemeCustomizer: React.FC = () => {
                     max={64}
                     unit="px"
                   />
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  No logo uploaded. Upload an image to see preview.
                 </div>
               )}
             </div>
