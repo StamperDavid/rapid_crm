@@ -17,10 +17,10 @@ interface ApiConfig {
  * Get API configuration based on current environment
  */
 export function getApiConfig(): ApiConfig {
-  // In development, use relative URLs to leverage Vite proxy
+  // In development, use absolute URLs to connect to backend server
   if (import.meta.env.DEV) {
     return {
-      baseUrl: '/api',
+      baseUrl: 'http://localhost:3001/api',
       timeout: 10000,
       retryAttempts: 3,
     };

@@ -36,7 +36,7 @@ export class ApiKeyService {
   private validations: Map<string, ApiKeyValidation> = new Map();
   private usage: Map<string, ApiKeyUsage> = new Map();
   private isInitialized = false;
-  private API_BASE = '/api'; // Temporarily hardcoded to debug
+  private API_BASE = 'http://localhost:3001/api'; // Use proper backend URL
 
   constructor() {
     this.loadApiKeys();

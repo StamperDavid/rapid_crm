@@ -32,6 +32,7 @@ import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIAdminPage from './pages/AIAdminPage';
 import ClientPortal from './pages/ClientPortal';
 import OnboardingAgent from './pages/OnboardingAgent';
+import ClaudeEventListener from './components/ClaudeEventListener';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -56,6 +57,7 @@ function App() {
               <QueryClientProvider client={queryClient}>
               <Router>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+                <ClaudeEventListener />
                 <Layout>
                   <Routes>
                     {/* Core Dashboard - Always loaded */}

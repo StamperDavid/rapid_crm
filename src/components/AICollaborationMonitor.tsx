@@ -169,11 +169,19 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
 
   const testCollaboration = async () => {
     try {
-      addSystemMessage('Testing AI-to-AI collaboration...');
-      const response = await claudeCollaborationService.sendMessage('Hello Claude, this is a test message from Rapid CRM AI. Can you confirm you received this?');
-      addSystemMessage(`Claude responded: ${response}`);
+      addSystemMessage('Sending client portal setup request to Rapid CRM AI...');
+      const response = await claudeCollaborationService.sendMessage(
+        'Rapid CRM AI: I need you to analyze the current client portal setup and identify what needs to be implemented. Please check: 1) Database tables needed for client portal (client_portal_settings, client_sessions, etc.), 2) API endpoints for client portal functionality, 3) Theme integration with client portal, 4) Customer support agent integration points. Focus on ensuring everything uses rapid_crm.db only.',
+        { 
+          currentModule: 'client-portal', 
+          userRole: 'admin', 
+          activeFeatures: ['client-portal', 'database', 'api', 'theme'], 
+          sessionId: 'client-portal-setup' 
+        }
+      );
+      addSystemMessage(`Rapid CRM AI responded: ${response}`);
     } catch (error) {
-      addSystemMessage(`Error testing collaboration: ${error.message}`);
+      addSystemMessage(`Error collaborating with Rapid CRM AI: ${error.message}`);
     }
   };
 
