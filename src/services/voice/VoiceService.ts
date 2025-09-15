@@ -3,7 +3,7 @@ export interface VoiceSettings {
   pitch: number;
   volume: number;
   voice: string;
-  provider: 'browser' | 'elevenlabs' | 'azure' | 'openai';
+  provider: 'browser' | 'azure' | 'openai' | 'playht';
   apiKey?: string;
   model?: string;
 }
@@ -81,13 +81,6 @@ export class VoiceService {
         supportsSettings: true
       },
       {
-        name: 'ElevenLabs',
-        id: 'elevenlabs',
-        voices: this.getElevenLabsVoices(),
-        supportsCustomUpload: true,
-        supportsSettings: true
-      },
-      {
         name: 'Azure Speech',
         id: 'azure',
         voices: this.getAzureVoices(),
@@ -98,6 +91,13 @@ export class VoiceService {
         name: 'OpenAI TTS',
         id: 'openai',
         voices: this.getOpenAIVoices(),
+        supportsCustomUpload: false,
+        supportsSettings: true
+      },
+      {
+        name: 'PlayHT',
+        id: 'playht',
+        voices: this.getPlayHTVoices(),
         supportsCustomUpload: false,
         supportsSettings: true
       }
@@ -120,74 +120,6 @@ export class VoiceService {
     }));
   }
 
-  // Get ElevenLabs voices
-  private getElevenLabsVoices(): VoiceOption[] {
-    return [
-      { id: 'rachel', name: 'Rachel', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'drew', name: 'Drew', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'clyde', name: 'Clyde', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'paul', name: 'Paul', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'domi', name: 'Domi', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'dave', name: 'Dave', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'fin', name: 'Fin', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'sarah', name: 'Sarah', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'antoni', name: 'Antoni', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'thomas', name: 'Thomas', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'charlie', name: 'Charlie', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'emily', name: 'Emily', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'elli', name: 'Elli', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'callum', name: 'Callum', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'patrick', name: 'Patrick', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'harry', name: 'Harry', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'liam', name: 'Liam', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'dorothy', name: 'Dorothy', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'josh', name: 'Josh', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'arnold', name: 'Arnold', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'adam', name: 'Adam', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'sam', name: 'Sam', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'nicole', name: 'Nicole', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'jessie', name: 'Jessie', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'ryan', name: 'Ryan', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'matilda', name: 'Matilda', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'william', name: 'William', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'grace', name: 'Grace', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'daniel', name: 'Daniel', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'lily', name: 'Lily', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'serena', name: 'Serena', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'mason', name: 'Mason', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'layla', name: 'Layla', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'colette', name: 'Colette', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'thomas', name: 'Thomas', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'charlotte', name: 'Charlotte', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'alice', name: 'Alice', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'matthew', name: 'Matthew', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'james', name: 'James', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'joseph', name: 'Joseph', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'jeremy', name: 'Jeremy', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'michael', name: 'Michael', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'ethan', name: 'Ethan', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'gigi', name: 'Gigi', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'freya', name: 'Freya', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'grace', name: 'Grace', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'daniel', name: 'Daniel', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'lily', name: 'Lily', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'serena', name: 'Serena', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'mason', name: 'Mason', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'layla', name: 'Layla', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'colette', name: 'Colette', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'thomas', name: 'Thomas', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'charlotte', name: 'Charlotte', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'alice', name: 'Alice', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'matthew', name: 'Matthew', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'james', name: 'James', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'joseph', name: 'Joseph', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'jeremy', name: 'Jeremy', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'michael', name: 'Michael', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'ethan', name: 'Ethan', language: 'en-US', gender: 'male', accent: 'American' },
-      { id: 'gigi', name: 'Gigi', language: 'en-US', gender: 'female', accent: 'American' },
-      { id: 'freya', name: 'Freya', language: 'en-US', gender: 'female', accent: 'American' }
-    ];
-  }
 
   // Get Azure Speech voices
   private getAzureVoices(): VoiceOption[] {
@@ -214,6 +146,32 @@ export class VoiceService {
       { id: 'onyx', name: 'Onyx', language: 'en-US', gender: 'male', accent: 'American' },
       { id: 'nova', name: 'Nova', language: 'en-US', gender: 'female', accent: 'American' },
       { id: 'shimmer', name: 'Shimmer', language: 'en-US', gender: 'female', accent: 'American' }
+    ];
+  }
+
+  // Get PlayHT voices - Premium conversational AI voices
+  private getPlayHTVoices(): VoiceOption[] {
+    return [
+      // Featured voices from PlayHT
+      { id: 'mikael', name: 'Mikael', language: 'en-US', gender: 'male', accent: 'American', description: 'Award-winning narration voice - perfect for storytelling' },
+      { id: 'briggs', name: 'Briggs', language: 'en-US', gender: 'male', accent: 'American', description: 'Engaging voice that makes any content compelling' },
+      { id: 'hubert', name: 'Hubert', language: 'en-US', gender: 'male', accent: 'American', description: 'Professional tone perfect for training and business' },
+      { id: 'deedee', name: 'Deedee', language: 'en-US', gender: 'female', accent: 'American', description: 'Poetic and expressive voice for creative content' },
+      { id: 'mamaw', name: 'Mamaw', language: 'en-US', gender: 'female', accent: 'American', description: 'Enthusiastic and motivational voice' },
+      { id: 'conor', name: 'Conor', language: 'en-US', gender: 'male', accent: 'American', description: 'Rugged charm with authentic personality' },
+      { id: 'mia', name: 'Mia', language: 'en-US', gender: 'female', accent: 'American', description: 'Inviting storyteller who captivates listeners' },
+      { id: 'atlas', name: 'Atlas', language: 'en-US', gender: 'male', accent: 'American', description: 'Perfect for announcements and news' },
+      { id: 'navya', name: 'Navya', language: 'en-US', gender: 'female', accent: 'American', description: 'Warm, enduring, and professional voice actor' },
+      
+      // Additional conversational voices
+      { id: 'alex', name: 'Alex', language: 'en-US', gender: 'male', accent: 'American', description: 'Friendly and approachable conversational voice' },
+      { id: 'sarah', name: 'Sarah', language: 'en-US', gender: 'female', accent: 'American', description: 'Clear and professional female voice' },
+      { id: 'david', name: 'David', language: 'en-US', gender: 'male', accent: 'American', description: 'Confident and authoritative voice' },
+      { id: 'emma', name: 'Emma', language: 'en-US', gender: 'female', accent: 'American', description: 'Warm and conversational voice' },
+      { id: 'james', name: 'James', language: 'en-US', gender: 'male', accent: 'American', description: 'Professional and articulate voice' },
+      { id: 'lily', name: 'Lily', language: 'en-US', gender: 'female', accent: 'American', description: 'Sweet and friendly voice' },
+      { id: 'michael', name: 'Michael', language: 'en-US', gender: 'male', accent: 'American', description: 'Strong and confident voice' },
+      { id: 'sophia', name: 'Sophia', language: 'en-US', gender: 'female', accent: 'American', description: 'Elegant and sophisticated voice' }
     ];
   }
 
@@ -297,8 +255,8 @@ export class VoiceService {
     switch (this.settings.provider) {
       case 'browser':
         return this.speakBrowser(text);
-      case 'elevenlabs':
-        return this.speakElevenLabs(text);
+      case 'playht':
+        return this.speakPlayHT(text);
       case 'azure':
         return this.speakAzure(text);
       case 'openai':
@@ -335,31 +293,30 @@ export class VoiceService {
     });
   }
 
-  // ElevenLabs speech synthesis
-  private async speakElevenLabs(text: string): Promise<void> {
+  // PlayHT speech synthesis
+  private async speakPlayHT(text: string): Promise<void> {
     if (!this.settings.apiKey) {
-      throw new Error('ElevenLabs API key not configured');
+      throw new Error('PlayHT API key not configured');
     }
 
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${this.settings.voice}`, {
+    const response = await fetch('https://api.play.ht/api/v2/tts', {
       method: 'POST',
       headers: {
-        'Accept': 'audio/mpeg',
-        'Content-Type': 'application/json',
-        'xi-api-key': this.settings.apiKey
+        'Authorization': `Bearer ${this.settings.apiKey}`,
+        'X-USER-ID': this.settings.apiKey, // PlayHT uses the same key for both
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         text: text,
-        model_id: this.settings.model || 'eleven_monolingual_v1',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.5
-        }
+        voice: this.settings.voice,
+        output_format: 'mp3',
+        speed: this.settings.rate,
+        sample_rate: 24000
       })
     });
 
     if (!response.ok) {
-      throw new Error(`ElevenLabs API error: ${response.statusText}`);
+      throw new Error(`PlayHT API error: ${response.statusText}`);
     }
 
     const audioBlob = await response.blob();

@@ -610,3 +610,148 @@ CREATE TABLE IF NOT EXISTS api_keys (
 
 -- Index for API keys table
 CREATE INDEX IF NOT EXISTS idx_api_keys_provider ON api_keys(provider);
+
+-- AI Collaboration Messages (NEW CUSTOM TABLE)
+CREATE TABLE IF NOT EXISTS ai_collaboration_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id TEXT UNIQUE NOT NULL,
+    from_ai TEXT NOT NULL,
+    to_ai TEXT NOT NULL,
+    message_type TEXT NOT NULL CHECK (message_type IN ('text', 'project_update', 'database_operation', 'code_generation', 'task_assignment')),
+    content TEXT NOT NULL,
+    metadata TEXT, -- JSON string for additional data
+    status TEXT DEFAULT 'sent' CHECK (status IN ('sent', 'delivered', 'read', 'acknowledged')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- AI Project Coordination (NEW CUSTOM TABLE)
+CREATE TABLE IF NOT EXISTS ai_project_coordination (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id TEXT UNIQUE NOT NULL,
+    project_name TEXT NOT NULL,
+    description TEXT,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'paused', 'completed', 'cancelled')),
+    assigned_ais TEXT NOT NULL, -- JSON array of AI agents
+    current_task TEXT,
+    progress_percentage INTEGER DEFAULT 0,
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- AI Task Assignments (NEW CUSTOM TABLE)
+CREATE TABLE IF NOT EXISTS ai_task_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT UNIQUE NOT NULL,
+    project_id TEXT NOT NULL,
+    assigned_to_ai TEXT NOT NULL,
+    task_type TEXT NOT NULL CHECK (task_type IN ('database_operation', 'code_generation', 'file_operation', 'api_development', 'testing')),
+    task_description TEXT NOT NULL,
+    priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+    status TEXT DEFAULT 'assigned' CHECK (status IN ('assigned', 'in_progress', 'completed', 'failed', 'cancelled')),
+    result_data TEXT, -- JSON string for task results
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES ai_project_coordination(project_id)
+);
+
+-- AI Task Queue for Cursor AI Collaboration (NEW TABLE)
+CREATE TABLE IF NOT EXISTS ai_task_queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT UNIQUE NOT NULL,
+    created_by_ai TEXT NOT NULL, -- 'RapidCRM_AI' or 'Claude_AI'
+    assigned_to_ai TEXT NOT NULL, -- 'RapidCRM_AI' or 'Claude_AI'
+    task_type TEXT NOT NULL CHECK (task_type IN ('code_change', 'bug_fix', 'feature_request', 'analysis', 'review', 'deployment')),
+    priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'failed', 'cancelled')),
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    requirements TEXT, -- JSON string for detailed requirements
+    context TEXT, -- JSON string for additional context
+    result_data TEXT, -- JSON string for task results
+    error_message TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME
+);
+
+-- AI Identity Management Table
+CREATE TABLE IF NOT EXISTS ai_identity (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    title TEXT NOT NULL,
+    role TEXT NOT NULL,
+    specialization TEXT NOT NULL,
+    responsibilities TEXT, -- JSON string for responsibilities array
+    expertise TEXT, -- JSON string for expertise object
+    collaboration_partner TEXT, -- JSON string for collaboration partner object
+    communication_style TEXT, -- JSON string for communication style array
+    key_message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ELD (Electronic Logging Device) Tables - Integrated with existing CRM database
+CREATE TABLE IF NOT EXISTS hos_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    driver_id TEXT NOT NULL,
+    vehicle_id TEXT,
+    log_type TEXT NOT NULL CHECK (log_type IN ('driving', 'on_duty', 'off_duty', 'sleeper_berth')),
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
+    location TEXT,
+    odometer_reading INTEGER,
+    is_edited BOOLEAN DEFAULT 0,
+    edit_reason TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id),
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+CREATE TABLE IF NOT EXISTS dvir_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    driver_id TEXT NOT NULL,
+    vehicle_id TEXT NOT NULL,
+    inspection_type TEXT NOT NULL CHECK (inspection_type IN ('pre_trip', 'post_trip', 'roadside')),
+    inspection_date DATETIME NOT NULL,
+    defects TEXT, -- JSON string for defects
+    is_safe_to_drive BOOLEAN NOT NULL,
+    signature TEXT, -- Base64 encoded signature
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id),
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+CREATE TABLE IF NOT EXISTS eld_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    driver_id TEXT NOT NULL,
+    alert_type TEXT NOT NULL CHECK (alert_type IN ('hos_violation', 'dvir_defect', 'system_alert')),
+    severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT 0,
+    is_resolved BOOLEAN DEFAULT 0,
+    resolved_at DATETIME,
+    resolved_by TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id)
+);
+
+-- Indexes for AI collaboration tables
+CREATE INDEX IF NOT EXISTS idx_ai_messages_from_to ON ai_collaboration_messages(from_ai, to_ai);
+CREATE INDEX IF NOT EXISTS idx_ai_messages_type ON ai_collaboration_messages(message_type);
+CREATE INDEX IF NOT EXISTS idx_ai_messages_created ON ai_collaboration_messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_ai_projects_status ON ai_project_coordination(status);
+CREATE INDEX IF NOT EXISTS idx_ai_tasks_assigned ON ai_task_assignments(assigned_to_ai);
+CREATE INDEX IF NOT EXISTS idx_ai_tasks_status ON ai_task_assignments(status);
+
+-- Indexes for AI task queue
+CREATE INDEX IF NOT EXISTS idx_ai_task_queue_created_by ON ai_task_queue(created_by_ai);
+CREATE INDEX IF NOT EXISTS idx_ai_task_queue_assigned_to ON ai_task_queue(assigned_to_ai);
+CREATE INDEX IF NOT EXISTS idx_ai_task_queue_status ON ai_task_queue(status);
+CREATE INDEX IF NOT EXISTS idx_ai_task_queue_priority ON ai_task_queue(priority);
+CREATE INDEX IF NOT EXISTS idx_ai_task_queue_created_at ON ai_task_queue(created_at);

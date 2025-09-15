@@ -33,6 +33,9 @@ import AIAdminPage from './pages/AIAdminPage';
 import ClientPortal from './pages/ClientPortal';
 import OnboardingAgent from './pages/OnboardingAgent';
 import ClaudeEventListener from './components/ClaudeEventListener';
+// import CursorAICollaborationPanel from './components/CursorAICollaborationPanel'; // Component not found
+import WorkflowOptimizationDemo from './components/WorkflowOptimizationDemo';
+import RapidCRMAIProfile from './components/RapidCRMAIProfile';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -93,6 +96,10 @@ function App() {
                     
                     {/* AI Administration - Admin access only */}
                     <Route path="/admin/ai-control" element={<AIAdminPage />} />
+                    
+                    {/* AI Collaboration - True AI-to-AI communication */}
+                    {/* <Route path="/ai-collaboration" element={<CursorAICollaborationPanel />} /> */}
+                    <Route path="/workflow-optimization" element={<WorkflowOptimizationDemo />} />
                     
                     {/* Legacy routes for backward compatibility */}
                     <Route path="/data" element={<DataManagement />} />

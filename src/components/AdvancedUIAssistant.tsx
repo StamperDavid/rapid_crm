@@ -37,8 +37,8 @@ const AdvancedUIAssistant: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<string>('');
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<string>('mikael');
+  const [availableVoices, setAvailableVoices] = useState<Array<{id: string, name: string, description: string, gender: string}>>([]);
   const [personas, setPersonas] = useState<AIPersona[]>([]);
   const [voiceConfigs, setVoiceConfigs] = useState<VoiceConfiguration[]>([]);
   const [modelConfigs, setModelConfigs] = useState<AIModelConfiguration[]>([]);
@@ -118,28 +118,74 @@ const AdvancedUIAssistant: React.FC = () => {
         synthesisRef.current = window.speechSynthesis;
         console.log('🔍 AdvancedUIAssistant - Speech synthesis initialized');
         
-        // Load available voices
-        const loadVoices = () => {
-          const voices = window.speechSynthesis.getVoices();
-          console.log('🔍 AdvancedUIAssistant - Available voices:', voices.length, voices.map(v => v.name));
-          setAvailableVoices(voices);
-          
-          if (voices.length > 0 && !selectedVoice) {
-            // Default to first English voice or first available voice
-            const englishVoice = voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-            if (englishVoice) {
-              setSelectedVoice(englishVoice.name);
-              console.log('🔍 AdvancedUIAssistant - Default voice selected:', englishVoice.name);
+        // Load browser voices and server voices
+        const loadVoices = async () => {
+          try {
+            // Get browser's actual available voices
+            const browserVoices = speechSynthesis.getVoices();
+            console.log('🔍 AdvancedUIAssistant - Browser voices:', browserVoices.length);
+            console.log('🔍 AdvancedUIAssistant - Available browser voices:', browserVoices.map(v => `${v.name} (${v.lang})`));
+            
+            // Get server voices
+            const response = await fetch('http://localhost:3001/api/ai/voices');
+            const data = await response.json();
+            
+            console.log('🔍 AdvancedUIAssistant - Server voices response:', data);
+            
+            let voices = [];
+            
+            // Check if we have Unreal Speech voices from server
+            if (data.success && data.voices && data.voices.length > 0) {
+              console.log('🔍 AdvancedUIAssistant - Using Unreal Speech voices:', data.voices);
+              voices = data.voices;
+            } else if (browserVoices.length > 0) {
+              // Fallback to browser voices
+              console.log('🔍 AdvancedUIAssistant - Using browser voices as fallback');
+              voices = browserVoices.map((voice, index) => {
+                const serverVoice = data.success && data.voices[index] ? data.voices[index] : null;
+                return {
+                  id: voice.name.toLowerCase().replace(/\s+/g, '-'),
+                  name: voice.name,
+                  description: `${voice.name} (${voice.lang})`,
+                  provider: 'browser',
+                  voiceId: voice.name,
+                  settings: serverVoice?.settings || {
+                    rate: 1.0,
+                    pitch: 1.0,
+                    volume: 1.0
+                  },
+                  browserVoice: voice
+                };
+              });
+            } else {
+              // Fallback to server voices if no browser voices
+              voices = data.success ? data.voices : [];
             }
+            
+            console.log('🔍 AdvancedUIAssistant - Available voices:', voices.length);
+            setAvailableVoices(voices);
+            
+            if (voices.length > 0 && !selectedVoice) {
+              setSelectedVoice(voices[0].id);
+              console.log('🔍 AdvancedUIAssistant - Default voice selected:', voices[0].id);
+            }
+          } catch (error) {
+            console.error('🔍 AdvancedUIAssistant - Error loading voices:', error);
           }
         };
         
-        // Load voices immediately and on change
-        loadVoices();
-        window.speechSynthesis.onvoiceschanged = loadVoices;
+        // Load voices - wait for voices to be available
+        const loadVoicesWhenReady = () => {
+          const voices = speechSynthesis.getVoices();
+          if (voices.length > 0) {
+            loadVoices();
+          } else {
+            // Voices not ready yet, wait a bit and try again
+            setTimeout(loadVoicesWhenReady, 100);
+          }
+        };
         
-        // Also try to load voices after a short delay (some browsers need this)
-        setTimeout(loadVoices, 100);
+        loadVoicesWhenReady();
       } else {
         console.error('🔍 AdvancedUIAssistant - Speech synthesis not supported in this browser');
       }
@@ -190,61 +236,164 @@ const AdvancedUIAssistant: React.FC = () => {
 
   const speak = async (text: string) => {
     console.log('🔍 AdvancedUIAssistant - speak called with text:', text);
-    console.log('🔍 AdvancedUIAssistant - currentVoice:', currentVoice);
-    console.log('🔍 AdvancedUIAssistant - synthesisRef.current:', synthesisRef.current);
+    console.log('🔍 AdvancedUIAssistant - selectedVoice:', selectedVoice);
     
-    // Always use browser speech synthesis for now (most reliable)
-    if (synthesisRef.current && 'speechSynthesis' in window) {
-      console.log('🔍 AdvancedUIAssistant - Using browser speech synthesis');
+    try {
+      // Use Unreal Speech for voice synthesis
+      const keyResponse = await fetch('http://localhost:3001/api/ai/voice-key');
+      const keyData = await keyResponse.json();
       
-      const utterance = new SpeechSynthesisUtterance(text);
+      console.log('🔍 AdvancedUIAssistant - Voice key response:', keyData);
       
-      // Apply voice settings
-      utterance.rate = voiceSettings.rate;
-      utterance.pitch = voiceSettings.pitch;
-      utterance.volume = voiceSettings.volume;
-      console.log('🔍 AdvancedUIAssistant - Applied voice settings:', {
-        rate: utterance.rate,
-        pitch: utterance.pitch,
-        volume: utterance.volume
+      if (keyData.hasKey && keyData.provider === 'unreal-speech') {
+        console.log('🔍 AdvancedUIAssistant - Using Unreal Speech for TTS');
+        
+        // Get selected voice data
+        const selectedVoiceData = availableVoices.find(v => v.id === selectedVoice);
+        const voiceId = selectedVoiceData?.voiceId || 'Eleanor';
+        
+        // Call Unreal Speech API
+        const ttsResponse = await fetch('http://localhost:3001/api/ai/unreal-speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: text,
+            voiceId: voiceId,
+            speed: selectedVoiceData?.settings?.rate || 0,
+            pitch: selectedVoiceData?.settings?.pitch || 1.0
+          })
+        });
+        
+        if (ttsResponse.ok) {
+          const audioBlob = await ttsResponse.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          await audio.play();
+          return;
+        } else {
+          console.error('🔍 AdvancedUIAssistant - Unreal Speech TTS failed, falling back to browser TTS');
+        }
+      } else {
+        console.error('🔍 AdvancedUIAssistant - Unreal Speech API key not found, falling back to browser TTS');
+        // Fallback to browser TTS
+        if (synthesisRef.current && 'speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          
+          // Get voice settings from selected voice
+          const selectedVoiceData = availableVoices.find(v => v.id === selectedVoice);
+          if (selectedVoiceData) {
+            // Use actual browser voice if available
+            if (selectedVoiceData.browserVoice) {
+              utterance.voice = selectedVoiceData.browserVoice;
+              console.log('🔍 AdvancedUIAssistant - Using browser voice:', selectedVoiceData.browserVoice.name);
+            }
+            
+            // Apply voice settings
+            if (selectedVoiceData.settings) {
+              utterance.rate = selectedVoiceData.settings.rate || voiceSettings.rate;
+              utterance.pitch = selectedVoiceData.settings.pitch || voiceSettings.pitch;
+              utterance.volume = selectedVoiceData.settings.volume || voiceSettings.volume;
+            }
+          } else {
+            utterance.rate = voiceSettings.rate;
+            utterance.pitch = voiceSettings.pitch;
+            utterance.volume = voiceSettings.volume;
+          }
+          
+          utterance.onstart = () => setIsSpeaking(true);
+          utterance.onend = () => setIsSpeaking(false);
+          utterance.onerror = () => setIsSpeaking(false);
+          
+          synthesisRef.current.speak(utterance);
+        }
+        return;
+      }
+      
+      console.log('🔍 AdvancedUIAssistant - Using PlayHT voice synthesis');
+      setIsSpeaking(true);
+      
+      // Call PlayHT API
+      const response = await fetch('https://api.play.ht/api/v2/tts', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${keyData.apiKey}`,
+          'X-USER-ID': keyData.apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: text,
+          voice: selectedVoice,
+          output_format: 'mp3',
+          speed: voiceSettings.rate,
+          sample_rate: 24000
+        })
       });
       
-      // Try to select a voice if available
-      if (selectedVoice && availableVoices.length > 0) {
-        const voice = availableVoices.find(v => v.name === selectedVoice);
-        if (voice) {
-          utterance.voice = voice;
-          console.log('🔍 AdvancedUIAssistant - Selected voice:', voice.name);
-        }
+      if (!response.ok) {
+        throw new Error(`PlayHT API error: ${response.statusText}`);
       }
       
-      // Set up event handlers
-      utterance.onstart = () => {
-        console.log('🔍 AdvancedUIAssistant - Speech started');
-        setIsSpeaking(true);
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        setIsSpeaking(false);
+        console.log('🔍 AdvancedUIAssistant - PlayHT speech ended');
       };
       
-      utterance.onend = () => {
-        console.log('🔍 AdvancedUIAssistant - Speech ended');
+      audio.onerror = () => {
+        URL.revokeObjectURL(audioUrl);
         setIsSpeaking(false);
+        console.error('🔍 AdvancedUIAssistant - PlayHT audio playback error');
       };
       
-      utterance.onerror = (event) => {
-        console.error('🔍 AdvancedUIAssistant - Speech error:', event);
-        setIsSpeaking(false);
-      };
+      await audio.play();
+      console.log('🔍 AdvancedUIAssistant - PlayHT speech started');
       
-      // Speak the text
-      try {
-        synthesisRef.current.speak(utterance);
-        console.log('🔍 AdvancedUIAssistant - Speech synthesis initiated');
-      } catch (error) {
-        console.error('🔍 AdvancedUIAssistant - Failed to start speech:', error);
-        setIsSpeaking(false);
-      }
-    } else {
-      console.error('🔍 AdvancedUIAssistant - Speech synthesis not available');
+    } catch (error) {
+      console.error('🔍 AdvancedUIAssistant - PlayHT speech error:', error);
       setIsSpeaking(false);
+      
+      // Fallback to browser TTS
+      if (synthesisRef.current && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Get voice settings from selected voice
+        const selectedVoiceData = availableVoices.find(v => v.id === selectedVoice);
+        if (selectedVoiceData) {
+          // Use actual browser voice if available
+          if (selectedVoiceData.browserVoice) {
+            utterance.voice = selectedVoiceData.browserVoice;
+            console.log('🔍 AdvancedUIAssistant - Using browser voice (fallback):', selectedVoiceData.browserVoice.name);
+          }
+          
+          // Apply voice settings
+          if (selectedVoiceData.settings) {
+            utterance.rate = selectedVoiceData.settings.rate || voiceSettings.rate;
+            utterance.pitch = selectedVoiceData.settings.pitch || voiceSettings.pitch;
+            utterance.volume = selectedVoiceData.settings.volume || voiceSettings.volume;
+          }
+        } else {
+          utterance.rate = voiceSettings.rate;
+          utterance.pitch = voiceSettings.pitch;
+          utterance.volume = voiceSettings.volume;
+        }
+        
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+        
+        synthesisRef.current.speak(utterance);
+      }
     }
   };
 
@@ -279,97 +428,90 @@ const AdvancedUIAssistant: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // First try AI service for intelligent responses
-      console.log('Getting AI providers...');
-      const providers = await aiIntegrationService.getProviders();
-      console.log('Available providers:', providers.length, providers);
+      // Use simple intelligent chat endpoint as primary method
+      console.log('🔍 AdvancedUIAssistant - Using intelligent chat endpoint for:', text);
       
-      console.log('🔍 AdvancedUIAssistant - Condition check (FIXED v2):', {
-        providersLength: providers.length,
-        hasCurrentPersona: !!currentPersona,
-        hasCurrentModel: !!currentModel,
-        currentPersona: currentPersona,
-        currentModel: currentModel
+      const response = await fetch('http://localhost:3001/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: text,
+          voice: selectedVoice,
+          model: currentModel?.id || 'gpt-4'
+        })
       });
       
-      // Force get current persona and model if they're null
-      if (!currentPersona || !currentModel) {
-        console.log('🔍 AdvancedUIAssistant - Forcing persona/model initialization');
-        const persona = advancedAICustomizationService.getCurrentPersona();
-        const model = advancedAICustomizationService.getCurrentModel();
-        console.log('🔍 AdvancedUIAssistant - Retrieved persona:', persona);
-        console.log('🔍 AdvancedUIAssistant - Retrieved model:', model);
-        
-        if (persona && model) {
-          setCurrentPersona(persona);
-          setCurrentModel(model);
-        }
-      }
+      const data = await response.json();
       
-      // FORCE AI TO WORK - bypass condition check
-      if (providers.length > 0) {
-        console.log('🔍 AdvancedUIAssistant - FORCING AI TO WORK - bypassing condition check');
-        const provider = providers[0]; // Use first available provider
-        const activePersona = currentPersona || advancedAICustomizationService.getCurrentPersona();
-        const activeModel = currentModel || advancedAICustomizationService.getCurrentModel();
-        
-        console.log('🔍 AdvancedUIAssistant - Active persona:', activePersona);
-        console.log('🔍 AdvancedUIAssistant - Active model:', activeModel);
-        
-        // Generate AI request using advanced service
-        const aiRequest = advancedAICustomizationService.generateAIRequest(text, sessionId);
-        console.log('🔍 AdvancedUIAssistant - Generated AI request:', aiRequest);
-        console.log('🔍 AdvancedUIAssistant - About to call aiIntegrationService.generateResponse');
-        
-        // Add message to conversation memory
-        await advancedAICustomizationService.addMessageToMemory(sessionId, {
-          role: 'user',
-          content: text,
-          timestamp: new Date().toISOString()
-        });
-
-        // Try Claude collaboration first if available
-        let aiContent = '';
-        try {
-          console.log('🔍 AdvancedUIAssistant - Attempting Claude collaboration with text:', text);
-          const claudeResponse = await claudeCollaborationService.sendMessage(text, {
-            currentModule: 'ai-assistant',
-            userRole: 'admin',
-            activeFeatures: ['ai-assistant', 'collaboration'],
-            systemState: { sessionId, currentPersona: activePersona, currentModel: activeModel }
-          });
-          console.log('🔍 AdvancedUIAssistant - Claude collaboration response:', claudeResponse);
-          aiContent = claudeResponse;
-        } catch (error) {
-          console.log('Claude collaboration not available, using regular AI response');
-          console.log('🔍 AdvancedUIAssistant - Calling generateResponse with provider:', provider.id, 'and request:', aiRequest);
-          const response = await aiIntegrationService.generateResponse(provider.id, aiRequest);
-          console.log('🔍 AdvancedUIAssistant - Received response:', response);
-          aiContent = response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
-        }
-        
+      if (data.success) {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: aiContent,
+          content: data.response,
           timestamp: new Date()
         };
-
+        
         setMessages(prev => [...prev, assistantMessage]);
         chatHistoryService.addMessage(assistantMessage);
         
-        // Add assistant message to conversation memory
-        await advancedAICustomizationService.addMessageToMemory(sessionId, {
-          role: 'assistant',
-          content: aiContent,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Speak the response (always speak AI responses)
-        console.log('🔍 AdvancedUIAssistant - Speaking AI response:', aiContent.substring(0, 50) + '...');
-        await speak(aiContent);
+        // Speak the response
+        console.log('🔍 AdvancedUIAssistant - Speaking intelligent response:', data.response.substring(0, 50) + '...');
+        await speak(data.response);
       } else {
-        // Check for development commands first
+        throw new Error(data.error || 'Chat endpoint failed');
+      }
+    } catch (error) {
+      console.log('🔍 AdvancedUIAssistant - Simple chat failed, trying complex AI services as fallback');
+      
+      // Fallback to complex AI services if simple chat fails
+      try {
+        console.log('Getting AI providers...');
+        const providers = await aiIntegrationService.getProviders();
+        console.log('Available providers:', providers.length, providers);
+        
+        if (providers.length > 0) {
+          const provider = providers[0];
+          const activePersona = currentPersona || advancedAICustomizationService.getCurrentPersona();
+          const activeModel = currentModel || advancedAICustomizationService.getCurrentModel();
+          
+          // Generate AI request using advanced service
+          const aiRequest = advancedAICustomizationService.generateAIRequest(text, sessionId);
+          
+          // Try Claude collaboration first if available
+          let aiContent = '';
+          try {
+            console.log('🔍 AdvancedUIAssistant - Attempting Claude collaboration with text:', text);
+            const claudeResponse = await claudeCollaborationService.sendMessage(text, {
+              currentModule: 'ai-assistant',
+              userRole: 'admin',
+              activeFeatures: ['ai-assistant', 'collaboration'],
+              systemState: { sessionId, currentPersona: activePersona, currentModel: activeModel }
+            });
+            console.log('🔍 AdvancedUIAssistant - Claude collaboration response:', claudeResponse);
+            aiContent = claudeResponse;
+          } catch (claudeError) {
+            console.log('Claude collaboration not available, using regular AI response');
+            const response = await aiIntegrationService.generateResponse(provider.id, aiRequest);
+            aiContent = response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+          }
+          
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: aiContent,
+            timestamp: new Date()
+          };
+
+          setMessages(prev => [...prev, assistantMessage]);
+          chatHistoryService.addMessage(assistantMessage);
+          
+          // Speak the response
+          console.log('🔍 AdvancedUIAssistant - Speaking complex AI response:', aiContent.substring(0, 50) + '...');
+          await speak(aiContent);
+        } else {
+          // Check for development commands first
         const developmentResult = await handleDevelopmentCommand(text);
         if (developmentResult) {
           const assistantMessage: Message = {
@@ -416,16 +558,63 @@ const AdvancedUIAssistant: React.FC = () => {
           setMessages(prev => [...prev, noApiKeyMessage]);
           chatHistoryService.addMessage(noApiKeyMessage);
         }
+        }
+      } catch (fallbackError) {
+        console.error('🔍 AdvancedUIAssistant - Complex AI services also failed:', fallbackError);
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: `Sorry, I encountered an error: ${error}`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        chatHistoryService.addMessage(errorMessage);
       }
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: `Sorry, I encountered an error: ${error}`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-      chatHistoryService.addMessage(errorMessage);
+      
+      // Fallback to simple chat endpoint
+      try {
+        const response = await fetch('http://localhost:3001/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: text,
+            voice: selectedVoice,
+            model: currentModel?.id || 'gpt-4'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: data.response,
+            timestamp: new Date()
+          };
+          
+          setMessages(prev => [...prev, assistantMessage]);
+          chatHistoryService.addMessage(assistantMessage);
+          
+          // Speak the response
+          console.log('🔍 AdvancedUIAssistant - Speaking simple chat response:', data.response.substring(0, 50) + '...');
+          await speak(data.response);
+        } else {
+          throw new Error(data.error || 'Chat endpoint failed');
+        }
+      } catch (fallbackError) {
+        console.error('🔍 AdvancedUIAssistant - Simple chat endpoint also failed:', fallbackError);
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: `Sorry, I encountered an error: ${error}`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        chatHistoryService.addMessage(errorMessage);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -509,7 +698,6 @@ const AdvancedUIAssistant: React.FC = () => {
     }
   };
 
-
   if (!isOpen) {
     return (
       <button
@@ -553,8 +741,8 @@ const AdvancedUIAssistant: React.FC = () => {
             title="Select AI Voice"
           >
             {availableVoices.map((voice) => (
-              <option key={voice.name} value={voice.name}>
-                {voice.name} ({voice.lang})
+              <option key={voice.id} value={voice.id}>
+                {voice.name} - {voice.description}
               </option>
             ))}
           </select>

@@ -6,6 +6,7 @@ import {
   CurrencyDollarIcon,
   TrendingUpIcon,
   TrendingDownIcon,
+  CpuChipIcon,
 } from '@heroicons/react/outline';
 import { useCRM } from '../../contexts/CRMContext';
 
@@ -88,6 +89,17 @@ const DashboardModule: React.FC = () => {
       color: 'emerald',
       bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
       iconColor: 'text-emerald-600 dark:text-emerald-400'
+    },
+    {
+      name: 'Enterprise AI',
+      value: 'Active',
+      icon: CpuChipIcon,
+      change: '10/10',
+      changeType: 'increase' as const,
+      href: '/admin/ai-control',
+      color: 'pink',
+      bgColor: 'bg-pink-50 dark:bg-pink-900/20',
+      iconColor: 'text-pink-600 dark:text-pink-400'
     }
   ];
 

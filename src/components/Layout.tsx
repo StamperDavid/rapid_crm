@@ -14,6 +14,7 @@ import {
   ClockIcon,
   ChatIcon,
   DocumentTextIcon,
+  CpuChipIcon,
 } from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
@@ -24,7 +25,6 @@ import Logo from './Logo';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
 import AdvancedUIAssistant from './AdvancedUIAssistant';
-import AICollaborationMonitor from './AICollaborationMonitor';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
 
 interface LayoutProps {
@@ -39,6 +39,7 @@ const getNavigation = () => [
   { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },
+  { name: 'Enterprise AI', href: '/admin/ai-control', icon: CpuChipIcon, color: 'text-pink-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -67,7 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex h-full flex-col">
               {/* Mobile header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-                <Logo variant={theme} className="h-8" />
+                <Logo key="mobile-logo" variant={theme} className="h-8" />
                 <button
                   onClick={() => setSidebarOpen(false)}
                   className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -130,11 +131,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Desktop sidebar */}
-      <div className="flex w-64 flex-col fixed inset-y-0 z-40">
+      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 z-40">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-sm">
           {/* Logo section */}
           <div className="flex h-16 shrink-0 items-start px-6 pt-5 border-b border-slate-200 dark:border-slate-700">
-            <Logo variant={theme} className="h-8" />
+            <Logo key="desktop-logo" variant={theme} className="h-8" />
           </div>
           
           {/* Navigation */}

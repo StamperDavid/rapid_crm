@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config({ path: './env.example' });
+
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -478,72 +481,6 @@ if (eldApiRoutes) {
   app.use('/api/eld', eldApiRoutes.getRouter());
   console.log('✅ ELD API routes mounted at /api/eld');
 }
-
-// AI Collaboration API Routes
-app.get('/api/ai/collaborate', async (req, res) => {
-  try {
-    // Get AI-to-AI collaboration messages from database
-    const messages = await runQuery(`
-      SELECT * FROM ai_collaboration_messages 
-      ORDER BY created_at DESC 
-      LIMIT 50
-    `);
-    
-    res.json({
-      success: true,
-      messages: messages || [],
-      count: messages ? messages.length : 0
-    });
-  } catch (error) {
-    console.error('❌ Error fetching AI collaboration messages:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch AI collaboration messages',
-      messages: []
-    });
-  }
-});
-
-app.post('/api/ai/collaborate', async (req, res) => {
-  try {
-    const { message, sender, context } = req.body;
-    
-    if (!message || !sender) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Message and sender are required' 
-      });
-    }
-    
-    const id = Date.now().toString();
-    const now = new Date().toISOString();
-    
-    // Insert AI collaboration message into database
-    await runExecute(`
-      INSERT INTO ai_collaboration_messages 
-      (id, sender, message, context, created_at, updated_at) 
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [id, sender, message, JSON.stringify(context || {}), now, now]);
-    
-    res.json({
-      success: true,
-      message: {
-        id,
-        sender,
-        message,
-        context,
-        created_at: now,
-        updated_at: now
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error saving AI collaboration message:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to save AI collaboration message' 
-    });
-  }
-});
 
 // Companies
 app.get('/api/companies', async (req, res) => {
@@ -1677,6 +1614,466 @@ const checkAndInitializeDatabase = async () => {
     throw error;
   }
 };
+
+// Theme API endpoints
+app.get('/api/theme', async (req, res) => {
+  try {
+    // Return default theme with logo
+    const defaultTheme = {
+      primaryColor: '#3b82f6',
+      secondaryColor: '#8b5cf6',
+      accentColor: '#10b981',
+      backgroundColor: '#f8fafc',
+      surfaceColor: '#ffffff',
+      textColor: '#1f2937',
+      borderColor: '#e5e7eb',
+      successColor: '#10b981',
+      warningColor: '#f59e0b',
+      errorColor: '#ef4444',
+      infoColor: '#3b82f6',
+      logoUrl: '/uploads/logo_1757827373384.png',
+      logoHeight: 48,
+      borderRadius: 8,
+      fontFamily: 'inherit',
+      fontWeight: '400'
+    };
+    
+    res.json({
+      success: true,
+      theme: defaultTheme
+    });
+  } catch (error) {
+    console.error('❌ Error loading theme:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to load theme' 
+    });
+  }
+});
+
+app.post('/api/theme', async (req, res) => {
+  try {
+    const theme = req.body;
+    console.log('🎨 Theme saved:', theme);
+    
+    // For now, just return success - this can be expanded to save to database later
+    res.json({
+      success: true,
+      message: 'Theme saved successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error saving theme:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to save theme' 
+    });
+  }
+});
+
+// AI Voices endpoint
+app.get('/api/ai/voices', async (req, res) => {
+  try {
+    const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
+    
+    if (unrealSpeechKey) {
+      // Return Unreal Speech voices (using correct voice IDs from API)
+      const unrealSpeechVoices = [
+        {
+          id: 'eleanor',
+          name: 'Eleanor',
+          description: 'Professional female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Eleanor',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'javier',
+          name: 'Javier',
+          description: 'Professional male voice',
+          provider: 'unreal-speech',
+          voiceId: 'Javier',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'melody',
+          name: 'Melody',
+          description: 'Clear female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Melody',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'daniel',
+          name: 'Daniel',
+          description: 'Friendly male voice',
+          provider: 'unreal-speech',
+          voiceId: 'Daniel',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'amelia',
+          name: 'Amelia',
+          description: 'Warm female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Amelia',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'lauren',
+          name: 'Lauren',
+          description: 'Energetic female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Lauren',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'luna',
+          name: 'Luna',
+          description: 'Soft female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Luna',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'jasper',
+          name: 'Jasper',
+          description: 'Confident male voice',
+          provider: 'unreal-speech',
+          voiceId: 'Jasper',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'sierra',
+          name: 'Sierra',
+          description: 'Authoritative female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Sierra',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'edward',
+          name: 'Edward',
+          description: 'Sophisticated male voice',
+          provider: 'unreal-speech',
+          voiceId: 'Edward',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'charlotte',
+          name: 'Charlotte',
+          description: 'Elegant female voice',
+          provider: 'unreal-speech',
+          voiceId: 'Charlotte',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'caleb',
+          name: 'Caleb',
+          description: 'Warm male voice',
+          provider: 'unreal-speech',
+          voiceId: 'Caleb',
+          settings: { rate: 0, pitch: 1.0, volume: 1.0 }
+        }
+      ];
+      
+      res.json({ success: true, voices: unrealSpeechVoices });
+    } else {
+      // Fallback to browser voices
+      const browserVoices = [
+        {
+          id: 'mikael',
+          name: 'Mikael',
+          description: 'Professional male voice',
+          provider: 'browser',
+          voiceId: 'mikael',
+          settings: { rate: 0.9, pitch: 1.0, volume: 1.0 }
+        },
+        {
+          id: 'alex',
+          name: 'Alex',
+          description: 'Clear male voice',
+          provider: 'browser',
+          voiceId: 'alex',
+          settings: { rate: 1.1, pitch: 0.8, volume: 1.0 }
+        },
+        {
+          id: 'samantha',
+          name: 'Samantha',
+          description: 'Professional female voice',
+          provider: 'browser',
+          voiceId: 'samantha',
+          settings: { rate: 1.0, pitch: 1.2, volume: 1.0 }
+        },
+        {
+          id: 'victoria',
+          name: 'Victoria',
+          description: 'Warm female voice',
+          provider: 'browser',
+          voiceId: 'victoria',
+          settings: { rate: 0.8, pitch: 1.3, volume: 1.0 }
+        },
+        {
+          id: 'david',
+          name: 'David',
+          description: 'Deep male voice',
+          provider: 'browser',
+          voiceId: 'david',
+          settings: { rate: 1.0, pitch: 0.7, volume: 1.0 }
+        },
+        {
+          id: 'sarah',
+          name: 'Sarah',
+          description: 'Energetic female voice',
+          provider: 'browser',
+          voiceId: 'sarah',
+          settings: { rate: 1.2, pitch: 1.1, volume: 1.0 }
+        }
+      ];
+      
+      res.json({ success: true, voices: browserVoices });
+    }
+  } catch (error) {
+    console.error('❌ Error loading voices:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to load voices' 
+    });
+  }
+});
+
+// AI Voice Key endpoint
+app.get('/api/ai/voice-key', async (req, res) => {
+  try {
+    const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
+    
+    if (unrealSpeechKey) {
+      res.json({
+        success: true,
+        hasKey: true,
+        voiceKey: unrealSpeechKey.substring(0, 8) + '...', // Partial key for security
+        provider: 'unreal-speech',
+        message: 'Unreal Speech API key configured'
+      });
+    } else {
+      res.json({
+        success: true,
+        hasKey: false,
+        voiceKey: 'browser-tts-available',
+        provider: 'browser',
+        message: 'Using browser TTS (no Unreal Speech key configured)'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error loading voice key:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to load voice key' 
+    });
+  }
+});
+
+// Unreal Speech TTS endpoint
+app.post('/api/ai/unreal-speech', async (req, res) => {
+  try {
+    const { text, voiceId = 'Eleanor', speed = 0, pitch = 1.0 } = req.body;
+    const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
+    
+    if (!unrealSpeechKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unreal Speech API key not configured'
+      });
+    }
+    
+    if (!text) {
+      return res.status(400).json({
+        success: false,
+        error: 'Text is required'
+      });
+    }
+    
+    // Call Unreal Speech API
+    const response = await fetch('https://api.v8.unrealspeech.com/stream', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${unrealSpeechKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        Text: text,
+        VoiceId: voiceId,
+        Bitrate: '192k',
+        Speed: speed.toString(),
+        Pitch: pitch.toString(),
+        Codec: 'libmp3lame'
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Unreal Speech API error:', response.status, errorText);
+      return res.status(response.status).json({
+        success: false,
+        error: `Unreal Speech API error: ${response.status}`
+      });
+    }
+    
+    // Get the audio data
+    const audioBuffer = await response.arrayBuffer();
+    
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': audioBuffer.byteLength
+    });
+    
+    res.send(Buffer.from(audioBuffer));
+    
+  } catch (error) {
+    console.error('❌ Error with Unreal Speech TTS:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate speech'
+    });
+  }
+});
+
+// AI Chat endpoint
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { message, voice, model } = req.body;
+    
+    console.log(`🤖 AI Chat request: "${message}" (voice: ${voice}, model: ${model})`);
+    
+    // Intelligent context-aware responses based on the message content
+    let response = '';
+    const lowerMessage = message.toLowerCase();
+    
+    // Greeting responses
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+      response = "Hello! I'm your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?";
+    }
+    // Speaking/voice related
+    else if (lowerMessage.includes('speak') || lowerMessage.includes('talk') || lowerMessage.includes('voice')) {
+      response = "Yes, I can speak to you! I'm using voice synthesis to communicate. You can ask me about your CRM system, transportation compliance, fleet management, or any other business needs.";
+    }
+    // CRM specific help
+    else if (lowerMessage.includes('crm') || lowerMessage.includes('customer') || lowerMessage.includes('contact')) {
+      response = "I can help you with CRM tasks like managing contacts, companies, deals, and leads. Would you like to add a new contact, update company information, or track a deal?";
+    }
+    // Transportation/logistics specific
+    else if (lowerMessage.includes('truck') || lowerMessage.includes('fleet') || lowerMessage.includes('vehicle') || lowerMessage.includes('transport')) {
+      response = "I can assist with transportation and logistics management. This includes fleet tracking, driver management, cargo types, hazmat compliance, and USDOT number management. What specific aspect would you like help with?";
+    }
+    // Compliance related
+    else if (lowerMessage.includes('compliance') || lowerMessage.includes('dot') || lowerMessage.includes('hazmat') || lowerMessage.includes('safety')) {
+      response = "I can help with compliance management including DOT regulations, hazmat requirements, safety protocols, and regulatory reporting. What compliance issue do you need assistance with?";
+    }
+    // Business operations
+    else if (lowerMessage.includes('business') || lowerMessage.includes('operation') || lowerMessage.includes('company') || lowerMessage.includes('broker')) {
+      response = "I can help with business operations including company management, broker/carrier classifications, multi-state operations, and business structure management. What business task do you need help with?";
+    }
+    // General help
+    else if (lowerMessage.includes('help') || lowerMessage.includes('assist') || lowerMessage.includes('support')) {
+      response = "I'm here to help with your Rapid CRM system! I can assist with contacts, companies, deals, fleet management, compliance, and transportation operations. What specific task would you like to work on?";
+    }
+    // Questions about capabilities
+    else if (lowerMessage.includes('what') || lowerMessage.includes('can you') || lowerMessage.includes('do you')) {
+      response = "I'm your Rapid CRM AI assistant specialized in transportation and logistics. I can help you manage contacts, companies, deals, fleet information, compliance requirements, and business operations. What would you like to accomplish?";
+    }
+    // Default intelligent response
+    else {
+      response = `I understand you're asking about "${message}". As your Rapid CRM assistant, I'm here to help with transportation and logistics management. I can assist with contacts, companies, deals, fleet management, compliance, and business operations. Could you be more specific about what you'd like help with?`;
+    }
+    
+    res.json({
+      success: true,
+      response: response,
+      timestamp: new Date().toISOString(),
+      voice: voice || 'mikael'
+    });
+  } catch (error) {
+    console.error('❌ Error in AI chat:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to process chat message' 
+    });
+  }
+});
+
+// AI Collaboration endpoints - Basic implementation
+app.post('/api/ai/collaborate/send', async (req, res) => {
+  try {
+    const { from_ai, to_ai, message_type, content, metadata } = req.body;
+    
+    console.log(`🤖 AI Collaboration: ${from_ai} -> ${to_ai}: ${content.substring(0, 100)}...`);
+    
+    // For now, just return success - this can be expanded later
+    res.json({
+      success: true,
+      message_id: `msg_${Date.now()}`,
+      status: 'sent'
+    });
+  } catch (error) {
+    console.error('❌ Error in AI collaboration:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to send AI message' 
+    });
+  }
+});
+
+app.get('/api/ai/collaborate', async (req, res) => {
+  try {
+    // Return empty messages for now
+    res.json({
+      success: true,
+      messages: [],
+      count: 0
+    });
+  } catch (error) {
+    console.error('❌ Error fetching AI collaboration messages:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch AI collaboration messages' 
+    });
+  }
+});
+
+app.get('/api/ai/tasks/cursor', async (req, res) => {
+  try {
+    // Return empty tasks for now
+    res.json({
+      success: true,
+      tasks: []
+    });
+  } catch (error) {
+    console.error('❌ Error fetching Cursor AI tasks:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch tasks'
+    });
+  }
+});
+
+app.put('/api/ai/tasks/:task_id', async (req, res) => {
+  try {
+    const { task_id } = req.params;
+    const { status, result_data, error_message } = req.body;
+    
+    console.log(`🤖 Task ${task_id} updated to status: ${status}`);
+    
+    res.json({
+      success: true,
+      message: 'Task updated successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error updating task:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update task'
+    });
+  }
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

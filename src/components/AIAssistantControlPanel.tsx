@@ -63,7 +63,7 @@ import {
   DocumentIcon,
   PhotoIcon,
   VideoCameraIcon,
-  SpeakerWaveIcon,
+  // SpeakerIcon, // Not available in this Heroicons version
   SpeakerXMarkIcon,
   MicrophoneIcon,
   MicrophoneSlashIcon,

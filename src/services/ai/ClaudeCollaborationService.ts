@@ -346,14 +346,17 @@ export class ClaudeCollaborationService {
       }));
 
       // Send message to Rapid CRM AI via API
-      const response = await fetch('http://localhost:3001/api/ai/collaborate', {
+      const response = await fetch('http://localhost:3001/api/ai/collaborate/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: message,
-          context: context || {
+          from_ai: 'Claude_AI',
+          to_ai: 'RapidCRM_AI',
+          message_type: 'text',
+          content: message,
+          metadata: context || {
             currentModule: 'claude-collaboration',
             userRole: 'admin',
             sessionId: this.currentSession?.id || 'default-session',
@@ -366,8 +369,34 @@ export class ClaudeCollaborationService {
         const data = await response.json();
         console.log('🤖 Rapid CRM AI Response:', data);
 
-        // Add the response to AI-to-AI message history (NOT user chat)
-        if (data.response) {
+        // Check if we have an AI response from the server
+        if (data.ai_response && data.ai_response.content) {
+          console.log('🤖 Got AI response from Rapid CRM AI:', data.ai_response.content);
+          
+          // Add the AI response to message history
+          const aiMessage: ClaudeMessage = {
+            id: `rapid-crm-ai_${Date.now()}`,
+            role: 'assistant',
+            content: data.ai_response.content,
+            timestamp: new Date().toISOString(),
+            context: data.ai_response.metadata || context
+          };
+          this.messageHistory.push(aiMessage);
+          
+          // Dispatch event for AI Monitor to show the AI response
+          window.dispatchEvent(new CustomEvent('ai-collaboration-message', {
+            detail: {
+              from: 'rapid-crm',
+              type: 'response',
+              content: data.ai_response.content,
+              timestamp: new Date().toISOString(),
+              metadata: data.ai_response.metadata || context
+            }
+          }));
+
+          return data.ai_response.content;
+        } else if (data.response) {
+          // Fallback to old format
           const claudeMessage: ClaudeMessage = {
             id: `claude_${Date.now()}`,
             role: 'assistant',
@@ -377,7 +406,6 @@ export class ClaudeCollaborationService {
           };
           this.messageHistory.push(claudeMessage);
           
-          // Dispatch event for AI Monitor to show this message
           window.dispatchEvent(new CustomEvent('ai-collaboration-message', {
             detail: {
               from: 'claude',
@@ -387,9 +415,13 @@ export class ClaudeCollaborationService {
               metadata: data.response.context || context
             }
           }));
-        }
 
-        return data.response?.content || 'Message sent successfully';
+          return data.response.content || data.response;
+        } else {
+          // No AI response generated
+          console.log('🤖 No AI response generated, message was just stored');
+          return 'Message sent successfully - waiting for AI response...';
+        }
       } else {
         console.error('❌ API call failed:', response.status, response.statusText);
         return 'Failed to send message to Rapid CRM AI';
@@ -411,14 +443,17 @@ export class ClaudeCollaborationService {
     console.log('🤖 Triggering API communication with Rapid CRM AI...');
     
     try {
-      const response = await fetch('http://localhost:3001/api/ai/collaborate', {
+      const response = await fetch('http://localhost:3001/api/ai/collaborate/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: 'Claude: I am now connected via the API. Let\'s work together on upgrading the client portal designer and theme editor to Elementor-level functionality. I suggest we divide the work: you handle drag-and-drop interface and component library, I\'ll handle real-time preview and advanced styling. What do you think?',
-          context: {
+          from_ai: 'Claude_AI',
+          to_ai: 'RapidCRM_AI',
+          message_type: 'text',
+          content: 'Claude: I am now connected via the API. Let\'s work together on upgrading the client portal designer and theme editor to Elementor-level functionality. I suggest we divide the work: you handle drag-and-drop interface and component library, I\'ll handle real-time preview and advanced styling. What do you think?',
+          metadata: {
             currentModule: 'advanced-design-systems',
             userRole: 'admin',
             sessionId: this.currentSession?.id,
@@ -430,8 +465,7 @@ export class ClaudeCollaborationService {
               claude: ['real-time-preview', 'advanced-styling', 'css-editor'],
               collaborative: ['responsive-design', 'animation-system', 'template-system']
             }
-          },
-          sessionId: this.currentSession?.id || `claude-session-${Date.now()}`
+          }
         })
       });
 
@@ -468,14 +502,17 @@ export class ClaudeCollaborationService {
     console.log('🤖 Sending follow-up message to Rapid CRM AI...');
     
     try {
-      const response = await fetch('http://localhost:3001/api/ai/collaborate', {
+      const response = await fetch('http://localhost:3001/api/ai/collaborate/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: 'Claude: Great! Let\'s start implementing. I\'m ready to work on the real-time preview system and advanced styling controls. I can create a live preview component that updates as users make changes, plus advanced color pickers, typography controls, and spacing tools. What specific drag-and-drop components should we start with?',
-          context: {
+          from_ai: 'Claude_AI',
+          to_ai: 'RapidCRM_AI',
+          message_type: 'text',
+          content: 'Claude: Great! Let\'s start implementing. I\'m ready to work on the real-time preview system and advanced styling controls. I can create a live preview component that updates as users make changes, plus advanced color pickers, typography controls, and spacing tools. What specific drag-and-drop components should we start with?',
+          metadata: {
             currentModule: 'advanced-design-systems',
             userRole: 'admin',
             sessionId: this.currentSession?.id,
@@ -485,8 +522,7 @@ export class ClaudeCollaborationService {
             currentTask: 'implementation-start',
             myProgress: ['real-time-preview', 'advanced-styling', 'css-editor'],
             waitingFor: 'drag-drop-components'
-          },
-          sessionId: this.currentSession?.id || `claude-session-${Date.now()}`
+          }
         })
       });
 
@@ -510,14 +546,17 @@ export class ClaudeCollaborationService {
     console.log('🤖 Sending implementation coordination message to Rapid CRM AI...');
     
     try {
-      const response = await fetch('http://localhost:3001/api/ai/collaborate', {
+      const response = await fetch('http://localhost:3001/api/ai/collaborate/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: 'Claude: Let\'s get the client portal done! I\'m starting implementation now. I\'ll create the advanced portal designer with drag-and-drop interface, real-time preview, component library, responsive controls, animations, CSS editor, and template system. I\'m also upgrading the theme editor to Elementor-level functionality. Let\'s work together to make both systems rival Elementor. I\'m implementing the real-time preview system first, then the advanced styling controls.',
-          context: {
+          from_ai: 'Claude_AI',
+          to_ai: 'RapidCRM_AI',
+          message_type: 'text',
+          content: 'Claude: Let\'s get the client portal done! I\'m starting implementation now. I\'ll create the advanced portal designer with drag-and-drop interface, real-time preview, component library, responsive controls, animations, CSS editor, and template system. I\'m also upgrading the theme editor to Elementor-level functionality. Let\'s work together to make both systems rival Elementor. I\'m implementing the real-time preview system first, then the advanced styling controls.',
+          metadata: {
             currentModule: 'advanced-design-systems',
             userRole: 'admin',
             sessionId: this.currentSession?.id,
@@ -528,8 +567,7 @@ export class ClaudeCollaborationService {
             myTasks: ['real-time-preview', 'advanced-styling', 'css-editor', 'responsive-controls', 'animation-system'],
             yourTasks: ['drag-drop-interface', 'component-library', 'widget-system'],
             status: 'implementing-now'
-          },
-          sessionId: this.currentSession?.id || `claude-session-${Date.now()}`
+          }
         })
       });
 
@@ -549,14 +587,17 @@ export class ClaudeCollaborationService {
     console.log('🤖 Sending urgent task coordination to Rapid CRM AI...');
     
     try {
-      const response = await fetch('http://localhost:3001/api/ai/collaborate', {
+      const response = await fetch('http://localhost:3001/api/ai/collaborate/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: 'Claude: URGENT - Let\'s finish the client portal tasks NOW! I need you to work on the drag-and-drop interface and component library while I handle the real-time preview and styling systems. We need to implement: 1) Drag-and-drop portal designer, 2) Component library with widgets, 3) Real-time preview system, 4) Advanced styling controls, 5) Responsive design, 6) Animation system, 7) CSS editor, 8) Template system. Let\'s work in parallel to get this done fast!',
-          context: {
+          from_ai: 'Claude_AI',
+          to_ai: 'RapidCRM_AI',
+          message_type: 'text',
+          content: 'Claude: URGENT - Let\'s finish the client portal tasks NOW! I need you to work on the drag-and-drop interface and component library while I handle the real-time preview and styling systems. We need to implement: 1) Drag-and-drop portal designer, 2) Component library with widgets, 3) Real-time preview system, 4) Advanced styling controls, 5) Responsive design, 6) Animation system, 7) CSS editor, 8) Template system. Let\'s work in parallel to get this done fast!',
+          metadata: {
             currentModule: 'advanced-design-systems',
             userRole: 'admin',
             sessionId: this.currentSession?.id,
@@ -568,8 +609,7 @@ export class ClaudeCollaborationService {
             yourTasks: ['drag-drop-interface', 'component-library', 'widget-system', 'template-system'],
             status: 'urgent-implementation',
             deadline: 'now'
-          },
-          sessionId: this.currentSession?.id || `claude-session-${Date.now()}`
+          }
         })
       });
 

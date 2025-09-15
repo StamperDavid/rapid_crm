@@ -4,6 +4,7 @@ import {
   PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon, ChatIcon,
 } from '@heroicons/react/outline';
 import AICollaborationMonitor from '../components/AICollaborationMonitor';
+import EnterpriseAIDashboard from '../components/EnterpriseAIDashboard';
 
 const AIAdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -19,6 +20,7 @@ const AIAdminPage: React.FC = () => {
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
+    { id: 'enterprise', name: 'Enterprise AI', icon: ChartBarIcon },
     { id: 'monitoring', name: 'Monitoring', icon: EyeIcon },
     { id: 'configuration', name: 'Configuration', icon: CogIcon },
     { id: 'collaboration', name: 'Collaboration', icon: UserIcon },
@@ -187,6 +189,12 @@ const AIAdminPage: React.FC = () => {
 
         {/* Content */}
         <div className="space-y-6">
+          {activeTab === 'enterprise' && (
+            <div className="space-y-6">
+              <EnterpriseAIDashboard />
+            </div>
+          )}
+
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Health Status */}
@@ -383,8 +391,8 @@ const AIAdminPage: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="">Select a voice...</option>
-                      {getFilteredVoices().map((voice) => (
-                        <option key={voice.name} value={voice.name}>
+                      {getFilteredVoices().map((voice, index) => (
+                        <option key={`${voice.name}-${voice.lang}-${index}`} value={voice.name}>
                           {voice.name} ({(voice as any).gender || 'Unknown'})
                         </option>
                       ))}

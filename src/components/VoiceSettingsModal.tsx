@@ -164,9 +164,10 @@ const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({
               >
                 {settings.provider === 'elevenlabs' && (
                   <>
-                    <option value="eleven_monolingual_v1">Eleven Monolingual v1</option>
+                    <option value="eleven_multilingual_v2">Eleven Multilingual v2 (Recommended)</option>
+                    <option value="eleven_turbo_v2_5">Eleven Turbo v2.5 (Fast)</option>
                     <option value="eleven_multilingual_v1">Eleven Multilingual v1</option>
-                    <option value="eleven_multilingual_v2">Eleven Multilingual v2</option>
+                    <option value="eleven_monolingual_v1">Eleven Monolingual v1</option>
                   </>
                 )}
                 {settings.provider === 'openai' && (
@@ -214,7 +215,7 @@ const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({
               <option value="">Select a voice</option>
               {voices.map(voice => (
                 <option key={voice.id} value={voice.id}>
-                  {voice.name} ({voice.language}) {voice.gender} {voice.accent && `- ${voice.accent}`}
+                  {voice.name} - {voice.description || `${voice.gender} ${voice.accent || 'American'} voice`}
                   {voice.isCustom && ' [Custom]'}
                 </option>
               ))}

@@ -91,6 +91,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           } catch (parseError) {
             console.error('Error parsing custom theme from localStorage:', parseError);
           }
+        } else {
+          // Set default theme with logo if no custom theme exists
+          const defaultTheme = {
+            primaryColor: '#3b82f6',
+            secondaryColor: '#8b5cf6',
+            accentColor: '#10b981',
+            backgroundColor: '#f8fafc',
+            surfaceColor: '#ffffff',
+            textColor: '#1f2937',
+            borderColor: '#e5e7eb',
+            successColor: '#10b981',
+            warningColor: '#f59e0b',
+            errorColor: '#ef4444',
+            logoUrl: '/uploads/logo_1757827373384.png',
+            logoHeight: 48,
+            borderRadius: 8,
+            fontFamily: 'inherit',
+            fontWeight: '400'
+          };
+          setCustomTheme(defaultTheme);
+          console.log('Default theme with logo set:', defaultTheme);
         }
       } catch (error) {
         console.error('Error loading theme:', error);
