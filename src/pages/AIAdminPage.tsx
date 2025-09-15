@@ -5,6 +5,7 @@ import {
 } from '@heroicons/react/outline';
 import AICollaborationMonitor from '../components/AICollaborationMonitor';
 import EnterpriseAIDashboard from '../components/EnterpriseAIDashboard';
+import AdvancedAIAgentControlPanel from '../components/AdvancedAIAgentControlPanel';
 
 const AIAdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -19,8 +20,8 @@ const AIAdminPage: React.FC = () => {
   }>>([]);
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-    { id: 'enterprise', name: 'Enterprise AI', icon: ChartBarIcon },
+    { id: 'overview', name: 'AI Overview', icon: ChartBarIcon },
+    { id: 'agents', name: 'AI Agents', icon: ChipIcon },
     { id: 'monitoring', name: 'Monitoring', icon: EyeIcon },
     { id: 'configuration', name: 'Configuration', icon: CogIcon },
     { id: 'collaboration', name: 'Collaboration', icon: UserIcon },
@@ -189,97 +190,103 @@ const AIAdminPage: React.FC = () => {
 
         {/* Content */}
         <div className="space-y-6">
-          {activeTab === 'enterprise' && (
+          {activeTab === 'overview' && (
             <div className="space-y-6">
+              {/* System Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Health Status */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <ShieldCheckIcon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            System Health
+                          </dt>
+                          <dd className="text-lg font-medium text-gray-900 dark:text-white">
+                            {metrics ? (metrics.errorRate < 0.1 ? 'Healthy' : 'Warning') : 'Loading...'}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Requests */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <ChartBarIcon className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            Total Requests
+                          </dt>
+                          <dd className="text-lg font-medium text-gray-900 dark:text-white">
+                            {metrics?.totalRequests || 0}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Success Rate */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            Success Rate
+                          </dt>
+                          <dd className="text-lg font-medium text-gray-900 dark:text-white">
+                            {metrics ? `${((metrics.successfulRequests / metrics.totalRequests) * 100).toFixed(1)}%` : '0%'}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Alerts */}
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <ExclamationIcon className="h-6 w-6 text-yellow-600" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                            Active Alerts
+                          </dt>
+                          <dd className="text-lg font-medium text-gray-900 dark:text-white">
+                            {alerts.filter(alert => !alert.resolved).length}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enterprise AI Dashboard */}
               <EnterpriseAIDashboard />
             </div>
           )}
 
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Health Status */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <ShieldCheckIcon className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                          System Health
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
-                          {metrics ? (metrics.errorRate < 0.1 ? 'Healthy' : 'Warning') : 'Loading...'}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Requests */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <ChartBarIcon className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                          Total Requests
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
-                          {metrics?.totalRequests || 0}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Success Rate */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <CheckCircleIcon className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                          Success Rate
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
-                          {metrics ? `${((metrics.successfulRequests / metrics.totalRequests) * 100).toFixed(1)}%` : '0%'}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Alerts */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <ExclamationIcon className="h-6 w-6 text-yellow-600" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                          Active Alerts
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
-                          {alerts.filter(alert => !alert.resolved).length}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {activeTab === 'agents' && (
+            <div className="space-y-6">
+              <AdvancedAIAgentControlPanel />
             </div>
           )}
 

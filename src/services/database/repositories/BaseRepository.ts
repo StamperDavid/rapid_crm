@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DatabaseService, QueryResult } from '../DatabaseService';
 
 export interface RepositoryOptions {

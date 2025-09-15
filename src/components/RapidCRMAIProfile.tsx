@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { 
-  CpuChipIcon, 
+  ChipIcon, 
   TruckIcon, 
   DocumentTextIcon, 
   ChartBarIcon,
@@ -106,7 +106,7 @@ const RapidCRMAIProfile: React.FC = () => {
       <div className="flex items-center space-x-4 mb-6">
         <div className="flex-shrink-0">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <CpuChipIcon className="h-8 w-8 text-white" />
+            <ChipIcon className="h-8 w-8 text-white" />
           </div>
         </div>
         <div className="flex-1">
@@ -168,7 +168,7 @@ const RapidCRMAIProfile: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <CpuChipIcon className="h-5 w-5 text-white" />
+              <ChipIcon className="h-5 w-5 text-white" />
             </div>
             <div>
               <h3 className="font-medium text-blue-900">{collaborationPartner.name}</h3>

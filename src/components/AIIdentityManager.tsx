@@ -11,7 +11,7 @@ import {
   TrashIcon, 
   CheckIcon, 
   XMarkIcon,
-  CpuChipIcon,
+  ChipIcon,
   TruckIcon,
   ChartBarIcon,
   CogIcon,
@@ -236,7 +236,7 @@ const AIIdentityManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <CpuChipIcon className="h-8 w-8 text-blue-600" />
+          <ChipIcon className="h-8 w-8 text-blue-600" />
           <div>
             <h2 className="text-xl font-semibold text-gray-900">AI Identity Manager</h2>
             <p className="text-sm text-gray-500">Configure Rapid CRM AI's identity, expertise, and capabilities</p>

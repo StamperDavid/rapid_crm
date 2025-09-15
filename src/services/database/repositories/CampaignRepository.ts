@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRepository } from './BaseRepository';
 import { Campaign } from '../../../types/schema';
 

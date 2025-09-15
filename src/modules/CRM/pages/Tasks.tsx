@@ -121,63 +121,134 @@ const Tasks: React.FC = () => {
     }
   };
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (newTask.title && newTask.dueDate) {
-      const task: Task = {
-        id: (tasks.length + 1).toString(),
-        ...newTask,
-        status: 'pending',
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      setTasks(prev => [...prev, task]);
-      setNewTask({
-        title: '',
-        description: '',
-        dueDate: '',
-        priority: 'medium',
-        status: 'pending',
-        assignedTo: 'Admin User',
-        relatedTo: null
-      });
-      setShowCreateModal(false);
+      try {
+        const taskData = {
+          title: newTask.title,
+          description: newTask.description,
+          due_date: newTask.dueDate,
+          priority: newTask.priority,
+          status: 'pending',
+          assigned_to: newTask.assignedTo,
+          company_id: newTask.relatedTo?.type === 'company' ? newTask.relatedTo.id : null,
+          contact_id: newTask.relatedTo?.type === 'contact' ? newTask.relatedTo.id : null
+        };
+        
+        // Use the CRM context to create the task
+        const response = await fetch(`${getApiBaseUrl()}/tasks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(taskData)
+        });
+        
+        if (response.ok) {
+          const newTaskFromDB = await response.json();
+          setTasks(prev => [...prev, newTaskFromDB]);
+          setNewTask({
+            title: '',
+            description: '',
+            dueDate: '',
+            priority: 'medium',
+            status: 'pending',
+            assignedTo: 'Admin User',
+            relatedTo: null
+          });
+          setShowCreateModal(false);
+        } else {
+          throw new Error('Failed to create task');
+        }
+      } catch (error) {
+        console.error('Failed to create task:', error);
+        alert('Failed to create task. Please try again.');
+      }
     }
   };
 
-  const handleUpdateTask = () => {
+  const handleUpdateTask = async () => {
     if (editingTask && newTask.title && newTask.dueDate) {
-      setTasks(prev => prev.map(task => 
-        task.id === editingTask.id 
-          ? { ...task, ...newTask, completedAt: newTask.status === 'completed' ? new Date().toISOString().split('T')[0] : undefined }
-          : task
-      ));
-      setEditingTask(null);
-      setNewTask({
-        title: '',
-        description: '',
-        dueDate: '',
-        priority: 'medium',
-        status: 'pending',
-        assignedTo: 'Admin User',
-        relatedTo: null
-      });
-      setShowCreateModal(false);
+      try {
+        const taskData = {
+          title: newTask.title,
+          description: newTask.description,
+          due_date: newTask.dueDate,
+          priority: newTask.priority,
+          status: newTask.status,
+          assigned_to: newTask.assignedTo,
+          company_id: newTask.relatedTo?.type === 'company' ? newTask.relatedTo.id : null,
+          contact_id: newTask.relatedTo?.type === 'contact' ? newTask.relatedTo.id : null
+        };
+        
+        // Use the CRM context to update the task
+        const response = await fetch(`${getApiBaseUrl()}/tasks/${editingTask.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(taskData)
+        });
+        
+        if (response.ok) {
+          const updatedTaskFromDB = await response.json();
+          setTasks(prev => prev.map(task => 
+            task.id === editingTask.id ? updatedTaskFromDB : task
+          ));
+          setEditingTask(null);
+          setNewTask({
+            title: '',
+            description: '',
+            dueDate: '',
+            priority: 'medium',
+            status: 'pending',
+            assignedTo: 'Admin User',
+            relatedTo: null
+          });
+          setShowCreateModal(false);
+        } else {
+          throw new Error('Failed to update task');
+        }
+      } catch (error) {
+        console.error('Failed to update task:', error);
+        alert('Failed to update task. Please try again.');
+      }
     }
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/tasks/${taskId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setTasks(prev => prev.filter(task => task.id !== taskId));
+      } else {
+        throw new Error('Failed to delete task');
+      }
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      alert('Failed to delete task. Please try again.');
+    }
   };
 
-  const handleStatusChange = (taskId: string, newStatus: Task['status']) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { 
-            ...task, 
-            status: newStatus,
-            completedAt: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : undefined
-          }
-        : task
-    ));
+  const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        const updatedTask = await response.json();
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ));
+      } else {
+        throw new Error('Failed to update task status');
+      }
+    } catch (error) {
+      console.error('Failed to update task status:', error);
+      alert('Failed to update task status. Please try again.');
+    }
   };
 
   const handleEditTask = (task: Task) => {

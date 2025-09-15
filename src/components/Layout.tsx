@@ -14,11 +14,13 @@ import {
   ClockIcon,
   ChatIcon,
   DocumentTextIcon,
-  CpuChipIcon,
+  ChipIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { useTooltips } from '../contexts/TooltipContext';
 import EditorToolbar from './EditorToolbar';
 import AdminToolbar from './AdminToolbar';
 import Logo from './Logo';
@@ -39,7 +41,6 @@ const getNavigation = () => [
   { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },
-  { name: 'Enterprise AI', href: '/admin/ai-control', icon: CpuChipIcon, color: 'text-pink-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -47,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user, hasPermission } = useUser();
+  const { tooltipsEnabled, toggleTooltips } = useTooltips();
   const { alertCount, clearAllAlerts } = useConversationAlerts();
   
   const navigation = getNavigation();
@@ -227,6 +229,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 )}
               </button>
 
+              {/* Tooltip toggle */}
+              <button
+                onClick={toggleTooltips}
+                className={`p-2 rounded-lg transition-colors ${
+                  tooltipsEnabled 
+                    ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20' 
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <QuestionMarkCircleIcon className="h-5 w-5" />
+              </button>
+
               {/* Notifications */}
               <button
                 type="button"
@@ -240,7 +254,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         {/* Toolbars - Editor and Admin side by side */}
-        {((user?.role === 'admin' || user?.role === 'editor') || user?.role === 'admin') && (
+        {(user?.role === 'admin' || user?.role === 'manager') && (
           <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="flex items-center h-12">
@@ -251,7 +265,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                   <div className="flex items-center space-x-1">
                     {/* Editor Tools */}
-                    {(user?.role === 'admin' || user?.role === 'editor') && (
+                    {(user?.role === 'admin' || user?.role === 'manager') && (
                       <EditorToolbar
                         hasUserManagement={hasPermission('canManageUsers')}
                         hasAgentManagement={hasPermission('canManageAgents')}
@@ -266,10 +280,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {user?.role === 'admin' && (
                   <div className="flex items-center justify-end space-x-1 w-1/2">
                     <AdminToolbar
-                      hasSystemAccess={hasPermission('canAccessSystem')}
+                      hasSystemAccess={hasPermission('canManageUsers')}
                       hasUserManagement={hasPermission('canManageUsers')}
-                      hasSystemMonitoring={hasPermission('canMonitorSystem')}
-                      hasAdvancedSettings={hasPermission('canManageAdvancedSettings')}
+                      hasSystemMonitoring={hasPermission('canManageUsers')}
+                      hasAdvancedSettings={hasPermission('canManageUsers')}
                     />
                     {/* Status indicator - Far right */}
                     <div className="flex items-center space-x-2 ml-4">

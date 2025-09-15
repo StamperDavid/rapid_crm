@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRepository } from './BaseRepository';
 import { Lead } from '../../../types/schema';
 

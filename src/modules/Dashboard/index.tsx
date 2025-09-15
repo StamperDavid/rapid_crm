@@ -6,7 +6,7 @@ import {
   CurrencyDollarIcon,
   TrendingUpIcon,
   TrendingDownIcon,
-  CpuChipIcon,
+  ChipIcon,
 } from '@heroicons/react/outline';
 import { useCRM } from '../../contexts/CRMContext';
 
@@ -93,7 +93,7 @@ const DashboardModule: React.FC = () => {
     {
       name: 'Enterprise AI',
       value: 'Active',
-      icon: CpuChipIcon,
+      icon: ChipIcon,
       change: '10/10',
       changeType: 'increase' as const,
       href: '/admin/ai-control',

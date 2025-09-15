@@ -1045,9 +1045,28 @@ const CompanyDetail: React.FC = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      // TODO: Implement contact creation logic
-                      setShowAddContactModal(false);
+                    onClick={async () => {
+                      try {
+                        const newContact = {
+                          company_id: company.id,
+                          first_name: newContactData.firstName,
+                          last_name: newContactData.lastName,
+                          email: newContactData.email,
+                          phone: newContactData.phone,
+                          job_title: newContactData.jobTitle,
+                          is_primary_contact: 0,
+                          preferred_contact_method: 'Phone'
+                        };
+                        await createContact(newContact);
+                        setShowAddContactModal(false);
+                        setNewContactData({ firstName: '', lastName: '', email: '', phone: '', jobTitle: '' });
+                        // Refresh contacts list
+                        const updatedContacts = await fetch(`${getApiBaseUrl()}/contacts?companyId=${company.id}`).then(res => res.json());
+                        setContacts(updatedContacts);
+                      } catch (error) {
+                        console.error('Failed to create contact:', error);
+                        alert('Failed to create contact. Please try again.');
+                      }
                     }}
                     className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                   >
@@ -1145,9 +1164,31 @@ const CompanyDetail: React.FC = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      // TODO: Implement driver creation logic
-                      setShowAddDriverModal(false);
+                    onClick={async () => {
+                      try {
+                        const newDriver = {
+                          company_id: company.id,
+                          full_name: newDriverData.firstName + ' ' + newDriverData.lastName,
+                          address: company.physicalStreetAddress + ', ' + company.physicalCity + ', ' + company.physicalState + ' ' + company.physicalZip,
+                          phone: newDriverData.phone,
+                          email: newDriverData.email || '',
+                          date_of_birth: '',
+                          social_security_number: '',
+                          employment_history: 'New driver - employment history to be completed',
+                          driving_experience: newDriverData.licenseClass || '',
+                          employment_status: 'Active',
+                          position: 'Driver'
+                        };
+                        await createDriver(newDriver);
+                        setShowAddDriverModal(false);
+                        setNewDriverData({ firstName: '', lastName: '', email: '', phone: '', licenseClass: '' });
+                        // Refresh drivers list
+                        const updatedDrivers = await fetch(`${getApiBaseUrl()}/drivers?companyId=${company.id}`).then(res => res.json());
+                        setDrivers(updatedDrivers);
+                      } catch (error) {
+                        console.error('Failed to create driver:', error);
+                        alert('Failed to create driver. Please try again.');
+                      }
                     }}
                     className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
@@ -1258,9 +1299,32 @@ const CompanyDetail: React.FC = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      // TODO: Implement vehicle creation logic
-                      setShowAddVehicleModal(false);
+                    onClick={async () => {
+                      try {
+                        const newVehicle = {
+                          company_id: company.id,
+                          vin: newVehicleData.vin || '',
+                          license_plate: newVehicleData.licensePlate || '',
+                          make: newVehicleData.make || '',
+                          model: newVehicleData.model || '',
+                          year: newVehicleData.year || new Date().getFullYear(),
+                          color: newVehicleData.color || '',
+                          vehicle_type: newVehicleData.vehicleType || 'Truck',
+                          gvwr: newVehicleData.gvwr || '',
+                          fuel_type: 'Diesel',
+                          status: 'Active',
+                          has_hazmat_endorsement: 'No'
+                        };
+                        await createVehicle(newVehicle);
+                        setShowAddVehicleModal(false);
+                        setNewVehicleData({ make: '', model: '', year: '', licensePlate: '', vin: '', vehicleType: '', color: '', gvwr: '' });
+                        // Refresh vehicles list
+                        const updatedVehicles = await fetch(`${getApiBaseUrl()}/vehicles?companyId=${company.id}`).then(res => res.json());
+                        setVehicles(updatedVehicles);
+                      } catch (error) {
+                        console.error('Failed to create vehicle:', error);
+                        alert('Failed to create vehicle. Please try again.');
+                      }
                     }}
                     className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >

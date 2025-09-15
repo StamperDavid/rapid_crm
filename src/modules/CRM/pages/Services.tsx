@@ -590,9 +590,27 @@ const Services: React.FC = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      // TODO: Implement service creation logic
-                      setShowCreateModal(false);
+                    onClick={async () => {
+                      try {
+                        const newService = {
+                          name: newServiceData.name,
+                          description: newServiceData.description,
+                          category: newServiceData.category,
+                          base_price: parseFloat(newServiceData.basePrice) || 0,
+                          estimated_duration: newServiceData.estimatedDuration,
+                          requirements: JSON.stringify(newServiceData.requirements || []),
+                          deliverables: JSON.stringify(newServiceData.deliverables || []),
+                          is_active: 1
+                        };
+                        await createService(newService);
+                        setShowCreateModal(false);
+                        setNewServiceData({ name: '', description: '', category: 'General', basePrice: '', estimatedDuration: '', requirements: [], deliverables: [] });
+                        // Refresh services list
+                        await refreshServices();
+                      } catch (error) {
+                        console.error('Failed to create service:', error);
+                        alert('Failed to create service. Please try again.');
+                      }
                     }}
                     className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >

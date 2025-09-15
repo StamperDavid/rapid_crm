@@ -45,8 +45,7 @@ import {
   BookOpenIcon,
   CodeBracketIcon,
   CubeIcon,
-  PuzzlePieceIcon,
-  WrenchScrewdriverIcon,
+  CogIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
   ChevronRightIcon,
@@ -285,7 +284,7 @@ const AIAssistantControlPanel: React.FC<AIAssistantControlPanelProps> = ({ isOpe
             { id: 'configuration', label: 'Configuration', icon: CogIcon },
             { id: 'monitoring', label: 'Monitoring', icon: EyeIcon },
             { id: 'collaboration', label: 'AI Collaboration', icon: GlobeAltIcon },
-            { id: 'advanced', label: 'Advanced', icon: WrenchScrewdriverIcon }
+            { id: 'advanced', label: 'Advanced', icon: CogIcon }
           ].map((tab) => {
             const Icon = tab.icon;
             return (

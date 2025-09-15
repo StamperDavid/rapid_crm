@@ -1,0 +1,658 @@
+import React, { useState, useEffect } from 'react';
+import {
+  XIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  ChipIcon,
+  KeyIcon,
+  GlobeAltIcon,
+  CogIcon,
+  SparklesIcon,
+  BoltIcon,
+  ShieldCheckIcon,
+  CurrencyDollarIcon,
+  ClockIcon,
+  UserIcon,
+  LightBulbIcon,
+  ArrowRightIcon,
+  ArrowLeftIcon
+} from '@heroicons/react/outline';
+import { integratedAgentCreationService } from '../services/ai/IntegratedAgentCreationService';
+import { apiKeyService } from '../services/apiKeys/ApiKeyService';
+import EnhancedTooltip from './EnhancedTooltip';
+
+interface AIAgentCreationWizardProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAgentCreated: (agent: any) => void;
+}
+
+interface WizardStep {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<any>;
+}
+
+const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
+  isOpen,
+  onClose,
+  onAgentCreated
+}) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isCreating, setIsCreating] = useState(false);
+  const [availableApiKeys, setAvailableApiKeys] = useState<any[]>([]);
+  const [agentConfig, setAgentConfig] = useState({
+    name: '',
+    description: '',
+    type: 'general',
+    personality: {
+      communicationStyle: 'friendly',
+      responseLength: 'detailed',
+      expertise: []
+    },
+    capabilities: [],
+    learningProfile: {
+      learningRate: 0.8,
+      adaptationSpeed: 'fast',
+      collaborationPreference: 'hybrid'
+    },
+    autoSelectApiKeys: true,
+    preferredPlatforms: [],
+    createdBy: 'user'
+  });
+
+  const steps: WizardStep[] = [
+    {
+      id: 'basic',
+      title: 'Basic Information',
+      description: 'Define your agent\'s core identity and purpose',
+      icon: UserIcon
+    },
+    {
+      id: 'personality',
+      title: 'Personality & Behavior',
+      description: 'Customize how your agent communicates and behaves',
+      icon: LightBulbIcon
+    },
+    {
+      id: 'capabilities',
+      title: 'Capabilities & Skills',
+      description: 'Choose what your agent can do and learn',
+      icon: CogIcon
+    },
+    {
+      id: 'api_keys',
+      title: 'API Integration',
+      description: 'Connect your agent to external services',
+      icon: KeyIcon
+    },
+    {
+      id: 'learning',
+      title: 'Learning Profile',
+      description: 'Configure how your agent learns and adapts',
+      icon: CogIcon
+    },
+    {
+      id: 'review',
+      title: 'Review & Create',
+      description: 'Review your agent configuration and create',
+      icon: SparklesIcon
+    }
+  ];
+
+  useEffect(() => {
+    if (isOpen) {
+      loadApiKeys();
+    }
+  }, [isOpen]);
+
+  const loadApiKeys = async () => {
+    try {
+      const keys = await apiKeyService.getApiKeys();
+      setAvailableApiKeys(keys.filter(key => key.status === 'active'));
+    } catch (error) {
+      console.error('Error loading API keys:', error);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleCreateAgent = async () => {
+    setIsCreating(true);
+    try {
+      const agent = await integratedAgentCreationService.createIntegratedAgent(agentConfig);
+      onAgentCreated(agent);
+      onClose();
+    } catch (error) {
+      console.error('Error creating agent:', error);
+      alert('Failed to create agent. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const renderBasicInfo = () => (
+    <div className="space-y-6">
+      <div>
+        <EnhancedTooltip content="Give your AI agent a descriptive name that clearly indicates its purpose and role. This will help you identify it later when managing multiple agents.">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Agent Name *
+          </label>
+        </EnhancedTooltip>
+        <input
+          type="text"
+          value={agentConfig.name}
+          onChange={(e) => setAgentConfig({ ...agentConfig, name: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          placeholder="e.g., Customer Service Assistant"
+        />
+      </div>
+
+      <div>
+        <EnhancedTooltip content="Provide a detailed description of what your agent will do, its main responsibilities, and how it will help your business. This helps the system optimize the agent's configuration.">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Description *
+          </label>
+        </EnhancedTooltip>
+        <textarea
+          value={agentConfig.description}
+          onChange={(e) => setAgentConfig({ ...agentConfig, description: e.target.value })}
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          placeholder="Describe what this agent will do and how it will help..."
+        />
+      </div>
+
+      <div>
+        <EnhancedTooltip content="Choose the primary category that best describes your agent's main function. This determines which API keys and capabilities will be automatically selected for optimal performance.">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Agent Type *
+          </label>
+        </EnhancedTooltip>
+        <select
+          value={agentConfig.type}
+          onChange={(e) => setAgentConfig({ ...agentConfig, type: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="general">General Purpose</option>
+          <option value="customer_service">Customer Service</option>
+          <option value="data_analysis">Data Analysis</option>
+          <option value="automation">Automation</option>
+          <option value="communication">Communication</option>
+          <option value="sales_marketing">Sales & Marketing</option>
+        </select>
+      </div>
+    </div>
+  );
+
+  const renderPersonality = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Communication Style
+        </label>
+        <select
+          value={agentConfig.personality.communicationStyle}
+          onChange={(e) => setAgentConfig({
+            ...agentConfig,
+            personality: { ...agentConfig.personality, communicationStyle: e.target.value }
+          })}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="friendly">Friendly & Approachable</option>
+          <option value="professional">Professional & Formal</option>
+          <option value="casual">Casual & Relaxed</option>
+          <option value="technical">Technical & Precise</option>
+          <option value="authoritative">Authoritative & Direct</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Response Length
+        </label>
+        <select
+          value={agentConfig.personality.responseLength}
+          onChange={(e) => setAgentConfig({
+            ...agentConfig,
+            personality: { ...agentConfig.personality, responseLength: e.target.value }
+          })}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="brief">Brief & Concise</option>
+          <option value="detailed">Detailed & Comprehensive</option>
+          <option value="comprehensive">Comprehensive & Thorough</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Expertise Areas
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {['customer_support', 'data_analysis', 'communication', 'automation', 'sales', 'technical_support'].map((expertise) => (
+            <label key={expertise} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={agentConfig.personality.expertise.includes(expertise)}
+                onChange={(e) => {
+                  const expertiseList = e.target.checked
+                    ? [...agentConfig.personality.expertise, expertise]
+                    : agentConfig.personality.expertise.filter(exp => exp !== expertise);
+                  setAgentConfig({
+                    ...agentConfig,
+                    personality: { ...agentConfig.personality, expertise: expertiseList }
+                  });
+                }}
+                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              />
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">
+                {expertise.replace(/_/g, ' ')}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCapabilities = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Core Capabilities
+        </label>
+        <div className="grid grid-cols-1 gap-3">
+          {[
+            { id: 'natural_language_processing', name: 'Natural Language Processing', description: 'Advanced text understanding and generation' },
+            { id: 'data_analysis', name: 'Data Analysis', description: 'Statistical analysis and insights' },
+            { id: 'communication', name: 'Communication', description: 'Multi-channel communication management' },
+            { id: 'automation', name: 'Workflow Automation', description: 'Automated task execution and orchestration' },
+            { id: 'decision_making', name: 'Decision Making', description: 'Intelligent decision support' },
+            { id: 'learning', name: 'Continuous Learning', description: 'Adaptive learning from interactions' }
+          ].map((capability) => (
+            <label key={capability.id} className="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agentConfig.capabilities.includes(capability.id)}
+                onChange={(e) => {
+                  const capabilities = e.target.checked
+                    ? [...agentConfig.capabilities, capability.id]
+                    : agentConfig.capabilities.filter(cap => cap !== capability.id);
+                  setAgentConfig({ ...agentConfig, capabilities });
+                }}
+                className="mt-1 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              />
+              <div className="ml-3">
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  {capability.name}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {capability.description}
+                </div>
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderApiKeys = () => (
+    <div className="space-y-6">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="flex">
+          <InformationCircleIcon className="h-5 w-5 text-blue-400 mt-0.5" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              Automatic API Key Integration
+            </h3>
+            <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+              Your agent will automatically use the best available API keys from your centralized storage.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <EnhancedTooltip content="When enabled, the system will automatically select the best API keys from your centralized storage based on the agent type and capabilities. This ensures optimal performance and cost efficiency.">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={agentConfig.autoSelectApiKeys}
+              onChange={(e) => setAgentConfig({ ...agentConfig, autoSelectApiKeys: e.target.checked })}
+              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            />
+            <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Automatically select best API keys
+            </span>
+          </label>
+        </EnhancedTooltip>
+      </div>
+
+      {!agentConfig.autoSelectApiKeys && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Preferred Platforms
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {['openai', 'google', 'kixie', 'stripe', 'quickbooks'].map((platform) => (
+              <label key={platform} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={agentConfig.preferredPlatforms.includes(platform)}
+                  onChange={(e) => {
+                    const platforms = e.target.checked
+                      ? [...agentConfig.preferredPlatforms, platform]
+                      : agentConfig.preferredPlatforms.filter(p => p !== platform);
+                    setAgentConfig({ ...agentConfig, preferredPlatforms: platforms });
+                  }}
+                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">
+                  {platform}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Available API Keys ({availableApiKeys.length})
+        </h4>
+        <div className="space-y-2">
+          {availableApiKeys.map((key) => (
+            <div key={key.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+              <div className="flex items-center">
+                <KeyIcon className="h-4 w-4 text-gray-400 mr-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {key.name}
+                </span>
+                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                  ({key.platform})
+                </span>
+              </div>
+              <span className="text-xs text-green-600 dark:text-green-400">
+                Active
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLearning = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Learning Rate
+        </label>
+        <input
+          type="range"
+          min="0.1"
+          max="1.0"
+          step="0.1"
+          value={agentConfig.learningProfile.learningRate}
+          onChange={(e) => setAgentConfig({
+            ...agentConfig,
+            learningProfile: { ...agentConfig.learningProfile, learningRate: parseFloat(e.target.value) }
+          })}
+          className="w-full"
+        />
+        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <span>Slow (0.1)</span>
+          <span>Current: {agentConfig.learningProfile.learningRate}</span>
+          <span>Fast (1.0)</span>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Adaptation Speed
+        </label>
+        <select
+          value={agentConfig.learningProfile.adaptationSpeed}
+          onChange={(e) => setAgentConfig({
+            ...agentConfig,
+            learningProfile: { ...agentConfig.learningProfile, adaptationSpeed: e.target.value }
+          })}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="slow">Slow & Steady</option>
+          <option value="medium">Balanced</option>
+          <option value="fast">Fast & Responsive</option>
+          <option value="instant">Instant Adaptation</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Collaboration Preference
+        </label>
+        <select
+          value={agentConfig.learningProfile.collaborationPreference}
+          onChange={(e) => setAgentConfig({
+            ...agentConfig,
+            learningProfile: { ...agentConfig.learningProfile, collaborationPreference: e.target.value }
+          })}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="solo">Independent Worker</option>
+          <option value="team">Team Collaborator</option>
+          <option value="hybrid">Flexible (Solo + Team)</option>
+        </select>
+      </div>
+    </div>
+  );
+
+  const renderReview = () => (
+    <div className="space-y-6">
+      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Agent Configuration</h3>
+        
+        <div className="space-y-3">
+          <div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Name:</span>
+            <span className="ml-2 text-sm text-gray-900 dark:text-white">{agentConfig.name}</span>
+          </div>
+          
+          <div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Type:</span>
+            <span className="ml-2 text-sm text-gray-900 dark:text-white capitalize">
+              {agentConfig.type.replace(/_/g, ' ')}
+            </span>
+          </div>
+          
+          <div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</span>
+            <p className="mt-1 text-sm text-gray-900 dark:text-white">{agentConfig.description}</p>
+          </div>
+          
+          <div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Capabilities:</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {agentConfig.capabilities.map((cap) => (
+                <span key={cap} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  {cap.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">API Integration:</span>
+            <span className="ml-2 text-sm text-gray-900 dark:text-white">
+              {agentConfig.autoSelectApiKeys ? 'Automatic' : 'Manual Selection'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+        <div className="flex">
+          <CheckIcon className="h-5 w-5 text-green-400 mt-0.5" />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-green-800 dark:text-green-200">
+              Ready to Create
+            </h3>
+            <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+              Your agent will be created with automatic API key integration and will be ready to use immediately.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStepContent = () => {
+    switch (steps[currentStep].id) {
+      case 'basic':
+        return renderBasicInfo();
+      case 'personality':
+        return renderPersonality();
+      case 'capabilities':
+        return renderCapabilities();
+      case 'api_keys':
+        return renderApiKeys();
+      case 'learning':
+        return renderLearning();
+      case 'review':
+        return renderReview();
+      default:
+        return null;
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <SparklesIcon className="h-8 w-8 text-purple-600 mr-3" />
+              Create AI Agent
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <XIcon className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                  index <= currentStep 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                }`}>
+                  {index < currentStep ? (
+                    <CheckIcon className="h-5 w-5" />
+                  ) : (
+                    React.createElement(step.icon, { className: "h-5 w-5" })
+                  )}
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`w-16 h-1 mx-2 ${
+                    index < currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <div className="mb-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+              {React.createElement(steps[currentStep].icon, { className: "h-5 w-5 mr-2" })}
+              {steps[currentStep].title}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {steps[currentStep].description}
+            </p>
+          </div>
+          {renderStepContent()}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between">
+          <EnhancedTooltip content="Go back to the previous step to modify your agent configuration.">
+            <button
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Previous
+            </button>
+          </EnhancedTooltip>
+
+          <div className="flex space-x-2">
+            {currentStep === steps.length - 1 ? (
+              <EnhancedTooltip content="Create your AI agent with the configured settings. The agent will be automatically connected to your API keys and ready to use immediately.">
+                <button
+                  onClick={handleCreateAgent}
+                  disabled={isCreating || !agentConfig.name || !agentConfig.description}
+                  className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCreating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <SparklesIcon className="h-4 w-4 mr-2" />
+                      Create Agent
+                    </>
+                  )}
+                </button>
+              </EnhancedTooltip>
+            ) : (
+              <EnhancedTooltip content="Continue to the next step in the agent creation process.">
+                <button
+                  onClick={handleNext}
+                  disabled={currentStep === 0 && (!agentConfig.name || !agentConfig.description)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                  <ArrowRightIcon className="h-4 w-4 ml-2" />
+                </button>
+              </EnhancedTooltip>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AIAgentCreationWizard;
