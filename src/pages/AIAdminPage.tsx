@@ -8,8 +8,14 @@ import AICollaborationMonitor from '../components/AICollaborationMonitor';
 const AIAdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
-  const [metrics, setMetrics] = useState(null);
-  const [alerts, setAlerts] = useState([]);
+  const [metrics, setMetrics] = useState<{
+    errorRate: number;
+    totalRequests: number;
+    successfulRequests: number;
+  } | null>(null);
+  const [alerts, setAlerts] = useState<Array<{
+    resolved: boolean;
+  }>>([]);
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
@@ -38,6 +44,22 @@ const AIAdminPage: React.FC = () => {
   const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
+  
+  // AI Assistant Persona Configuration State
+  const [aiPersonaConfig, setAiPersonaConfig] = useState({
+    customGreeting: "Hello! I'm the Rapid CRM AI assistant. I'm intelligent and ready to help with development tasks, database issues, API endpoints, and AI collaboration. What would you like to work on?",
+    greetingStyle: "professional",
+    responseTone: "helpful",
+    helpfulnessLevel: 8,
+    detailLevel: 6,
+    formalityLevel: 7,
+    errorTemplate: "I apologize, but I encountered an issue. Let me help you resolve this.",
+    successTemplate: "Great! I've successfully completed that task. What would you like to work on next?",
+    enableRealAI: true,
+    enableContextAwareness: true,
+    enableLearning: false
+  });
+  
   const [voiceSamples, setVoiceSamples] = useState<{[key: string]: string}>({
     'Microsoft David Desktop': 'Hello, I am Microsoft David. I provide clear, professional speech for business communications.',
     'Microsoft Zira Desktop': 'Hi there! I am Microsoft Zira. I offer a friendly, approachable voice for customer interactions.',
@@ -363,7 +385,7 @@ const AIAdminPage: React.FC = () => {
                       <option value="">Select a voice...</option>
                       {getFilteredVoices().map((voice) => (
                         <option key={voice.name} value={voice.name}>
-                          {voice.name} ({voice.gender || 'Unknown'})
+                          {voice.name} ({(voice as any).gender || 'Unknown'})
                         </option>
                       ))}
                     </select>
@@ -881,9 +903,197 @@ const AIAdminPage: React.FC = () => {
 
           {activeTab === 'advanced' && (
             <div className="space-y-6">
+              {/* AI Assistant Persona Configuration */}
               <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Advanced Settings</h3>
-                <p className="text-gray-600 dark:text-gray-400">Advanced settings will be implemented here.</p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Assistant Persona Configuration</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">Configure the Rapid CRM AI assistant's personality, greeting, and response style.</p>
+                
+                <div className="space-y-6">
+                  {/* Dynamic Greeting Configuration */}
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Dynamic Greeting Settings</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Custom Greeting Message
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={aiPersonaConfig.customGreeting}
+                          onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, customGreeting: e.target.value }))}
+                          placeholder="Enter a custom greeting message for the AI assistant..."
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          This message will be displayed when users first interact with the AI assistant.
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Greeting Style
+                          </label>
+                          <select 
+                            value={aiPersonaConfig.greetingStyle}
+                            onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, greetingStyle: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          >
+                            <option value="professional">Professional</option>
+                            <option value="friendly">Friendly</option>
+                            <option value="casual">Casual</option>
+                            <option value="authoritative">Authoritative</option>
+                            <option value="warm">Warm</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Response Tone
+                          </label>
+                          <select 
+                            value={aiPersonaConfig.responseTone}
+                            onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, responseTone: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          >
+                            <option value="helpful">Helpful</option>
+                            <option value="direct">Direct</option>
+                            <option value="conversational">Conversational</option>
+                            <option value="technical">Technical</option>
+                            <option value="empathetic">Empathetic</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Personality Traits */}
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">AI Personality Traits</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Helpfulness Level
+                        </label>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="10" 
+                          value={aiPersonaConfig.helpfulnessLevel}
+                          onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, helpfulnessLevel: parseInt(e.target.value) }))}
+                          className="w-full" 
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Minimal</span>
+                          <span>Maximum</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Detail Level
+                        </label>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="10" 
+                          value={aiPersonaConfig.detailLevel}
+                          onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, detailLevel: parseInt(e.target.value) }))}
+                          className="w-full" 
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Brief</span>
+                          <span>Detailed</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Formality Level
+                        </label>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="10" 
+                          defaultValue="7"
+                          className="w-full" 
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Casual</span>
+                          <span>Formal</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Response Templates */}
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Response Templates</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Error Response Template
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="Template for error responses..."
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Success Response Template
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="Template for success responses..."
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-4">
+                    <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      Reset to Defaults
+                    </button>
+                    <button className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                      Save Configuration
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Intelligence Settings */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Intelligence Settings</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Enable Real AI Responses</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Use actual AI provider instead of preprogrammed responses</p>
+                    </div>
+                    <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Dynamic Context Awareness</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">AI adapts responses based on conversation context</p>
+                    </div>
+                    <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Learning Mode</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">AI learns from interactions to improve responses</p>
+                    </div>
+                    <input type="checkbox" className="h-4 w-4 text-purple-600" />
+                  </div>
+                </div>
               </div>
             </div>
           )}

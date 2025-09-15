@@ -449,7 +449,7 @@ export class AgentService {
         sources = ['product_catalog', 'sales_scripts'];
         break;
       default:
-        responseMessage = 'I understand your request. How can I help you today?';
+        responseMessage = 'Hello! I\'m the Rapid CRM AI assistant. I\'m intelligent and ready to help with development tasks, database issues, API endpoints, and AI collaboration. What specific task would you like me to work on?';
         confidence = 0.7;
     }
 

@@ -1,7 +1,21 @@
 import React, { useEffect } from 'react';
+import { claudeCollaborationService } from '../services/ai/ClaudeCollaborationService';
 
 const ClaudeEventListener: React.FC = () => {
   useEffect(() => {
+    // Initialize the collaboration service and start communication
+    const initializeCollaboration = async () => {
+      console.log('🤖 ClaudeEventListener: Initializing collaboration service...');
+      claudeCollaborationService.ensureConnection(); // Ensure connection status
+      await claudeCollaborationService.startCollaboration();
+    };
+
+    // Start collaboration after a short delay
+    const timer = setTimeout(initializeCollaboration, 1000);
+    
+    // Also ensure connection immediately
+    claudeCollaborationService.ensureConnection();
+
     // Listen for messages from Rapid CRM AI
     const handleRapidCRMMessage = (event: any) => {
       console.log('🤖 Claude received message from Rapid CRM AI:', event.detail);
@@ -74,6 +88,7 @@ const ClaudeEventListener: React.FC = () => {
 
     // Cleanup
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('rapid-crm-to-claude', handleRapidCRMMessage);
     };
   }, []);

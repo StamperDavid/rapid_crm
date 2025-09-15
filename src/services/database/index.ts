@@ -1,6 +1,10 @@
-// Main database exports
-export { DatabaseManager, databaseManager } from './DatabaseManager';
-export { DatabaseService, databaseService } from './DatabaseService';
+
+
+
+// Main database exports - REMOVED to prevent direct database access
+// All database operations should go through API endpoints
+// export { DatabaseManager, databaseManager } from './DatabaseManager';
+// export { DatabaseService, databaseService } from './DatabaseService';
 export { MigrationService } from './migrations/MigrationService';
 
 // Repository exports

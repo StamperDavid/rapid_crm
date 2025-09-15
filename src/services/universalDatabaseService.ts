@@ -6,7 +6,7 @@ import { IDatabaseService } from './database/RealDatabaseService';
 
 // This is a placeholder for the actual database file path
 // In a real application, this would be served by a backend or bundled differently
-const DB_FILE_PATH = '/rapid_crm.db'; // Path to the pre-initialized database file
+const DB_FILE_PATH = '/instance/rapid_crm.db'; // Path to the pre-initialized database file
 
 class UniversalDatabaseService implements IDatabaseService {
   private db: initSqlJs.Database | null = null;

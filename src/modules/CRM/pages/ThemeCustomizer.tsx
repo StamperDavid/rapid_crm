@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ColorSwatchIcon,
   PhotographIcon,
@@ -6,6 +6,16 @@ import {
   EyeIcon,
   RefreshIcon,
   CheckIcon,
+  CodeIcon,
+  SparklesIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
+  DesktopComputerIcon,
+  TemplateIcon,
+  CubeIcon,
+  ChartSquareBarIcon,
+  PlayIcon,
+  PauseIcon,
 } from '@heroicons/react/outline';
 import { useTheme } from '../../../contexts/ThemeContext';
 
@@ -38,6 +48,20 @@ interface ThemeSettings {
   // Logo
   logoUrl: string;
   logoHeight: number;
+  
+  // Advanced Features
+  animations: {
+    enabled: boolean;
+    duration: number;
+    easing: string;
+  };
+  responsive: {
+    mobile: any;
+    tablet: any;
+    desktop: any;
+  };
+  customCSS: string;
+  templates: any[];
 }
 
 const defaultTheme: ThemeSettings = {
@@ -58,6 +82,18 @@ const defaultTheme: ThemeSettings = {
   fontWeight: '400',
   logoUrl: '',
   logoHeight: 48,
+  animations: {
+    enabled: true,
+    duration: 300,
+    easing: 'ease-in-out'
+  },
+  responsive: {
+    mobile: {},
+    tablet: {},
+    desktop: {}
+  },
+  customCSS: '',
+  templates: []
 };
 
 const fontOptions = [
@@ -86,6 +122,10 @@ const ThemeCustomizer: React.FC = () => {
   const [settings, setSettings] = useState<ThemeSettings>(defaultTheme);
   const [previewMode, setPreviewMode] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [activeTab, setActiveTab] = useState<'colors' | 'typography' | 'layout' | 'animations' | 'responsive' | 'css' | 'templates'>('colors');
+  const [activeBreakpoint, setActiveBreakpoint] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [showCSSEditor, setShowCSSEditor] = useState(false);
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
 
   useEffect(() => {
     // Load saved theme settings from ThemeContext

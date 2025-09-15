@@ -57,30 +57,10 @@ interface OnboardingAgent {
 }
 
 const ClientPortal: React.FC = () => {
-  // Mock client data - in real implementation, this would come from API
-  const [clientData, setClientData] = useState<ClientData>({
-    companyName: 'Acme Transportation LLC',
-    clientName: 'John Smith',
-    usdotNumber: '123456',
-    mcNumber: 'MC-789012',
-    businessAddress: '123 Main Street, Anytown, ST 12345',
-    phone: '(555) 123-4567',
-    email: 'john@acmetrans.com',
-    complianceStatus: 'warning',
-    renewalDates: {
-      usdot: '2024-06-15',
-      mc: '2024-08-20',
-      insurance: '2024-12-01'
-    },
-    violations: [
-      {
-        type: 'Hours of Service',
-        date: '2024-01-15',
-        status: 'Resolved'
-      }
-    ],
-    lastLogin: '2024-01-20 09:30 AM'
-  });
+  const [clientData, setClientData] = useState<ClientData | null>(null);
+  const [portalSettings, setPortalSettings] = useState<any>(null);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   const [onboardingAgent, setOnboardingAgent] = useState<OnboardingAgent>({
     isActive: true,
@@ -104,6 +84,70 @@ const ClientPortal: React.FC = () => {
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
 
+  // Load client portal data
+  useEffect(() => {
+    const loadClientPortalData = async () => {
+      try {
+        // Load portal settings
+        const settingsResponse = await fetch('/api/client-portal/settings');
+        if (settingsResponse.ok) {
+          const settingsData = await settingsResponse.json();
+          setPortalSettings(settingsData.settings);
+        }
+
+        // Create client session
+        const sessionResponse = await fetch('/api/client-portal/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_id: 1,
+            client_name: 'Demo Client',
+            client_email: 'demo@client.com',
+            ip_address: '127.0.0.1',
+            user_agent: navigator.userAgent
+          })
+        });
+        
+        if (sessionResponse.ok) {
+          const sessionData = await sessionResponse.json();
+          setSessionId(sessionData.sessionId);
+        }
+
+        // Load client data (for now using mock data, but connected to session)
+        setClientData({
+          companyName: 'Acme Transportation LLC',
+          clientName: 'John Smith',
+          usdotNumber: '123456',
+          mcNumber: 'MC-789012',
+          businessAddress: '123 Main Street, Anytown, ST 12345',
+          phone: '(555) 123-4567',
+          email: 'john@acmetrans.com',
+          complianceStatus: 'warning',
+          renewalDates: {
+            usdot: '2024-06-15',
+            mc: '2024-08-20',
+            insurance: '2024-12-01'
+          },
+          violations: [
+            {
+              type: 'Hours of Service',
+              date: '2024-01-15',
+              status: 'Resolved'
+            }
+          ],
+          lastLogin: new Date().toLocaleString()
+        });
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading client portal data:', error);
+        setLoading(false);
+      }
+    };
+
+    loadClientPortalData();
+  }, []);
+
   // Test voice function
   const handleTestVoice = () => {
     const testMessage = "Hello! This is your Rapid CRM onboarding assistant. I'm here to help you navigate your client portal and answer any questions you might have about your transportation business.";
@@ -111,7 +155,7 @@ const ClientPortal: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() && !isProcessing) {
+    if (newMessage.trim() && !isProcessing && sessionId) {
       const userMessage = {
         id: Date.now().toString(),
         type: 'user' as const,
@@ -123,6 +167,22 @@ const ClientPortal: React.FC = () => {
         ...prev,
         messages: [...prev.messages, userMessage]
       }));
+
+      // Save user message to database
+      try {
+        await fetch('/api/client-portal/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            message_type: 'user',
+            content: newMessage,
+            metadata: { timestamp: new Date().toISOString() }
+          })
+        });
+      } catch (error) {
+        console.error('Error saving user message:', error);
+      }
 
       setIsProcessing(true);
       setNewMessage('');
@@ -156,6 +216,26 @@ const ClientPortal: React.FC = () => {
           messages: [...prev.messages, agentResponse],
           currentStep: response.nextStep || prev.currentStep
         }));
+
+        // Save agent response to database
+        try {
+          await fetch('/api/client-portal/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              session_id: sessionId,
+              message_type: 'agent',
+              content: response.content,
+              metadata: { 
+                timestamp: new Date().toISOString(),
+                nextStep: response.nextStep,
+                confidence: response.confidence || 0.8
+              }
+            })
+          });
+        } catch (error) {
+          console.error('Error saving agent message:', error);
+        }
 
         // Speak the response if voice is enabled
         if (onboardingAgent.isActive) {
@@ -272,6 +352,27 @@ const ClientPortal: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading client portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!clientData) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 dark:text-red-400">Failed to load client portal data</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -286,7 +387,7 @@ const ClientPortal: React.FC = () => {
               </div>
               <div className="ml-4">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Rapid CRM Client Portal
+                  {portalSettings?.portal_name || 'Rapid CRM Client Portal'}
                 </h1>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { databaseManager } from '../services/database/DatabaseManager';
+// Removed databaseManager import - using API calls to server instead
 import { useDatabase } from '../hooks/useDatabase';
 import { 
   DatabaseIcon, 
@@ -21,8 +21,9 @@ const DatabaseExample: React.FC = () => {
     
     setLoading(true);
     try {
-      const companyRepo = databaseManager.getCompanyRepository();
-      const companyData = await companyRepo.findAll();
+      // Using API calls to server instead of databaseManager
+      const response = await fetch('/api/companies');
+      const companyData = await response.json();
       setCompanies(companyData);
     } catch (error) {
       console.error('Failed to load companies:', error);
@@ -36,20 +37,25 @@ const DatabaseExample: React.FC = () => {
     
     setLoading(true);
     try {
-      const companyRepo = databaseManager.getCompanyRepository();
-      const newCompany = await companyRepo.create({
-        name: newCompanyName,
-        email: `${newCompanyName.toLowerCase().replace(/\s+/g, '')}@example.com`,
-        phone: '555-0000',
-        address: '123 Main St',
-        city: 'Anytown',
-        state: 'ST',
-        zipCode: '12345',
-        country: 'US',
-        industry: 'Transportation',
-        size: 'small',
-        status: 'active'
+      // Using API calls to server instead of databaseManager
+      const response = await fetch('/api/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCompanyName,
+          email: `${newCompanyName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+          phone: '555-0000',
+          address: '123 Main St',
+          city: 'Anytown',
+          state: 'ST',
+          zipCode: '12345',
+          country: 'US',
+          industry: 'Transportation',
+          size: 'small',
+          status: 'active'
+        })
       });
+      const newCompany = await response.json();
       
       setCompanies(prev => [newCompany, ...prev]);
       setNewCompanyName('');
@@ -65,8 +71,8 @@ const DatabaseExample: React.FC = () => {
     
     setLoading(true);
     try {
-      const companyRepo = databaseManager.getCompanyRepository();
-      await companyRepo.delete(id);
+      // Using API calls to server instead of databaseManager
+      await fetch(`/api/companies/${id}`, { method: 'DELETE' });
       setCompanies(prev => prev.filter(company => company.id !== id));
     } catch (error) {
       console.error('Failed to delete company:', error);

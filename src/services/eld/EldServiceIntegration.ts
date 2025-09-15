@@ -3,7 +3,7 @@
  * Integrates the Rapid ELD module with the CRM system for service tracking and automation
  */
 
-import { DatabaseService } from '../database/DatabaseService';
+// Removed direct database import - use API calls instead
 import { AIAgentManager } from '../ai/AIAgentManager';
 import { ConversationService } from '../conversations/ConversationService';
 
@@ -60,16 +60,13 @@ export interface ComplianceAlert {
 }
 
 export class EldServiceIntegration {
-  private db: DatabaseService;
   private aiAgentManager: AIAgentManager;
   private conversationService: ConversationService;
 
   constructor(
-    db: DatabaseService,
     aiAgentManager: AIAgentManager,
     conversationService: ConversationService
   ) {
-    this.db = db;
     this.aiAgentManager = aiAgentManager;
     this.conversationService = conversationService;
   }
@@ -83,39 +80,74 @@ export class EldServiceIntegration {
     agentId?: string
   ): Promise<string> {
     try {
-      // Create the base service record
-      const serviceId = await this.db.createService({
-        name: `${serviceConfig.providerName} ${serviceConfig.serviceType}`,
-        description: `ELD service: ${serviceConfig.serviceType} from ${serviceConfig.providerName}`,
-        category: 'Compliance',
-        base_price: serviceConfig.baseCost,
-        estimated_duration: `${serviceConfig.renewalFrequency} days`,
-        requirements: JSON.stringify(['Active DOT Number', 'Fleet Registration']),
-        deliverables: JSON.stringify(['ELD Service', 'Compliance Monitoring', 'Support'])
+      // Create the base service record via API
+      const serviceResponse = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${serviceConfig.providerName} ${serviceConfig.serviceType}`,
+          description: `ELD service: ${serviceConfig.serviceType} from ${serviceConfig.providerName}`,
+          category: 'Compliance',
+          base_price: serviceConfig.baseCost,
+          estimated_duration: `${serviceConfig.renewalFrequency} days`,
+          requirements: JSON.stringify(['Active DOT Number', 'Fleet Registration']),
+          deliverables: JSON.stringify(['ELD Service', 'Compliance Monitoring', 'Support'])
+        })
       });
+      
+      if (!serviceResponse.ok) {
+        throw new Error(`Failed to create service: ${serviceResponse.statusText}`);
+      }
+      
+      const serviceData = await serviceResponse.json();
+      const serviceId = serviceData.id;
 
-      // Create service renewal tracking
-      const renewalId = await this.createServiceRenewal({
-        serviceId,
-        companyId,
-        renewalType: this.getRenewalType(serviceConfig.renewalFrequency),
-        renewalFrequency: serviceConfig.renewalFrequency,
-        currentExpiry: new Date(Date.now() + serviceConfig.renewalFrequency * 24 * 60 * 60 * 1000).toISOString(),
-        nextRenewal: new Date(Date.now() + serviceConfig.renewalFrequency * 24 * 60 * 60 * 1000).toISOString(),
-        autoRenewalEnabled: serviceConfig.autoRenewal,
-        reminderDaysBefore: serviceConfig.reminderDays,
-        complianceRequired: serviceConfig.complianceRequired,
-        regulatoryBody: serviceConfig.regulatoryBody,
-        agentAssigned: agentId
+      // Create service renewal tracking via API
+      const renewalId = `renewal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const renewalResponse = await fetch('/api/service-renewals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: renewalId,
+          serviceId,
+          companyId,
+          renewalType: this.getRenewalType(serviceConfig.renewalFrequency),
+          renewalFrequency: serviceConfig.renewalFrequency,
+          currentExpiry: new Date(Date.now() + serviceConfig.renewalFrequency * 24 * 60 * 60 * 1000).toISOString(),
+          nextRenewal: new Date(Date.now() + serviceConfig.renewalFrequency * 24 * 60 * 60 * 1000).toISOString(),
+          autoRenewalEnabled: serviceConfig.autoRenewal,
+          reminderDaysBefore: serviceConfig.reminderDays,
+          complianceRequired: serviceConfig.complianceRequired,
+          regulatoryBody: serviceConfig.regulatoryBody,
+          agentAssigned: agentId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
       });
+      
+      if (!renewalResponse.ok) {
+        throw new Error(`Failed to create service renewal: ${renewalResponse.statusText}`);
+      }
 
-      // Create ELD-specific service record
-      await this.createEldService({
-        serviceRenewalId: renewalId,
-        serviceType: serviceConfig.serviceType,
-        providerName: serviceConfig.providerName,
-        serviceLevel: serviceConfig.serviceLevel
+      // Create ELD-specific service record via API
+      const eldServiceId = `eld_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const eldServiceResponse = await fetch('/api/eld-services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: eldServiceId,
+          serviceRenewalId: renewalId,
+          serviceType: serviceConfig.serviceType,
+          providerName: serviceConfig.providerName,
+          serviceLevel: serviceConfig.serviceLevel,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
       });
+      
+      if (!eldServiceResponse.ok) {
+        throw new Error(`Failed to create ELD service: ${eldServiceResponse.statusText}`);
+      }
 
       // Set up automation rules
       await this.setupAutomationRules(renewalId, serviceConfig, agentId);

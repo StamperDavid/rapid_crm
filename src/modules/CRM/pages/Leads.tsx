@@ -406,8 +406,8 @@ const Leads: React.FC = () => {
       {/* Leads List */}
       <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filteredLeads.map((lead) => (
-            <li key={lead.id}>
+          {filteredLeads.map((lead, index) => (
+            <li key={lead.id || `lead-${index}`}>
               <div className="px-4 py-6 sm:px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">

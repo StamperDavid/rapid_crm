@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   EyeIcon,
   CogIcon,
@@ -12,567 +12,650 @@ import {
   PauseIcon,
   RefreshIcon,
   CheckIcon,
+  PlusIcon,
+  TrashIcon,
+  DuplicateIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowsExpandIcon,
+  ColorSwatchIcon,
+  PhotographIcon,
+  CodeIcon,
+  TemplateIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
+  DesktopComputerIcon,
+  SparklesIcon,
+  CubeIcon,
+  ChartSquareBarIcon,
 } from '@heroicons/react/outline';
 
-interface PortalLayout {
+// Types for Elementor-level functionality
+interface DragDropComponent {
   id: string;
-  type: 'header' | 'welcome' | 'data-section' | 'chatbot' | 'compliance' | 'footer';
-  title: string;
-  fields: string[];
+  type: 'text' | 'image' | 'button' | 'form' | 'chart' | 'video' | 'spacer' | 'divider' | 'icon' | 'custom';
+  name: string;
+  icon: React.ReactNode;
+  category: 'basic' | 'media' | 'forms' | 'data' | 'layout' | 'advanced';
+  defaultProps: any;
+  preview: string;
+}
+
+interface PortalElement {
+  id: string;
+  type: string;
+  name: string;
   position: { x: number; y: number };
   size: { width: number; height: number };
+  props: any;
+  styles: any;
+  responsive: {
+    desktop: any;
+    tablet: any;
+    mobile: any;
+  };
+  animations: {
+    entrance: string;
+    hover: string;
+    exit: string;
+  };
+  customCSS: string;
   visible: boolean;
+  locked: boolean;
 }
 
-
-interface ComplianceSettings {
-  emailAddress: string;
-  autoSend: boolean;
-  includeFields: string[];
-  template: string;
+interface PortalTemplate {
+  id: string;
+  name: string;
+  description: string;
+  thumbnail: string;
+  elements: PortalElement[];
+  category: 'business' | 'transportation' | 'compliance' | 'custom';
 }
+
+interface ResponsiveBreakpoint {
+  name: 'desktop' | 'tablet' | 'mobile';
+  width: number;
+  icon: React.ReactNode;
+}
+
+// Available drag-and-drop components
+const DRAG_DROP_COMPONENTS: DragDropComponent[] = [
+  {
+    id: 'text',
+    type: 'text',
+    name: 'Text Block',
+    icon: <DocumentTextIcon className="h-5 w-5" />,
+    category: 'basic',
+    defaultProps: { content: 'Your text here', fontSize: 16, fontWeight: 'normal' },
+    preview: 'Text Block'
+  },
+  {
+    id: 'image',
+    type: 'image',
+    name: 'Image',
+    icon: <PhotographIcon className="h-5 w-5" />,
+    category: 'media',
+    defaultProps: { src: '', alt: 'Image', width: 300, height: 200 },
+    preview: 'Image'
+  },
+  {
+    id: 'button',
+    type: 'button',
+    name: 'Button',
+    icon: <CubeIcon className="h-5 w-5" />,
+    category: 'basic',
+    defaultProps: { text: 'Click Me', variant: 'primary', size: 'medium' },
+    preview: 'Button'
+  },
+  {
+    id: 'form',
+    type: 'form',
+    name: 'Contact Form',
+    icon: <MailIcon className="h-5 w-5" />,
+    category: 'forms',
+    defaultProps: { fields: ['name', 'email', 'message'], submitText: 'Submit' },
+    preview: 'Contact Form'
+  },
+  {
+    id: 'chart',
+    type: 'chart',
+    name: 'Data Chart',
+    icon: <ChartSquareBarIcon className="h-5 w-5" />,
+    category: 'data',
+    defaultProps: { type: 'bar', data: [], title: 'Chart' },
+    preview: 'Data Chart'
+  },
+  {
+    id: 'spacer',
+    type: 'spacer',
+    name: 'Spacer',
+    icon: <ArrowsExpandIcon className="h-5 w-5" />,
+    category: 'layout',
+    defaultProps: { height: 50 },
+    preview: 'Spacer'
+  },
+  {
+    id: 'divider',
+    type: 'divider',
+    name: 'Divider',
+    icon: <div className="h-5 w-5 border-t-2 border-gray-400" />,
+    category: 'layout',
+    defaultProps: { style: 'solid', color: '#e5e7eb', thickness: 1 },
+    preview: 'Divider'
+  }
+];
+
+// Responsive breakpoints
+const RESPONSIVE_BREAKPOINTS: ResponsiveBreakpoint[] = [
+  { name: 'desktop', width: 1200, icon: <DesktopComputerIcon className="h-4 w-4" /> },
+  { name: 'tablet', width: 768, icon: <DeviceTabletIcon className="h-4 w-4" /> },
+  { name: 'mobile', width: 375, icon: <DeviceMobileIcon className="h-4 w-4" /> }
+];
+
+// Animation options
+const ANIMATION_OPTIONS = {
+  entrance: ['fadeIn', 'slideInUp', 'slideInDown', 'slideInLeft', 'slideInRight', 'zoomIn', 'bounceIn'],
+  hover: ['pulse', 'bounce', 'shake', 'glow', 'scale', 'rotate'],
+  exit: ['fadeOut', 'slideOutUp', 'slideOutDown', 'slideOutLeft', 'slideOutRight', 'zoomOut']
+};
 
 const ClientPortalDesigner: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'layout' | 'compliance' | 'preview'>('layout');
-  const [portalLayout, setPortalLayout] = useState<PortalLayout[]>([
-    {
-      id: 'header',
-      type: 'header',
-      title: 'Welcome Header',
-      fields: ['companyName', 'clientName'],
-      position: { x: 0, y: 0 },
-      size: { width: 100, height: 15 },
-      visible: true,
-    },
-    {
-      id: 'welcome',
-      type: 'welcome',
-      title: 'Welcome Message',
-      fields: ['greeting', 'lastLogin'],
-      position: { x: 0, y: 15 },
-      size: { width: 100, height: 20 },
-      visible: true,
-    },
-    {
-      id: 'data-section',
-      type: 'data-section',
-      title: 'Company Information',
-      fields: ['usdotNumber', 'mcNumber', 'businessAddress', 'phone', 'email'],
-      position: { x: 0, y: 35 },
-      size: { width: 60, height: 40 },
-      visible: true,
-    },
-    {
-      id: 'chatbot',
-      type: 'chatbot',
-      title: 'Onboarding Assistant',
-      fields: [],
-      position: { x: 60, y: 35 },
-      size: { width: 40, height: 40 },
-      visible: true,
-    },
-    {
-      id: 'compliance',
-      type: 'compliance',
-      title: 'Compliance Center',
-      fields: ['complianceStatus', 'renewalDates', 'violations'],
-      position: { x: 0, y: 75 },
-      size: { width: 100, height: 25 },
-      visible: true,
-    },
-  ]);
-
-
-  const [complianceSettings, setComplianceSettings] = useState<ComplianceSettings>({
-    emailAddress: 'compliance@yourcompany.com',
-    autoSend: false,
-    includeFields: ['usdotNumber', 'mcNumber', 'complianceStatus', 'violations'],
-    template: 'Please find attached the compliance data for {{companyName}}.',
-  });
-
+  const [activeTab, setActiveTab] = useState<'design' | 'preview' | 'templates' | 'settings'>('design');
+  const [activeBreakpoint, setActiveBreakpoint] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [portalElements, setPortalElements] = useState<PortalElement[]>([]);
+  const [templates, setTemplates] = useState<PortalTemplate[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showComponentLibrary, setShowComponentLibrary] = useState(true);
+  const [showStylePanel, setShowStylePanel] = useState(true);
+  const [customCSS, setCustomCSS] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragPreview, setDragPreview] = useState<DragDropComponent | null>(null);
+  
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<HTMLDivElement>(null);
 
-  // Available client data fields
-  const availableFields = [
-    { id: 'companyName', label: 'Company Name', category: 'basic' },
-    { id: 'clientName', label: 'Client Name', category: 'basic' },
-    { id: 'usdotNumber', label: 'USDOT Number', category: 'compliance' },
-    { id: 'mcNumber', label: 'MC Number', category: 'compliance' },
-    { id: 'businessAddress', label: 'Business Address', category: 'contact' },
-    { id: 'phone', label: 'Phone Number', category: 'contact' },
-    { id: 'email', label: 'Email Address', category: 'contact' },
-    { id: 'complianceStatus', label: 'Compliance Status', category: 'compliance' },
-    { id: 'renewalDates', label: 'Renewal Dates', category: 'compliance' },
-    { id: 'violations', label: 'Violations', category: 'compliance' },
-    { id: 'greeting', label: 'Greeting Message', category: 'basic' },
-    { id: 'lastLogin', label: 'Last Login', category: 'basic' },
-  ];
+  // Initialize with default template
+  useEffect(() => {
+    const defaultTemplate: PortalTemplate = {
+      id: 'default',
+      name: 'Default Portal',
+      description: 'Basic client portal layout',
+      thumbnail: '',
+      category: 'business',
+      elements: [
+        {
+          id: 'header-1',
+          type: 'text',
+          name: 'Welcome Header',
+          position: { x: 10, y: 10 },
+          size: { width: 80, height: 10 },
+          props: { content: 'Welcome to Your Portal', fontSize: 24, fontWeight: 'bold' },
+          styles: { color: '#1f2937', textAlign: 'center' },
+          responsive: { desktop: {}, tablet: {}, mobile: {} },
+          animations: { entrance: 'fadeIn', hover: 'none', exit: 'none' },
+          customCSS: '',
+          visible: true,
+          locked: false
+        },
+        {
+          id: 'content-1',
+          type: 'text',
+          name: 'Main Content',
+          position: { x: 10, y: 25 },
+          size: { width: 60, height: 40 },
+          props: { content: 'Your main content goes here...', fontSize: 16 },
+          styles: { color: '#374151', lineHeight: 1.6 },
+          responsive: { desktop: {}, tablet: {}, mobile: {} },
+          animations: { entrance: 'slideInUp', hover: 'none', exit: 'none' },
+          customCSS: '',
+          visible: true,
+          locked: false
+        },
+        {
+          id: 'sidebar-1',
+          type: 'text',
+          name: 'Sidebar',
+          position: { x: 75, y: 25 },
+          size: { width: 20, height: 40 },
+          props: { content: 'Sidebar content...', fontSize: 14 },
+          styles: { backgroundColor: '#f9fafb', padding: '20px', borderRadius: '8px' },
+          responsive: { desktop: {}, tablet: {}, mobile: {} },
+          animations: { entrance: 'slideInRight', hover: 'none', exit: 'none' },
+          customCSS: '',
+          visible: true,
+          locked: false
+        }
+      ]
+    };
+    
+    setTemplates([defaultTemplate]);
+    setPortalElements(defaultTemplate.elements);
+  }, []);
 
-  const handleLayoutChange = (layoutId: string, updates: Partial<PortalLayout>) => {
-    setPortalLayout(prev => prev.map(layout => 
-      layout.id === layoutId ? { ...layout, ...updates } : layout
+  // Handle drag start
+  const handleDragStart = useCallback((component: DragDropComponent) => {
+    setIsDragging(true);
+    setDragPreview(component);
+  }, []);
+
+  // Handle drag end
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+    setDragPreview(null);
+  }, []);
+
+  // Handle drop on canvas
+  const handleCanvasDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    if (!dragPreview || !canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    const newElement: PortalElement = {
+      id: `${dragPreview.type}-${Date.now()}`,
+      type: dragPreview.type,
+      name: dragPreview.name,
+      position: { x: Math.max(0, Math.min(90, x)), y: Math.max(0, Math.min(90, y)) },
+      size: { width: 20, height: 10 },
+      props: { ...dragPreview.defaultProps },
+      styles: {},
+      responsive: { desktop: {}, tablet: {}, mobile: {} },
+      animations: { entrance: 'fadeIn', hover: 'none', exit: 'none' },
+      customCSS: '',
+      visible: true,
+      locked: false
+    };
+
+    setPortalElements(prev => [...prev, newElement]);
+    setSelectedElement(newElement.id);
+    handleDragEnd();
+  }, [dragPreview, handleDragEnd]);
+
+  // Handle element selection
+  const handleElementSelect = useCallback((elementId: string) => {
+    setSelectedElement(elementId);
+  }, []);
+
+  // Handle element update
+  const handleElementUpdate = useCallback((elementId: string, updates: Partial<PortalElement>) => {
+    setPortalElements(prev => prev.map(el => 
+      el.id === elementId ? { ...el, ...updates } : el
     ));
-  };
+  }, []);
 
+  // Handle element delete
+  const handleElementDelete = useCallback((elementId: string) => {
+    setPortalElements(prev => prev.filter(el => el.id !== elementId));
+    if (selectedElement === elementId) {
+      setSelectedElement(null);
+    }
+  }, [selectedElement]);
 
-  const handleComplianceChange = (updates: Partial<ComplianceSettings>) => {
-    setComplianceSettings(prev => ({ ...prev, ...updates }));
-  };
+  // Get selected element
+  const selectedElementData = portalElements.find(el => el.id === selectedElement);
 
-
-  const saveDesign = () => {
-    // TODO: Save portal design to database
-    console.log('Saving portal design:', { portalLayout, complianceSettings });
-  };
-
-  const TabButton: React.FC<{ tab: typeof activeTab; icon: React.ReactNode; label: string }> = ({ 
-    tab, 
-    icon, 
-    label 
-  }) => (
-    <button
-      onClick={() => setActiveTab(tab)}
-      className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-        activeTab === tab
-          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-      }`}
-    >
-      {icon}
-      <span className="ml-2">{label}</span>
-    </button>
-  );
+  // Save design
+  const saveDesign = useCallback(() => {
+    const design = {
+      elements: portalElements,
+      customCSS,
+      breakpoint: activeBreakpoint,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Save to database via API
+    fetch('/api/client-portal/design', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(design)
+    }).then(response => {
+      if (response.ok) {
+        console.log('Design saved successfully');
+      }
+    });
+  }, [portalElements, customCSS, activeBreakpoint]);
 
   return (
-    <div className="space-y-6">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               Client Portal Designer
             </h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Design your client portal layout and compliance features
-            </p>
+            <div className="flex items-center space-x-2">
+              {RESPONSIVE_BREAKPOINTS.map(breakpoint => (
+                <button
+                  key={breakpoint.name}
+                  onClick={() => setActiveBreakpoint(breakpoint.name)}
+                  className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                    activeBreakpoint === breakpoint.name
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {breakpoint.icon}
+                  <span className="capitalize">{breakpoint.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center space-x-4">
+          
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsPreviewMode(!isPreviewMode)}
-              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isPreviewMode
                   ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
               }`}
             >
-              <EyeIcon className="h-4 w-4 mr-2" />
-              {isPreviewMode ? 'Exit Preview' : 'Preview Mode'}
+              <EyeIcon className="h-4 w-4" />
+              {isPreviewMode ? 'Exit Preview' : 'Preview'}
             </button>
+            
             <button
               onClick={saveDesign}
-              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              <CheckIcon className="h-4 w-4 mr-2" />
+              <CheckIcon className="h-4 w-4" />
               Save Design
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <div className="flex items-center space-x-4">
-          <TabButton
-            tab="layout"
-            icon={<CogIcon className="h-4 w-4" />}
-            label="Layout Designer"
-          />
-          <TabButton
-            tab="compliance"
-            icon={<MailIcon className="h-4 w-4" />}
-            label="Compliance"
-          />
-          <TabButton
-            tab="preview"
-            icon={<EyeIcon className="h-4 w-4" />}
-            label="Live Preview"
-          />
-        </div>
-      </div>
-
-      {/* Content based on active tab */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        {activeTab === 'layout' && (
-          <LayoutDesigner
-            portalLayout={portalLayout}
-            availableFields={availableFields}
-            onLayoutChange={handleLayoutChange}
-          />
-        )}
-        
-        {activeTab === 'compliance' && (
-          <ComplianceDesigner
-            settings={complianceSettings}
-            availableFields={availableFields}
-            onSettingsChange={handleComplianceChange}
-          />
-        )}
-        
-        {activeTab === 'preview' && (
-          <LivePreview
-            portalLayout={portalLayout}
-            complianceSettings={complianceSettings}
-            isPreviewMode={isPreviewMode}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Layout Designer Component
-const LayoutDesigner: React.FC<{
-  portalLayout: PortalLayout[];
-  availableFields: any[];
-  onLayoutChange: (id: string, updates: Partial<PortalLayout>) => void;
-}> = ({ portalLayout, availableFields, onLayoutChange }) => {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Portal Layout Designer
-      </h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Layout Canvas */}
-        <div className="space-y-4">
-          <h3 className="text-md font-medium text-gray-900 dark:text-gray-100">
-            Layout Canvas
-          </h3>
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 h-96 relative bg-gray-50 dark:bg-gray-900">
-            {portalLayout.map((layout) => (
-              <div
-                key={layout.id}
-                className={`absolute border-2 rounded-lg p-2 cursor-move ${
-                  layout.visible 
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                    : 'border-gray-300 bg-gray-100 dark:bg-gray-700'
-                }`}
-                style={{
-                  left: `${layout.position.x}%`,
-                  top: `${layout.position.y}%`,
-                  width: `${layout.size.width}%`,
-                  height: `${layout.size.height}%`,
-                }}
-              >
-                <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                  {layout.title}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {layout.fields.length} fields
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Layout Controls */}
-        <div className="space-y-4">
-          <h3 className="text-md font-medium text-gray-900 dark:text-gray-100">
-            Layout Controls
-          </h3>
-          <div className="space-y-3">
-            {portalLayout.map((layout) => (
-              <div key={layout.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {layout.title}
-                  </span>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={layout.visible}
-                      onChange={(e) => onLayoutChange(layout.id, { visible: e.target.checked })}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-xs text-gray-600 dark:text-gray-400">Visible</span>
-                  </label>
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Fields: {layout.fields.join(', ')}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Chatbot Avatar Designer Component
-const ChatbotAvatarDesigner: React.FC<{
-  avatar: ChatbotAvatar;
-  onAvatarChange: (updates: Partial<ChatbotAvatar>) => void;
-  isVoiceEnabled: boolean;
-  isListening: boolean;
-  onToggleVoice: () => void;
-  onStartListening: () => void;
-  onStopListening: () => void;
-}> = ({ avatar, onAvatarChange, isVoiceEnabled, isListening, onToggleVoice, onStartListening, onStopListening }) => {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Chatbot Avatar Designer
-      </h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Avatar Preview */}
-        <div className="space-y-4">
-          <h3 className="text-md font-medium text-gray-900 dark:text-gray-100">
-            Avatar Preview
-          </h3>
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <div className="text-center">
-              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                <UserIcon className="h-12 w-12 text-white" />
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Animated Avatar Preview
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                {avatar.name}
-              </p>
-            </div>
-          </div>
-          
-          {/* Voice Controls */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                Voice Enabled
-              </span>
+      <div className="flex-1 flex">
+        {/* Component Library Sidebar */}
+        {showComponentLibrary && (
+          <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Components
+              </h3>
               <button
-                onClick={onToggleVoice}
-                className={`flex items-center px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  isVoiceEnabled
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                }`}
+                onClick={() => setShowComponentLibrary(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                {isVoiceEnabled ? (
-                  <SpeakerphoneIcon className="h-4 w-4 mr-1" />
-                ) : (
-                  <MicrophoneIcon className="h-4 w-4 mr-1" />
-                )}
-                {isVoiceEnabled ? 'Enabled' : 'Disabled'}
+                ×
               </button>
             </div>
             
-            {isVoiceEnabled && (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={isListening ? onStopListening : onStartListening}
-                  className={`flex items-center px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                    isListening
-                      ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                  }`}
+            <div className="space-y-2">
+              {Object.entries(
+                DRAG_DROP_COMPONENTS.reduce((acc, comp) => {
+                  if (!acc[comp.category]) acc[comp.category] = [];
+                  acc[comp.category].push(comp);
+                  return acc;
+                }, {} as Record<string, DragDropComponent[]>)
+              ).map(([category, components]) => (
+                <div key={category} className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 capitalize">
+                    {category}
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {components.map(component => (
+                      <div
+                        key={component.id}
+                        draggable
+                        onDragStart={() => handleDragStart(component)}
+                        onDragEnd={handleDragEnd}
+                        className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-move hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        {component.icon}
+                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-1 text-center">
+                          {component.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Main Canvas Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Canvas */}
+          <div className="flex-1 p-4">
+            <div
+              ref={canvasRef}
+              onDrop={handleCanvasDrop}
+              onDragOver={(e) => e.preventDefault()}
+              className="relative w-full h-full bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden"
+              style={{ minHeight: '600px' }}
+            >
+              {/* Grid Background */}
+              <div className="absolute inset-0 opacity-20" style={{
+                backgroundImage: `
+                  linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                  linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
+                `,
+                backgroundSize: '20px 20px'
+              }} />
+              
+              {/* Portal Elements */}
+              {portalElements.map(element => (
+                <div
+                  key={element.id}
+                  onClick={() => handleElementSelect(element.id)}
+                  className={`absolute border-2 rounded-lg cursor-pointer transition-all ${
+                    selectedElement === element.id
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                  } ${!element.visible ? 'opacity-50' : ''}`}
+                  style={{
+                    left: `${element.position.x}%`,
+                    top: `${element.position.y}%`,
+                    width: `${element.size.width}%`,
+                    height: `${element.size.height}%`,
+                    ...element.styles,
+                    ...element.responsive[activeBreakpoint]
+                  }}
                 >
-                  {isListening ? (
-                    <PauseIcon className="h-4 w-4 mr-1" />
-                  ) : (
-                    <PlayIcon className="h-4 w-4 mr-1" />
+                  <div className="p-2 h-full flex items-center justify-center text-sm">
+                    {element.type === 'text' && (
+                      <span style={{ fontSize: element.props.fontSize, fontWeight: element.props.fontWeight }}>
+                        {element.props.content}
+                      </span>
+                    )}
+                    {element.type === 'image' && (
+                      <div className="w-full h-full bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        {element.props.src ? (
+                          <img src={element.props.src} alt={element.props.alt} className="max-w-full max-h-full object-contain" />
+                        ) : (
+                          <PhotographIcon className="h-8 w-8 text-gray-400" />
+                        )}
+                      </div>
+                    )}
+                    {element.type === 'button' && (
+                      <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                        {element.props.text}
+                      </button>
+                    )}
+                    {element.type === 'spacer' && (
+                      <div className="w-full h-full bg-gray-100 dark:bg-gray-600 rounded flex items-center justify-center">
+                        <span className="text-xs text-gray-500">Spacer</span>
+                      </div>
+                    )}
+                    {element.type === 'divider' && (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div 
+                          className="w-full border-t"
+                          style={{ 
+                            borderColor: element.props.color,
+                            borderWidth: `${element.props.thickness}px`
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Element Controls */}
+                  {selectedElement === element.id && (
+                    <div className="absolute -top-8 left-0 flex items-center space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleElementDelete(element.id);
+                        }}
+                        className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                      >
+                        <TrashIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Duplicate element
+                          const newElement = {
+                            ...element,
+                            id: `${element.type}-${Date.now()}`,
+                            position: { x: element.position.x + 5, y: element.position.y + 5 }
+                          };
+                          setPortalElements(prev => [...prev, newElement]);
+                        }}
+                        className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                      >
+                        <DuplicateIcon className="h-3 w-3" />
+                      </button>
+                    </div>
                   )}
-                  {isListening ? 'Stop Listening' : 'Start Listening'}
-                </button>
-              </div>
-            )}
+                </div>
+              ))}
+              
+              {/* Drop Zone Indicator */}
+              {isDragging && (
+                <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center">
+                  <div className="text-blue-600 dark:text-blue-400 text-lg font-medium">
+                    Drop {dragPreview?.name} here
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Avatar Settings */}
-        <div className="space-y-4">
-          <h3 className="text-md font-medium text-gray-900 dark:text-gray-100">
-            Avatar Settings
-          </h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Avatar Name
-              </label>
-              <input
-                type="text"
-                value={avatar.name}
-                onChange={(e) => onAvatarChange({ name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
-                placeholder="Enter avatar name"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Gender
-              </label>
-              <select
-                value={avatar.appearance.gender}
-                onChange={(e) => onAvatarChange({ 
-                  appearance: { ...avatar.appearance, gender: e.target.value as any }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+        {/* Style Panel */}
+        {showStylePanel && selectedElementData && (
+          <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Style Panel
+              </h3>
+              <button
+                onClick={() => setShowStylePanel(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <option value="neutral">Neutral</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
+                ×
+              </button>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              {/* Element Properties */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Skin Color
-                </label>
-                <input
-                  type="color"
-                  value={avatar.appearance.skinColor}
-                  onChange={(e) => onAvatarChange({ 
-                    appearance: { ...avatar.appearance, skinColor: e.target.value }
-                  })}
-                  className="w-full h-10 rounded border border-gray-300 dark:border-gray-600"
-                />
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Properties
+                </h4>
+                {selectedElementData.type === 'text' && (
+                  <div className="space-y-2">
+                    <textarea
+                      value={selectedElementData.props.content}
+                      onChange={(e) => handleElementUpdate(selectedElementData.id, {
+                        props: { ...selectedElementData.props, content: e.target.value }
+                      })}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                      rows={3}
+                    />
+                    <input
+                      type="number"
+                      value={selectedElementData.props.fontSize}
+                      onChange={(e) => handleElementUpdate(selectedElementData.id, {
+                        props: { ...selectedElementData.props, fontSize: parseInt(e.target.value) }
+                      })}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                      placeholder="Font Size"
+                    />
+                  </div>
+                )}
               </div>
               
+              {/* Responsive Controls */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Hair Color
-                </label>
-                <input
-                  type="color"
-                  value={avatar.appearance.hairColor}
-                  onChange={(e) => onAvatarChange({ 
-                    appearance: { ...avatar.appearance, hairColor: e.target.value }
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Responsive
+                </h4>
+                <div className="space-y-2">
+                  {RESPONSIVE_BREAKPOINTS.map(breakpoint => (
+                    <div key={breakpoint.name} className="flex items-center space-x-2">
+                      {breakpoint.icon}
+                      <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                        {breakpoint.name}
+                      </span>
+                      <input
+                        type="number"
+                        value={selectedElementData.responsive[breakpoint.name].width || selectedElementData.size.width}
+                        onChange={(e) => handleElementUpdate(selectedElementData.id, {
+                          responsive: {
+                            ...selectedElementData.responsive,
+                            [breakpoint.name]: {
+                              ...selectedElementData.responsive[breakpoint.name],
+                              width: parseInt(e.target.value)
+                            }
+                          }
+                        })}
+                        className="flex-1 p-1 border border-gray-300 dark:border-gray-600 rounded text-xs"
+                        placeholder="Width %"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Animations */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Animations
+                </h4>
+                <div className="space-y-2">
+                  <select
+                    value={selectedElementData.animations.entrance}
+                    onChange={(e) => handleElementUpdate(selectedElementData.id, {
+                      animations: { ...selectedElementData.animations, entrance: e.target.value }
+                    })}
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                  >
+                    <option value="none">No Animation</option>
+                    {ANIMATION_OPTIONS.entrance.map(anim => (
+                      <option key={anim} value={anim}>{anim}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {/* Custom CSS */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Custom CSS
+                </h4>
+                <textarea
+                  value={selectedElementData.customCSS}
+                  onChange={(e) => handleElementUpdate(selectedElementData.id, {
+                    customCSS: e.target.value
                   })}
-                  className="w-full h-10 rounded border border-gray-300 dark:border-gray-600"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm font-mono"
+                  rows={4}
+                  placeholder="/* Custom CSS for this element */"
                 />
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Compliance Designer Component
-const ComplianceDesigner: React.FC<{
-  settings: ComplianceSettings;
-  availableFields: any[];
-  onSettingsChange: (updates: Partial<ComplianceSettings>) => void;
-}> = ({ settings, availableFields, onSettingsChange }) => {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Compliance Email Settings
-      </h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Compliance Officer Email
-            </label>
-            <input
-              type="email"
-              value={settings.emailAddress}
-              onChange={(e) => onSettingsChange({ emailAddress: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
-              placeholder="compliance@yourcompany.com"
-            />
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="autoSend"
-              checked={settings.autoSend}
-              onChange={(e) => onSettingsChange({ autoSend: e.target.checked })}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <label htmlFor="autoSend" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-              Auto-send compliance data
-            </label>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Email Template
-            </label>
-            <textarea
-              value={settings.template}
-              onChange={(e) => onSettingsChange({ template: e.target.value })}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
-              placeholder="Email template with {{variables}}"
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-4">
-          <h3 className="text-md font-medium text-gray-900 dark:text-gray-100">
-            Include Fields in Compliance Email
-          </h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {availableFields
-              .filter(field => field.category === 'compliance' || field.category === 'basic')
-              .map((field) => (
-                <label key={field.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.includeFields.includes(field.id)}
-                    onChange={(e) => {
-                      const newFields = e.target.checked
-                        ? [...settings.includeFields, field.id]
-                        : settings.includeFields.filter(f => f !== field.id);
-                      onSettingsChange({ includeFields: newFields });
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {field.label}
-                  </span>
-                </label>
-              ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Live Preview Component
-const LivePreview: React.FC<{
-  portalLayout: PortalLayout[];
-  chatbotAvatar: ChatbotAvatar;
-  complianceSettings: ComplianceSettings;
-  isPreviewMode: boolean;
-}> = ({ portalLayout, chatbotAvatar, complianceSettings, isPreviewMode }) => {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Live Preview
-      </h2>
-      
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-900">
-        <div className="text-center text-gray-600 dark:text-gray-400">
-          <EyeIcon className="h-12 w-12 mx-auto mb-4" />
-          <p className="text-lg font-medium">Client Portal Preview</p>
-          <p className="text-sm mt-2">
-            This will show a live preview of how the client portal will look
-          </p>
-          <p className="text-xs mt-1">
-            Avatar: {chatbotAvatar.name} | Voice: {chatbotAvatar.voice.enabled ? 'Enabled' : 'Disabled'}
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );

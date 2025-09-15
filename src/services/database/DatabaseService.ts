@@ -37,7 +37,7 @@ export class DatabaseService {
         type: 'sqlite',
         host: 'localhost',
         port: 0,
-        database: 'rapid_crm.db',
+        database: 'instance/rapid_crm.db',
         username: '',
         password: '',
         ssl: false,

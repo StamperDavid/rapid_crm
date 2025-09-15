@@ -1,12 +1,12 @@
 import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../types/schema';
-import { databaseManager } from './database';
+// Removed databaseManager import - using API calls to server instead
 
 // Initialize database manager
 let isInitialized = false;
 
 const initializeDatabase = async () => {
   if (!isInitialized) {
-    await databaseManager.initialize();
+    // No initialization needed - using API calls to server
     isInitialized = true;
   }
 };
@@ -14,8 +14,8 @@ const initializeDatabase = async () => {
 // Database service functions using real database layer
 export const getOrganizations = async (): Promise<Organization[]> => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  return await companyRepo.findAll();
+  const response = await fetch('/api/companies');
+  return await response.json();
 };
 
 export const getPersons = async (): Promise<Person[]> => {
@@ -41,8 +41,8 @@ export const getDrivers = async (): Promise<Driver[]> => {
 
 export const getDeals = async (): Promise<Deal[]> => {
   await initializeDatabase();
-  const dealRepo = databaseManager.getDealRepository();
-  return await dealRepo.findAll();
+  const response = await fetch('/api/deals');
+  return await response.json();
 };
 
 export const getInvoices = async (): Promise<Invoice[]> => {
@@ -54,9 +54,9 @@ export const getInvoices = async (): Promise<Invoice[]> => {
 
 export const getOrganizationById = async (id: string): Promise<Organization | undefined> => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  const company = await companyRepo.findById(id);
-  return company || undefined;
+  const response = await fetch(`/api/companies/${id}`);
+  if (!response.ok) return undefined;
+  return await response.json();
 };
 
 export const getPersonById = async (id: string): Promise<Person | undefined> => {
@@ -79,9 +79,9 @@ export const getDriverById = async (id: string): Promise<Driver | undefined> => 
 
 export const getDealById = async (id: string): Promise<Deal | undefined> => {
   await initializeDatabase();
-  const dealRepo = databaseManager.getDealRepository();
-  const deal = await dealRepo.findById(id);
-  return deal || undefined;
+  const response = await fetch(`/api/deals/${id}`);
+  if (!response.ok) return undefined;
+  return await response.json();
 };
 
 export const getInvoiceById = async (id: string): Promise<Invoice | undefined> => {
@@ -93,66 +93,86 @@ export const getInvoiceById = async (id: string): Promise<Invoice | undefined> =
 // New functions using the database layer
 export const createOrganization = async (data: Partial<Organization>): Promise<Organization> => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  return await companyRepo.create(data);
+  const response = await fetch('/api/companies', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return await response.json();
 };
 
 export const updateOrganization = async (id: string, data: Partial<Organization>): Promise<Organization | null> => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  return await companyRepo.update(id, data);
+  const response = await fetch(`/api/companies/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) return null;
+  return await response.json();
 };
 
 export const deleteOrganization = async (id: string): Promise<boolean> => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  return await companyRepo.delete(id);
+  const response = await fetch(`/api/companies/${id}`, { method: 'DELETE' });
+  return response.ok;
 };
 
 export const createDeal = async (data: Partial<Deal>): Promise<Deal> => {
   await initializeDatabase();
-  const dealRepo = databaseManager.getDealRepository();
-  return await dealRepo.create(data);
+  const response = await fetch('/api/deals', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return await response.json();
 };
 
 export const updateDeal = async (id: string, data: Partial<Deal>): Promise<Deal | null> => {
   await initializeDatabase();
-  const dealRepo = databaseManager.getDealRepository();
-  return await dealRepo.update(id, data);
+  const response = await fetch(`/api/deals/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) return null;
+  return await response.json();
 };
 
 export const deleteDeal = async (id: string): Promise<boolean> => {
   await initializeDatabase();
-  const dealRepo = databaseManager.getDealRepository();
-  return await dealRepo.delete(id);
+  const response = await fetch(`/api/deals/${id}`, { method: 'DELETE' });
+  return response.ok;
 };
 
 export const searchOrganizations = async (searchTerm: string): Promise<Organization[]> => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  return await companyRepo.searchCompanies(searchTerm);
+  const response = await fetch(`/api/companies/search?q=${encodeURIComponent(searchTerm)}`);
+  return await response.json();
 };
 
 export const getOrganizationStats = async () => {
   await initializeDatabase();
-  const companyRepo = databaseManager.getCompanyRepository();
-  return await companyRepo.getCompanyStats();
+  const response = await fetch('/api/companies/stats');
+  return await response.json();
 };
 
 export const getDealStats = async () => {
   await initializeDatabase();
-  const dealRepo = databaseManager.getDealRepository();
-  return await dealRepo.getDealStats();
+  const response = await fetch('/api/deals/stats');
+  return await response.json();
 };
 
 export const getDatabaseHealth = async () => {
   await initializeDatabase();
-  return await databaseManager.healthCheck();
+  const response = await fetch('/api/database/health');
+  return await response.json();
 };
 
 export const getDatabaseStats = async () => {
   await initializeDatabase();
-  return await databaseManager.getStats();
+  const response = await fetch('/api/database/stats');
+  return await response.json();
 };
 
 // Legacy compatibility functions

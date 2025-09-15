@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { EldServiceIntegration } from './EldServiceIntegration';
-import { DatabaseService } from '../database/DatabaseService';
+// Removed direct database import - use API calls instead
 import { AIAgentManager } from '../ai/AIAgentManager';
 import { ConversationService } from '../conversations/ConversationService';
 
@@ -14,12 +14,11 @@ export class EldApiRoutes {
   private eldService: EldServiceIntegration;
 
   constructor(
-    db: DatabaseService,
     aiAgentManager: AIAgentManager,
     conversationService: ConversationService
   ) {
     this.router = express.Router();
-    this.eldService = new EldServiceIntegration(db, aiAgentManager, conversationService);
+    this.eldService = new EldServiceIntegration(aiAgentManager, conversationService);
     this.setupRoutes();
   }
 

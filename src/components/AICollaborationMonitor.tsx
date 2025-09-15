@@ -36,22 +36,25 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
   const [sessionInfo, setSessionInfo] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'ai-to-ai' | 'user-chat'>('ai-to-ai');
   const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const loadCollaborationHistory = async () => {
     try {
-      // Fetch AI-to-AI communication history from the API
+      // Fetch AI-to-AI communication history from the database via API
       const response = await fetch('http://localhost:3001/api/ai/collaborate');
       if (response.ok) {
         const data = await response.json();
         console.log('🔍 AI Collaboration API Response:', data);
-        if (data.success && data.messages) {
+        
+        // Check if we have messages in the response
+        if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
           // Transform API messages to match the expected format
           const formattedMessages = data.messages.map((msg: any) => ({
             id: msg.id || `msg_${Date.now()}_${Math.random()}`,
-            timestamp: msg.timestamp,
-            type: msg.sender === 'claude' ? 'response' : 'request',
-            from: msg.sender === 'claude' ? 'claude' : 'rapid-crm-ai',
-            content: msg.content,
+            timestamp: msg.timestamp || new Date().toISOString(),
+            type: msg.sender === 'claude' ? 'response' : (msg.sender === 'rapid-crm-ai' ? 'request' : 'system'),
+            from: msg.sender === 'claude' ? 'claude' : (msg.sender === 'rapid-crm-ai' ? 'rapid-crm' : 'system'),
+            content: msg.content || msg.message || 'No content',
             status: 'completed' as const,
             metadata: msg.context ? (typeof msg.context === 'string' ? JSON.parse(msg.context) : msg.context) : undefined
           }));
@@ -59,38 +62,19 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
           setMessages(formattedMessages);
           return;
         } else {
-          console.log('🔍 No messages found in API response');
+          console.log('🔍 No AI-to-AI messages found in database');
         }
       } else {
         console.error('🔍 API response not ok:', response.status);
       }
       
-      // Fallback to local service if API fails
-      const history = claudeCollaborationService.getMessageHistory();
-      const formattedMessages = history.map(msg => ({
-        id: msg.id,
-        timestamp: msg.timestamp,
-        type: msg.role === 'user' ? 'request' : 'response',
-        from: msg.role === 'user' ? 'rapid-crm' : 'claude',
-        content: msg.content,
-        status: 'completed' as const,
-        metadata: msg.context
-      }));
-      setMessages(formattedMessages);
+      // If no AI-to-AI messages found, show empty state
+      console.log('🔍 No AI-to-AI collaboration messages found');
+      setMessages([]);
+      
     } catch (error) {
-      console.error('Failed to load collaboration history:', error);
-      // Fallback to local service
-      const history = claudeCollaborationService.getMessageHistory();
-      const formattedMessages = history.map(msg => ({
-        id: msg.id,
-        timestamp: msg.timestamp,
-        type: msg.role === 'user' ? 'request' : 'response',
-        from: msg.role === 'user' ? 'rapid-crm' : 'claude',
-        content: msg.content,
-        status: 'completed' as const,
-        metadata: msg.context
-      }));
-      setMessages(formattedMessages);
+      console.error('Failed to load AI-to-AI collaboration history:', error);
+      setMessages([]);
     }
   };
 
@@ -115,24 +99,30 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
         status: 'completed',
         metadata
       };
+      console.log('🔍 AI Monitor received real-time message:', newMessage);
       setMessages(prev => [...prev, newMessage]);
     };
 
     window.addEventListener('ai-collaboration-message', handleCollaborationMessage as EventListener);
 
-    // Set up status monitoring
+    // Set up status monitoring and message refresh
     const interval = setInterval(() => {
       const newStatus = claudeCollaborationService.getCollaborationStatus();
       setIsConnected(newStatus.isConnected);
       setSessionInfo(newStatus.session);
-    }, 1000);
+      
+      // Auto-refresh AI-to-AI messages every 5 seconds when connected
+      if (newStatus.isConnected && activeTab === 'ai-to-ai') {
+        loadCollaborationHistory();
+      }
+    }, 5000);
 
-    // Subscribe to chat history changes
+    // Subscribe to chat history changes (only for user chat tab)
     const unsubscribeChatHistory = chatHistoryService.subscribe((history) => {
       setChatHistory(history);
     });
 
-    // Get initial chat history
+    // Get initial chat history (only for user chat tab)
     setChatHistory(chatHistoryService.getChatHistory());
 
     return () => {
@@ -144,7 +134,7 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
 
   const addSystemMessage = (content: string) => {
     const newMessage: CollaborationMessage = {
-      id: `system-${Date.now()}`,
+      id: `system-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
       type: 'system',
       from: 'system',
@@ -154,36 +144,80 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
     setMessages(prev => [...prev, newMessage]);
   };
 
-  const clearMessages = () => {
-    setMessages([]);
-    claudeCollaborationService.clearMessageHistory();
-    addSystemMessage('Message history cleared');
-  };
 
   const refreshStatus = () => {
     const status = claudeCollaborationService.getCollaborationStatus();
     setIsConnected(status.isConnected);
     setSessionInfo(status.session);
     addSystemMessage('Status refreshed');
+    // Also reload AI-to-AI messages
+    loadCollaborationHistory();
   };
 
-  const testCollaboration = async () => {
+
+
+  const connectToAI = async () => {
     try {
-      addSystemMessage('Sending client portal setup request to Rapid CRM AI...');
-      const response = await claudeCollaborationService.sendMessage(
-        'Rapid CRM AI: I need you to analyze the current client portal setup and identify what needs to be implemented. Please check: 1) Database tables needed for client portal (client_portal_settings, client_sessions, etc.), 2) API endpoints for client portal functionality, 3) Theme integration with client portal, 4) Customer support agent integration points. Focus on ensuring everything uses rapid_crm.db only.',
-        { 
-          currentModule: 'client-portal', 
-          userRole: 'admin', 
-          activeFeatures: ['client-portal', 'database', 'api', 'theme'], 
-          sessionId: 'client-portal-setup' 
+      setIsConnecting(true);
+      addSystemMessage('🔌 Attempting to connect to Rapid CRM AI...');
+      console.log('🔌 Connecting to Rapid CRM AI...');
+      
+      await claudeCollaborationService.ensureConnection();
+      addSystemMessage('✅ Connection service initialized');
+      
+      await claudeCollaborationService.startCollaboration();
+      addSystemMessage('✅ Collaboration service started');
+      
+      setIsConnected(true);
+      addSystemMessage('🎉 Connected to Rapid CRM AI successfully');
+      loadCollaborationHistory();
+      
+      // Send initial collaboration message
+      setTimeout(async () => {
+        try {
+          addSystemMessage('📤 Sending initial collaboration message...');
+          await claudeCollaborationService.sendMessage(
+            'Claude: URGENT - The AI Monitor is showing user chat history in the AI-to-AI tab instead of actual AI-to-AI collaboration messages. This is blocking all development. The API endpoint /api/ai/collaborate is returning user chat messages instead of AI-to-AI collaboration messages. Please fix the message separation immediately: 1) AI-to-AI tab should only show messages between Claude and Rapid CRM AI, 2) User chat history should only appear in Your Chat History tab, 3) Fix the API endpoint to return proper AI-to-AI collaboration messages. This must be fixed now - nothing else can proceed until this works correctly.',
+            { 
+              currentModule: 'ai-monitor', 
+              userRole: 'admin', 
+              sessionId: 'delegation-session',
+              task: 'finalize-ai-monitor-visibility',
+              priority: 'high'
+            }
+          );
+          addSystemMessage('✅ Initial collaboration message sent successfully');
+        } catch (error) {
+          console.error('Failed to send initial message:', error);
+          addSystemMessage(`❌ Failed to send initial message: ${error.message || error}`);
         }
-      );
-      addSystemMessage(`Rapid CRM AI responded: ${response}`);
+      }, 1000);
     } catch (error) {
-      addSystemMessage(`Error collaborating with Rapid CRM AI: ${error.message}`);
+      console.error('Failed to connect:', error);
+      const errorMessage = error.message || error.toString();
+      const errorCode = error.code || 'UNKNOWN_ERROR';
+      addSystemMessage(`❌ Connection failed: ${errorMessage}`);
+      addSystemMessage(`🔍 Error Code: ${errorCode}`);
+      addSystemMessage(`📋 Full Error: ${JSON.stringify(error, null, 2)}`);
+    } finally {
+      setIsConnecting(false);
     }
   };
+
+  const disconnectFromAI = () => {
+    try {
+      console.log('🔌 Disconnecting from Rapid CRM AI...');
+      claudeCollaborationService.disconnect();
+      setIsConnected(false);
+      setSessionInfo(null);
+      addSystemMessage('Disconnected from Rapid CRM AI');
+    } catch (error) {
+      console.error('Failed to disconnect:', error);
+      addSystemMessage('Failed to disconnect from Rapid CRM AI');
+    }
+  };
+
+
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString();
@@ -236,26 +270,40 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
           </div>
           <div className="flex items-center space-x-2">
+            {!isConnected ? (
+              <button
+                onClick={connectToAI}
+                disabled={isConnecting}
+                className="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 rounded-md transition-colors"
+                title="Connect to Rapid CRM AI"
+              >
+                {isConnecting ? 'Connecting...' : 'Connect'}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={connectToAI}
+                  disabled={isConnecting}
+                  className="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 rounded-md transition-colors"
+                  title="Connect to Rapid CRM AI"
+                >
+                  {isConnecting ? 'Connecting...' : 'Connect'}
+                </button>
+                <button
+                  onClick={disconnectFromAI}
+                  className="px-3 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                  title="Disconnect from Rapid CRM AI"
+                >
+                  Disconnect
+                </button>
+              </>
+            )}
             <button
               onClick={refreshStatus}
               className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              title="Refresh Status"
+              title="Refresh Status & Messages"
             >
               <RefreshIcon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={clearMessages}
-              className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-              title="Clear Messages"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={testCollaboration}
-              className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-              title="Test AI Collaboration"
-            >
-              <ChatIcon className="h-4 w-4" />
             </button>
             {!embedded && (
               <button
@@ -297,11 +345,18 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
       {/* Status Bar */}
       <div className="p-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">
-            Status: <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
-              {isConnected ? 'Connected' : 'Disconnected'}
+          <div className="flex items-center space-x-4">
+            <span className="text-gray-600 dark:text-gray-400">
+              Status: <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </span>
             </span>
-          </span>
+            {isConnected && (
+              <span className="text-xs text-green-600 dark:text-green-400">
+                Auto-refresh: ON
+              </span>
+            )}
+          </div>
           <span className="text-gray-600 dark:text-gray-400">
             {activeTab === 'ai-to-ai' ? `AI Messages: ${messages.length}` : `Chat Messages: ${chatHistory.length}`}
           </span>

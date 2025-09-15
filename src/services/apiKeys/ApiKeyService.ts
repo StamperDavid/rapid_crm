@@ -342,7 +342,12 @@ export class ApiKeyService {
   private async validateGoogleApiKey(apiKey: string): Promise<ApiKeyValidation> {
     try {
       // Test with a simple Google API call
-      const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=test&key=${apiKey}`);
+      // Test against your backend only - no external API calls
+      const response = await fetch(`${this.API_BASE}/api-keys/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey, provider: 'google' })
+      });
       if (response.ok) {
         return { isValid: true };
       } else {
@@ -358,7 +363,7 @@ export class ApiKeyService {
    */
   private async validateOpenAIApiKey(apiKey: string): Promise<ApiKeyValidation> {
     try {
-      const response = await fetch('https://api.openai.com/v1/models', {
+      const response = await fetch(`${this.API_BASE}/api-keys/test`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
@@ -382,7 +387,7 @@ export class ApiKeyService {
   private async validateKixieApiKey(apiKey: string): Promise<ApiKeyValidation> {
     try {
       // Kixie API validation endpoint
-      const response = await fetch('https://api.kixie.com/v1/account', {
+      const response = await fetch(`${this.API_BASE}/api-keys/test`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
@@ -404,7 +409,7 @@ export class ApiKeyService {
    */
   private async validateStripeApiKey(apiKey: string): Promise<ApiKeyValidation> {
     try {
-      const response = await fetch('https://api.stripe.com/v1/account', {
+      const response = await fetch(`${this.API_BASE}/api-keys/test`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -428,7 +433,7 @@ export class ApiKeyService {
   private async validateQuickBooksApiKey(apiKey: string): Promise<ApiKeyValidation> {
     try {
       // QuickBooks API validation
-      const response = await fetch('https://sandbox-quickbooks.api.intuit.com/v3/company/123/companyinfo/123', {
+      const response = await fetch(`${this.API_BASE}/api-keys/test`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Accept': 'application/json'

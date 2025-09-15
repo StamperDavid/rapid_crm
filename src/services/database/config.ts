@@ -1,7 +1,7 @@
 export interface DatabaseConfig {
   id: string;
   name: string;
-  type: 'postgresql' | 'mysql' | 'sqlite' | 'mongodb' | 'redis';
+  type: 'sqlite';
   host: string;
   port: number;
   database: string;
@@ -60,47 +60,20 @@ export interface DatabaseStats {
   databaseSize: string;
 }
 
-// Default database configurations
+// Default database configurations - ONLY SQLite
 export const DEFAULT_DATABASES: DatabaseConfig[] = [
   {
     id: 'primary',
-    name: 'Primary Database',
-    type: 'postgresql',
+    name: 'Rapid CRM SQLite Database',
+    type: 'sqlite',
     host: 'localhost',
-    port: 5432,
-    database: 'rapid_crm',
-    username: 'postgres',
-    password: 'password',
+    port: 0,
+    database: 'instance/rapid_crm.db',
+    username: '',
+    password: '',
     ssl: false,
     connectionLimit: 20,
     timeout: 30000,
-    isActive: true,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'analytics',
-    name: 'Analytics Database',
-    type: 'postgresql',
-    host: 'localhost',
-    port: 5432,
-    database: 'rapid_crm_analytics',
-    username: 'postgres',
-    password: 'password',
-    ssl: false,
-    connectionLimit: 10,
-    timeout: 30000,
-    isActive: true,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'cache',
-    name: 'Cache Database',
-    type: 'redis',
-    host: 'localhost',
-    port: 6379,
-    database: '0',
-    connectionLimit: 50,
-    timeout: 5000,
     isActive: true,
     createdAt: new Date().toISOString()
   }

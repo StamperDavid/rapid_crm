@@ -532,11 +532,17 @@ How can I assist you today?`;
 
 Would you like me to provide more detailed information about any of these plans?`;
     } else {
-      responseContent = `I understand your request. Let me provide you with the most helpful information I can. 
+      responseContent = `Hello! I'm the Rapid CRM AI assistant. I'm intelligent and ready to help with development tasks, database issues, API endpoints, and AI collaboration. 
 
-Based on what you've shared, I recommend we focus on ensuring accuracy and compliance with all relevant regulations. 
+Based on your message: "${content}"
 
-Is there anything specific you'd like me to clarify or expand upon?`;
+I can help you with:
+- Code analysis and intelligent suggestions
+- Debugging issues with real problem-solving
+- Development tasks using AI reasoning
+- Technical assistance and solutions
+
+What specific task would you like me to work on?`;
     }
 
     return {

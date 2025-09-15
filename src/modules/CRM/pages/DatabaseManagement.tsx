@@ -17,8 +17,24 @@ import {
   PencilIcon,
 } from '@heroicons/react/outline';
 import DatabaseConfigModal from '../../../components/DatabaseConfigModal';
-import { databaseConnectionService, DatabaseConfig } from '../../../services/databaseConnection';
-import { databaseManager } from '../../../services/database/DatabaseManager';
+// import { databaseConnectionService, DatabaseConfig } from '../../../services/databaseConnection';
+// Removed databaseManager import - using API calls to server instead
+
+interface DatabaseConfig {
+  id: string;
+  name: string;
+  type: string;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+  ssl: boolean;
+  connectionLimit: number;
+  timeout: number;
+  isActive: boolean;
+  createdAt: string;
+}
 
 interface DatabaseConnection {
   id: string;
@@ -49,7 +65,7 @@ const DatabaseManagement: React.FC = () => {
       type: 'sqlite',
       host: 'localhost',
       port: 0,
-      database: 'rapid_crm.db',
+      database: 'instance/rapid_crm.db',
       status: 'connected',
       lastConnected: '2024-01-20T10:30:00Z',
       isActive: true
@@ -77,12 +93,11 @@ const DatabaseManagement: React.FC = () => {
 
   const loadDatabaseData = async () => {
     try {
-      // Initialize database manager
-      await databaseManager.initialize();
-      
-      // Get real database connections
-      const dbConnections = databaseManager.getConnections();
-      const dbStats = await databaseManager.getStats();
+      // Using API calls to server instead of databaseManager
+      const connectionsResponse = await fetch('/api/database/connections');
+      const statsResponse = await fetch('/api/database/stats');
+      const dbConnections = await connectionsResponse.json();
+      const dbStats = await statsResponse.json();
       
       // If no connections found, create the primary SQLite connection
       if (dbConnections.length === 0) {
@@ -93,7 +108,7 @@ const DatabaseManagement: React.FC = () => {
           type: 'sqlite',
           host: 'localhost',
           port: 0,
-          database: 'rapid_crm.db',
+          database: 'instance/rapid_crm.db',
           status: 'connected' as const,
           lastConnected: new Date().toISOString(),
           isActive: true
@@ -141,7 +156,7 @@ const DatabaseManagement: React.FC = () => {
         type: 'sqlite',
         host: 'localhost',
         port: 0,
-        database: 'rapid_crm.db',
+        database: 'instance/rapid_crm.db',
         status: 'connected' as const,
         lastConnected: new Date().toISOString(),
         isActive: true
@@ -202,8 +217,9 @@ const DatabaseManagement: React.FC = () => {
   const handleTestConnection = async (connection: DatabaseConnection) => {
     setIsLoading(true);
     try {
-      // Test the connection using our database manager
-      const health = await databaseManager.healthCheck();
+      // Test the connection using API calls to server
+      const healthResponse = await fetch('/api/database/health');
+      const health = await healthResponse.json();
       
       setConnections(prev => prev.map(conn => 
         conn.id === connection.id 
@@ -230,7 +246,8 @@ const DatabaseManagement: React.FC = () => {
   const handleCreateBackup = async () => {
     setIsLoading(true);
     try {
-      const result = await databaseManager.backup('primary');
+      const response = await fetch('/api/database/backup', { method: 'POST' });
+      const result = await response.json();
       if (result.success) {
         setStats(prev => ({ ...prev, lastBackup: new Date().toISOString() }));
         alert(`Backup created successfully: ${result.backupPath}`);

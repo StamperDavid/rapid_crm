@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { databaseManager } from '../services/database/DatabaseManager';
+// Removed databaseManager import - using API calls to server instead
 
 interface DatabaseState {
   isInitialized: boolean;
@@ -25,9 +25,11 @@ export const useDatabase = () => {
     setState(prev => ({ ...prev, isInitializing: true, error: null }));
     
     try {
-      await databaseManager.initialize();
-      const health = await databaseManager.healthCheck();
-      const stats = await databaseManager.getStats();
+      // Using API calls to server instead of databaseManager
+      const healthResponse = await fetch('/api/database/health');
+      const statsResponse = await fetch('/api/database/stats');
+      const health = await healthResponse.json();
+      const stats = await statsResponse.json();
       
       setState({
         isInitialized: true,
@@ -50,8 +52,11 @@ export const useDatabase = () => {
   const refresh = async () => {
     if (state.isInitialized) {
       try {
-        const health = await databaseManager.healthCheck();
-        const stats = await databaseManager.getStats();
+        // Using API calls to server instead of databaseManager
+        const healthResponse = await fetch('/api/database/health');
+        const statsResponse = await fetch('/api/database/stats');
+        const health = await healthResponse.json();
+        const stats = await statsResponse.json();
         
         setState(prev => ({
           ...prev,

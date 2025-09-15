@@ -56,7 +56,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         
         // Try to load from database first
         try {
-          const response = await fetch('/api/theme');
+          const response = await fetch('http://localhost:3001/api/theme');
           if (response.ok) {
             const themeData = await response.json();
             setTheme(themeData.theme || 'light');
@@ -108,7 +108,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         
         // Save to database
         try {
-          const response = await fetch('/api/theme', {
+          const response = await fetch('http://localhost:3001/api/theme', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
