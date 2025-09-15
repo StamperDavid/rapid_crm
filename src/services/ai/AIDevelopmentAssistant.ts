@@ -4,8 +4,11 @@
  * for collaborative building of the Rapid CRM system
  */
 
-import { realDatabaseService } from '../realDatabaseService';
+import { SQLiteDatabaseService } from '../sqliteDatabaseService';
 import { aiIntegrationService } from './AIIntegrationService';
+
+// Create instance of the database service
+const databaseService = new SQLiteDatabaseService();
 
 export interface DevelopmentTask {
   id: string;
@@ -187,7 +190,7 @@ export class AIDevelopmentAssistant {
       
       // Use the real database service to create the table
       if (operation.query) {
-        await realDatabaseService.runExecute(operation.query);
+        await databaseService.runExecute(operation.query);
       }
       
       this.updateTaskStatus(task.id, 'completed');
@@ -236,7 +239,7 @@ export class AIDevelopmentAssistant {
       }
       
       // Use the real database service to execute the query
-      const results = await realDatabaseService.runQuery(operation.query || '');
+      const results = await databaseService.runQuery(operation.query || '');
       
       this.updateTaskStatus(task.id, 'completed');
       return results;

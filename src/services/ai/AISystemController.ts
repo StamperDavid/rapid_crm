@@ -4,8 +4,11 @@
  * Includes file operations, database management, API control, and more
  */
 
-import { realDatabaseService } from '../realDatabaseService';
+import { SQLiteDatabaseService } from '../sqliteDatabaseService';
 import { aiIntegrationService } from './AIIntegrationService';
+
+// Create instance of the database service
+const databaseService = new SQLiteDatabaseService();
 
 export interface SystemOperation {
   id: string;
@@ -248,7 +251,7 @@ export class AISystemController {
     try {
       // Use the real database service to create the table
       if (operation.query) {
-        await realDatabaseService.runExecute(operation.query);
+        await databaseService.runExecute(operation.query);
       }
       
       return {
@@ -320,7 +323,7 @@ export class AISystemController {
     
     try {
       // Use the real database service to execute the query
-      const data = await realDatabaseService.runQuery(operation.query || '');
+      const data = await databaseService.runQuery(operation.query || '');
       
       return {
         success: true,

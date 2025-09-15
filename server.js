@@ -479,6 +479,72 @@ if (eldApiRoutes) {
   console.log('✅ ELD API routes mounted at /api/eld');
 }
 
+// AI Collaboration API Routes
+app.get('/api/ai/collaborate', async (req, res) => {
+  try {
+    // Get AI-to-AI collaboration messages from database
+    const messages = await runQuery(`
+      SELECT * FROM ai_collaboration_messages 
+      ORDER BY created_at DESC 
+      LIMIT 50
+    `);
+    
+    res.json({
+      success: true,
+      messages: messages || [],
+      count: messages ? messages.length : 0
+    });
+  } catch (error) {
+    console.error('❌ Error fetching AI collaboration messages:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch AI collaboration messages',
+      messages: []
+    });
+  }
+});
+
+app.post('/api/ai/collaborate', async (req, res) => {
+  try {
+    const { message, sender, context } = req.body;
+    
+    if (!message || !sender) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Message and sender are required' 
+      });
+    }
+    
+    const id = Date.now().toString();
+    const now = new Date().toISOString();
+    
+    // Insert AI collaboration message into database
+    await runExecute(`
+      INSERT INTO ai_collaboration_messages 
+      (id, sender, message, context, created_at, updated_at) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [id, sender, message, JSON.stringify(context || {}), now, now]);
+    
+    res.json({
+      success: true,
+      message: {
+        id,
+        sender,
+        message,
+        context,
+        created_at: now,
+        updated_at: now
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error saving AI collaboration message:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to save AI collaboration message' 
+    });
+  }
+});
+
 // Companies
 app.get('/api/companies', async (req, res) => {
   try {
