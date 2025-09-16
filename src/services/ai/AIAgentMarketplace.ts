@@ -156,7 +156,7 @@ export class AIAgentMarketplace {
     try {
       const query = 'SELECT * FROM marketplace_agents WHERE id = ?';
       const result = await this.query(query, [agentId]);
-      return result.rows?.[0] || null;
+      return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching agent:', error);
       throw new Error('Failed to fetch agent');
@@ -413,7 +413,7 @@ export class AIAgentMarketplace {
         LIMIT ?
       `;
       const result = await this.query(query, [limit]);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching featured agents:', error);
       throw new Error('Failed to fetch featured agents');
@@ -442,7 +442,7 @@ export class AIAgentMarketplace {
       params.push(limit);
 
       const result = await this.query(query, params);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching recommended agents:', error);
       throw new Error('Failed to fetch recommended agents');
@@ -486,7 +486,7 @@ export class AIAgentMarketplace {
     try {
       const query = 'SELECT * FROM marketplace_agents WHERE authorId = ? ORDER BY createdAt DESC';
       const result = await this.query(query, [userId]);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching user agents:', error);
       throw new Error('Failed to fetch user agents');
@@ -552,7 +552,7 @@ export class AIAgentMarketplace {
   private async getUserDownloads(userId: string, agentId: string): Promise<number> {
     const query = 'SELECT COUNT(*) as count FROM agent_downloads WHERE userId = ? AND agentId = ?';
     const result = await this.query(query, [userId, agentId]);
-    return result.rows?.[0]?.count || 0;
+    return result.data?.[0]?.count || 0;
   }
 
   private async getUserDownloadHistory(userId: string): Promise<any[]> {

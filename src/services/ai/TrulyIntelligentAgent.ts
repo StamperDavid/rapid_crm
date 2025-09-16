@@ -1,7 +1,10 @@
 /**
  * TRULY INTELLIGENT AGENT
  * This agent actually understands context, provides specific answers, and demonstrates real intelligence
+ * Now integrated with dynamic persona management and learning capabilities
  */
+
+import { dynamicPersonaService } from './DynamicPersonaService';
 
 export interface TrulyIntelligentResponse {
   id: string;
@@ -123,7 +126,10 @@ export class TrulyIntelligentAgent {
     const startTime = Date.now();
     const responseId = `response_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    console.log(`🧠 Truly Intelligent Agent processing: ${question.substring(0, 50)}...`);
+    // Get current persona configuration
+    const currentPersona = dynamicPersonaService.getCurrentPersona();
+
+    console.log(`🧠 Truly Intelligent Agent processing: ${question.substring(0, 50)}... with persona: ${currentPersona.name}`);
 
     // Analyze question for specific intent
     const intent = this.analyzeIntent(question);
@@ -154,6 +160,9 @@ export class TrulyIntelligentAgent {
       contextAware: this.isContextAware(context),
       intelligenceLevel
     };
+
+    // Record interaction for learning
+    dynamicPersonaService.recordInteraction(question, answer, context);
 
     console.log(`✅ Truly Intelligent response: ${response.confidence.toFixed(1)}% confidence, ${intelligenceLevel} level`);
     return response;
@@ -250,8 +259,13 @@ export class TrulyIntelligentAgent {
       }
     }
 
-    // Default intelligent response
-    return `I understand you're asking about transportation regulations. Based on my analysis, I can provide specific guidance on USDOT compliance requirements. Could you provide more specific details about your situation so I can give you the most accurate and helpful response?`;
+    // Check if this is a math question first
+    if (this.isMathQuestion(question)) {
+      return this.calculateMath(question);
+    }
+
+    // Default intelligent response for any question
+    return `I understand your question. Let me provide you with a thoughtful and helpful response based on what you're asking. Could you provide more specific details so I can give you the most accurate and helpful answer?`;
   }
 
   /**
@@ -352,6 +366,86 @@ export class TrulyIntelligentAgent {
    */
   private isContextAware(context: any): boolean {
     return context && (context.fleetSize || context.operationType || context.cargoType);
+  }
+
+  /**
+   * Check if the question is a math question
+   */
+  private isMathQuestion(question: string): boolean {
+    const lowerQuestion = question.toLowerCase();
+    
+    // Check for basic math patterns
+    const mathPatterns = [
+      /\d+\s*[+\-*/]\s*\d+/,  // Basic arithmetic: 2+2, 5-3, etc.
+      /what\s+is\s+\d+\s*[+\-*/]\s*\d+/,  // "what is 2+2"
+      /calculate/,  // "calculate"
+      /math/,  // "math"
+      /add/,  // "add"
+      /subtract/,  // "subtract"
+      /multiply/,  // "multiply"
+      /divide/,  // "divide"
+      /plus/,  // "plus"
+      /minus/,  // "minus"
+      /times/,  // "times"
+      /equals/,  // "equals"
+    ];
+
+    return mathPatterns.some(pattern => pattern.test(lowerQuestion));
+  }
+
+  /**
+   * Calculate math expressions
+   */
+  private calculateMath(question: string): string {
+    try {
+      // Extract math expression from the question
+      const mathMatch = question.match(/(\d+\s*[+\-*/]\s*\d+)/);
+      if (mathMatch) {
+        const expression = mathMatch[1];
+        // Replace spaces and evaluate safely
+        const cleanExpression = expression.replace(/\s+/g, '');
+        
+        // Basic validation - only allow numbers and basic operators
+        if (/^\d+[+\-*/]\d+$/.test(cleanExpression)) {
+          const result = this.evaluateExpression(cleanExpression);
+          return `The answer is ${result}.`;
+        }
+      }
+      
+      // Handle word-based math questions
+      const lowerQuestion = question.toLowerCase();
+      if (lowerQuestion.includes('what is') && lowerQuestion.includes('plus')) {
+        const numbers = question.match(/\d+/g);
+        if (numbers && numbers.length === 2) {
+          const result = parseInt(numbers[0]) + parseInt(numbers[1]);
+          return `The answer is ${result}.`;
+        }
+      }
+      
+      return "I can help with basic math calculations. Please provide a simple arithmetic expression like '2+2' or 'what is 5 plus 3'.";
+    } catch (error) {
+      return "I encountered an error with that calculation. Please provide a simple arithmetic expression.";
+    }
+  }
+
+  /**
+   * Safely evaluate a simple math expression
+   */
+  private evaluateExpression(expression: string): number {
+    const parts = expression.match(/(\d+)([+\-*/])(\d+)/);
+    if (!parts) throw new Error('Invalid expression');
+    
+    const num1 = parseInt(parts[1]);
+    const operator = parts[2];
+    const num2 = parseInt(parts[3]);
+    
+    switch (operator) {
+      case '+': return num1 + num2;
+      case '-': return num1 - num2;
+      case '*': return num1 * num2;
+      case '/': return num2 !== 0 ? num1 / num2 : 0;
+      default: throw new Error('Invalid operator');
+    }
   }
 }
 

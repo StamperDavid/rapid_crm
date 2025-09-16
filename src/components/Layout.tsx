@@ -26,7 +26,8 @@ import AdminToolbar from './AdminToolbar';
 import Logo from './Logo';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
-import AdvancedUIAssistant from './AdvancedUIAssistant';
+import AdvancedUIAssistantFixed from './AdvancedUIAssistantFixed';
+import IntegratedAIChat from './IntegratedAIChat';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
 
 interface LayoutProps {
@@ -45,6 +46,7 @@ const getNavigation = () => [
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user, hasPermission } = useUser();
@@ -321,7 +323,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <AdminRecovery />
       
       {/* Advanced UI Assistant */}
-      <AdvancedUIAssistant />
+        <AdvancedUIAssistantFixed />
+        
+      {/* Floating AI Chat Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={() => setAiChatOpen(!aiChatOpen)}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+          title="Open AI Chat"
+        >
+          <ChatIcon className="h-6 w-6" />
+        </button>
+      </div>
+      
+      {/* AI Chat Modal */}
+      <IntegratedAIChat 
+        isOpen={aiChatOpen} 
+        onClose={() => setAiChatOpen(false)} 
+      />
     </div>
   );
 };

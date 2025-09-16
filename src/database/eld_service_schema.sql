@@ -211,3 +211,4 @@ CREATE INDEX IF NOT EXISTS idx_compliance_alerts_severity ON service_compliance_
 CREATE INDEX IF NOT EXISTS idx_compliance_alerts_status ON service_compliance_alerts(status);
 
 
+

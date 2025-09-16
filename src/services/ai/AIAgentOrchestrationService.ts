@@ -173,7 +173,7 @@ export class AIAgentOrchestrationService {
     try {
       const query = 'SELECT * FROM workflows WHERE id = ?';
       const result = await this.query(query, [workflowId]);
-      return result.rows?.[0] || null;
+      return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching workflow:', error);
       throw new Error('Failed to fetch workflow');
@@ -291,7 +291,7 @@ export class AIAgentOrchestrationService {
     try {
       const query = 'SELECT * FROM workflow_executions WHERE id = ?';
       const result = await this.query(query, [executionId]);
-      return result.rows?.[0] || null;
+      return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching workflow execution:', error);
       throw new Error('Failed to fetch workflow execution');
@@ -307,7 +307,7 @@ export class AIAgentOrchestrationService {
         LIMIT ?
       `;
       const result = await this.query(query, [workflowId, limit]);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching workflow executions:', error);
       throw new Error('Failed to fetch workflow executions');
@@ -372,7 +372,7 @@ export class AIAgentOrchestrationService {
     try {
       const query = 'SELECT * FROM agent_collaborations ORDER BY updatedAt DESC';
       const result = await this.query(query);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching agent collaborations:', error);
       throw new Error('Failed to fetch agent collaborations');
@@ -391,7 +391,7 @@ export class AIAgentOrchestrationService {
       }
 
       const result = await this.query(query, params);
-      const executions = result.rows || [];
+      const executions = result.data || [];
 
       const analytics = {
         totalExecutions: executions.length,

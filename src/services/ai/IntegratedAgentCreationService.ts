@@ -568,7 +568,7 @@ export class IntegratedAgentCreationService {
     try {
       const query = 'SELECT * FROM integrated_agents WHERE id = ?';
       const result = await this.query(query, [agentId]);
-      return result.rows?.[0] || null;
+      return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching integrated agent:', error);
       throw new Error('Failed to fetch integrated agent');

@@ -47,6 +47,21 @@ export class AIDevelopmentCoordinator {
     this.initializeAgents();
   }
 
+  /**
+   * Initialize the AI Development Coordinator
+   */
+  public async initialize(): Promise<void> {
+    console.log('🚀 Initializing AI Development Coordinator...');
+    
+    // Initialize agents
+    this.initializeAgents();
+    
+    // Note: aiCollaborationService doesn't have an initialize method
+    // The service is already ready to use
+    
+    console.log('✅ AI Development Coordinator initialized successfully');
+  }
+
   public static getInstance(): AIDevelopmentCoordinator {
     if (!AIDevelopmentCoordinator.instance) {
       AIDevelopmentCoordinator.instance = new AIDevelopmentCoordinator();
@@ -109,6 +124,48 @@ export class AIDevelopmentCoordinator {
         status: 'available'
       }
     ];
+  }
+
+  /**
+   * Start a development project
+   */
+  public async startProject(projectConfig: {
+    name: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high' | 'critical';
+  }): Promise<{ success: boolean; projectId?: string; error?: string }> {
+    try {
+      console.log(`🚀 Starting project: ${projectConfig.name}`);
+
+      // Create the main project
+      const projectResult = await aiCollaborationService.createProject(
+        projectConfig.name,
+        projectConfig.description,
+        this.aiAgents.map(agent => agent.id)
+      );
+
+      if (!projectResult.success) {
+        return projectResult;
+      }
+
+      this.currentProject = projectResult.project_id!;
+
+      // Create development tasks
+      const tasks = await this.createDevelopmentTasks();
+      
+      // Assign tasks to appropriate agents
+      await this.assignTasksToAgents(tasks);
+
+      // Start the development workflow
+      await this.initiateDevelopmentWorkflow();
+
+      console.log(`✅ Project "${projectConfig.name}" started successfully`);
+      return { success: true, projectId: this.currentProject };
+
+    } catch (error) {
+      console.error('❌ Failed to start project:', error);
+      return { success: false, error: 'Failed to start project' };
+    }
   }
 
   /**

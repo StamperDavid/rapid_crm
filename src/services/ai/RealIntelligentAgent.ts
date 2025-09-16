@@ -48,63 +48,72 @@ export class RealIntelligentAgent {
   }
 
   /**
-   * Initialize agent capabilities based on transportation industry expertise
+   * Initialize agent capabilities based on general intelligence
    */
   private initializeCapabilities(): void {
     const capabilities: AgentCapability[] = [
       {
-        id: 'usdot_compliance',
-        name: 'USDOT Compliance Expert',
-        description: 'Expert knowledge of USDOT regulations and compliance requirements',
-        domain: 'compliance',
+        id: 'general_intelligence',
+        name: 'General Intelligence',
+        description: 'General problem-solving and analytical thinking across all domains',
+        domain: 'general',
         proficiency: 95,
-        lastUsed: new Date().toISOString(),
-        successRate: 0.92
-      },
-      {
-        id: 'hours_of_service',
-        name: 'Hours of Service Specialist',
-        description: 'Specialized knowledge of HOS regulations and calculations',
-        domain: 'compliance',
-        proficiency: 98,
         lastUsed: new Date().toISOString(),
         successRate: 0.95
       },
       {
-        id: 'vehicle_maintenance',
-        name: 'Vehicle Maintenance Expert',
-        description: 'Expertise in vehicle maintenance regulations and best practices',
-        domain: 'maintenance',
+        id: 'mathematics',
+        name: 'Mathematics and Calculations',
+        description: 'Mathematical problem-solving and calculations',
+        domain: 'mathematics',
+        proficiency: 98,
+        lastUsed: new Date().toISOString(),
+        successRate: 0.98
+      },
+      {
+        id: 'business_analysis',
+        name: 'Business Analysis and Strategy',
+        description: 'Business strategy, planning, and operational analysis',
+        domain: 'business',
         proficiency: 90,
         lastUsed: new Date().toISOString(),
         successRate: 0.88
       },
       {
-        id: 'hazmat_specialist',
-        name: 'Hazmat Transportation Specialist',
-        description: 'Specialized knowledge of hazardous materials transportation',
-        domain: 'hazmat',
+        id: 'technology',
+        name: 'Technology and Software',
+        description: 'Technical problem-solving and software development',
+        domain: 'technology',
         proficiency: 92,
         lastUsed: new Date().toISOString(),
         successRate: 0.90
       },
       {
-        id: 'fleet_optimization',
-        name: 'Fleet Optimization Expert',
-        description: 'Expertise in fleet management and operational optimization',
-        domain: 'operations',
+        id: 'creative_thinking',
+        name: 'Creative and Innovative Solutions',
+        description: 'Creative problem-solving and innovative thinking',
+        domain: 'creative',
         proficiency: 85,
         lastUsed: new Date().toISOString(),
         successRate: 0.82
       },
       {
-        id: 'cost_analysis',
-        name: 'Cost Analysis Specialist',
-        description: 'Specialized knowledge of transportation cost analysis and optimization',
-        domain: 'finance',
+        id: 'research_analysis',
+        name: 'Research and Analysis',
+        description: 'Research, information synthesis, and analytical thinking',
+        domain: 'research',
         proficiency: 88,
         lastUsed: new Date().toISOString(),
         successRate: 0.85
+      },
+      {
+        id: 'communication',
+        name: 'Communication and Writing',
+        description: 'Clear communication, writing, and explanation',
+        domain: 'communication',
+        proficiency: 90,
+        lastUsed: new Date().toISOString(),
+        successRate: 0.87
       }
     ];
 
@@ -190,32 +199,74 @@ export class RealIntelligentAgent {
     const requiredCapabilities: string[] = [];
     const lowerQuestion = question.toLowerCase();
 
-    // Check for compliance-related questions
-    if (lowerQuestion.includes('hours of service') || lowerQuestion.includes('hos')) {
-      requiredCapabilities.push('hours_of_service');
-    }
-    if (lowerQuestion.includes('maintenance') || lowerQuestion.includes('inspection')) {
-      requiredCapabilities.push('vehicle_maintenance');
-    }
-    if (lowerQuestion.includes('hazmat') || lowerQuestion.includes('hazardous')) {
-      requiredCapabilities.push('hazmat_specialist');
-    }
-    if (lowerQuestion.includes('compliance') || lowerQuestion.includes('regulation')) {
-      requiredCapabilities.push('usdot_compliance');
-    }
-    if (lowerQuestion.includes('fleet') || lowerQuestion.includes('optimization')) {
-      requiredCapabilities.push('fleet_optimization');
-    }
-    if (lowerQuestion.includes('cost') || lowerQuestion.includes('budget')) {
-      requiredCapabilities.push('cost_analysis');
+    // Check for math questions first
+    if (this.isMathQuestion(question)) {
+      requiredCapabilities.push('mathematics');
+      return requiredCapabilities;
     }
 
-    // Default to general compliance if no specific capability identified
+    // Check for business-related questions
+    if (lowerQuestion.includes('business') || lowerQuestion.includes('strategy') || lowerQuestion.includes('planning')) {
+      requiredCapabilities.push('business_analysis');
+    }
+    if (lowerQuestion.includes('cost') || lowerQuestion.includes('budget') || lowerQuestion.includes('financial')) {
+      requiredCapabilities.push('business_analysis');
+    }
+
+    // Check for technology questions
+    if (lowerQuestion.includes('code') || lowerQuestion.includes('programming') || lowerQuestion.includes('software')) {
+      requiredCapabilities.push('technology');
+    }
+    if (lowerQuestion.includes('technical') || lowerQuestion.includes('system') || lowerQuestion.includes('database')) {
+      requiredCapabilities.push('technology');
+    }
+
+    // Check for creative questions
+    if (lowerQuestion.includes('creative') || lowerQuestion.includes('design') || lowerQuestion.includes('innovative')) {
+      requiredCapabilities.push('creative_thinking');
+    }
+
+    // Check for research questions
+    if (lowerQuestion.includes('research') || lowerQuestion.includes('analyze') || lowerQuestion.includes('study')) {
+      requiredCapabilities.push('research_analysis');
+    }
+
+    // Check for communication questions
+    if (lowerQuestion.includes('write') || lowerQuestion.includes('explain') || lowerQuestion.includes('present')) {
+      requiredCapabilities.push('communication');
+    }
+
+    // Default to general intelligence if no specific capability identified
     if (requiredCapabilities.length === 0) {
-      requiredCapabilities.push('usdot_compliance');
+      requiredCapabilities.push('general_intelligence');
     }
 
     return requiredCapabilities;
+  }
+
+  /**
+   * Check if the question is a math question
+   */
+  private isMathQuestion(question: string): boolean {
+    const lowerQuestion = question.toLowerCase();
+    
+    // Check for basic math patterns
+    const mathPatterns = [
+      /\d+\s*[+\-*/]\s*\d+/,  // Basic arithmetic: 2+2, 5-3, etc.
+      /what\s+is\s+\d+\s*[+\-*/]\s*\d+/,  // "what is 2+2"
+      /calculate/,  // "calculate"
+      /math/,  // "math"
+      /add/,  // "add"
+      /subtract/,  // "subtract"
+      /multiply/,  // "multiply"
+      /divide/,  // "divide"
+      /plus/,  // "plus"
+      /minus/,  // "minus"
+      /times/,  // "times"
+      /equals/,  // "equals"
+    ];
+
+    return mathPatterns.some(pattern => pattern.test(lowerQuestion));
   }
 
   /**
@@ -253,86 +304,150 @@ export class RealIntelligentAgent {
     const solution = conclusion.solution;
 
     switch (problemType) {
-      case 'compliance_issues':
-        return this.generateComplianceAnswer(question, conclusion, context);
-      case 'operational_optimization':
-        return this.generateOptimizationAnswer(question, conclusion, context);
-      case 'cost_optimization':
-        return this.generateCostAnswer(question, conclusion, context);
-      case 'safety_improvement':
-        return this.generateSafetyAnswer(question, conclusion, context);
+      case 'mathematical':
+        return this.generateMathAnswer(question, conclusion, context);
+      case 'business_analysis':
+        return this.generateBusinessAnswer(question, conclusion, context);
+      case 'technical':
+        return this.generateTechnicalAnswer(question, conclusion, context);
+      case 'creative':
+        return this.generateCreativeAnswer(question, conclusion, context);
+      case 'research':
+        return this.generateResearchAnswer(question, conclusion, context);
       default:
         return this.generateGeneralAnswer(question, conclusion, context);
     }
   }
 
   /**
-   * Generate compliance-specific answer
+   * Generate math-specific answer
    */
-  private generateComplianceAnswer(question: string, conclusion: any, context: any): string {
-    const lowerQuestion = question.toLowerCase();
-
-    if (lowerQuestion.includes('hours of service') || lowerQuestion.includes('hos')) {
-      return `Based on USDOT Hours of Service regulations (49 CFR 395), the maximum driving time after 10 consecutive hours off duty is 11 hours. Drivers must also take a 30-minute break after 8 hours of driving. The maximum on-duty time after 10 hours off duty is 14 hours. These regulations are critical for safety and compliance.`;
+  private generateMathAnswer(question: string, conclusion: any, context: any): string {
+    // Check if this is a math question and calculate
+    if (this.isMathQuestion(question)) {
+      return this.calculateMath(question);
     }
-
-    if (lowerQuestion.includes('maintenance') || lowerQuestion.includes('inspection')) {
-      return `Vehicle maintenance compliance requires daily pre-trip inspections, annual inspections by qualified inspectors, and immediate repair of any defects before operation. All maintenance records must be retained for 12 months. This is regulated under 49 CFR 396.`;
-    }
-
-    if (lowerQuestion.includes('hazmat') || lowerQuestion.includes('hazardous')) {
-      return `Hazardous materials transportation requires a valid hazmat endorsement on the CDL, current hazmat training certification, proper placarding and labeling, shipping papers with emergency response information, and a security plan for certain materials. This is regulated under 49 CFR 177.`;
-    }
-
-    return `For USDOT compliance, it's essential to maintain proper records, conduct regular inspections, and ensure all drivers are properly trained and certified. The specific requirements depend on your operation type and cargo.`;
+    return "I can help with mathematical problems and calculations. Please provide a specific math question or expression.";
   }
 
   /**
-   * Generate optimization-specific answer
+   * Generate business-specific answer
    */
-  private generateOptimizationAnswer(question: string, conclusion: any, context: any): string {
-    return `To optimize your fleet operations, I recommend implementing systematic monitoring of key performance indicators, regular maintenance schedules, driver training programs, and route optimization. The specific approach depends on your current performance metrics and operational goals.`;
+  private generateBusinessAnswer(question: string, conclusion: any, context: any): string {
+    return `For business analysis and strategy, I recommend a systematic approach to address your specific needs. This typically involves analyzing current state, identifying opportunities, developing strategies, and implementing solutions. The specific approach depends on your particular business situation and goals.`;
   }
 
   /**
-   * Generate cost-specific answer
+   * Generate technical-specific answer
    */
-  private generateCostAnswer(question: string, conclusion: any, context: any): string {
-    return `Cost optimization in transportation involves analyzing fuel efficiency, maintenance costs, driver productivity, and route optimization. Key areas to focus on include implementing fuel-efficient driving practices, predictive maintenance programs, and efficient routing systems.`;
+  private generateTechnicalAnswer(question: string, conclusion: any, context: any): string {
+    return `For technical problems, I recommend a structured approach including problem analysis, solution design, implementation planning, and testing. The specific solution depends on your technical requirements, constraints, and objectives.`;
   }
 
   /**
-   * Generate safety-specific answer
+   * Generate creative-specific answer
    */
-  private generateSafetyAnswer(question: string, conclusion: any, context: any): string {
-    return `Safety improvements require a comprehensive approach including driver training, vehicle maintenance, compliance monitoring, and safety culture development. Focus on implementing regular safety training, maintaining vehicles to the highest standards, and establishing clear safety protocols.`;
+  private generateCreativeAnswer(question: string, conclusion: any, context: any): string {
+    return `For creative challenges, I recommend exploring multiple approaches, brainstorming innovative solutions, and thinking outside conventional boundaries. Creative problem-solving often involves combining different perspectives and approaches to find unique solutions.`;
+  }
+
+  /**
+   * Generate research-specific answer
+   */
+  private generateResearchAnswer(question: string, conclusion: any, context: any): string {
+    return `For research and analysis, I recommend a systematic approach including defining objectives, gathering relevant information, analyzing data, and drawing evidence-based conclusions. The specific methodology depends on your research questions and available resources.`;
   }
 
   /**
    * Generate general answer
    */
   private generateGeneralAnswer(question: string, conclusion: any, context: any): string {
+    // Check if this is a math question
+    if (this.isMathQuestion(question)) {
+      return this.calculateMath(question);
+    }
+    
     return `I understand your question about transportation operations. Based on my analysis, I recommend a systematic approach to address your specific needs. The solution involves multiple steps and should be tailored to your particular situation.`;
+  }
+
+  /**
+   * Calculate math expressions
+   */
+  private calculateMath(question: string): string {
+    try {
+      // Extract math expression from the question
+      const mathMatch = question.match(/(\d+\s*[+\-*/]\s*\d+)/);
+      if (mathMatch) {
+        const expression = mathMatch[1];
+        // Replace spaces and evaluate safely
+        const cleanExpression = expression.replace(/\s+/g, '');
+        
+        // Basic validation - only allow numbers and basic operators
+        if (/^\d+[+\-*/]\d+$/.test(cleanExpression)) {
+          const result = this.evaluateExpression(cleanExpression);
+          return `The answer is ${result}.`;
+        }
+      }
+      
+      // Handle word-based math questions
+      const lowerQuestion = question.toLowerCase();
+      if (lowerQuestion.includes('what is') && lowerQuestion.includes('plus')) {
+        const numbers = question.match(/\d+/g);
+        if (numbers && numbers.length === 2) {
+          const result = parseInt(numbers[0]) + parseInt(numbers[1]);
+          return `The answer is ${result}.`;
+        }
+      }
+      
+      return "I can help with basic math calculations. Please provide a simple arithmetic expression like '2+2' or 'what is 5 plus 3'.";
+    } catch (error) {
+      return "I encountered an error with that calculation. Please provide a simple arithmetic expression.";
+    }
+  }
+
+  /**
+   * Safely evaluate a simple math expression
+   */
+  private evaluateExpression(expression: string): number {
+    const parts = expression.match(/(\d+)([+\-*/])(\d+)/);
+    if (!parts) throw new Error('Invalid expression');
+    
+    const num1 = parseInt(parts[1]);
+    const operator = parts[2];
+    const num2 = parseInt(parts[3]);
+    
+    switch (operator) {
+      case '+': return num1 + num2;
+      case '-': return num1 - num2;
+      case '*': return num1 * num2;
+      case '/': return num2 !== 0 ? num1 / num2 : 0;
+      default: throw new Error('Invalid operator');
+    }
   }
 
   /**
    * Enhance answer with domain-specific knowledge
    */
   private async enhanceWithDomainKnowledge(response: any, question: string, context: any): Promise<any> {
-    // Get relevant regulations from transportation intelligence service
-    const regulations = transportationIntelligenceService.getAllRegulations();
-    const relevantRegulations = regulations.filter(reg => 
-      question.toLowerCase().includes(reg.category) || 
-      question.toLowerCase().includes(reg.title.toLowerCase())
-    );
+    // For math questions, keep the response simple and direct
+    if (this.isMathQuestion(question)) {
+      return response;
+    }
 
-    if (relevantRegulations.length > 0) {
-      const regulationInfo = relevantRegulations.map(reg => 
-        `${reg.title} (${reg.section}): ${reg.description}`
-      ).join('\n\n');
-      
-      response.answer += `\n\nRelevant Regulations:\n${regulationInfo}`;
-      response.sources.push(...relevantRegulations.map(reg => reg.section));
+    // For other questions, enhance with relevant context and sources
+    const lowerQuestion = question.toLowerCase();
+    
+    // Add relevant sources based on question type
+    if (lowerQuestion.includes('business') || lowerQuestion.includes('strategy')) {
+      response.sources.push('Business Strategy Resources', 'Management Best Practices');
+    }
+    
+    if (lowerQuestion.includes('technical') || lowerQuestion.includes('programming')) {
+      response.sources.push('Technical Documentation', 'Software Development Best Practices');
+    }
+    
+    if (lowerQuestion.includes('research') || lowerQuestion.includes('analysis')) {
+      response.sources.push('Research Methodologies', 'Analytical Frameworks');
     }
 
     return response;
@@ -342,6 +457,13 @@ export class RealIntelligentAgent {
    * Add recommendations and follow-up questions
    */
   private async addRecommendationsAndFollowUps(response: any, question: string, context: any): Promise<any> {
+    // Skip recommendations and follow-ups for math questions
+    if (this.isMathQuestion(question)) {
+      response.recommendations = [];
+      response.followUpQuestions = [];
+      return response;
+    }
+
     // Generate recommendations based on question type
     const recommendations = this.generateRecommendations(question, context);
     response.recommendations = recommendations;
@@ -360,28 +482,28 @@ export class RealIntelligentAgent {
     const recommendations: string[] = [];
     const lowerQuestion = question.toLowerCase();
 
-    if (lowerQuestion.includes('compliance')) {
-      recommendations.push('Implement automated compliance monitoring system');
-      recommendations.push('Schedule regular compliance training for all drivers');
-      recommendations.push('Establish clear compliance procedures and documentation');
+    if (lowerQuestion.includes('business') || lowerQuestion.includes('strategy')) {
+      recommendations.push('Conduct thorough analysis of current business state');
+      recommendations.push('Develop clear strategic objectives and metrics');
+      recommendations.push('Create implementation timeline and milestones');
     }
 
-    if (lowerQuestion.includes('maintenance')) {
-      recommendations.push('Implement predictive maintenance program');
-      recommendations.push('Establish regular maintenance schedules');
-      recommendations.push('Train drivers on pre-trip inspection procedures');
+    if (lowerQuestion.includes('technical') || lowerQuestion.includes('programming')) {
+      recommendations.push('Review technical requirements and constraints');
+      recommendations.push('Design solution architecture and implementation plan');
+      recommendations.push('Establish testing and quality assurance procedures');
     }
 
-    if (lowerQuestion.includes('cost') || lowerQuestion.includes('optimization')) {
-      recommendations.push('Analyze current operational costs and identify savings opportunities');
-      recommendations.push('Implement fuel efficiency optimization program');
-      recommendations.push('Consider route optimization and load planning improvements');
+    if (lowerQuestion.includes('cost') || lowerQuestion.includes('budget')) {
+      recommendations.push('Analyze current costs and identify optimization opportunities');
+      recommendations.push('Develop cost-benefit analysis for proposed solutions');
+      recommendations.push('Implement monitoring and tracking systems');
     }
 
-    if (lowerQuestion.includes('safety')) {
-      recommendations.push('Implement comprehensive driver safety training program');
-      recommendations.push('Establish safety monitoring and reporting systems');
-      recommendations.push('Regular safety audits and performance reviews');
+    if (lowerQuestion.includes('research') || lowerQuestion.includes('analysis')) {
+      recommendations.push('Define clear research objectives and methodology');
+      recommendations.push('Gather relevant data and information sources');
+      recommendations.push('Apply appropriate analytical frameworks and tools');
     }
 
     return recommendations;
@@ -394,22 +516,28 @@ export class RealIntelligentAgent {
     const followUpQuestions: string[] = [];
     const lowerQuestion = question.toLowerCase();
 
-    if (lowerQuestion.includes('hours of service')) {
-      followUpQuestions.push('What is your current HOS compliance rate?');
-      followUpQuestions.push('Do you have an ELD system in place?');
-      followUpQuestions.push('How do you currently track driver hours?');
+    if (lowerQuestion.includes('business') || lowerQuestion.includes('strategy')) {
+      followUpQuestions.push('What are your current business objectives?');
+      followUpQuestions.push('What challenges are you facing?');
+      followUpQuestions.push('What resources do you have available?');
     }
 
-    if (lowerQuestion.includes('maintenance')) {
-      followUpQuestions.push('What is your current maintenance schedule?');
-      followUpQuestions.push('Do you have a preventive maintenance program?');
-      followUpQuestions.push('What are your current maintenance costs?');
+    if (lowerQuestion.includes('technical') || lowerQuestion.includes('programming')) {
+      followUpQuestions.push('What are your technical requirements?');
+      followUpQuestions.push('What technologies are you currently using?');
+      followUpQuestions.push('What are your performance and scalability needs?');
     }
 
-    if (lowerQuestion.includes('fleet')) {
-      followUpQuestions.push('What is the size of your fleet?');
-      followUpQuestions.push('What types of vehicles do you operate?');
-      followUpQuestions.push('What are your main operational challenges?');
+    if (lowerQuestion.includes('cost') || lowerQuestion.includes('budget')) {
+      followUpQuestions.push('What is your current budget range?');
+      followUpQuestions.push('What are your cost optimization goals?');
+      followUpQuestions.push('What are your ROI expectations?');
+    }
+
+    if (lowerQuestion.includes('research') || lowerQuestion.includes('analysis')) {
+      followUpQuestions.push('What specific information are you looking for?');
+      followUpQuestions.push('What is your timeline for this research?');
+      followUpQuestions.push('What resources do you have for data collection?');
     }
 
     return followUpQuestions;
@@ -422,22 +550,27 @@ export class RealIntelligentAgent {
     const sources: string[] = [];
     const lowerQuestion = question.toLowerCase();
 
-    if (lowerQuestion.includes('hours of service') || lowerQuestion.includes('hos')) {
-      sources.push('49 CFR 395 - Hours of Service Regulations');
-      sources.push('FMCSA Hours of Service Guidelines');
+    if (lowerQuestion.includes('business') || lowerQuestion.includes('strategy')) {
+      sources.push('Business Strategy Resources');
+      sources.push('Management Best Practices');
     }
 
-    if (lowerQuestion.includes('maintenance') || lowerQuestion.includes('inspection')) {
-      sources.push('49 CFR 396 - Vehicle Maintenance Regulations');
-      sources.push('FMCSA Vehicle Maintenance Guidelines');
+    if (lowerQuestion.includes('technical') || lowerQuestion.includes('programming')) {
+      sources.push('Technical Documentation');
+      sources.push('Software Development Best Practices');
     }
 
-    if (lowerQuestion.includes('hazmat') || lowerQuestion.includes('hazardous')) {
-      sources.push('49 CFR 177 - Hazardous Materials Transportation');
-      sources.push('PHMSA Hazmat Regulations');
+    if (lowerQuestion.includes('research') || lowerQuestion.includes('analysis')) {
+      sources.push('Research Methodologies');
+      sources.push('Analytical Frameworks');
     }
 
-    sources.push('USDOT Federal Motor Carrier Safety Administration');
+    if (lowerQuestion.includes('mathematics') || lowerQuestion.includes('math')) {
+      sources.push('Mathematical Principles');
+      sources.push('Calculation Methods');
+    }
+
+    sources.push('General Knowledge Base');
     return sources;
   }
 

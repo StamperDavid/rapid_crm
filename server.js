@@ -1,5 +1,5 @@
 // Load environment variables
-require('dotenv').config({ path: './env.example' });
+require('dotenv').config();
 
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
@@ -1884,7 +1884,10 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
     const { text, voiceId = 'Eleanor', speed = 0, pitch = 1.0 } = req.body;
     const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
     
+    console.log('🎤 Unreal Speech request:', { text: text?.substring(0, 50) + '...', voiceId, speed, pitch });
+    
     if (!unrealSpeechKey) {
+      console.error('❌ Unreal Speech API key not configured');
       return res.status(400).json({
         success: false,
         error: 'Unreal Speech API key not configured'
@@ -1892,6 +1895,7 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
     }
     
     if (!text) {
+      console.error('❌ Text is required for TTS');
       return res.status(400).json({
         success: false,
         error: 'Text is required'
@@ -1909,8 +1913,8 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
         Text: text,
         VoiceId: voiceId,
         Bitrate: '192k',
-        Speed: speed.toString(),
-        Pitch: pitch.toString(),
+        Speed: speed,
+        Pitch: pitch,
         Codec: 'libmp3lame'
       })
     });
@@ -1918,9 +1922,17 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Unreal Speech API error:', response.status, errorText);
+      console.error('❌ Request body was:', JSON.stringify({
+        Text: text,
+        VoiceId: voiceId,
+        Bitrate: '192k',
+        Speed: speed,
+        Pitch: pitch,
+        Codec: 'libmp3lame'
+      }));
       return res.status(response.status).json({
         success: false,
-        error: `Unreal Speech API error: ${response.status}`
+        error: `Unreal Speech API error: ${response.status} - ${errorText}`
       });
     }
     
@@ -1943,60 +1955,53 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
   }
 });
 
-// AI Chat endpoint
+// AI Chat endpoint - Using Real AI Service
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const { message, voice, model } = req.body;
     
     console.log(`🤖 AI Chat request: "${message}" (voice: ${voice}, model: ${model})`);
     
-    // Intelligent context-aware responses based on the message content
-    let response = '';
-    const lowerMessage = message.toLowerCase();
+    // Use the Real AI Service for genuine AI responses
+    try {
+      console.log('🔍 Loading Real AI Service...');
+      
+      // Import the real AI service
+      const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
+      const realAI = new RealAIServiceNode();
+      
+      // Get real AI response
+      const aiResponse = await realAI.askQuestion(message, { voice, model });
+      
+      console.log(`🧠 Real AI response:`, aiResponse.answer.substring(0, 100) + '...');
+      
+      res.json({
+        success: true,
+        response: aiResponse.answer,
+        timestamp: new Date().toISOString(),
+        voice: voice || 'mikael',
+        confidence: aiResponse.confidence,
+        reasoning: aiResponse.reasoning,
+        sources: aiResponse.sources,
+        intelligenceLevel: "expert"
+      });
+      
+    } catch (aiError) {
+      console.error('❌ Real AI Service error:', aiError);
+      
+      // Fallback to simple response if AI service fails
+      const fallbackResponse = `I apologize, but I'm experiencing technical difficulties with my AI service. Please try again in a moment. Error: ${aiError.message}`;
+      
+      res.json({
+        success: true,
+        response: fallbackResponse,
+        timestamp: new Date().toISOString(),
+        voice: voice || 'mikael',
+        fallback: true,
+        error: aiError.message
+      });
+    }
     
-    // Greeting responses
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-      response = "Hello! I'm your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?";
-    }
-    // Speaking/voice related
-    else if (lowerMessage.includes('speak') || lowerMessage.includes('talk') || lowerMessage.includes('voice')) {
-      response = "Yes, I can speak to you! I'm using voice synthesis to communicate. You can ask me about your CRM system, transportation compliance, fleet management, or any other business needs.";
-    }
-    // CRM specific help
-    else if (lowerMessage.includes('crm') || lowerMessage.includes('customer') || lowerMessage.includes('contact')) {
-      response = "I can help you with CRM tasks like managing contacts, companies, deals, and leads. Would you like to add a new contact, update company information, or track a deal?";
-    }
-    // Transportation/logistics specific
-    else if (lowerMessage.includes('truck') || lowerMessage.includes('fleet') || lowerMessage.includes('vehicle') || lowerMessage.includes('transport')) {
-      response = "I can assist with transportation and logistics management. This includes fleet tracking, driver management, cargo types, hazmat compliance, and USDOT number management. What specific aspect would you like help with?";
-    }
-    // Compliance related
-    else if (lowerMessage.includes('compliance') || lowerMessage.includes('dot') || lowerMessage.includes('hazmat') || lowerMessage.includes('safety')) {
-      response = "I can help with compliance management including DOT regulations, hazmat requirements, safety protocols, and regulatory reporting. What compliance issue do you need assistance with?";
-    }
-    // Business operations
-    else if (lowerMessage.includes('business') || lowerMessage.includes('operation') || lowerMessage.includes('company') || lowerMessage.includes('broker')) {
-      response = "I can help with business operations including company management, broker/carrier classifications, multi-state operations, and business structure management. What business task do you need help with?";
-    }
-    // General help
-    else if (lowerMessage.includes('help') || lowerMessage.includes('assist') || lowerMessage.includes('support')) {
-      response = "I'm here to help with your Rapid CRM system! I can assist with contacts, companies, deals, fleet management, compliance, and transportation operations. What specific task would you like to work on?";
-    }
-    // Questions about capabilities
-    else if (lowerMessage.includes('what') || lowerMessage.includes('can you') || lowerMessage.includes('do you')) {
-      response = "I'm your Rapid CRM AI assistant specialized in transportation and logistics. I can help you manage contacts, companies, deals, fleet information, compliance requirements, and business operations. What would you like to accomplish?";
-    }
-    // Default intelligent response
-    else {
-      response = `I understand you're asking about "${message}". As your Rapid CRM assistant, I'm here to help with transportation and logistics management. I can assist with contacts, companies, deals, fleet management, compliance, and business operations. Could you be more specific about what you'd like help with?`;
-    }
-    
-    res.json({
-      success: true,
-      response: response,
-      timestamp: new Date().toISOString(),
-      voice: voice || 'mikael'
-    });
   } catch (error) {
     console.error('❌ Error in AI chat:', error);
     res.status(500).json({ 
@@ -2030,10 +2035,69 @@ app.post('/api/ai/collaborate/send', async (req, res) => {
       });
     });
     
+    // Generate AI response if message is TO RapidCRM_AI
+    let aiResponse = null;
+    if (to_ai === 'RapidCRM_AI') {
+      try {
+        // Use the Real AI Service for genuine AI responses
+        const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
+        const realAI = new RealAIServiceNode();
+        
+        // Get real AI response
+        const response = await realAI.askQuestion(content, { from_ai, message_type, metadata });
+        
+        aiResponse = {
+          content: response.answer,
+          confidence: response.confidence,
+          reasoning: response.reasoning,
+          metadata: {
+            sources: response.sources,
+            intelligenceLevel: "expert",
+            contextAware: true,
+            responseTime: Date.now()
+          }
+        };
+        
+        // Store the AI response in database
+        const responseId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await new Promise((resolve, reject) => {
+          db.run(`
+            INSERT INTO ai_collaboration_messages 
+            (message_id, from_ai, to_ai, message_type, content, metadata, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            responseId, 'RapidCRM_AI', from_ai, 'text', aiResponse.content,
+            JSON.stringify(aiResponse.metadata), 'sent', new Date().toISOString(), new Date().toISOString()
+          ], function(err) {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+        
+        console.log(`🤖 RapidCRM_AI Response: ${aiResponse.content.substring(0, 100)}...`);
+        
+      } catch (aiError) {
+        console.error('❌ Error generating AI response:', aiError);
+        // Fallback to simple response
+        aiResponse = {
+          content: `I apologize, but I'm experiencing technical difficulties with my AI service. Please try again in a moment. Error: ${aiError.message}`,
+          confidence: 0.1,
+          reasoning: 'Fallback response due to AI service error',
+          metadata: {
+            intelligenceLevel: 'basic',
+            contextAware: false,
+            responseTime: Date.now(),
+            error: aiError.message
+          }
+        };
+      }
+    }
+    
     res.json({
       success: true,
       message_id: messageId,
-      status: 'sent'
+      status: 'sent',
+      ai_response: aiResponse
     });
   } catch (error) {
     console.error('❌ Error in AI collaboration:', error);
@@ -2332,7 +2396,7 @@ app.post('/api/ai/testing/run-suite', async (req, res) => {
     const { aiAgentTestingFramework } = require('./src/services/ai/AIAgentTestingFrameworkCommonJS.js');
     
     // Use truly intelligent agent for testing
-    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgent.js');
     const trulyIntelligentAgent = createTrulyIntelligentAgent(agentId);
     
     const trulyIntelligentFunction = async (input) => {
@@ -2462,7 +2526,7 @@ app.post('/api/ai/agents/ask', async (req, res) => {
   try {
     const { agentId, question, context } = req.body;
     
-    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgent.js');
     const trulyIntelligentAgent = createTrulyIntelligentAgent(agentId || 'default-agent');
     
     const response = await trulyIntelligentAgent.processQuestion(question, context || {});

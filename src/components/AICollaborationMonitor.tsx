@@ -50,7 +50,7 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
     voiceService.updateSettings({
       ...currentSettings,
       voice: voiceId,
-      provider: 'playht' // Default to PlayHT for best quality
+      provider: 'unreal-speech' // Default to Unreal Speech for best quality
     });
   };
 
@@ -59,18 +59,18 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
     
     setIsPreviewing(true);
     try {
-      // Fetch PlayHT API key from server
+      // Fetch Unreal Speech API key from server
       const keyResponse = await fetch('http://localhost:3001/api/ai/voice-key');
       const keyData = await keyResponse.json();
       
       if (!keyData.hasKey) {
-        console.error('PlayHT API key not found');
+        console.error('Unreal Speech API key not found');
         return;
       }
       
       // Update voice service settings
       voiceService.updateSettings({
-        provider: 'playht',
+        provider: 'unreal-speech',
         voice: selectedVoice.id,
         apiKey: keyData.apiKey
       });
@@ -257,7 +257,9 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
     });
 
     // Get initial chat history (only for user chat tab)
-    setChatHistory(chatHistoryService.getChatHistory());
+    chatHistoryService.getChatHistory().then(history => {
+      setChatHistory(history);
+    });
 
     return () => {
       clearInterval(interval);

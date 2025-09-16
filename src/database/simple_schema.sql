@@ -135,3 +135,5 @@ CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
 CREATE INDEX IF NOT EXISTS idx_ai_messages_from_to ON ai_collaboration_messages(from_ai, to_ai);
 CREATE INDEX IF NOT EXISTS idx_ai_messages_type ON ai_collaboration_messages(message_type);
 CREATE INDEX IF NOT EXISTS idx_ai_messages_created ON ai_collaboration_messages(created_at);
+
+

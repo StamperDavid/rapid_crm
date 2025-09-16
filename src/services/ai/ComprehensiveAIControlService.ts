@@ -167,7 +167,7 @@ export class ComprehensiveAIControlService {
         'SELECT * FROM ai_providers ORDER BY is_active DESC, name ASC'
       );
       
-      this.aiProviders = result.rows?.map((row: any) => ({
+      this.aiProviders = result.data?.map((row: any) => ({
         id: row.id,
         name: row.name,
         type: row.type,
@@ -275,7 +275,7 @@ export class ComprehensiveAIControlService {
         'SELECT * FROM knowledge_rules ORDER BY priority DESC, created_at DESC'
       );
 
-      this.knowledgeRules = result.rows?.map((row: any) => ({
+      this.knowledgeRules = result.data?.map((row: any) => ({
         id: row.id,
         name: row.name,
         description: row.description,
@@ -365,7 +365,7 @@ export class ComprehensiveAIControlService {
         'SELECT * FROM ai_agents ORDER BY status, name ASC'
       );
 
-      this.agentStatuses = result.rows?.map((row: any) => ({
+      this.agentStatuses = result.data?.map((row: any) => ({
         id: row.id,
         name: row.name,
         type: row.type,
@@ -510,7 +510,7 @@ export class ComprehensiveAIControlService {
         'SELECT * FROM competitor_data ORDER BY last_checked DESC'
       );
 
-      this.competitorData = result.rows?.map((row: any) => ({
+      this.competitorData = result.data?.map((row: any) => ({
         id: row.id,
         name: row.name,
         lastChecked: new Date(row.last_checked),

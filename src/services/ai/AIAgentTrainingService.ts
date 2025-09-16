@@ -164,7 +164,7 @@ export class AIAgentTrainingService {
       query += ' ORDER BY quality DESC, size DESC';
 
       const result = await this.query(query, params);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching datasets:', error);
       throw new Error('Failed to fetch datasets');
@@ -232,7 +232,7 @@ export class AIAgentTrainingService {
     try {
       const query = 'SELECT * FROM training_jobs WHERE id = ?';
       const result = await this.query(query, [jobId]);
-      return result.rows?.[0] || null;
+      return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching training job:', error);
       throw new Error('Failed to fetch training job');
@@ -331,7 +331,7 @@ export class AIAgentTrainingService {
     try {
       const query = 'SELECT * FROM training_configurations ORDER BY createdAt DESC';
       const result = await this.query(query);
-      return result.rows || [];
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching training configurations:', error);
       throw new Error('Failed to fetch training configurations');
@@ -430,7 +430,7 @@ export class AIAgentTrainingService {
       }
 
       const result = await this.query(query, params);
-      const jobs = result.rows || [];
+      const jobs = result.data || [];
 
       const analytics = {
         totalJobs: jobs.length,

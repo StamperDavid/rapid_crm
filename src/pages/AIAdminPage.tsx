@@ -2,6 +2,7 @@
 import {
   ChipIcon, ChartBarIcon, CogIcon, ExclamationIcon, CheckCircleIcon, RefreshIcon, PlayIcon,
   PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon, ChatIcon,
+  SparklesIcon, AcademicCapIcon
 } from '@heroicons/react/outline';
 import AICollaborationMonitor from '../components/AICollaborationMonitor';
 import EnterpriseAIDashboard from '../components/EnterpriseAIDashboard';
@@ -11,6 +12,7 @@ import { aiDevelopmentCoordinator } from '../services/ai/AIDevelopmentCoordinato
 import { comprehensiveAIControlService } from '../services/ai/ComprehensiveAIControlService';
 import { userAuthenticationService } from '../services/auth/UserAuthenticationService';
 import { aiUserContextService } from '../services/ai/AIUserContextService';
+import { dynamicPersonaService } from '../services/ai/DynamicPersonaService';
 import UserLoginModal from '../components/UserLoginModal';
 
 const AIAdminPage: React.FC = () => {
@@ -83,6 +85,16 @@ const AIAdminPage: React.FC = () => {
     enableContextAwareness: true,
     enableLearning: false
   });
+
+  // Dynamic Persona State
+  const [currentPersona, setCurrentPersona] = useState(dynamicPersonaService.getCurrentPersona());
+  const [learningMetrics, setLearningMetrics] = useState(dynamicPersonaService.getLearningMetrics());
+  const [selectedCommunicationStyle, setSelectedCommunicationStyle] = useState(currentPersona.communicationStyle);
+  const [selectedExpertiseFocus, setSelectedExpertiseFocus] = useState(currentPersona.expertiseFocus);
+  const [learningRate, setLearningRate] = useState(currentPersona.learningRate);
+  const [memoryRetention, setMemoryRetention] = useState(currentPersona.memoryRetention);
+  const [showPersonaEditor, setShowPersonaEditor] = useState(false);
+  const [customPersonaPrompt, setCustomPersonaPrompt] = useState('');
   
   const [voiceSamples, setVoiceSamples] = useState<{[key: string]: string}>({
     'Microsoft David Desktop': 'Hello, I am Microsoft David. I provide clear, professional speech for business communications.',
@@ -212,6 +224,22 @@ const AIAdminPage: React.FC = () => {
     
     // Check for user state changes every 5 seconds
     const interval = setInterval(loadUserState, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Initialize dynamic persona service
+  useEffect(() => {
+    dynamicPersonaService.initialize();
+    setCurrentPersona(dynamicPersonaService.getCurrentPersona());
+    setLearningMetrics(dynamicPersonaService.getLearningMetrics());
+  }, []);
+
+  // Update learning metrics periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLearningMetrics(dynamicPersonaService.getLearningMetrics());
+    }, 10000); // Update every 10 seconds
+
     return () => clearInterval(interval);
   }, []);
 
@@ -1027,16 +1055,326 @@ const AIAdminPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Master AI Control Panel</h2>
-                    <p className="text-purple-100">Comprehensive control over your AI business management extension</p>
+                    <p className="text-purple-100">Truly intelligent AI with dynamic persona management and learning capabilities</p>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
-                      <div className="text-sm text-purple-100">System Status</div>
-                      <div className="text-lg font-semibold">🟢 Active</div>
+                      <div className="text-sm text-purple-100">AI Intelligence Level</div>
+                      <div className="text-lg font-semibold">🧠 Adaptive</div>
                     </div>
                     <button className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
                       <RefreshIcon className="h-5 w-5" />
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Persona Management */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <SparklesIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Dynamic Persona Management
+                </h3>
+                
+                {/* Current Persona Display */}
+                <div className="mb-6">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Current AI Persona</h4>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-gray-900 dark:text-white">System Prompt</span>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => {
+                            const persona = dynamicPersonaService.getCurrentPersona();
+                            const systemPrompt = dynamicPersonaService.getSystemPrompt();
+                            navigator.clipboard.writeText(systemPrompt);
+                            alert('Persona copied to clipboard!');
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          Copy to Clipboard
+                        </button>
+                        <button
+                          onClick={() => setShowPersonaEditor(!showPersonaEditor)}
+                          className="text-sm text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                        >
+                          {showPersonaEditor ? 'Hide Editor' : 'Edit Persona'}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded border p-3 max-h-64 overflow-y-auto">
+                      <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono">
+                        {dynamicPersonaService.getSystemPrompt()}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Persona Editor */}
+                {showPersonaEditor && (
+                  <div className="mb-6">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Edit AI Persona</h4>
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Custom System Prompt
+                        </label>
+                        <textarea
+                          value={customPersonaPrompt}
+                          onChange={(e) => setCustomPersonaPrompt(e.target.value)}
+                          className="w-full h-64 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm"
+                          placeholder="Enter your custom system prompt here..."
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => {
+                            // Apply custom persona
+                            dynamicPersonaService.updatePersona({
+                              name: 'Custom Persona',
+                              description: 'Custom AI persona with user-defined system prompt',
+                              customPrompt: customPersonaPrompt
+                            } as any);
+                            setCurrentPersona(dynamicPersonaService.getCurrentPersona());
+                            alert('Custom persona applied successfully!');
+                          }}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >
+                          Apply Custom Persona
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCustomPersonaPrompt(dynamicPersonaService.getSystemPrompt());
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                          Load Current Persona
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCustomPersonaPrompt('');
+                          }}
+                          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Current AI Personality</h4>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-gray-900 dark:text-white">Intelligence Mode</span>
+                          <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">Adaptive</span>
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          Truly intelligent AI with dynamic persona management and learning capabilities
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Learning Rate</div>
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">High</div>
+                        </div>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Adaptability</div>
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">Dynamic</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Persona Configuration</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Communication Style
+                        </label>
+                        <select 
+                          value={selectedCommunicationStyle}
+                          onChange={(e) => setSelectedCommunicationStyle(e.target.value as any)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="intelligent">Intelligent & Adaptive</option>
+                          <option value="professional">Professional & Formal</option>
+                          <option value="friendly">Friendly & Casual</option>
+                          <option value="creative">Creative & Innovative</option>
+                          <option value="analytical">Analytical & Technical</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Expertise Focus
+                        </label>
+                        <select 
+                          value={selectedExpertiseFocus}
+                          onChange={(e) => setSelectedExpertiseFocus(e.target.value as any)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="general">General Intelligence</option>
+                          <option value="business">Business & Strategy</option>
+                          <option value="technical">Technical & Development</option>
+                          <option value="creative">Creative & Design</option>
+                          <option value="analytical">Analytical & Research</option>
+                        </select>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => {
+                            dynamicPersonaService.updatePersona({
+                              communicationStyle: selectedCommunicationStyle,
+                              expertiseFocus: selectedExpertiseFocus
+                            });
+                            setCurrentPersona(dynamicPersonaService.getCurrentPersona());
+                          }}
+                          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                        >
+                          Apply Changes
+                        </button>
+                        <button 
+                          onClick={() => {
+                            dynamicPersonaService.switchPersona('adaptive-intelligent');
+                            setCurrentPersona(dynamicPersonaService.getCurrentPersona());
+                            setSelectedCommunicationStyle('intelligent');
+                            setSelectedExpertiseFocus('general');
+                          }}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                          Reset to Default
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Learning & Adaptation */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <AcademicCapIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  AI Learning & Adaptation Engine
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Learning Status</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Continuous Learning</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Active</div>
+                        </div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Memory Formation</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">{learningMetrics.memoryFormation.toLocaleString()} interactions</div>
+                        </div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Adaptation Rate</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">{(learningMetrics.adaptationRate * 100).toFixed(1)}% improvement</div>
+                        </div>
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Learning Configuration</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Learning Rate: High
+                        </label>
+                        <input 
+                          type="range" 
+                          min="0.1" 
+                          max="1.0" 
+                          step="0.1" 
+                          value={learningRate}
+                          onChange={(e) => {
+                            const newRate = parseFloat(e.target.value);
+                            setLearningRate(newRate);
+                            dynamicPersonaService.updateLearningRate(newRate);
+                          }}
+                          className="w-full" 
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Slow (0.1)</span>
+                          <span>Fast (1.0)</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Memory Retention: 30 days
+                        </label>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="365" 
+                          step="1" 
+                          value={memoryRetention}
+                          onChange={(e) => {
+                            const newRetention = parseInt(e.target.value);
+                            setMemoryRetention(newRetention);
+                            dynamicPersonaService.updateMemoryRetention(newRetention);
+                          }}
+                          className="w-full" 
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>1 day</span>
+                          <span>1 year</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Enable Learning</span>
+                        <input 
+                          type="checkbox" 
+                          defaultChecked 
+                          onChange={(e) => dynamicPersonaService.setLearningEnabled(e.target.checked)}
+                          className="h-4 w-4 text-purple-600" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Performance Metrics</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Response Quality</span>
+                          <span className="font-medium">{(learningMetrics.responseQuality * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className="bg-green-600 h-2 rounded-full" style={{width: `${learningMetrics.responseQuality * 100}%`}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Learning Efficiency</span>
+                          <span className="font-medium">{(learningMetrics.learningEfficiency * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className="bg-blue-600 h-2 rounded-full" style={{width: `${learningMetrics.learningEfficiency * 100}%`}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Adaptation Speed</span>
+                          <span className="font-medium">{(learningMetrics.adaptationRate * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className="bg-purple-600 h-2 rounded-full" style={{width: `${learningMetrics.adaptationRate * 100}%`}}></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

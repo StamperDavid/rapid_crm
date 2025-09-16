@@ -324,7 +324,7 @@ export class AdvancedAgentCreationService {
     try {
       const query = 'SELECT * FROM advanced_agents WHERE id = ?';
       const result = await this.query(query, [id]);
-      return result.rows?.[0] || null;
+      return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching agent:', error);
       throw new Error('Failed to fetch agent');
@@ -356,7 +356,7 @@ export class AdvancedAgentCreationService {
       const result = await databaseService.executeQuery('primary', query, params);
       
       // Convert database rows to AdvancedAgent objects
-      return result.rows.map((row: any) => this.mapDbRowToAgent(row));
+      return result.data.map((row: any) => this.mapDbRowToAgent(row));
     } catch (error) {
       console.error('Error fetching agents:', error);
       throw new Error('Failed to fetch agents');

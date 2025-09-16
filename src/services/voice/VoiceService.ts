@@ -3,7 +3,7 @@ export interface VoiceSettings {
   pitch: number;
   volume: number;
   voice: string;
-  provider: 'browser' | 'azure' | 'openai' | 'playht';
+  provider: 'browser' | 'azure' | 'openai' | 'unreal-speech';
   apiKey?: string;
   model?: string;
 }
@@ -95,9 +95,9 @@ export class VoiceService {
         supportsSettings: true
       },
       {
-        name: 'PlayHT',
-        id: 'playht',
-        voices: this.getPlayHTVoices(),
+        name: 'Unreal Speech',
+        id: 'unreal-speech',
+        voices: this.getUnrealSpeechVoices(),
         supportsCustomUpload: false,
         supportsSettings: true
       }
@@ -166,12 +166,12 @@ export class VoiceService {
     ];
   }
 
-  // Get PlayHT voices - Premium conversational AI voices
-  private getPlayHTVoices(): VoiceOption[] {
+  // Get Unreal Speech voices - Premium conversational AI voices
+  private getUnrealSpeechVoices(): VoiceOption[] {
     return [
-      // Featured voices from PlayHT
-      { id: 'mikael', name: 'Mikael', language: 'en-US', gender: 'male', accent: 'American', description: 'Award-winning narration voice - perfect for storytelling' },
-      { id: 'briggs', name: 'Briggs', language: 'en-US', gender: 'male', accent: 'American', description: 'Engaging voice that makes any content compelling' },
+      // Featured voices from Unreal Speech
+      { id: 'eleanor', name: 'Eleanor', language: 'en-US', gender: 'female', accent: 'American', description: 'Professional female voice' },
+      { id: 'javier', name: 'Javier', language: 'en-US', gender: 'male', accent: 'American', description: 'Professional male voice' },
       { id: 'hubert', name: 'Hubert', language: 'en-US', gender: 'male', accent: 'American', description: 'Professional tone perfect for training and business' },
       { id: 'deedee', name: 'Deedee', language: 'en-US', gender: 'female', accent: 'American', description: 'Poetic and expressive voice for creative content' },
       { id: 'mamaw', name: 'Mamaw', language: 'en-US', gender: 'female', accent: 'American', description: 'Enthusiastic and motivational voice' },
@@ -272,8 +272,8 @@ export class VoiceService {
     switch (this.settings.provider) {
       case 'browser':
         return this.speakBrowser(text);
-      case 'playht':
-        return this.speakPlayHT(text);
+      case 'unreal-speech':
+        return this.speakUnrealSpeech(text);
       case 'azure':
         return this.speakAzure(text);
       case 'openai':
@@ -310,30 +310,30 @@ export class VoiceService {
     });
   }
 
-  // PlayHT speech synthesis
-  private async speakPlayHT(text: string): Promise<void> {
+  // Unreal Speech synthesis
+  private async speakUnrealSpeech(text: string): Promise<void> {
     if (!this.settings.apiKey) {
-      throw new Error('PlayHT API key not configured');
+      throw new Error('Unreal Speech API key not configured');
     }
 
-    const response = await fetch('https://api.play.ht/api/v2/tts', {
+    const response = await fetch('https://api.v8.unrealspeech.com/stream', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.settings.apiKey}`,
-        'X-USER-ID': this.settings.apiKey, // PlayHT uses the same key for both
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        text: text,
-        voice: this.settings.voice,
-        output_format: 'mp3',
-        speed: this.settings.rate,
-        sample_rate: 24000
+        Text: text,
+        VoiceId: this.settings.voice,
+        Bitrate: '192k',
+        Speed: this.settings.rate.toString(),
+        Pitch: this.settings.pitch.toString(),
+        Codec: 'libmp3lame'
       })
     });
 
     if (!response.ok) {
-      throw new Error(`PlayHT API error: ${response.statusText}`);
+      throw new Error(`Unreal Speech API error: ${response.statusText}`);
     }
 
     const audioBlob = await response.blob();
