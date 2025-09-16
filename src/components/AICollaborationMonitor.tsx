@@ -466,8 +466,8 @@ const AICollaborationMonitor: React.FC<AICollaborationMonitorProps> = ({ embedde
               onChange={(e) => handleVoiceChange(e.target.value)}
               className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
-              {availableVoices.map(voice => (
-                <option key={voice.id} value={voice.id}>
+              {availableVoices.map((voice, index) => (
+                <option key={`${voice.id}-${index}`} value={voice.id}>
                   {voice.name} - {voice.description || `${voice.gender} voice`}
                 </option>
               ))}

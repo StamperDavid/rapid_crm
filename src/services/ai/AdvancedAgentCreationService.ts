@@ -1,4 +1,6 @@
-import { BaseRepository } from '../database/repositories/BaseRepository';
+import { databaseService } from '../database/DatabaseService';
+import { AICollaborationService } from './AICollaborationService';
+import { parallelAgentBuilder } from './ParallelAgentBuilder';
 
 export interface AgentPersonality {
   name: string;
@@ -99,8 +101,104 @@ export interface AgentTemplate {
 }
 
 export class AdvancedAgentCreationService {
+  private collaborationService: AICollaborationService;
+
   constructor() {
-    // Mock implementation - no database dependency
+    // Real implementation with database integration and AI collaboration
+    this.collaborationService = new AICollaborationService();
+  }
+
+  // Helper method to map database row to AdvancedAgent
+  private mapDbRowToAgent(row: any): AdvancedAgent {
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      version: '1.0.0',
+      status: row.status as any,
+      type: row.type as any,
+      personality: {
+        name: 'Default',
+        traits: ['helpful', 'professional'],
+        communicationStyle: 'friendly',
+        responseLength: 'detailed',
+        expertise: ['transportation', 'compliance'],
+        limitations: ['Cannot provide legal advice']
+      },
+      capabilities: JSON.parse(row.capabilities || '[]'),
+      memory: {
+        type: 'episodic',
+        content: '',
+        importance: 5,
+        tags: [],
+        accessCount: 0,
+        lastAccessed: new Date().toISOString()
+      },
+      learningProfile: {
+        learningRate: 0.5,
+        adaptationSpeed: 'medium',
+        memoryRetention: 30,
+        feedbackSensitivity: 0.7,
+        innovationLevel: 0.5,
+        collaborationPreference: 'hybrid'
+      },
+      configuration: {
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        maxTokens: 2000,
+        systemPrompt: 'You are a helpful AI assistant for transportation companies.',
+        responseFormat: 'text',
+        fallbackBehavior: 'escalate_to_human'
+      },
+      performance: {
+        totalInteractions: 0,
+        successRate: 0,
+        averageResponseTime: 0,
+        userSatisfaction: 0,
+        lastActive: new Date().toISOString()
+      },
+      metadata: {
+        createdBy: 'system',
+        tags: [],
+        version: '1.0.0',
+        lastModified: row.updated_at,
+        accessLevel: 'public'
+      },
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    };
+  }
+
+  // AI Collaboration Methods
+  async delegateAgentImplementation(agentType: string, requirements: any): Promise<any> {
+    try {
+      // Use parallel agent builder for faster implementation
+      const taskId = await parallelAgentBuilder.queueAgentBuild(
+        agentType as any,
+        requirements,
+        'high'
+      );
+      
+      console.log(`🚀 Agent implementation queued with task ID: ${taskId}`);
+      return { success: true, taskId };
+    } catch (error) {
+      console.error('❌ AI collaboration error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get build status for delegated agents
+   */
+  async getBuildStatus(taskId: string): Promise<any> {
+    return await parallelAgentBuilder.getBuildStatus(taskId);
+  }
+
+  /**
+   * Get all active builds
+   */
+  async getAllBuilds(): Promise<any[]> {
+    return await parallelAgentBuilder.getAllBuildTasks();
   }
 
   // Agent Creation Methods
@@ -111,8 +209,11 @@ export class AdvancedAgentCreationService {
         throw new Error('Template not found');
       }
 
+      const agentId = this.generateAgentId();
+      const now = new Date().toISOString();
+      
       const agent: AdvancedAgent = {
-        id: this.generateAgentId(),
+        id: agentId,
         name: customizations.name || template.name,
         description: customizations.description || template.description,
         version: '1.0.0',
@@ -237,8 +338,25 @@ export class AdvancedAgentCreationService {
     createdBy?: string;
   } = {}): Promise<AdvancedAgent[]> {
     try {
-      // Mock data - return empty array for now
-      return [];
+      let query = 'SELECT * FROM agents WHERE 1=1';
+      const params: any[] = [];
+      
+      if (filters.status) {
+        query += ' AND status = ?';
+        params.push(filters.status);
+      }
+      
+      if (filters.type) {
+        query += ' AND type = ?';
+        params.push(filters.type);
+      }
+      
+      query += ' ORDER BY created_at DESC';
+      
+      const result = await databaseService.executeQuery('primary', query, params);
+      
+      // Convert database rows to AdvancedAgent objects
+      return result.rows.map((row: any) => this.mapDbRowToAgent(row));
     } catch (error) {
       console.error('Error fetching agents:', error);
       throw new Error('Failed to fetch agents');

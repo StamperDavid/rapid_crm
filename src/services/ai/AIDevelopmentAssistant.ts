@@ -4,11 +4,8 @@
  * for collaborative building of the Rapid CRM system
  */
 
-import { SQLiteDatabaseService } from '../sqliteDatabaseService';
+import { databaseService } from '../database/DatabaseService';
 import { aiIntegrationService } from './AIIntegrationService';
-
-// Create instance of the database service
-const databaseService = new SQLiteDatabaseService();
 
 export interface DevelopmentTask {
   id: string;

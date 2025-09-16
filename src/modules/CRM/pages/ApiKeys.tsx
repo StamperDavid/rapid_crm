@@ -19,6 +19,10 @@ import {
   RefreshIcon,
   DocumentDownloadIcon,
   DocumentAddIcon,
+  LinkIcon,
+  ExternalLinkIcon,
+  CheckIcon,
+  XMarkIcon,
 } from '@heroicons/react/outline';
 import { useApiKeys } from '../../../hooks/useApiKeys';
 import { useAIProviders } from '../../../hooks/useAIProviders';
@@ -58,6 +62,150 @@ const platformColors = {
   quickbooks: 'text-blue-500',
   custom: 'text-gray-600',
 };
+
+// Integration data for all connected services
+const integrations = [
+  {
+    id: 'google-cloud',
+    name: 'Google Cloud Platform',
+    category: 'AI & Cloud Services',
+    description: 'Vertex AI, Document AI, Vision API, Translation, Speech-to-Text, Text-to-Speech, Natural Language API',
+    status: 'connected',
+    website: 'https://cloud.google.com',
+    documentation: 'https://cloud.google.com/docs',
+    icon: CloudIcon,
+    color: 'text-blue-600',
+    features: ['Vertex AI', 'Document AI', 'Vision API', 'Translation', 'Speech Services', 'Natural Language'],
+    lastSync: '2024-01-15T10:30:00Z',
+    usage: 'High'
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    category: 'AI Services',
+    description: 'GPT-4, GPT-3.5 Turbo, Embeddings, DALL-E, Whisper for advanced AI capabilities',
+    status: 'connected',
+    website: 'https://openai.com',
+    documentation: 'https://platform.openai.com/docs',
+    icon: ChipIcon,
+    color: 'text-green-600',
+    features: ['GPT-4', 'GPT-3.5 Turbo', 'Embeddings', 'DALL-E', 'Whisper'],
+    lastSync: '2024-01-15T09:45:00Z',
+    usage: 'Very High'
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic Claude',
+    category: 'AI Services',
+    description: 'Claude 3.5 Sonnet, Claude 3 Haiku for advanced reasoning and analysis',
+    status: 'connected',
+    website: 'https://anthropic.com',
+    documentation: 'https://docs.anthropic.com',
+    icon: ChipIcon,
+    color: 'text-orange-600',
+    features: ['Claude 3.5 Sonnet', 'Claude 3 Haiku', 'Advanced Reasoning'],
+    lastSync: '2024-01-15T11:15:00Z',
+    usage: 'High'
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    category: 'AI Services',
+    description: 'Access to multiple AI models including Claude, GPT, Llama, Mistral, and others',
+    status: 'connected',
+    website: 'https://openrouter.ai',
+    documentation: 'https://openrouter.ai/docs',
+    icon: ChipIcon,
+    color: 'text-cyan-600',
+    features: ['Multiple AI Models', 'Claude Access', 'GPT Access', 'Llama', 'Mistral'],
+    lastSync: '2024-01-15T08:20:00Z',
+    usage: 'Medium'
+  },
+  {
+    id: 'kixie',
+    name: 'Kixie Power Dialer',
+    category: 'Communication & Sales',
+    description: 'Power dialer, SMS, lead management, and CRM integration for sales teams',
+    status: 'connected',
+    website: 'https://kixie.com',
+    documentation: 'https://help.kixie.com',
+    icon: GlobeAltIcon,
+    color: 'text-purple-600',
+    features: ['Power Dialer', 'SMS', 'Lead Management', 'CRM Integration'],
+    lastSync: '2024-01-15T14:30:00Z',
+    usage: 'High'
+  },
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    category: 'Payment Processing',
+    description: 'Payment processing, subscription management, invoicing, and webhooks',
+    status: 'connected',
+    website: 'https://stripe.com',
+    documentation: 'https://stripe.com/docs',
+    icon: ServerIcon,
+    color: 'text-indigo-500',
+    features: ['Payment Processing', 'Subscriptions', 'Invoicing', 'Webhooks'],
+    lastSync: '2024-01-15T16:45:00Z',
+    usage: 'Medium'
+  },
+  {
+    id: 'quickbooks',
+    name: 'QuickBooks Online',
+    category: 'Accounting & Finance',
+    description: 'Accounting, invoicing, expense tracking, and financial reporting',
+    status: 'connected',
+    website: 'https://quickbooks.intuit.com',
+    documentation: 'https://developer.intuit.com',
+    icon: CloudIcon,
+    color: 'text-blue-500',
+    features: ['Accounting', 'Invoicing', 'Expense Tracking', 'Financial Reports'],
+    lastSync: '2024-01-15T12:00:00Z',
+    usage: 'Medium'
+  },
+  {
+    id: 'usdot',
+    name: 'USDOT Compliance',
+    category: 'Transportation & Compliance',
+    description: 'USDOT regulations, compliance checks, and fleet management for transportation industry',
+    status: 'connected',
+    website: 'https://www.fmcsa.dot.gov',
+    documentation: 'https://www.fmcsa.dot.gov/regulations',
+    icon: ShieldCheckIcon,
+    color: 'text-green-500',
+    features: ['USDOT Regulations', 'Compliance Checks', 'Fleet Management', 'Safety Monitoring'],
+    lastSync: '2024-01-15T13:15:00Z',
+    usage: 'High'
+  },
+  {
+    id: 'eld-service',
+    name: 'ELD Service Integration',
+    category: 'Transportation & Compliance',
+    description: 'Electronic Logging Device integration for Hours of Service compliance',
+    status: 'connected',
+    website: 'https://www.fmcsa.dot.gov/eld',
+    documentation: 'https://www.fmcsa.dot.gov/eld/technical-specifications',
+    icon: DatabaseIcon,
+    color: 'text-blue-500',
+    features: ['Hours of Service', 'ELD Integration', 'Driver Logs', 'Compliance Monitoring'],
+    lastSync: '2024-01-15T15:30:00Z',
+    usage: 'Very High'
+  },
+  {
+    id: 'cursor-ai',
+    name: 'Cursor AI Integration',
+    category: 'Development Tools',
+    description: 'AI-powered code editor integration for development assistance',
+    status: 'connected',
+    website: 'https://cursor.sh',
+    documentation: 'https://cursor.sh/docs',
+    icon: CogIcon,
+    color: 'text-purple-500',
+    features: ['Code Generation', 'AI Assistance', 'Development Tools'],
+    lastSync: '2024-01-15T17:00:00Z',
+    usage: 'Very High'
+  }
+];
 
 const ApiKeys: React.FC = () => {
   // Use the new API Keys hook
@@ -229,12 +377,15 @@ const ApiKeys: React.FC = () => {
   ];
 
   // Local state for UI
+  const [activeTab, setActiveTab] = useState<'api-keys' | 'integrations'>('api-keys');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
   const [showKey, setShowKey] = useState<{ [key: string]: boolean }>({});
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [validatingKeys, setValidatingKeys] = useState<Set<string>>(new Set());
+  const [integrationFilter, setIntegrationFilter] = useState<'all' | 'connected' | 'disconnected'>('all');
+  const [integrationSearchTerm, setIntegrationSearchTerm] = useState('');
 
   // Merge existing API keys with preconfigured templates
   const allApiKeys = useMemo(() => {

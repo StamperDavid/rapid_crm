@@ -36,7 +36,7 @@ export class ApiKeyService {
   private validations: Map<string, ApiKeyValidation> = new Map();
   private usage: Map<string, ApiKeyUsage> = new Map();
   private isInitialized = false;
-  private API_BASE = 'http://localhost:3001/api'; // Use proper backend URL
+  private API_BASE = import.meta.env.DEV ? '/api' : 'http://localhost:3001/api'; // Use proxy in dev, direct URL in prod
 
   constructor() {
     this.loadApiKeys();
@@ -73,7 +73,23 @@ export class ApiKeyService {
       console.log('Full URL:', `${this.API_BASE}/api-keys`);
       const response = await fetch(`${this.API_BASE}/api-keys`);
       console.log('ApiKeyService response status:', response.status);
-      const apiKeysData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const responseText = await response.text();
+      console.log('ApiKeyService raw response:', responseText);
+      
+      let apiKeysData;
+      try {
+        apiKeysData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse JSON response:', parseError);
+        console.error('Response text:', responseText);
+        throw new Error('Invalid JSON response from server');
+      }
+      
       console.log('ApiKeyService loaded data:', apiKeysData);
       
       // Transform backend data to frontend ApiKey format

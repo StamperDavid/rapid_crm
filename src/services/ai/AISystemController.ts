@@ -4,11 +4,8 @@
  * Includes file operations, database management, API control, and more
  */
 
-import { SQLiteDatabaseService } from '../sqliteDatabaseService';
+import { databaseService } from '../database/DatabaseService';
 import { aiIntegrationService } from './AIIntegrationService';
-
-// Create instance of the database service
-const databaseService = new SQLiteDatabaseService();
 
 export interface SystemOperation {
   id: string;

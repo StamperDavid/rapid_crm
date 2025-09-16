@@ -4,7 +4,7 @@ import {
   PlusIcon,
   SearchIcon,
   FilterIcon,
-  DocumentTextIcon,
+  DocumentIcon,
   ShieldCheckIcon,
   AcademicCapIcon,
   SupportIcon,
@@ -300,7 +300,7 @@ const Services: React.FC = () => {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'Registration':
-        return DocumentTextIcon;
+        return DocumentIcon;
       case 'Compliance':
         return ShieldCheckIcon;
       case 'Training':
@@ -308,7 +308,7 @@ const Services: React.FC = () => {
       case 'Support':
         return SupportIcon;
       default:
-        return DocumentTextIcon;
+        return DocumentIcon;
     }
   };
 
@@ -493,7 +493,7 @@ const Services: React.FC = () => {
 
         {filteredServices.length === 0 && (
           <div className="text-center py-12">
-            <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <DocumentIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No services found
             </h3>

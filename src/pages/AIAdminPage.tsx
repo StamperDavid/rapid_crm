@@ -6,6 +6,12 @@ import {
 import AICollaborationMonitor from '../components/AICollaborationMonitor';
 import EnterpriseAIDashboard from '../components/EnterpriseAIDashboard';
 import AdvancedAIAgentControlPanel from '../components/AdvancedAIAgentControlPanel';
+import { ContinuousVoiceConversation } from '../components/ContinuousVoiceConversation';
+import { aiDevelopmentCoordinator } from '../services/ai/AIDevelopmentCoordinator';
+import { comprehensiveAIControlService } from '../services/ai/ComprehensiveAIControlService';
+import { userAuthenticationService } from '../services/auth/UserAuthenticationService';
+import { aiUserContextService } from '../services/ai/AIUserContextService';
+import UserLoginModal from '../components/UserLoginModal';
 
 const AIAdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -24,7 +30,6 @@ const AIAdminPage: React.FC = () => {
     { id: 'agents', name: 'AI Agents', icon: ChipIcon },
     { id: 'monitoring', name: 'Monitoring', icon: EyeIcon },
     { id: 'configuration', name: 'Configuration', icon: CogIcon },
-    { id: 'collaboration', name: 'Collaboration', icon: UserIcon },
     { id: 'advanced', name: 'Advanced', icon: CogIcon },
   ];
 
@@ -47,6 +52,22 @@ const AIAdminPage: React.FC = () => {
   const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
+  
+  // AI Development Coordinator State
+  const [developmentStatus, setDevelopmentStatus] = useState<{
+    projectId: string | null;
+    totalTasks: number;
+    completedTasks: number;
+    progressPercentage: number;
+    activeAgents: number;
+  } | null>(null);
+  const [isDevelopmentActive, setIsDevelopmentActive] = useState(false);
+  const [collaborationMessages, setCollaborationMessages] = useState<any[]>([]);
+  
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userContext, setUserContext] = useState<any>(null);
   
   // AI Assistant Persona Configuration State
   const [aiPersonaConfig, setAiPersonaConfig] = useState({
@@ -95,10 +116,10 @@ const AIAdminPage: React.FC = () => {
     </div>
   );
 
-  // Get unique languages from available voices
+  // Get unique English languages from available voices
   const getAvailableLanguages = () => {
     const languages = [...new Set(availableVoices.map(voice => voice.lang))];
-    return languages.sort();
+    return languages.filter(lang => lang.startsWith('en')).sort();
   };
 
   // Get voices filtered by selected language
@@ -138,6 +159,62 @@ const AIAdminPage: React.FC = () => {
     setTimeout(loadVoices, 100);
   }, [selectedVoice]);
 
+  // Load development status
+  useEffect(() => {
+    const loadDevelopmentStatus = () => {
+      const status = aiDevelopmentCoordinator.getProjectStatus();
+      setDevelopmentStatus(status);
+    };
+
+    loadDevelopmentStatus();
+    const interval = setInterval(loadDevelopmentStatus, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Load collaboration messages
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const messages = await aiDevelopmentCoordinator.getCollaborationMessages();
+        setCollaborationMessages(messages);
+      } catch (error) {
+        console.error('Error loading collaboration messages:', error);
+      }
+    };
+
+    if (isDevelopmentActive) {
+      loadMessages();
+      const interval = setInterval(loadMessages, 10000); // Update every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [isDevelopmentActive]);
+
+  // Load user authentication state
+  useEffect(() => {
+    const loadUserState = () => {
+      const user = userAuthenticationService.getCurrentUser();
+      const context = aiUserContextService.getCurrentContext();
+      
+      setCurrentUser(user);
+      setUserContext(context);
+      
+      // Update AI persona config with personalized greeting
+      if (user && context) {
+        setAiPersonaConfig(prev => ({
+          ...prev,
+          customGreeting: context.personalizedGreeting
+        }));
+      }
+    };
+
+    loadUserState();
+    
+    // Check for user state changes every 5 seconds
+    const interval = setInterval(loadUserState, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -154,6 +231,41 @@ const AIAdminPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              {currentUser ? (
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {currentUser.fullName}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {currentUser.department || 'Rapid CRM'}
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {currentUser.firstName.charAt(0)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      userAuthenticationService.logout();
+                      setCurrentUser(null);
+                      setUserContext(null);
+                    }}
+                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                >
+                  <UserIcon className="h-4 w-4 mr-2" />
+                  Login
+                </button>
+              )}
               <button
                 disabled={isLoading}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
@@ -841,64 +953,64 @@ const AIAdminPage: React.FC = () => {
                       </div>
                       
                       <div className="flex space-x-3">
-                        <Tooltip 
-                          id="test-voice" 
-                          content="Test the current voice configuration with a comprehensive sample. This will speak a test phrase using all your current voice settings including rate, pitch, volume, emotion, and style. Use this to verify your configuration before deploying."
-                        >
-                          <button
-                            onClick={() => {
-                              if ('speechSynthesis' in window && selectedVoice) {
-                                const voice = getFilteredVoices().find(v => v.name === selectedVoice);
-                                if (voice) {
-                                  const utterance = new SpeechSynthesisUtterance('Hello! This is a comprehensive test of my enterprise voice capabilities. I can speak with various tones, speeds, and volumes to match your business needs. My current configuration includes professional-grade voice synthesis with advanced emotional and stylistic controls.');
-                                  utterance.voice = voice;
-                                  utterance.rate = voiceSettings.rate;
-                                  utterance.pitch = voiceSettings.pitch;
-                                  utterance.volume = voiceSettings.volume;
-                                  speechSynthesis.speak(utterance);
+                        <div className="flex items-center space-x-2">
+                          <Tooltip 
+                            id="test-voice" 
+                            content="Test the current voice configuration with a comprehensive sample. This will speak a test phrase using all your current voice settings including rate, pitch, volume, emotion, and style. Use this to verify your configuration before deploying."
+                          >
+                            <button
+                              onClick={() => {
+                                if ('speechSynthesis' in window && selectedVoice) {
+                                  const voice = getFilteredVoices().find(v => v.name === selectedVoice);
+                                  if (voice) {
+                                    const utterance = new SpeechSynthesisUtterance('Hello! This is a comprehensive test of my enterprise voice capabilities. I can speak with various tones, speeds, and volumes to match your business needs. My current configuration includes professional-grade voice synthesis with advanced emotional and stylistic controls.');
+                                    utterance.voice = voice;
+                                    utterance.rate = voiceSettings.rate;
+                                    utterance.pitch = voiceSettings.pitch;
+                                    utterance.volume = voiceSettings.volume;
+                                    speechSynthesis.speak(utterance);
+                                  }
                                 }
-                              }
-                            }}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
-                          >
-                            <SpeakerphoneIcon className="h-4 w-4 mr-2" />
-                            Test Voice
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowTooltip(showTooltip === 'test-voice' ? null : 'test-voice');
                               }}
-                              className="ml-2 w-4 h-4 text-purple-200 hover:text-white"
+                              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center"
                             >
-                              ℹ️
+                              <SpeakerphoneIcon className="h-4 w-4 mr-2" />
+                              Test Voice
                             </button>
-                          </button>
-                        </Tooltip>
-
-                        <Tooltip 
-                          id="stop-voice" 
-                          content="Immediately stops any currently playing voice synthesis. Use this to interrupt voice output if needed. This will cancel all active speech synthesis across the system."
-                        >
+                          </Tooltip>
                           <button
-                            onClick={() => {
-                              if ('speechSynthesis' in window) {
-                                speechSynthesis.cancel();
-                              }
-                            }}
-                            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center"
+                            onClick={() => setShowTooltip(showTooltip === 'test-voice' ? null : 'test-voice')}
+                            className="w-4 h-4 text-purple-400 hover:text-purple-600"
+                            title="Voice test information"
                           >
-                            Stop
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowTooltip(showTooltip === 'stop-voice' ? null : 'stop-voice');
-                              }}
-                              className="ml-2 w-4 h-4 text-gray-300 hover:text-white"
-                            >
-                              ℹ️
-                            </button>
+                            ℹ️
                           </button>
-                        </Tooltip>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Tooltip 
+                            id="stop-voice" 
+                            content="Immediately stops any currently playing voice synthesis. Use this to interrupt voice output if needed. This will cancel all active speech synthesis across the system."
+                          >
+                            <button
+                              onClick={() => {
+                                if ('speechSynthesis' in window) {
+                                  speechSynthesis.cancel();
+                                }
+                              }}
+                              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center"
+                            >
+                              Stop
+                            </button>
+                          </Tooltip>
+                          <button
+                            onClick={() => setShowTooltip(showTooltip === 'stop-voice' ? null : 'stop-voice')}
+                            className="w-4 h-4 text-gray-400 hover:text-gray-600"
+                            title="Stop voice information"
+                          >
+                            ℹ️
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -907,206 +1019,642 @@ const AIAdminPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'collaboration' && (
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Collaboration</h3>
-                <p className="text-gray-600 dark:text-gray-400">Collaboration features will be implemented here.</p>
-              </div>
-            </div>
-          )}
 
           {activeTab === 'advanced' && (
             <div className="space-y-6">
-              {/* AI Assistant Persona Configuration */}
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Assistant Persona Configuration</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">Configure the Rapid CRM AI assistant's personality, greeting, and response style.</p>
-                
-                <div className="space-y-6">
-                  {/* Dynamic Greeting Configuration */}
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Dynamic Greeting Settings</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Custom Greeting Message
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={aiPersonaConfig.customGreeting}
-                          onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, customGreeting: e.target.value }))}
-                          placeholder="Enter a custom greeting message for the AI assistant..."
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          This message will be displayed when users first interact with the AI assistant.
-                        </p>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Greeting Style
-                          </label>
-                          <select 
-                            value={aiPersonaConfig.greetingStyle}
-                            onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, greetingStyle: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                          >
-                            <option value="professional">Professional</option>
-                            <option value="friendly">Friendly</option>
-                            <option value="casual">Casual</option>
-                            <option value="authoritative">Authoritative</option>
-                            <option value="warm">Warm</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Response Tone
-                          </label>
-                          <select 
-                            value={aiPersonaConfig.responseTone}
-                            onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, responseTone: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                          >
-                            <option value="helpful">Helpful</option>
-                            <option value="direct">Direct</option>
-                            <option value="conversational">Conversational</option>
-                            <option value="technical">Technical</option>
-                            <option value="empathetic">Empathetic</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
+              {/* Master AI Control Panel */}
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">Master AI Control Panel</h2>
+                    <p className="text-purple-100">Comprehensive control over your AI business management extension</p>
                   </div>
-
-                  {/* AI Personality Traits */}
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">AI Personality Traits</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Helpfulness Level
-                        </label>
-                        <input 
-                          type="range" 
-                          min="1" 
-                          max="10" 
-                          value={aiPersonaConfig.helpfulnessLevel}
-                          onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, helpfulnessLevel: parseInt(e.target.value) }))}
-                          className="w-full" 
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>Minimal</span>
-                          <span>Maximum</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Detail Level
-                        </label>
-                        <input 
-                          type="range" 
-                          min="1" 
-                          max="10" 
-                          value={aiPersonaConfig.detailLevel}
-                          onChange={(e) => setAiPersonaConfig(prev => ({ ...prev, detailLevel: parseInt(e.target.value) }))}
-                          className="w-full" 
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>Brief</span>
-                          <span>Detailed</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Formality Level
-                        </label>
-                        <input 
-                          type="range" 
-                          min="1" 
-                          max="10" 
-                          defaultValue="7"
-                          className="w-full" 
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>Casual</span>
-                          <span>Formal</span>
-                        </div>
-                      </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <div className="text-sm text-purple-100">System Status</div>
+                      <div className="text-lg font-semibold">🟢 Active</div>
                     </div>
-                  </div>
-
-                  {/* Response Templates */}
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Response Templates</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Error Response Template
-                        </label>
-                        <textarea
-                          rows={2}
-                          placeholder="Template for error responses..."
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Success Response Template
-                        </label>
-                        <textarea
-                          rows={2}
-                          placeholder="Template for success responses..."
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end space-x-4">
-                    <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      Reset to Defaults
-                    </button>
-                    <button className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
-                      Save Configuration
+                    <button className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
+                      <RefreshIcon className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* AI Intelligence Settings */}
+              {/* AI Development Coordinator */}
               <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Intelligence Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Enable Real AI Responses</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Use actual AI provider instead of preprogrammed responses</p>
-                    </div>
-                    <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <ChipIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  AI Development Coordinator
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Development Status</h4>
+                    {developmentStatus ? (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Project Progress</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{developmentStatus.progressPercentage.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                            <div 
+                              className="bg-purple-600 h-2 rounded-full transition-all duration-500" 
+                              style={{width: `${developmentStatus.progressPercentage}%`}}
+                            ></div>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>{developmentStatus.completedTasks} completed</span>
+                            <span>{developmentStatus.totalTasks} total tasks</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div className="text-sm text-blue-600 dark:text-blue-300">Active Agents</div>
+                            <div className="text-lg font-bold text-blue-900 dark:text-blue-200">{developmentStatus.activeAgents}</div>
+                          </div>
+                          <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <div className="text-sm text-green-600 dark:text-green-300">Project ID</div>
+                            <div className="text-xs font-mono text-green-900 dark:text-green-200 truncate">
+                              {developmentStatus.projectId || 'None'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                        <div className="text-gray-500 dark:text-gray-400">No active development project</div>
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Dynamic Context Awareness</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">AI adapts responses based on conversation context</p>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">AI-to-AI Development</h4>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                        <div className="font-medium text-gray-900 dark:text-white mb-2">🚀 Accelerated Development</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          Leverage AI-to-AI collaboration to build the comprehensive control panel with specialized agents working in parallel.
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (!isDevelopmentActive) {
+                              setIsDevelopmentActive(true);
+                              const result = await aiDevelopmentCoordinator.startComprehensiveAIControlProject();
+                              if (result.success) {
+                                console.log('AI development project started successfully');
+                              } else {
+                                console.error('Failed to start AI development project:', result.error);
+                                setIsDevelopmentActive(false);
+                              }
+                            }
+                          }}
+                          disabled={isDevelopmentActive}
+                          className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+                            isDevelopmentActive
+                              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                          }`}
+                        >
+                          {isDevelopmentActive ? 'Development in Progress...' : 'Start AI Development Project'}
+                        </button>
+                      </div>
+                      {isDevelopmentActive && (
+                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="flex items-center mb-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                            <span className="text-sm font-medium text-green-800 dark:text-green-200">AI Agents Working</span>
+                          </div>
+                          <div className="text-xs text-green-600 dark:text-green-300">
+                            Specialized AI agents are collaborating to build your comprehensive control panel
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Learning Mode</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">AI learns from interactions to improve responses</p>
+                </div>
+                {isDevelopmentActive && collaborationMessages.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">AI Collaboration Messages</h4>
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {collaborationMessages.slice(-10).map((message, index) => (
+                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {message.from_ai} → {message.to_ai}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Date(message.created_at).toLocaleTimeString()}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {message.content}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Type: {message.message_type} | Status: {message.status}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <input type="checkbox" className="h-4 w-4 text-purple-600" />
+                  </div>
+                )}
+              </div>
+
+              {/* AI Provider Configuration */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <CogIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  AI Provider Configuration
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Primary AI Provider
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="openai">OpenAI GPT-4</option>
+                        <option value="anthropic">Anthropic Claude</option>
+                        <option value="google">Google Gemini</option>
+                        <option value="openrouter">OpenRouter (Multi-Provider)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Fallback Provider
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="anthropic">Anthropic Claude</option>
+                        <option value="openai">OpenAI GPT-4</option>
+                        <option value="google">Google Gemini</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-green-800 dark:text-green-200">Connection Status</div>
+                        <div className="text-xs text-green-600 dark:text-green-300">All providers connected</div>
+                      </div>
+                      <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Max Response Time (seconds)
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="30"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Temperature (Creativity)
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        defaultValue="0.7"
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Focused (0.0)</span>
+                        <span>Creative (2.0)</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-blue-800 dark:text-blue-200">API Usage</div>
+                        <div className="text-xs text-blue-600 dark:text-blue-300">2,847 requests today</div>
+                      </div>
+                      <ChartBarIcon className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Knowledge Base Management */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <GlobeAltIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Knowledge Base Management
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-md font-medium text-gray-900 dark:text-white">Custom Driver Qualification Rules</h4>
+                        <button className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm">
+                          Add Rule
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="font-medium text-gray-900 dark:text-white">Fleet Size Rule</h5>
+                            <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">Active</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Companies with 10+ vehicles require USDOT number regardless of GVWR
+                          </p>
+                        </div>
+                        <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="font-medium text-gray-900 dark:text-white">Custom Driver List</h5>
+                            <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">Active</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Driver qualification requirements supersede standard GVWR/passenger limits
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-2">Knowledge Stats</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Total Rules:</span>
+                          <span className="font-medium">47</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Active Rules:</span>
+                          <span className="font-medium text-green-600">42</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Last Updated:</span>
+                          <span className="font-medium">2 hours ago</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                      Upload Excel File
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agent Orchestration */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <ChipIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Agent Orchestration & Management
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Active Agents</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Onboarding Agent</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Handles new client onboarding</div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-sm text-green-600">Active</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Customer Service Agent</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Manages client support</div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-sm text-blue-600">Active</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Compliance Agent</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Monitors regulatory compliance</div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <span className="text-sm text-yellow-600">Training</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Agent Performance</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Response Accuracy</span>
+                          <span className="font-medium">94%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className="bg-green-600 h-2 rounded-full" style={{width: '94%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Client Satisfaction</span>
+                          <span className="font-medium">87%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className="bg-blue-600 h-2 rounded-full" style={{width: '87%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Task Completion</span>
+                          <span className="font-medium">91%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className="bg-purple-600 h-2 rounded-full" style={{width: '91%'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex space-x-2">
+                      <button className="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                        Deploy New Agent
+                      </button>
+                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                        Test All Agents
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Voice & Communication */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <SpeakerphoneIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Voice & Communication Controls
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Continuous Voice Mode</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Gemini-Style Conversation</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Persistent microphone for back-and-forth dialogue</div>
+                        </div>
+                        <button className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                          Enable
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Auto-transcribe</span>
+                          <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Voice responses</span>
+                          <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Interrupt handling</span>
+                          <input type="checkbox" defaultChecked className="h-4 w-4 text-purple-600" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Voice Settings</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Voice Model: {selectedVoice || 'Not selected'}
+                        </label>
+                        <select
+                          value={selectedVoice}
+                          onChange={(e) => setSelectedVoice(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="">Select a voice...</option>
+                          {getFilteredVoices().map((voice, index) => (
+                            <option key={`${voice.name}-${voice.lang}-${index}`} value={voice.name}>
+                              {voice.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Rate: {voiceSettings.rate.toFixed(1)}x
+                          </label>
+                          <input 
+                            type="range" 
+                            min="0.3" 
+                            max="3.0" 
+                            step="0.1" 
+                            value={voiceSettings.rate} 
+                            onChange={(e) => setVoiceSettings(prev => ({ ...prev, rate: parseFloat(e.target.value) }))} 
+                            className="w-full" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Volume: {Math.round(voiceSettings.volume * 100)}%
+                          </label>
+                          <input 
+                            type="range" 
+                            min="0.0" 
+                            max="1.0" 
+                            step="0.05" 
+                            value={voiceSettings.volume} 
+                            onChange={(e) => setVoiceSettings(prev => ({ ...prev, volume: parseFloat(e.target.value) }))} 
+                            className="w-full" 
+                          />
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => {
+                            if ('speechSynthesis' in window && selectedVoice) {
+                              const voice = getFilteredVoices().find(v => v.name === selectedVoice);
+                              if (voice) {
+                                const utterance = new SpeechSynthesisUtterance('Hello! This is a test of the advanced voice configuration system.');
+                                utterance.voice = voice;
+                                utterance.rate = voiceSettings.rate;
+                                utterance.volume = voiceSettings.volume;
+                                speechSynthesis.speak(utterance);
+                              }
+                            }
+                          }}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >
+                          Test Voice
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if ('speechSynthesis' in window) {
+                              speechSynthesis.cancel();
+                            }
+                          }}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                        >
+                          Stop
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Monitoring */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <ChartBarIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Real-Time Performance Monitoring
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-blue-900 dark:text-blue-200">Response Time</h5>
+                      <ChartBarIcon className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-200">1.2s</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-300">Avg response time</div>
+                  </div>
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-green-900 dark:text-green-200">Success Rate</h5>
+                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-900 dark:text-green-200">98.7%</div>
+                    <div className="text-sm text-green-600 dark:text-green-300">Task completion</div>
+                  </div>
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-purple-900 dark:text-purple-200">Active Agents</h5>
+                      <ChipIcon className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-purple-900 dark:text-purple-200">12</div>
+                    <div className="text-sm text-purple-600 dark:text-purple-300">Currently running</div>
+                  </div>
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-yellow-900 dark:text-yellow-200">Learning Score</h5>
+                      <GlobeAltIcon className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-yellow-900 dark:text-yellow-200">94.2</div>
+                    <div className="text-sm text-yellow-600 dark:text-yellow-300">Intelligence rating</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Intelligence */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <EyeIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Business Intelligence & Competitor Analysis
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Competitor Monitoring</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Competitor A</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Last checked: 2 hours ago</div>
+                        </div>
+                        <div className="text-sm text-green-600">↓ 3% pricing</div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Competitor B</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Last checked: 1 hour ago</div>
+                        </div>
+                        <div className="text-sm text-red-600">↑ 5% pricing</div>
+                      </div>
+                    </div>
+                    <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                      Update Competitor Data
+                    </button>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Content Generation</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Blog Posts</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">3 scheduled for this week</div>
+                        </div>
+                        <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                          Generate
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Social Media</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">5 posts ready for review</div>
+                        </div>
+                        <button className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                          Review
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Email Campaigns</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">2 campaigns in progress</div>
+                        </div>
+                        <button className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm">
+                          Manage
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Master Controls */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <ShieldCheckIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  Master System Controls
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white">System Operations</h4>
+                    <div className="space-y-2">
+                      <button className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        Start All Agents
+                      </button>
+                      <button className="w-full px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+                        Pause All Agents
+                      </button>
+                      <button className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Emergency Stop
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white">Data Management</h4>
+                    <div className="space-y-2">
+                      <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Backup Knowledge Base
+                      </button>
+                      <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                        Export Agent Configs
+                      </button>
+                      <button className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                        System Diagnostics
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white">Advanced Features</h4>
+                    <div className="space-y-2">
+                      <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        AI Self-Improvement
+                      </button>
+                      <button className="w-full px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700">
+                        Deploy New Agent
+                      </button>
+                      <button className="w-full px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
+                        Performance Optimization
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1114,6 +1662,16 @@ const AIAdminPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* User Login Modal */}
+      <UserLoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={(user) => {
+          setCurrentUser(user);
+          setShowLoginModal(false);
+        }}
+      />
     </div>
   );
 };

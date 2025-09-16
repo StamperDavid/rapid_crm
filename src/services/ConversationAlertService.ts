@@ -35,7 +35,9 @@ class ConversationAlertService {
 
   // Notify all listeners
   private notifyListeners() {
-    this.listeners.forEach(listener => listener([...this.alerts]));
+    // Create a stable reference to avoid infinite re-renders
+    const currentAlerts = this.alerts.slice(); // Use slice() instead of spread operator
+    this.listeners.forEach(listener => listener(currentAlerts));
   }
 
   // Add a new alert

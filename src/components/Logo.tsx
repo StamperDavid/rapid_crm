@@ -61,18 +61,6 @@ const Logo: React.FC<LogoProps> = ({ className = '' }) => {
             }}
           />
         </div>
-        <div className="ml-2">
-          <h1 
-            className="text-xl font-bold"
-            style={{
-              color: customTheme?.textPrimary || 'inherit',
-              fontFamily: customTheme?.fontFamily || 'inherit',
-              fontWeight: customTheme?.fontWeight || 'bold'
-            }}
-          >
-            Rapid CRM
-          </h1>
-        </div>
       </div>
     );
   }
@@ -90,18 +78,6 @@ const Logo: React.FC<LogoProps> = ({ className = '' }) => {
         >
           <span className="text-white font-bold text-lg">R</span>
         </div>
-      </div>
-      <div className="ml-2">
-        <h1 
-          className="text-xl font-bold"
-          style={{
-            color: customTheme?.textPrimary || 'inherit',
-            fontFamily: customTheme?.fontFamily || 'inherit',
-            fontWeight: customTheme?.fontWeight || 'bold'
-          }}
-        >
-          Rapid CRM
-        </h1>
       </div>
     </div>
   );

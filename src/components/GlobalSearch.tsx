@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
   OfficeBuildingIcon,
   CurrencyDollarIcon,
-  DocumentTextIcon,
+  DocumentIcon,
   ClockIcon
 } from '@heroicons/react/outline';
 
@@ -135,7 +135,7 @@ const GlobalSearch: React.FC = () => {
           title: invoice.number,
           subtitle: `${invoice.client} • $${invoice.amount.toLocaleString()} • ${invoice.status}`,
           url: `/invoices`,
-          icon: DocumentTextIcon,
+          icon: DocumentIcon,
           relevance: invoice.number.toLowerCase().includes(query) ? 100 : 80
         });
       }

@@ -110,14 +110,31 @@ export class VoiceService {
       return [];
     }
 
-    return window.speechSynthesis.getVoices().map(voice => ({
-      id: voice.name,
-      name: voice.name,
-      language: voice.lang,
-      gender: this.detectGender(voice.name),
-      accent: this.detectAccent(voice.name),
-      description: `${voice.name} (${voice.lang})`
-    }));
+    const seenIds = new Set<string>();
+    
+    return window.speechSynthesis.getVoices()
+      .filter(voice => voice.lang === 'en-US') // Only US English voices
+      .map((voice, index) => {
+        // Create a truly unique ID by combining multiple properties
+        let uniqueId = `${voice.name}-${voice.lang}-${voice.voiceURI || 'default'}-${index}`;
+        
+        // Ensure uniqueness by adding a counter if needed
+        let counter = 0;
+        while (seenIds.has(uniqueId)) {
+          counter++;
+          uniqueId = `${voice.name}-${voice.lang}-${voice.voiceURI || 'default'}-${index}-${counter}`;
+        }
+        seenIds.add(uniqueId);
+        
+        return {
+          id: uniqueId,
+          name: voice.name,
+          language: voice.lang,
+          gender: this.detectGender(voice.name),
+          accent: this.detectAccent(voice.name),
+          description: `${voice.name} (${voice.lang})`
+        };
+      });
   }
 
 

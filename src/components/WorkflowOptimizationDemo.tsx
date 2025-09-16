@@ -10,7 +10,7 @@ import {
   CheckCircleIcon, 
   PlayIcon,
   PauseIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   ChartBarIcon,
   UserGroupIcon
 } from '@heroicons/react/outline';

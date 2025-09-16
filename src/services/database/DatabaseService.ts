@@ -326,6 +326,21 @@ export class DatabaseService {
     this.connections.clear();
     this.pools.clear();
   }
+
+  // Legacy compatibility methods for AI services
+  async runQuery(query: string, params: any[] = []): Promise<any[]> {
+    const result = await this.executeQuery('primary', query, params);
+    return result.rows || [];
+  }
+
+  async runExecute(query: string, params: any[] = []): Promise<any> {
+    // For execute operations, we'll use executeQuery but return a different format
+    const result = await this.executeQuery('primary', query, params);
+    return {
+      changes: result.rows?.length || 0,
+      lastID: result.rows?.[0]?.id || null
+    };
+  }
 }
 
 // Singleton instance

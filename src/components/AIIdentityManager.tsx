@@ -16,7 +16,7 @@ import {
   ChartBarIcon,
   CogIcon,
   UserGroupIcon,
-  DocumentTextIcon,
+  DocumentIcon,
   StarIcon
 } from '@heroicons/react/outline';
 
@@ -398,7 +398,7 @@ const AIIdentityManager: React.FC = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {Object.entries(aiIdentity.expertise).map(([category, skills]) => {
-            const IconComponent = expertiseIcons[category as keyof typeof expertiseIcons] || DocumentTextIcon;
+            const IconComponent = expertiseIcons[category as keyof typeof expertiseIcons] || DocumentIcon;
             
             return (
               <div key={category} className="border rounded-lg p-4 bg-gray-50">

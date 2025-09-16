@@ -46,8 +46,8 @@ export class AICollaborationService {
   private apiBaseUrl: string;
 
   constructor() {
-    // Use your actual API base URL
-    this.apiBaseUrl = 'http://localhost:3001/api';
+    // Use proxy in development, direct URL in production
+    this.apiBaseUrl = import.meta.env.DEV ? '/api' : 'http://localhost:3001/api';
   }
 
   // ========================================

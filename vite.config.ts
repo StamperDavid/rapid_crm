@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    strictPort: false, // Allow using other ports if 3000 is busy
     open: true,
     proxy: {
       '/api': {

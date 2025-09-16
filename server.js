@@ -1360,7 +1360,10 @@ app.delete('/api/drivers/:id', async (req, res) => {
 // API Keys
 app.get('/api/api-keys', async (req, res) => {
   try {
+    console.log('🔑 API Keys endpoint called');
     const apiKeys = await runQuery('SELECT * FROM api_keys');
+    console.log('🔑 Raw API keys from DB:', apiKeys);
+    
     // Transform database fields to match frontend ApiKey interface
     const transformedApiKeys = apiKeys.map(apiKey => ({
       id: apiKey.id,
@@ -1376,8 +1379,11 @@ app.get('/api/api-keys', async (req, res) => {
       createdAt: apiKey.created_at,
       updatedAt: apiKey.updated_at
     }));
+    
+    console.log('🔑 Transformed API keys:', transformedApiKeys);
     res.json(transformedApiKeys);
   } catch (error) {
+    console.error('❌ Error in /api/api-keys:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -2007,10 +2013,26 @@ app.post('/api/ai/collaborate/send', async (req, res) => {
     
     console.log(`🤖 AI Collaboration: ${from_ai} -> ${to_ai}: ${content.substring(0, 100)}...`);
     
-    // For now, just return success - this can be expanded later
+    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Store message in database
+    await new Promise((resolve, reject) => {
+      db.run(`
+        INSERT INTO ai_collaboration_messages 
+        (message_id, from_ai, to_ai, message_type, content, metadata, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        messageId, from_ai, to_ai, message_type, content, 
+        JSON.stringify(metadata || {}), 'sent', new Date().toISOString(), new Date().toISOString()
+      ], function(err) {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    
     res.json({
       success: true,
-      message_id: `msg_${Date.now()}`,
+      message_id: messageId,
       status: 'sent'
     });
   } catch (error) {
@@ -2024,17 +2046,535 @@ app.post('/api/ai/collaborate/send', async (req, res) => {
 
 app.get('/api/ai/collaborate', async (req, res) => {
   try {
-    // Return empty messages for now
-    res.json({
-      success: true,
-      messages: [],
-      count: 0
+    const { from_ai, to_ai, message_type, limit = 50 } = req.query;
+    
+    let query = 'SELECT * FROM ai_collaboration_messages';
+    const params = [];
+    const conditions = [];
+    
+    if (from_ai) {
+      conditions.push('from_ai = ?');
+      params.push(from_ai);
+    }
+    if (to_ai) {
+      conditions.push('to_ai = ?');
+      params.push(to_ai);
+    }
+    if (message_type) {
+      conditions.push('message_type = ?');
+      params.push(message_type);
+    }
+    
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT ?';
+    params.push(parseInt(limit));
+    
+    const result = await new Promise((resolve, reject) => {
+      db.all(query, params, (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+    
+    res.json({ 
+      success: true, 
+      messages: result || [],
+      count: result?.length || 0
     });
   } catch (error) {
     console.error('❌ Error fetching AI collaboration messages:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch AI collaboration messages' 
+    });
+  }
+});
+
+// AI Development Coordinator endpoints
+app.post('/api/ai/projects', async (req, res) => {
+  try {
+    const { project_name, description, assigned_ais } = req.body;
+    
+    const projectId = `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+    
+    // Store project in database
+    await databaseService.executeQuery('primary', `
+      INSERT INTO ai_projects 
+      (project_id, project_name, description, status, assigned_ais, current_task, progress_percentage, last_activity, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      projectId, project_name, description, 'active', JSON.stringify(assigned_ais || []),
+      null, 0, now, now, now
+    ]);
+
+    res.json({ success: true, project_id: projectId });
+  } catch (error) {
+    console.error('❌ Error creating AI project:', error);
+    res.status(500).json({ success: false, error: 'Failed to create project' });
+  }
+});
+
+app.get('/api/ai/projects', async (req, res) => {
+  try {
+    const { status, assigned_to } = req.query;
+    
+    let query = 'SELECT * FROM ai_projects';
+    const params = [];
+    
+    if (status || assigned_to) {
+      const conditions = [];
+      if (status) {
+        conditions.push('status = ?');
+        params.push(status);
+      }
+      if (assigned_to) {
+        conditions.push('assigned_ais LIKE ?');
+        params.push(`%"${assigned_to}"%`);
+      }
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' ORDER BY created_at DESC';
+    
+    const result = await databaseService.executeQuery('primary', query, params);
+    res.json({ success: true, projects: result.rows || [] });
+  } catch (error) {
+    console.error('❌ Error getting AI projects:', error);
+    res.status(500).json({ success: false, error: 'Failed to get projects' });
+  }
+});
+
+app.post('/api/ai/tasks', async (req, res) => {
+  try {
+    const { project_id, assigned_to_ai, task_type, task_description, priority = 'medium' } = req.body;
+    
+    const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+    
+    // Store task in database
+    await databaseService.executeQuery('primary', `
+      INSERT INTO ai_tasks 
+      (task_id, project_id, assigned_to_ai, task_type, task_description, priority, status, result_data, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      taskId, project_id, assigned_to_ai, task_type, task_description,
+      priority, 'assigned', null, now, now
+    ]);
+
+    res.json({ success: true, task_id: taskId });
+  } catch (error) {
+    console.error('❌ Error creating AI task:', error);
+    res.status(500).json({ success: false, error: 'Failed to create task' });
+  }
+});
+
+app.get('/api/ai/tasks', async (req, res) => {
+  try {
+    const { assigned_to_ai, status, project_id } = req.query;
+    
+    let query = 'SELECT * FROM ai_tasks';
+    const params = [];
+    
+    if (assigned_to_ai || status || project_id) {
+      const conditions = [];
+      if (assigned_to_ai) {
+        conditions.push('assigned_to_ai = ?');
+        params.push(assigned_to_ai);
+      }
+      if (status) {
+        conditions.push('status = ?');
+        params.push(status);
+      }
+      if (project_id) {
+        conditions.push('project_id = ?');
+        params.push(project_id);
+      }
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' ORDER BY created_at DESC';
+    
+    const result = await databaseService.executeQuery('primary', query, params);
+    res.json({ success: true, tasks: result.rows || [] });
+  } catch (error) {
+    console.error('❌ Error getting AI tasks:', error);
+    res.status(500).json({ success: false, error: 'Failed to get tasks' });
+  }
+});
+
+app.put('/api/ai/tasks/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { status, result_data } = req.body;
+    
+    await databaseService.executeQuery('primary', `
+      UPDATE ai_tasks 
+      SET status = ?, result_data = ?, updated_at = ?
+      WHERE task_id = ?
+    `, [status, JSON.stringify(result_data || {}), new Date().toISOString(), taskId]);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error updating AI task:', error);
+    res.status(500).json({ success: false, error: 'Failed to update task' });
+  }
+});
+
+// Transportation Intelligence endpoints
+app.get('/api/ai/transportation/regulations', async (req, res) => {
+  try {
+    // Import the transportation intelligence service
+    const { transportationIntelligenceService } = require('./src/services/ai/TransportationIntelligenceServiceCommonJS.js');
+    
+    const regulations = transportationIntelligenceService.getAllRegulations();
+    
+    res.json({
+      success: true,
+      regulations,
+      count: regulations.length
+    });
+  } catch (error) {
+    console.error('❌ Error fetching regulations:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch regulations' 
+    });
+  }
+});
+
+app.get('/api/ai/transportation/compliance-checks', async (req, res) => {
+  try {
+    const { transportationIntelligenceService } = require('./src/services/ai/TransportationIntelligenceServiceCommonJS.js');
+    
+    const checks = transportationIntelligenceService.getAllComplianceChecks();
+    
+    res.json({
+      success: true,
+      checks,
+      count: checks.length
+    });
+  } catch (error) {
+    console.error('❌ Error fetching compliance checks:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch compliance checks' 
+    });
+  }
+});
+
+app.post('/api/ai/transportation/analyze-compliance', async (req, res) => {
+  try {
+    const { fleetData } = req.body;
+    
+    // For now, use mock compliance analysis since USDOTComplianceAgent is TypeScript
+    const mockAnalysis = {
+      fleetId: fleetData.fleetId || 'unknown',
+      overallScore: 85,
+      status: 'at_risk',
+      violations: [],
+      recommendations: [
+        {
+          id: 'compliance_monitoring',
+          priority: 'high',
+          category: 'compliance',
+          title: 'Implement Automated Compliance Monitoring',
+          description: 'Deploy ELD system with automated compliance reporting',
+          implementation: 'Install ELD devices and train drivers',
+          expectedBenefit: 'Reduce compliance violations by 90%',
+          estimatedCost: 'medium'
+        }
+      ],
+      lastUpdated: new Date().toISOString()
+    };
+    
+    res.json({
+      success: true,
+      analysis: mockAnalysis
+    });
+  } catch (error) {
+    console.error('❌ Error analyzing compliance:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to analyze compliance' 
+    });
+  }
+});
+
+// AI Testing Framework endpoints
+app.get('/api/ai/testing/suites', async (req, res) => {
+  try {
+    const { aiAgentTestingFramework } = require('./src/services/ai/AIAgentTestingFrameworkCommonJS.js');
+    
+    const suites = aiAgentTestingFramework.getAllTestSuites();
+    
+    res.json({
+      success: true,
+      suites,
+      count: suites.length
+    });
+  } catch (error) {
+    console.error('❌ Error fetching test suites:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch test suites' 
+    });
+  }
+});
+
+app.post('/api/ai/testing/run-suite', async (req, res) => {
+  try {
+    const { suiteId, agentId } = req.body;
+    
+    const { aiAgentTestingFramework } = require('./src/services/ai/AIAgentTestingFrameworkCommonJS.js');
+    
+    // Use truly intelligent agent for testing
+    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const trulyIntelligentAgent = createTrulyIntelligentAgent(agentId);
+    
+    const trulyIntelligentFunction = async (input) => {
+      // Use the truly intelligent agent to process the question
+      const response = await trulyIntelligentAgent.processQuestion(input.question, input.context || {});
+      
+      return {
+        answer: response.answer,
+        confidence: response.confidence,
+        sources: response.specificRegulations,
+        reasoning: response.reasoning,
+        recommendations: response.actionableSteps,
+        intelligenceLevel: response.intelligenceLevel
+      };
+    };
+    
+    const results = await aiAgentTestingFramework.runTestSuite(suiteId, agentId, trulyIntelligentFunction);
+    
+    res.json({
+      success: true,
+      results,
+      summary: {
+        totalTests: results.length,
+        passed: results.filter(r => r.passed).length,
+        failed: results.filter(r => !r.passed).length,
+        averageScore: results.reduce((sum, r) => sum + r.score, 0) / results.length
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error running test suite:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to run test suite' 
+    });
+  }
+});
+
+app.get('/api/ai/testing/benchmark/:agentId', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    
+    const { aiAgentTestingFramework } = require('./src/services/ai/AIAgentTestingFrameworkCommonJS.js');
+    
+    const benchmark = aiAgentTestingFramework.generateBenchmark(agentId);
+    
+    res.json({
+      success: true,
+      benchmark
+    });
+  } catch (error) {
+    console.error('❌ Error generating benchmark:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to generate benchmark' 
+    });
+  }
+});
+
+// AI Performance Monitoring endpoints
+app.get('/api/ai/performance/metrics/:agentId', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const { period = 'day' } = req.query;
+    
+    const { aiPerformanceMonitor } = require('./src/services/ai/AIPerformanceMonitorCommonJS.js');
+    
+    const report = aiPerformanceMonitor.generateReport(agentId, period);
+    
+    res.json({
+      success: true,
+      report
+    });
+  } catch (error) {
+    console.error('❌ Error fetching performance metrics:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch performance metrics' 
+    });
+  }
+});
+
+app.get('/api/ai/performance/alerts/:agentId', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    
+    const { aiPerformanceMonitor } = require('./src/services/ai/AIPerformanceMonitorCommonJS.js');
+    
+    const alerts = aiPerformanceMonitor.getActiveAlerts(agentId);
+    
+    res.json({
+      success: true,
+      alerts,
+      count: alerts.length
+    });
+  } catch (error) {
+    console.error('❌ Error fetching performance alerts:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch performance alerts' 
+    });
+  }
+});
+
+app.post('/api/ai/performance/record-metric', async (req, res) => {
+  try {
+    const metric = req.body;
+    
+    const { aiPerformanceMonitor } = require('./src/services/ai/AIPerformanceMonitorCommonJS.js');
+    
+    aiPerformanceMonitor.recordMetric(metric);
+    
+    res.json({
+      success: true,
+      message: 'Metric recorded successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error recording metric:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to record metric' 
+    });
+  }
+});
+
+// Truly Intelligent Agent endpoints
+app.post('/api/ai/agents/ask', async (req, res) => {
+  try {
+    const { agentId, question, context } = req.body;
+    
+    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const trulyIntelligentAgent = createTrulyIntelligentAgent(agentId || 'default-agent');
+    
+    const response = await trulyIntelligentAgent.processQuestion(question, context || {});
+    
+    res.json({
+      success: true,
+      response
+    });
+  } catch (error) {
+    console.error('❌ Error processing question with truly intelligent agent:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to process question with truly intelligent agent' 
+    });
+  }
+});
+
+app.get('/api/ai/agents/:agentId/capabilities', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    
+    const { createRealIntelligentAgent } = require('./src/services/ai/RealIntelligentAgentCommonJS.js');
+    const realAgent = createRealIntelligentAgent(agentId);
+    
+    const capabilities = realAgent.getCapabilities();
+    
+    res.json({
+      success: true,
+      agentId,
+      capabilities
+    });
+  } catch (error) {
+    console.error('❌ Error fetching agent capabilities:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch agent capabilities' 
+    });
+  }
+});
+
+// Parallel Agent Builder endpoints
+app.post('/api/ai/agents/build', async (req, res) => {
+  try {
+    const { agentType, requirements, priority } = req.body;
+    
+    console.log(`🚀 Queuing agent build: ${agentType} (Priority: ${priority})`);
+    
+    // Import the parallel agent builder using CommonJS
+    const { parallelAgentBuilder } = require('./src/services/ai/ParallelAgentBuilderCommonJS.js');
+    
+    const taskId = await parallelAgentBuilder.queueAgentBuild(
+      agentType,
+      requirements,
+      priority || 'medium'
+    );
+    
+    res.json({
+      success: true,
+      taskId,
+      message: `Agent build queued successfully`
+    });
+  } catch (error) {
+    console.error('❌ Error queuing agent build:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to queue agent build' 
+    });
+  }
+});
+
+app.get('/api/ai/agents/build/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    
+    const { parallelAgentBuilder } = require('./src/services/ai/ParallelAgentBuilderCommonJS.js');
+    const status = await parallelAgentBuilder.getBuildStatus(taskId);
+    
+    if (!status) {
+      return res.status(404).json({
+        success: false,
+        error: 'Build task not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      status
+    });
+  } catch (error) {
+    console.error('❌ Error fetching build status:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch build status' 
+    });
+  }
+});
+
+app.get('/api/ai/agents/builds', async (req, res) => {
+  try {
+    const { parallelAgentBuilder } = require('./src/services/ai/ParallelAgentBuilderCommonJS.js');
+    const builds = await parallelAgentBuilder.getAllBuildTasks();
+    
+    res.json({
+      success: true,
+      builds,
+      count: builds.length
+    });
+  } catch (error) {
+    console.error('❌ Error fetching builds:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch builds' 
     });
   }
 });
@@ -2073,6 +2613,266 @@ app.put('/api/ai/tasks/:task_id', async (req, res) => {
       error: 'Failed to update task'
     });
   }
+});
+
+// Conversation Memory System endpoints
+app.post('/api/ai/conversations/start', async (req, res) => {
+  try {
+    const { clientId, clientName, clientEmail, initialAgentId, initialMessage } = req.body;
+    
+    // Import the unified agent interface
+    const { createUnifiedAgent } = require('./src/services/ai/UnifiedAgentInterfaceCommonJS.js');
+    const unifiedAgent = createUnifiedAgent(initialAgentId || 'customer-service');
+    
+    const response = await unifiedAgent.startConversation(
+      clientId,
+      clientName,
+      clientEmail,
+      initialMessage
+    );
+    
+    res.json({
+      success: true,
+      response
+    });
+  } catch (error) {
+    console.error('❌ Error starting conversation:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to start conversation' 
+    });
+  }
+});
+
+app.post('/api/ai/conversations/:conversationId/message', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { message, agentId } = req.body;
+    
+    // Import the unified agent interface
+    const { createUnifiedAgent } = require('./src/services/ai/UnifiedAgentInterfaceCommonJS.js');
+    const unifiedAgent = createUnifiedAgent(agentId || 'customer-service');
+    
+    // Set the conversation ID (in a real system, this would be retrieved from session)
+    unifiedAgent.conversationId = conversationId;
+    
+    const response = await unifiedAgent.processMessage(message);
+    
+    res.json({
+      success: true,
+      response
+    });
+  } catch (error) {
+    console.error('❌ Error processing message:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to process message' 
+    });
+  }
+});
+
+app.get('/api/ai/conversations/:conversationId/history', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { limit = 10 } = req.query;
+    
+    // Import the conversation memory system
+    const { conversationMemorySystem } = require('./src/services/ai/ConversationMemorySystemCommonJS.js');
+    
+    const history = await conversationMemorySystem.getConversationHistory(
+      conversationId,
+      'customer-service', // Default agent
+      parseInt(limit)
+    );
+    
+    res.json({
+      success: true,
+      history
+    });
+  } catch (error) {
+    console.error('❌ Error fetching conversation history:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch conversation history' 
+    });
+  }
+});
+
+app.get('/api/ai/conversations/:conversationId/summary', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    
+    // Import the conversation memory system
+    const { conversationMemorySystem } = require('./src/services/ai/ConversationMemorySystemCommonJS.js');
+    
+    const summary = await conversationMemorySystem.getConversationSummary(conversationId);
+    
+    res.json({
+      success: true,
+      summary
+    });
+  } catch (error) {
+    console.error('❌ Error fetching conversation summary:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch conversation summary' 
+    });
+  }
+});
+
+app.get('/api/ai/conversations/active', async (req, res) => {
+  try {
+    // Import the conversation memory system
+    const { conversationMemorySystem } = require('./src/services/ai/ConversationMemorySystemCommonJS.js');
+    
+    const activeConversations = conversationMemorySystem.getActiveConversations();
+    
+    res.json({
+      success: true,
+      conversations: activeConversations
+    });
+  } catch (error) {
+    console.error('❌ Error fetching active conversations:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch active conversations' 
+    });
+  }
+});
+
+app.post('/api/ai/conversations/:conversationId/transfer', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { fromAgentId, toAgentId, reason } = req.body;
+    
+    // Import the conversation memory system
+    const { conversationMemorySystem } = require('./src/services/ai/ConversationMemorySystemCommonJS.js');
+    
+    const success = await conversationMemorySystem.transferConversation(
+      conversationId,
+      fromAgentId,
+      toAgentId,
+      reason
+    );
+    
+    res.json({
+      success,
+      message: success ? 'Conversation transferred successfully' : 'Failed to transfer conversation'
+    });
+  } catch (error) {
+    console.error('❌ Error transferring conversation:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to transfer conversation' 
+    });
+  }
+});
+
+app.post('/api/ai/conversations/:conversationId/close', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { agentId, closingMessage } = req.body;
+    
+    // Import the conversation memory system
+    const { conversationMemorySystem } = require('./src/services/ai/ConversationMemorySystemCommonJS.js');
+    
+    const success = await conversationMemorySystem.closeConversation(
+      conversationId,
+      agentId,
+      closingMessage
+    );
+    
+    res.json({
+      success,
+      message: success ? 'Conversation closed successfully' : 'Failed to close conversation'
+    });
+  } catch (error) {
+    console.error('❌ Error closing conversation:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to close conversation' 
+    });
+  }
+});
+
+// Voice Configuration endpoints
+app.get('/api/ai/voice/settings', async (req, res) => {
+  try {
+    // In a real system, this would load from database
+    const defaultSettings = {
+      enabled: true,
+      language: 'en-US',
+      voice: 'alloy',
+      rate: 1.0,
+      pitch: 1.0,
+      volume: 0.8,
+      emotion: 'neutral',
+      speakingStyle: 'conversational',
+      emphasis: 'medium',
+      style: 'professional',
+      stability: 0.75,
+      clarity: 0.75,
+      breathiness: 0.0,
+      roughness: 0.0,
+      autoPlay: true,
+      voicePreview: false
+    };
+    
+    res.json(defaultSettings);
+  } catch (error) {
+    console.error('❌ Error loading voice settings:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to load voice settings' 
+    });
+  }
+});
+
+app.put('/api/ai/voice/settings', async (req, res) => {
+  try {
+    const settings = req.body;
+    console.log('🎤 Voice settings updated:', settings);
+    
+    // In a real system, this would save to database
+    res.json({
+      success: true,
+      message: 'Voice settings saved successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error saving voice settings:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to save voice settings' 
+    });
+  }
+});
+
+app.post('/api/ai/voice/test', async (req, res) => {
+  try {
+    const { text, settings } = req.body;
+    console.log('🔊 Testing voice with text:', text);
+    console.log('🎤 Voice settings:', settings);
+    
+    // In a real system, this would generate actual audio using TTS
+    // For now, we'll return a mock response
+    res.json({
+      success: true,
+      message: 'Voice test completed',
+      audioUrl: '/api/ai/voice/sample-audio' // Mock audio URL
+    });
+  } catch (error) {
+    console.error('❌ Error testing voice:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to test voice' 
+    });
+  }
+});
+
+app.get('/api/ai/voice/sample-audio', (req, res) => {
+  // Mock audio endpoint - in a real system, this would return actual audio
+  res.setHeader('Content-Type', 'audio/mpeg');
+  res.send('Mock audio data');
 });
 
 // Health check endpoint

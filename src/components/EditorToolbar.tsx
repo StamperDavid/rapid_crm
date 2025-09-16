@@ -29,7 +29,6 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
   const editorItems = [
     ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
-    { name: 'Integrations', href: '/integrations', icon: CogIcon, color: 'text-indigo-600' },
     { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
   ];
 

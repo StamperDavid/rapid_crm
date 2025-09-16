@@ -33,23 +33,23 @@ function executeSQLFile(filePath, description) {
                 return;
             }
 
-            // Remove comments and normalize whitespace, then split by semicolon
-            const cleanData = data
-                .split('\n')
-                .map(line => {
-                    // Remove comments (everything after -- on a line)
-                    const commentIndex = line.indexOf('--');
-                    if (commentIndex !== -1) {
-                        line = line.substring(0, commentIndex);
-                    }
-                    return line.trim();
-                })
-                .filter(line => line.length > 0) // Remove empty lines
-                .join(' '); // Join all lines with spaces
-            
-            // Split by semicolon and filter out empty statements
-            const statements = cleanData
+            // Simple approach: split by semicolon and clean each statement
+            const statements = data
                 .split(';')
+                .map(stmt => {
+                    // Remove comments (everything after -- on any line)
+                    return stmt
+                        .split('\n')
+                        .map(line => {
+                            const commentIndex = line.indexOf('--');
+                            if (commentIndex !== -1) {
+                                line = line.substring(0, commentIndex);
+                            }
+                            return line.trim();
+                        })
+                        .filter(line => line.length > 0)
+                        .join(' ');
+                })
                 .map(stmt => stmt.trim())
                 .filter(stmt => stmt.length > 0);
 

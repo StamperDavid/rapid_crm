@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { conversationAlertService, ConversationAlert } from '../services/ConversationAlertService';
 
 export const useConversationAlerts = () => {
@@ -13,45 +13,46 @@ export const useConversationAlerts = () => {
     });
 
     // Initialize with current alerts
-    setAlerts(conversationAlertService.getActiveAlerts());
+    const initialAlerts = conversationAlertService.getActiveAlerts();
+    setAlerts(initialAlerts);
     setAlertCount(conversationAlertService.getAlertCount());
 
     return unsubscribe;
+  }, []); // Empty dependency array to prevent infinite loops
+
+  const addAlert = useCallback((alert: Omit<ConversationAlert, 'id' | 'timestamp' | 'isActive'>) => {
+    conversationAlertService.addAlert(alert);
   }, []);
 
-  const addAlert = (alert: Omit<ConversationAlert, 'id' | 'timestamp' | 'isActive'>) => {
-    conversationAlertService.addAlert(alert);
-  };
-
-  const removeAlert = (alertId: string) => {
+  const removeAlert = useCallback((alertId: string) => {
     conversationAlertService.removeAlert(alertId);
-  };
+  }, []);
 
-  const resolveAlert = (alertId: string) => {
+  const resolveAlert = useCallback((alertId: string) => {
     conversationAlertService.resolveAlert(alertId);
-  };
+  }, []);
 
-  const clearAllAlerts = () => {
+  const clearAllAlerts = useCallback(() => {
     conversationAlertService.clearAllAlerts();
-  };
+  }, []);
 
-  const stopCurrentAlarms = () => {
+  const stopCurrentAlarms = useCallback(() => {
     conversationAlertService.stopCurrentAlarms();
-  };
+  }, []);
 
-  const simulateHandoff = () => {
+  const simulateHandoff = useCallback(() => {
     conversationAlertService.simulateHandoff();
-  };
+  }, []);
 
-  const simulateAgentIssue = () => {
+  const simulateAgentIssue = useCallback(() => {
     conversationAlertService.simulateAgentIssue();
-  };
+  }, []);
 
-  const playNewConversationSound = () => {
+  const playNewConversationSound = useCallback(() => {
     conversationAlertService.playNewConversationSound();
-  };
+  }, []);
 
-  return {
+  return useMemo(() => ({
     alerts,
     alertCount,
     addAlert,
@@ -62,5 +63,16 @@ export const useConversationAlerts = () => {
     simulateHandoff,
     simulateAgentIssue,
     playNewConversationSound,
-  };
+  }), [
+    alerts,
+    alertCount,
+    addAlert,
+    removeAlert,
+    resolveAlert,
+    clearAllAlerts,
+    stopCurrentAlarms,
+    simulateHandoff,
+    simulateAgentIssue,
+    playNewConversationSound,
+  ]);
 };

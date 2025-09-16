@@ -16,7 +16,6 @@ import CompanyDetail from './modules/CRM/pages/CompanyDetail';
 import Services from './modules/CRM/pages/Services';
 import Leads from './modules/CRM/pages/Leads';
 import Deals from './modules/CRM/pages/Deals';
-import Integrations from './modules/CRM/pages/Integrations';
 import UserManagement from './modules/CRM/pages/UserManagement';
 import Tasks from './modules/CRM/pages/Tasks';
 import Conversations from './modules/CRM/pages/ConversationsScalable';
@@ -78,7 +77,6 @@ function App() {
                     <Route path="/conversations" element={<Conversations />} />
                     <Route path="/settings/api-keys" element={<ApiKeys />} />
                     <Route path="/database" element={<DatabaseManagement />} />
-                    <Route path="/integrations" element={<Integrations />} />
                     <Route path="/users" element={<UserManagement />} />
                     
                     {/* Reports */}

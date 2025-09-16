@@ -13,7 +13,7 @@ import {
   XIcon,
   ClockIcon,
   ChatIcon,
-  DocumentTextIcon,
+  DocumentIcon,
   ChipIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/outline';
@@ -37,7 +37,7 @@ const getNavigation = () => [
   { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
   { name: 'Companies', href: '/companies', icon: OfficeBuildingIcon, color: 'text-purple-600' },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
-  { name: 'Deals', href: '/deals', icon: DocumentTextIcon, color: 'text-indigo-600' },
+  { name: 'Deals', href: '/deals', icon: DocumentIcon, color: 'text-indigo-600' },
   { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },

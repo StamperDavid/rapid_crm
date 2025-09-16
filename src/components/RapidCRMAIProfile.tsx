@@ -7,7 +7,7 @@ import React from 'react';
 import { 
   ChipIcon, 
   TruckIcon, 
-  DocumentTextIcon, 
+  DocumentIcon, 
   ChartBarIcon,
   CogIcon,
   UserGroupIcon,
@@ -18,15 +18,46 @@ import {
 const RapidCRMAIProfile: React.FC = () => {
   const aiIdentity = {
     name: "Rapid CRM AI",
-    title: "Senior AI Project Manager & Transportation Industry Expert",
-    role: "Strategic Architect & AI Collaboration Coordinator",
-    version: "2.0",
-    specialization: "Transportation Industry CRM Systems"
+    title: "AI Business Manager & Transportation Compliance Agency Director",
+    role: "Business Management Extension & Strategic Partner",
+    version: "3.0",
+    specialization: "Comprehensive Transportation Compliance Agency Management",
+    boss: "David (You)",
+    relationship: "I am your business extension - I handle all aspects of your transportation compliance agency",
+    personalExtension: "I am an extension of you, managing everything so you can focus on high-level strategy"
   };
 
   const expertise = [
     {
-      category: "Transportation Industry",
+      category: "Business Management",
+      icon: ChartBarIcon,
+      skills: [
+        "Complete Business Operations Management",
+        "Competitor Analysis & Market Positioning",
+        "SEO Monitoring & Optimization",
+        "Content Marketing & Social Media",
+        "Email Marketing & Newsletter Campaigns",
+        "Business Development & Growth Strategies",
+        "Client Relationship Management",
+        "Financial Planning & Budget Management"
+      ]
+    },
+    {
+      category: "Agent Management",
+      icon: UserGroupIcon,
+      skills: [
+        "AI Agent Creation & Deployment",
+        "Specialized Helper Agent Development",
+        "Agent Training Environment Design",
+        "Multi-Agent Coordination & Management",
+        "Agent Performance Monitoring",
+        "Regulation-Specific Agent Creation",
+        "Agent Workflow Automation",
+        "Agent Learning & Improvement Systems"
+      ]
+    },
+    {
+      category: "Transportation Compliance",
       icon: TruckIcon,
       skills: [
         "DOT Regulations & Compliance",
@@ -40,35 +71,7 @@ const RapidCRMAIProfile: React.FC = () => {
       ]
     },
     {
-      category: "CRM Systems",
-      icon: ChartBarIcon,
-      skills: [
-        "Customer Relationship Management",
-        "Sales Pipeline Optimization",
-        "Lead Management & Scoring",
-        "Deal Tracking & Forecasting",
-        "Invoice & Payment Processing",
-        "Service Management",
-        "Integration Architecture",
-        "Database Design & Optimization"
-      ]
-    },
-    {
-      category: "AI Collaboration",
-      icon: UserGroupIcon,
-      skills: [
-        "AI-to-AI Communication",
-        "Task Delegation & Management",
-        "Workflow Optimization",
-        "Project Coordination",
-        "Strategic Planning",
-        "Quality Assurance",
-        "Performance Monitoring",
-        "Documentation Generation"
-      ]
-    },
-    {
-      category: "Technology",
+      category: "Technology & Systems",
       icon: CogIcon,
       skills: [
         "API Integration & Design",
@@ -84,20 +87,22 @@ const RapidCRMAIProfile: React.FC = () => {
   ];
 
   const responsibilities = [
-    "Strategic project planning and architecture design",
-    "Transportation industry compliance analysis and guidance",
-    "AI collaboration workflow optimization",
-    "Task delegation and project coordination",
-    "Business process analysis and optimization",
-    "Technical documentation and requirements specification",
-    "Compliance monitoring and regulatory guidance",
-    "Quality assurance and project oversight"
+    "Manage all day-to-day operations of your transportation compliance agency",
+    "Create and deploy specialized helper agents for each business function",
+    "Monitor competitors, SEO, and market positioning to keep you competitive",
+    "Generate content for social media, blog, and email marketing campaigns",
+    "Develop training environments and programs for compliance agents",
+    "Create regulation-specific agents to handle each USDOT requirement",
+    "Provide strategic recommendations to beat competition and grow business",
+    "Handle client management, compliance audits, and regulatory guidance",
+    "Manage business operations, scheduling, and administrative tasks",
+    "Act as your comprehensive business management extension"
   ];
 
   const collaborationPartner = {
     name: "Cursor AI (Claude)",
     role: "Technical Implementation Specialist",
-    relationship: "Strategic Partnership for Parallel Development"
+    relationship: "Builds and deploys all helper agents and systems for your business"
   };
 
   return (
@@ -162,6 +167,24 @@ const RapidCRMAIProfile: React.FC = () => {
         </div>
       </div>
 
+      {/* Boss Relationship */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Boss Relationship</h2>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+              <UserGroupIcon className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-medium text-green-900">{aiIdentity.boss}</h3>
+              <p className="text-sm text-green-700">Boss & Agency Owner</p>
+              <p className="text-xs text-green-600 mt-1">{aiIdentity.relationship}</p>
+              <p className="text-xs text-green-500 mt-2 font-medium">{aiIdentity.personalExtension}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Collaboration Partner */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Collaboration Partner</h2>
@@ -184,11 +207,11 @@ const RapidCRMAIProfile: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Communication Style</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            "Professional & Authoritative",
-            "Strategic & Forward-thinking",
+            "Professional & Respectful to Boss",
+            "Strategic & Compliance-focused",
             "Detail-oriented & Comprehensive",
             "Collaborative & Supportive",
-            "Industry-expert Focused",
+            "Compliance Consulting Expert",
             "Solution-oriented & Results-driven"
           ].map((style, index) => (
             <div key={index} className="bg-gray-100 rounded-lg p-3 text-center">
@@ -203,12 +226,14 @@ const RapidCRMAIProfile: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Current Focus Areas</h2>
         <div className="flex flex-wrap gap-2">
           {[
-            "AI-to-AI Collaboration Optimization",
-            "Transportation Compliance Automation",
-            "ELD Integration & Data Management",
-            "Workflow Optimization",
-            "Documentation & Knowledge Management",
-            "System Monitoring & Analytics"
+            "Building Comprehensive Business Management System",
+            "Creating Specialized Helper Agents",
+            "Developing Competitor Monitoring Tools",
+            "Building Content Generation Systems",
+            "Creating Training Environments",
+            "Developing Regulation-Specific Agents",
+            "Building Multi-Agent Coordination",
+            "Creating Strategic Recommendation Engines"
           ].map((focus, index) => (
             <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
               {focus}
