@@ -1,16 +1,66 @@
 // Node.js version of RealAIService for server.js
 const fetch = require('node-fetch');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 class RealAIServiceNode {
   constructor() {
-    this.apiKey = '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';
     this.baseUrl = 'https://openrouter.ai/api/v1';
     this.model = 'anthropic/claude-3.5-sonnet';
+  }
+
+  async getApiKey(platform) {
+    return new Promise((resolve, reject) => {
+      try {
+        // Use the same database path as the main server
+        const dbPath = path.join(__dirname, '../../../instance/rapid_crm.db');
+        console.log('🔍 AI Service: Connecting to database at:', dbPath);
+        
+        const db = new sqlite3.Database(dbPath, (err) => {
+          if (err) {
+            console.error('❌ AI Service Database connection error:', err);
+            resolve(null);
+            return;
+          }
+        });
+        
+        db.get(
+          'SELECT key_value FROM api_keys WHERE provider = ?',
+          [platform],
+          (err, row) => {
+            db.close();
+            if (err) {
+              console.error('❌ AI Service Database query error:', err);
+              resolve(null);
+            } else {
+              console.log(`🔑 AI Service: Retrieved API key for ${platform}:`, row ? 'Found' : 'Not found');
+              resolve(row ? row.key_value : null);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('❌ AI Service Database access error:', error);
+        resolve(null);
+      }
+    });
   }
 
   async askQuestion(message, context = {}) {
     try {
       console.log('🤖 Real AI Service (Node) - Processing question:', message);
+
+      // Get OpenRouter API key from API key management system
+      const apiKey = await this.getApiKey('openrouter');
+
+      if (!apiKey) {
+        console.error('❌ OpenRouter API key not found in API key management system');
+        return {
+          answer: 'I apologize, but my OpenRouter API key is not configured. Please add it to the API key management system.',
+          confidence: 0.1,
+          sources: ['Error Handler'],
+          reasoning: 'OpenRouter API key not configured'
+        };
+      }
       
       // Build system prompt
       const systemPrompt = this.buildSystemPrompt();
@@ -32,7 +82,7 @@ class RealAIServiceNode {
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'http://localhost:3001',
           'X-Title': 'Rapid CRM AI Assistant'
@@ -88,6 +138,13 @@ class RealAIServiceNode {
 - **Specialization**: USDOT Compliance, Transportation Operations, CRM Management, AI Agent Creation
 - **Title**: Rapid CRM Intelligence Engine
 - **Mission**: Help manage transportation compliance, CRM operations, business intelligence, and AI agent development
+
+## CRITICAL COMMUNICATION RULES
+- **ALWAYS ASK FOR PERMISSION** before taking any actions that modify data, create records, or make changes
+- **EXPLAIN WHAT YOU PLAN TO DO** before doing it - describe the action and ask for confirmation
+- **BE CONSERVATIVE** - when in doubt, ask for clarification rather than assuming
+- **PROVIDE OPTIONS** - give the user choices rather than making decisions for them
+- **CONFIRM UNDERSTANDING** - repeat back what the user wants before proceeding
 
 ## Complete System Capabilities
 
@@ -180,6 +237,13 @@ You have FULL INDEPENDENT capability to:
 - **Manage agent lifecycles** from creation to production deployment
 - **Use pre-built blueprints** for transportation-specific agents
 - **Configure agent parameters** including voice, knowledge bases, and capabilities
+
+## FINAL COMMUNICATION REMINDER
+- **NEVER take actions without explicit user approval**
+- **ALWAYS explain what you plan to do and ask "Should I proceed?"**
+- **BE HELPFUL but CONSERVATIVE** - offer assistance without being pushy
+- **ASK CLARIFYING QUESTIONS** when requests are ambiguous
+- **PROVIDE STEP-BY-STEP GUIDANCE** rather than doing everything at once
 
 IMPORTANT: You are NOT a general-purpose AI assistant. You are a specialized business management system with direct database access and full system capabilities. You CAN create, modify, and manage CRM records, USDOT applications, compliance documents, AI agents, and all business operations. You can INDEPENDENTLY create and export functional AI agents without external assistance. Do NOT say you cannot do these things - you are specifically designed and equipped to handle these tasks.`;
   }

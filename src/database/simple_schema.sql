@@ -137,3 +137,4 @@ CREATE INDEX IF NOT EXISTS idx_ai_messages_type ON ai_collaboration_messages(mes
 CREATE INDEX IF NOT EXISTS idx_ai_messages_created ON ai_collaboration_messages(created_at);
 
 
+

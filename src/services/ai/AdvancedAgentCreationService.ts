@@ -323,7 +323,7 @@ export class AdvancedAgentCreationService {
   async getAgent(id: string): Promise<AdvancedAgent | null> {
     try {
       const query = 'SELECT * FROM advanced_agents WHERE id = ?';
-      const result = await this.query(query, [id]);
+      const result = await databaseService.query(query, [id]);
       return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching agent:', error);
@@ -387,7 +387,7 @@ export class AdvancedAgentCreationService {
   async deleteAgent(id: string): Promise<boolean> {
     try {
       const query = 'DELETE FROM advanced_agents WHERE id = ?';
-      const result = await this.query(query, [id]);
+      const result = await databaseService.query(query, [id]);
       return result.changes > 0;
     } catch (error) {
       console.error('Error deleting agent:', error);
@@ -605,7 +605,7 @@ export class AdvancedAgentCreationService {
       agent.totalInteractions, JSON.stringify(agent.tags)
     ];
 
-    await this.query(query, values);
+    await databaseService.query(query, values);
   }
 
   private async buildCapabilities(baseCapabilities: string[], customCapabilities: any[] = []): Promise<AgentCapability[]> {

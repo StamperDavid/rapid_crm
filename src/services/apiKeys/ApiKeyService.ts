@@ -212,6 +212,23 @@ export class ApiKeyService {
   }
 
   /**
+   * Get API key by platform
+   */
+  public async getApiKeyByPlatform(platform: string): Promise<ApiKey | null> {
+    const apiKeys = Array.from(this.apiKeys.values());
+    return apiKeys.find(key => key.platform.toLowerCase() === platform.toLowerCase()) || null;
+  }
+
+  /**
+   * Get decrypted API key by platform
+   */
+  public async getDecryptedApiKeyByPlatform(platform: string): Promise<string | null> {
+    const apiKey = await this.getApiKeyByPlatform(platform);
+    if (!apiKey) return null;
+    return await this.getDecryptedApiKey(apiKey.id);
+  }
+
+  /**
    * Update API key
    */
   public async updateApiKey(id: string, updates: Partial<ApiKey>): Promise<ApiKey | null> {

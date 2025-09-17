@@ -6,6 +6,9 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
 
+// Import API key service - using direct database access for now
+// const { ApiKeyService } = require('./src/services/apiKeys/ApiKeyService');
+
 // ELD Service Integration (Containerized) - Commented out until module is created
 // const { EldApiRoutes } = require('./src/services/eld/EldApiRoutes');
 
@@ -19,6 +22,27 @@ app.use(express.json());
 // Database setup
 const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
 const db = new sqlite3.Database(dbPath);
+
+// Initialize API key service - using direct database access for now
+// const apiKeyService = new ApiKeyService();
+
+// Helper function to get API key from database
+const getApiKeyFromDatabase = async (provider) => {
+  return new Promise((resolve, reject) => {
+    db.get(
+      'SELECT key_value FROM api_keys WHERE provider = ?',
+      [provider],
+      (err, row) => {
+        if (err) {
+          console.error('❌ Database query error:', err);
+          resolve(null);
+        } else {
+          resolve(row ? row.key_value : null);
+        }
+      }
+    );
+  });
+};
 
 // Database validation - ensure we're using the correct comprehensive schema
 const validateDatabase = () => {
@@ -1679,7 +1703,9 @@ app.post('/api/theme', async (req, res) => {
 // AI Voices endpoint
 app.get('/api/ai/voices', async (req, res) => {
   try {
-    const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
+    console.log('🎤 AI Voices endpoint called');
+    const unrealSpeechKey = await getApiKeyFromDatabase('unreal-speech');
+    console.log('🔑 Unreal Speech key retrieved:', unrealSpeechKey ? 'Found' : 'Not found');
     
     if (unrealSpeechKey) {
       // Return Unreal Speech voices (using correct voice IDs from API)
@@ -1840,9 +1866,11 @@ app.get('/api/ai/voices', async (req, res) => {
     }
   } catch (error) {
     console.error('❌ Error loading voices:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to load voices' 
+      error: 'Failed to load voices',
+      details: error.message 
     });
   }
 });
@@ -1850,7 +1878,7 @@ app.get('/api/ai/voices', async (req, res) => {
 // AI Voice Key endpoint
 app.get('/api/ai/voice-key', async (req, res) => {
   try {
-    const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
+    const unrealSpeechKey = await getApiKeyFromDatabase('unreal-speech');
     
     if (unrealSpeechKey) {
       res.json({
@@ -1882,15 +1910,17 @@ app.get('/api/ai/voice-key', async (req, res) => {
 app.post('/api/ai/unreal-speech', async (req, res) => {
   try {
     const { text, voiceId = 'Eleanor', speed = 0, pitch = 1.0 } = req.body;
-    const unrealSpeechKey = process.env.UNREAL_SPEECH_API_KEY;
     
     console.log('🎤 Unreal Speech request:', { text: text?.substring(0, 50) + '...', voiceId, speed, pitch });
     
+    // Get Unreal Speech API key from API key service
+    const unrealSpeechKey = await getApiKeyFromDatabase('unreal-speech');
+    
     if (!unrealSpeechKey) {
-      console.error('❌ Unreal Speech API key not configured');
+      console.error('❌ Unreal Speech API key not found in API key management system');
       return res.status(400).json({
         success: false,
-        error: 'Unreal Speech API key not configured'
+        error: 'Unreal Speech API key not configured. Please add it to the API key management system.'
       });
     }
     
@@ -2166,14 +2196,19 @@ app.post('/api/ai/projects', async (req, res) => {
     const now = new Date().toISOString();
     
     // Store project in database
-    await databaseService.executeQuery('primary', `
-      INSERT INTO ai_projects 
-      (project_id, project_name, description, status, assigned_ais, current_task, progress_percentage, last_activity, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      projectId, project_name, description, 'active', JSON.stringify(assigned_ais || []),
-      null, 0, now, now, now
-    ]);
+    await new Promise((resolve, reject) => {
+      db.run(`
+        INSERT INTO ai_project_coordination 
+        (project_id, project_name, description, status, assigned_ais, current_task, progress_percentage, last_activity, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        projectId, project_name, description, 'active', JSON.stringify(assigned_ais || []),
+        null, 0, now, now, now
+      ], function(err) {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     res.json({ success: true, project_id: projectId });
   } catch (error) {
@@ -2186,7 +2221,7 @@ app.get('/api/ai/projects', async (req, res) => {
   try {
     const { status, assigned_to } = req.query;
     
-    let query = 'SELECT * FROM ai_projects';
+    let query = 'SELECT * FROM ai_project_coordination';
     const params = [];
     
     if (status || assigned_to) {
@@ -2204,8 +2239,13 @@ app.get('/api/ai/projects', async (req, res) => {
     
     query += ' ORDER BY created_at DESC';
     
-    const result = await databaseService.executeQuery('primary', query, params);
-    res.json({ success: true, projects: result.rows || [] });
+    const result = await new Promise((resolve, reject) => {
+      db.all(query, params, (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+    res.json({ success: true, projects: result || [] });
   } catch (error) {
     console.error('❌ Error getting AI projects:', error);
     res.status(500).json({ success: false, error: 'Failed to get projects' });
@@ -2220,14 +2260,19 @@ app.post('/api/ai/tasks', async (req, res) => {
     const now = new Date().toISOString();
     
     // Store task in database
-    await databaseService.executeQuery('primary', `
-      INSERT INTO ai_tasks 
-      (task_id, project_id, assigned_to_ai, task_type, task_description, priority, status, result_data, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      taskId, project_id, assigned_to_ai, task_type, task_description,
-      priority, 'assigned', null, now, now
-    ]);
+    await new Promise((resolve, reject) => {
+      db.run(`
+        INSERT INTO ai_task_assignments 
+        (task_id, project_id, assigned_to_ai, task_type, task_description, priority, status, result_data, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        taskId, project_id, assigned_to_ai, task_type, task_description,
+        priority, 'assigned', null, now
+      ], function(err) {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     res.json({ success: true, task_id: taskId });
   } catch (error) {
@@ -2240,7 +2285,7 @@ app.get('/api/ai/tasks', async (req, res) => {
   try {
     const { assigned_to_ai, status, project_id } = req.query;
     
-    let query = 'SELECT * FROM ai_tasks';
+    let query = 'SELECT * FROM ai_task_assignments';
     const params = [];
     
     if (assigned_to_ai || status || project_id) {
@@ -2262,8 +2307,13 @@ app.get('/api/ai/tasks', async (req, res) => {
     
     query += ' ORDER BY created_at DESC';
     
-    const result = await databaseService.executeQuery('primary', query, params);
-    res.json({ success: true, tasks: result.rows || [] });
+    const result = await new Promise((resolve, reject) => {
+      db.all(query, params, (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+    res.json({ success: true, tasks: result || [] });
   } catch (error) {
     console.error('❌ Error getting AI tasks:', error);
     res.status(500).json({ success: false, error: 'Failed to get tasks' });
@@ -2275,11 +2325,16 @@ app.put('/api/ai/tasks/:taskId', async (req, res) => {
     const { taskId } = req.params;
     const { status, result_data } = req.body;
     
-    await databaseService.executeQuery('primary', `
-      UPDATE ai_tasks 
-      SET status = ?, result_data = ?, updated_at = ?
-      WHERE task_id = ?
-    `, [status, JSON.stringify(result_data || {}), new Date().toISOString(), taskId]);
+    await new Promise((resolve, reject) => {
+      db.run(`
+        UPDATE ai_task_assignments 
+        SET status = ?, result_data = ?
+        WHERE task_id = ?
+      `, [status, JSON.stringify(result_data || {}), taskId], function(err) {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     res.json({ success: true });
   } catch (error) {

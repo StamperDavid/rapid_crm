@@ -1,4 +1,5 @@
 import { BaseRepository } from '../database/repositories/BaseRepository';
+import { databaseService } from '../database/DatabaseService';
 import { apiKeyService } from '../apiKeys/ApiKeyService';
 import { AdvancedAgent, AgentCapability, AgentPersonality, AgentLearningProfile } from './AdvancedAgentCreationService';
 
@@ -567,7 +568,7 @@ export class IntegratedAgentCreationService {
   async getIntegratedAgent(agentId: string): Promise<IntegratedAgent | null> {
     try {
       const query = 'SELECT * FROM integrated_agents WHERE id = ?';
-      const result = await this.query(query, [agentId]);
+      const result = await databaseService.query(query, [agentId]);
       return result.data?.[0] || null;
     } catch (error) {
       console.error('Error fetching integrated agent:', error);
@@ -726,7 +727,7 @@ export class IntegratedAgentCreationService {
       JSON.stringify(agent.apiUsage), JSON.stringify(agent.discoveredServices)
     ];
 
-    await this.query(query, values);
+    await databaseService.query(query, values);
   }
 
   private generateAgentId(): string {
