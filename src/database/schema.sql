@@ -755,3 +755,62 @@ CREATE INDEX IF NOT EXISTS idx_ai_task_queue_assigned_to ON ai_task_queue(assign
 CREATE INDEX IF NOT EXISTS idx_ai_task_queue_status ON ai_task_queue(status);
 CREATE INDEX IF NOT EXISTS idx_ai_task_queue_priority ON ai_task_queue(priority);
 CREATE INDEX IF NOT EXISTS idx_ai_task_queue_created_at ON ai_task_queue(created_at);
+
+-- Client Portal Tables
+-- Client sessions for tracking portal access
+CREATE TABLE IF NOT EXISTS client_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT UNIQUE NOT NULL,
+    company_id INTEGER,
+    client_name TEXT NOT NULL,
+    client_email TEXT NOT NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT 1
+);
+
+-- Client messages for chat history
+CREATE TABLE IF NOT EXISTS client_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    message_type TEXT NOT NULL, -- 'user' or 'agent'
+    content TEXT NOT NULL,
+    metadata TEXT, -- JSON metadata
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES client_sessions(session_id)
+);
+
+-- Client handoffs for tracking agent transitions
+CREATE TABLE IF NOT EXISTS client_handoffs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    handoff_type TEXT NOT NULL, -- 'onboarding_complete', 'escalation', 'specialized_support'
+    onboarding_messages TEXT, -- JSON array of messages
+    customer_service_context TEXT, -- JSON context data
+    timestamp DATETIME,
+    client_data TEXT, -- JSON client data
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES client_sessions(session_id)
+);
+
+-- Login page configuration table
+CREATE TABLE IF NOT EXISTS login_page_config (
+    id INTEGER PRIMARY KEY,
+    config TEXT NOT NULL, -- JSON configuration
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for client portal tables
+CREATE INDEX IF NOT EXISTS idx_client_sessions_session_id ON client_sessions(session_id);
+CREATE INDEX IF NOT EXISTS idx_client_sessions_company_id ON client_sessions(company_id);
+CREATE INDEX IF NOT EXISTS idx_client_sessions_created_at ON client_sessions(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_client_messages_session_id ON client_messages(session_id);
+CREATE INDEX IF NOT EXISTS idx_client_messages_created_at ON client_messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_client_messages_type ON client_messages(message_type);
+
+CREATE INDEX IF NOT EXISTS idx_client_handoffs_session_id ON client_handoffs(session_id);
+CREATE INDEX IF NOT EXISTS idx_client_handoffs_type ON client_handoffs(handoff_type);
+CREATE INDEX IF NOT EXISTS idx_client_handoffs_created_at ON client_handoffs(created_at);

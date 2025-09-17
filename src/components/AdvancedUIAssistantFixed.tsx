@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/outline';
 import { useUIState } from '../contexts/UIStateContext';
 import { UICommandProcessor } from '../services/UICommandProcessor';
-import { TrulyIntelligentAgent } from '../services/ai/TrulyIntelligentAgent';
+// Removed direct AI agent import - frontend should use API calls instead
 import { chatHistoryService } from '../services/ai/ChatHistoryService';
 
 interface Message {
@@ -29,7 +29,7 @@ const AdvancedUIAssistantFixed: React.FC = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sessionId] = useState<string>(`session-${Date.now()}`);
-  const [trulyIntelligentAgent] = useState<TrulyIntelligentAgent>(() => new TrulyIntelligentAgent('rapid-crm-assistant'));
+  // Removed direct AI agent instantiation - will use API calls instead
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
@@ -146,23 +146,27 @@ const AdvancedUIAssistantFixed: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // Use TrulyIntelligentAgent directly
-      console.log('🧠 AdvancedUIAssistant - Using TrulyIntelligentAgent for:', text);
+      // Use API call to backend instead of direct agent instantiation
+      console.log('🧠 AdvancedUIAssistant - Sending message to backend API:', text);
       
-      const intelligentResponse = await trulyIntelligentAgent.processQuestion(text, {
-        sessionId,
-        currentPersona: 'Rapid CRM Assistant',
-        currentModel: 'intelligent',
-        userRole: 'admin',
-        activeFeatures: ['ai-assistant', 'transportation', 'compliance'],
-        fromAI: 'user',
-        messageType: 'text'
+      const response = await fetch('http://localhost:3001/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: text,
+          userId: '1', // Default user ID
+          voice: 'jasper'
+        })
       });
+      
+      const data = await response.json();
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: intelligentResponse.answer,
+        content: data.response || 'Sorry, I could not process your request.',
         timestamp: new Date()
       };
       

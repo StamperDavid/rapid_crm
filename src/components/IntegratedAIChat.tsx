@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PaperAirplaneIcon, MicrophoneIcon, SpeakerWaveIcon, XIcon } from '@heroicons/react/outline';
+import { PaperAirplaneIcon, MicrophoneIcon, SpeakerWaveIcon, XIcon, ChatIcon } from '@heroicons/react/outline';
+import { useUser } from '../contexts/UserContext';
 
 interface Message {
   id: string;
@@ -25,26 +26,94 @@ interface IntegratedAIChatProps {
 }
 
 const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) => {
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<string>('eleanor');
+  const [selectedVoice, setSelectedVoice] = useState<string>('jasper'); // Default to Jasper
   const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const recognitionStateRef = useRef<'idle' | 'starting' | 'listening' | 'stopping'>('idle');
+  const isContinuousModeRef = useRef(false);
+  const isSpeakingRef = useRef(false);
+  // Removed complex throttling refs - using simpler approach now
 
-  // Load available voices
+  // Keep refs in sync with state
+  useEffect(() => {
+    isContinuousModeRef.current = isContinuousMode;
+  }, [isContinuousMode]);
+
+  useEffect(() => {
+    isSpeakingRef.current = isSpeaking;
+  }, [isSpeaking]);
+
+  // Load available voices and user's preferred voice
   useEffect(() => {
     const loadVoices = async () => {
       try {
         const response = await fetch('http://localhost:3001/api/ai/voices');
         const data = await response.json();
         if (data.success) {
+          console.log('🎤 Available voices:', data.voices);
           setAvailableVoices(data.voices);
-          if (data.voices.length > 0 && !selectedVoice) {
-            setSelectedVoice(data.voices[0].id);
+          
+          // Get user's preferred voice from the server
+          const chatResponse = await fetch('http://localhost:3001/api/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: 'get voice preference',
+              userId: user?.id || 'default_user'
+            })
+          });
+          
+          if (chatResponse.ok) {
+            const chatData = await chatResponse.json();
+            console.log('🎤 Voice preference response:', chatData);
+            if (chatData.voicePreference?.defaultVoice) {
+              console.log('🎤 Setting preferred voice:', chatData.voicePreference.defaultVoice);
+              setSelectedVoice(chatData.voicePreference.defaultVoice);
+            } else {
+              // Try to find Jasper voice, otherwise use first available
+              const jasperVoice = data.voices.find((voice: any) => 
+                voice.name.toLowerCase().includes('jasper') || 
+                voice.id.toLowerCase().includes('jasper')
+              );
+              if (jasperVoice) {
+                console.log('🎤 Setting Jasper voice:', jasperVoice.id);
+                setSelectedVoice(jasperVoice.id);
+              } else if (data.voices.length > 0) {
+                console.log('🎤 Setting first available voice:', data.voices[0].id);
+                setSelectedVoice(data.voices[0].id);
+              }
+            }
+          } else {
+            // Try to find Jasper voice, otherwise use first available
+            const jasperVoice = data.voices.find((voice: any) => 
+              voice.name.toLowerCase().includes('jasper') || 
+              voice.id.toLowerCase().includes('jasper')
+            );
+            if (jasperVoice) {
+              console.log('🎤 Setting Jasper voice (fallback):', jasperVoice.id);
+              setSelectedVoice(jasperVoice.id);
+            } else if (data.voices.length > 0) {
+              console.log('🎤 Setting first available voice (fallback):', data.voices[0].id);
+              setSelectedVoice(data.voices[0].id);
+            }
+          }
+          
+          // Force set Jasper if it exists, regardless of preference
+          const jasperVoice = data.voices.find((voice: any) => 
+            voice.name.toLowerCase().includes('jasper') || 
+            voice.id.toLowerCase().includes('jasper')
+          );
+          if (jasperVoice) {
+            console.log('🎤 FORCE SETTING JASPER VOICE:', jasperVoice);
+            setSelectedVoice(jasperVoice.id);
           }
         }
       } catch (error) {
@@ -54,6 +123,48 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     loadVoices();
   }, []);
 
+  // Load conversation history when component mounts
+  useEffect(() => {
+    const loadConversationHistory = async () => {
+      if (!user?.id) return;
+      
+      try {
+        // Get actual conversation history from the new endpoint
+        const response = await fetch(`http://localhost:3001/api/ai/conversation-history/${user.id}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.conversationHistory && data.conversationHistory.length > 0) {
+            // Load the actual conversation history
+            setMessages(data.conversationHistory);
+          } else {
+            // No history exists, show welcome message
+            setMessages([{
+              id: Date.now().toString(),
+              content: "Hello! 👋 I'm your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?",
+              sender: 'assistant',
+              timestamp: new Date().toISOString()
+            }]);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading conversation history:', error);
+        // Fallback to welcome message if loading fails
+        setMessages([{
+          id: Date.now().toString(),
+          content: "Hello! 👋 I'm your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?",
+          sender: 'assistant',
+          timestamp: new Date().toISOString()
+        }]);
+      }
+    };
+    
+    loadConversationHistory();
+  }, [user?.id]);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -61,58 +172,248 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
 
   // Initialize speech recognition
   useEffect(() => {
+    console.log('🔧 Initializing speech recognition...');
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
+        console.log('✅ SpeechRecognition API found, creating instance...');
         recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = false;
+        recognitionRef.current.continuous = false; // Disable continuous listening - we'll control it manually
+        recognitionRef.current.interimResults = true; // Show interim results
         recognitionRef.current.lang = 'en-US';
+        recognitionRef.current.maxAlternatives = 1;
 
         recognitionRef.current.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          setInputMessage(transcript);
-          setIsListening(false);
+          let finalTranscript = '';
+          let interimTranscript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          
+          // Update input with interim results for real-time feedback
+          setInputMessage(finalTranscript + interimTranscript);
+          
+          // If we have interim results (user is actively speaking), interrupt AI speech
+          if (interimTranscript.trim() && isSpeakingRef.current) {
+            console.log('🛑 User is speaking (interim) - interrupting AI speech');
+            stopSpeaking();
+          }
+          
+          // If we have a final transcript, handle it
+          if (finalTranscript) {
+            console.log('🎤 Final transcript received:', finalTranscript);
+            
+            if (isContinuousModeRef.current) {
+              // In continuous mode, send the message and restart listening after response
+              console.log('🎤 Sending continuous mode message:', finalTranscript);
+              setInputMessage(finalTranscript);
+              sendMessage(finalTranscript);
+            } else {
+              // In manual mode, just set the transcript and stop listening
+              setInputMessage(finalTranscript);
+              setIsListening(false);
+            }
+          }
         };
 
-        recognitionRef.current.onerror = () => {
+        recognitionRef.current.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          recognitionStateRef.current = 'idle';
           setIsListening(false);
+          setIsContinuousMode(false);
         };
 
         recognitionRef.current.onend = () => {
+          recognitionStateRef.current = 'idle';
+          console.log('🎤 Speech recognition ended');
           setIsListening(false);
+        };
+
+        recognitionRef.current.onstart = () => {
+          console.log('🎤 Speech recognition started successfully');
+          recognitionStateRef.current = 'listening';
+          
+          // If AI is currently speaking, stop it (interruption handling like Gemini)
+          if (isSpeakingRef.current) {
+            console.log('🛑 User started speaking - interrupting AI speech');
+            stopSpeaking();
+          }
         };
       }
     }
+
+    // Cleanup function
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          console.warn('Error stopping recognition during cleanup:', error);
+        }
+        recognitionStateRef.current = 'idle';
+      }
+    };
+  }, []); // Empty dependency array - speech recognition should only initialize once
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          console.warn('Error stopping recognition on unmount:', error);
+        }
+        recognitionStateRef.current = 'idle';
+      }
+    };
   }, []);
 
   const startListening = () => {
-    if (recognitionRef.current && !isListening) {
-      setIsListening(true);
-      recognitionRef.current.start();
+    console.log('🎤 startListening called. State:', { 
+      hasRecognition: !!recognitionRef.current, 
+      recognitionState: recognitionStateRef.current, 
+      isListening 
+    });
+    
+    if (recognitionRef.current && recognitionStateRef.current === 'idle' && !isListening) {
+      try {
+        console.log('🎤 Starting speech recognition...');
+        recognitionStateRef.current = 'starting';
+        setIsListening(true);
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('❌ Failed to start speech recognition:', error);
+        recognitionStateRef.current = 'idle';
+        setIsListening(false);
+      }
+    } else {
+      console.log('⚠️ Cannot start listening:', { 
+        hasRecognition: !!recognitionRef.current, 
+        recognitionState: recognitionStateRef.current, 
+        isListening 
+      });
     }
   };
 
   const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+    if (recognitionRef.current && (isListening || recognitionStateRef.current === 'listening')) {
+      try {
+        recognitionStateRef.current = 'stopping';
+        recognitionRef.current.stop();
+        setIsListening(false);
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+        recognitionStateRef.current = 'idle';
+        setIsListening(false);
+      }
     }
   };
 
-  const speakText = async (text: string) => {
-    if (isSpeaking) return;
+  const toggleContinuousMode = () => {
+    console.log('🎤 Toggling continuous mode. Current state:', { isContinuousMode, isListening, recognitionState: recognitionStateRef.current });
+    
+    if (isContinuousMode) {
+      // Stop continuous mode
+      console.log('🛑 Stopping continuous mode');
+      setIsContinuousMode(false);
+      if (isListening || recognitionStateRef.current === 'listening') {
+        stopListening();
+      }
+    } else {
+      // Start continuous mode
+      console.log('▶️ Starting continuous mode');
+      setIsContinuousMode(true);
+      // Start listening immediately when continuous mode is enabled
+      setTimeout(() => {
+        if (recognitionRef.current && recognitionStateRef.current === 'idle') {
+          console.log('🎤 Starting speech recognition for continuous mode');
+          startListening();
+        }
+      }, 100);
+    }
+  };
+
+  // Removed handleMicrophoneClick - using only continuous chat mode now
+
+  // Global audio reference for interruption handling
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopSpeaking = () => {
+    console.log('🛑 Stopping current speech');
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    // Also stop browser TTS if it's running
+    speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
+  const speakText = async (text: string, voiceIdFromAI?: string) => {
+    // Stop any current speech before starting new speech (interruption handling)
+    if (isSpeaking) {
+      console.log('🛑 Interrupting current speech to start new speech');
+      stopSpeaking();
+    }
+
+    console.log('🚀 DIAGNOSTIC: Starting speakText with:', {
+      textLength: text.length,
+      selectedVoice,
+      voiceIdFromAI,
+      availableVoices: availableVoices.length,
+      isSpeaking
+    });
 
     setIsSpeaking(true);
     try {
-      // Find the correct voice ID for Unreal Speech
-      const selectedVoiceData = availableVoices.find(v => v.id === selectedVoice);
-      const unrealSpeechVoiceId = selectedVoiceData?.voiceId || 'Eleanor';
-      
+      // Find the correct voice ID for Unreal Speech (case-insensitive)
+      const voiceToFind = (voiceIdFromAI || selectedVoice)?.toLowerCase();
+      const selectedVoiceData = availableVoices.find(v => v.id.toLowerCase() === voiceToFind);
+      let unrealSpeechVoiceId = selectedVoiceData?.voiceId || 'Jasper';
+
+      // Force Jasper if available and not already selected
+      if (unrealSpeechVoiceId !== 'Jasper') {
+        const jasperVoice = availableVoices.find(v => 
+          v.name.toLowerCase().includes('jasper') || 
+          v.id.toLowerCase().includes('jasper')
+        );
+        if (jasperVoice) {
+          console.log('🎤 FORCING JASPER VOICE for TTS:', jasperVoice);
+          unrealSpeechVoiceId = jasperVoice.voiceId;
+        } else {
+          console.log('🎤 JASPER VOICE NOT FOUND in availableVoices, using default Jasper');
+          unrealSpeechVoiceId = 'Jasper'; // Force Jasper even if not found in availableVoices
+        }
+      }
+
+      console.log('🚀 DIAGNOSTIC: Voice selection:', {
+        selectedVoice,
+        voiceIdFromAI,
+        voiceToFind,
+        selectedVoiceData,
+        unrealSpeechVoiceId,
+        availableVoices: availableVoices.map(v => ({ id: v.id, name: v.name, voiceId: v.voiceId }))
+      });
+
       // Truncate text to 1000 characters for Unreal Speech API
       const truncatedText = text.length > 1000 ? text.substring(0, 997) + '...' : text;
-      
+
       // Use Unreal Speech API for high-quality TTS
+      console.log('🚀 DIAGNOSTIC: Calling Unreal Speech API with:', {
+        text: truncatedText.substring(0, 50) + '...',
+        voiceId: unrealSpeechVoiceId,
+        speed: 0,
+        pitch: 1.0
+      });
+
       const response = await fetch('http://localhost:3001/api/ai/unreal-speech', {
         method: 'POST',
         headers: {
@@ -126,18 +427,29 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         })
       });
 
+      console.log('🚀 DIAGNOSTIC: Unreal Speech API response:', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText
+      });
+
       if (response.ok) {
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
+        
+        // Store reference for interruption handling
+        currentAudioRef.current = audio;
 
         audio.onended = () => {
           setIsSpeaking(false);
+          currentAudioRef.current = null;
           URL.revokeObjectURL(audioUrl);
         };
 
         audio.onerror = () => {
           setIsSpeaking(false);
+          currentAudioRef.current = null;
           URL.revokeObjectURL(audioUrl);
         };
 
@@ -161,12 +473,27 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     }
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+  const sendMessage = async (messageText?: string) => {
+    const messageToSend = messageText || inputMessage;
+    if (!messageToSend.trim() || isLoading) return;
+
+    console.log('🚀 DIAGNOSTIC: Starting sendMessage with:', {
+      message: messageToSend,
+      selectedVoice,
+      isContinuousMode,
+      isLoading,
+      user: user?.id
+    });
+
+    // Stop speech recognition while processing to prevent overlapping
+    if (isListening || recognitionStateRef.current === 'listening') {
+      console.log('🛑 Stopping speech recognition during message processing');
+      stopListening();
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputMessage,
+      content: messageToSend,
       sender: 'user',
       timestamp: new Date()
     };
@@ -176,20 +503,28 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     setIsLoading(true);
 
     try {
-      // Send message to AI
+      // Send message to AI with user context
       const response = await fetch('http://localhost:3001/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: inputMessage,
+          message: messageToSend,
           voice: selectedVoice,
-          model: 'anthropic/claude-3.5-sonnet'
+          model: 'anthropic/claude-3.5-sonnet',
+          userId: user?.id || 'default_user' // Include user ID for conversation isolation
         })
       });
 
       const data = await response.json();
+      console.log('🚀 DIAGNOSTIC: AI Chat API response:', {
+        success: data.success,
+        hasResponse: !!data.response,
+        voice: data.voice,
+        voicePreference: data.voicePreference,
+        responseLength: data.response?.length
+      });
 
       if (data.success && data.response) {
         const aiMessage: Message = {
@@ -201,8 +536,19 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         };
         setMessages(prev => [...prev, aiMessage]);
 
-        // Speak the AI response
-        await speakText(data.response);
+        console.log('🚀 DIAGNOSTIC: About to speak response with voice:', data.voice);
+        // Speak the AI response, passing the voice from the AI response
+        await speakText(data.response, data.voice);
+        
+        // Restart continuous listening after response is complete
+        if (isContinuousModeRef.current) {
+          console.log('🔄 Restarting continuous listening after AI response');
+          setTimeout(() => {
+            if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle') {
+              startListening();
+            }
+          }, 3000); // Wait 3 seconds after AI response
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -215,6 +561,17 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      // Removed isProcessingRef - using simpler approach now
+      
+      // Restart continuous listening after any response (success or error)
+      if (isContinuousModeRef.current) {
+        console.log('🔄 Restarting continuous listening after response completion');
+        setTimeout(() => {
+          if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle') {
+            startListening();
+          }
+        }, 2000);
+      }
     }
   };
 
@@ -294,7 +651,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   <p className="text-xs opacity-75 mt-1">
-                    {message.timestamp.toLocaleTimeString()}
+                    {message.timestamp instanceof Date 
+                      ? message.timestamp.toLocaleTimeString()
+                      : new Date(message.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
               </div>
@@ -317,37 +676,102 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
 
         {/* Input */}
         <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+          {/* Continuous Mode Indicator */}
+          {isContinuousMode && (
+            <div className="mb-2 p-2 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-md">
+              <div className="flex items-center space-x-2">
+                <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-green-700 dark:text-green-300 font-medium">
+                  Continuous conversation mode active - speak naturally!
+                </span>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center space-x-2">
             <div className="flex-1">
               <textarea
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message here..."
+                placeholder={isContinuousMode ? "Speaking... (continuous conversation active)" : "Type your message here or click 'Start Chat' for voice..."}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
                 rows={2}
-                disabled={isLoading}
+                disabled={isLoading || isContinuousMode}
               />
             </div>
+            
+            {/* Animated Chat Icon */}
             <button
-              onClick={isListening ? stopListening : startListening}
+              onClick={() => {
+                console.log('Chat icon clicked, current state:', isContinuousMode);
+                toggleContinuousMode();
+              }}
               disabled={isLoading}
-              className={`p-2 rounded-md ${
-                isListening
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : 'bg-gray-600 text-white hover:bg-gray-700'
+              className={`relative p-3 rounded-full transition-all duration-300 ${
+                isContinuousMode
+                  ? 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 shadow-lg shadow-blue-500/25'
+                  : 'bg-gray-600 hover:bg-gray-700 text-white'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
-              title={isListening ? 'Stop listening' : 'Start voice input'}
+              title={
+                isContinuousMode 
+                  ? 'Stop continuous conversation' 
+                  : 'Start continuous voice conversation'
+              }
             >
-              <MicrophoneIcon className="h-5 w-5" />
+              {/* Animated gradient rings when active - behind the icon */}
+              {isContinuousMode && (
+                <>
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 animate-spin opacity-75 blur-sm -z-10"></div>
+                  <div className="absolute inset-1 rounded-full bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 animate-pulse -z-10"></div>
+                  <div className="absolute inset-2 rounded-full bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 -z-10"></div>
+                </>
+              )}
+              
+              {/* Chat Icon - always on top */}
+              <ChatIcon className={`h-6 w-6 transition-all duration-300 relative z-10 ${
+                isContinuousMode 
+                  ? 'text-white animate-pulse' 
+                  : 'text-white'
+              }`} />
+              
+              {/* Pulsing dot indicator */}
+              {isContinuousMode && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping z-20"></div>
+              )}
             </button>
+            
+            {/* Stop Speaking Button - only show when AI is speaking */}
+            {isSpeaking && (
+              <button
+                onClick={stopSpeaking}
+                className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                title="Stop AI speech"
+              >
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
+
+            {/* Send Button */}
             <button
-              onClick={sendMessage}
-              disabled={!inputMessage.trim() || isLoading}
+              onClick={() => sendMessage()}
+              disabled={!inputMessage.trim() || isLoading || isContinuousMode}
               className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isContinuousMode ? 'Send disabled in continuous mode' : 'Send message'}
             >
               <PaperAirplaneIcon className="h-5 w-5" />
             </button>
+          </div>
+          
+          {/* Instructions */}
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            {isContinuousMode ? (
+              <span>💬 Continuous conversation active: Just speak naturally! You can interrupt the AI by speaking. Click the animated chat icon to end.</span>
+            ) : (
+              <span>💡 Click the chat icon to start continuous voice conversation with interruption support</span>
+            )}
           </div>
         </div>
       </div>

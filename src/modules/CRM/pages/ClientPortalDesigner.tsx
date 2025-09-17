@@ -29,6 +29,8 @@ import {
   CubeIcon,
   ChartSquareBarIcon,
 } from '@heroicons/react/outline';
+import LoginPageDesigner from '../../../components/LoginPageDesigner';
+import AvatarPreview from '../../../components/AvatarPreview';
 
 // Types for Elementor-level functionality
 interface DragDropComponent {
@@ -161,7 +163,7 @@ const ANIMATION_OPTIONS = {
 };
 
 const ClientPortalDesigner: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'design' | 'preview' | 'templates' | 'settings'>('design');
+  const [activeTab, setActiveTab] = useState<'design' | 'preview' | 'templates' | 'settings' | 'login' | 'avatars'>('design');
   const [activeBreakpoint, setActiveBreakpoint] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [portalElements, setPortalElements] = useState<PortalElement[]>([]);
@@ -370,9 +372,59 @@ const ClientPortalDesigner: React.FC = () => {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="flex space-x-8 px-6">
+          {[
+            { id: 'design', label: 'Portal Design', icon: <CogIcon className="h-4 w-4" /> },
+            { id: 'login', label: 'Login Page', icon: <UserIcon className="h-4 w-4" /> },
+            { id: 'avatars', label: 'Agent Avatars', icon: <UserIcon className="h-4 w-4" /> },
+            { id: 'preview', label: 'Preview', icon: <EyeIcon className="h-4 w-4" /> },
+            { id: 'templates', label: 'Templates', icon: <TemplateIcon className="h-4 w-4" /> },
+            { id: 'settings', label: 'Settings', icon: <CogIcon className="h-4 w-4" /> }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex-1 flex">
-        {/* Component Library Sidebar */}
-        {showComponentLibrary && (
+        {/* Show Login Page Designer when login tab is active */}
+        {activeTab === 'login' ? (
+          <LoginPageDesigner />
+        ) : activeTab === 'avatars' ? (
+          <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Agent Avatar Designer
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900 min-h-0">
+              <div className="max-w-4xl mx-auto">
+                <AvatarPreview 
+                  onSelectAvatar={(config) => {
+                    console.log('Selected avatar config:', config);
+                    // TODO: Save avatar configuration
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Component Library Sidebar */}
+            {showComponentLibrary && activeTab === 'design' && (
           <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -655,6 +707,8 @@ const ClientPortalDesigner: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

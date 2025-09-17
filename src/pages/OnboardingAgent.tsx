@@ -22,6 +22,7 @@ import {
   ArrowLeftIcon,
 } from '@heroicons/react/outline';
 import { onboardingAgentService, USDOTApplicationData, OnboardingContext } from '../services/ai/OnboardingAgentService';
+import { agentHandoffService, HandoffContext } from '../services/ai/AgentHandoffService';
 
 const OnboardingAgent: React.FC = () => {
   const [applicationData, setApplicationData] = useState<USDOTApplicationData>({
@@ -82,6 +83,10 @@ const OnboardingAgent: React.FC = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [handoffComplete, setHandoffComplete] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [escalationRequested, setEscalationRequested] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<string>('jasper');
+  const [availableVoices, setAvailableVoices] = useState<any[]>([]);
   
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -90,6 +95,60 @@ const OnboardingAgent: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Initialize session
+  useEffect(() => {
+    const initializeSession = async () => {
+      try {
+        const response = await fetch('/api/client-portal/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_id: 1,
+            client_name: 'Onboarding Client',
+            client_email: 'onboarding@client.com',
+            ip_address: '127.0.0.1',
+            user_agent: navigator.userAgent
+          })
+        });
+        
+        if (response.ok) {
+          const sessionData = await response.json();
+          setSessionId(sessionData.sessionId);
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      }
+    };
+
+    initializeSession();
+  }, []);
+
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/ai/voices');
+        const data = await response.json();
+        if (data.success) {
+          setAvailableVoices(data.voices);
+          // Set Jasper as default if available
+          const jasperVoice = data.voices.find((voice: any) => 
+            voice.name.toLowerCase().includes('jasper') || 
+            voice.id.toLowerCase().includes('jasper')
+          );
+          if (jasperVoice) {
+            setSelectedVoice(jasperVoice.id);
+          } else if (data.voices.length > 0) {
+            setSelectedVoice(data.voices[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading voices:', error);
+      }
+    };
+    loadVoices();
+  }, []);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -116,6 +175,53 @@ const OnboardingAgent: React.FC = () => {
     }
   }, []);
 
+  // Check for escalation requests and handle handoffs to human agents
+  const checkForEscalationRequest = (message: string): boolean => {
+    const escalationKeywords = [
+      'human', 'person', 'agent', 'representative', 'support', 'help',
+      'escalate', 'manager', 'supervisor', 'live chat', 'real person',
+      'talk to someone', 'speak to someone', 'not working', 'error',
+      'broken', 'issue', 'problem', 'can\'t help', 'confused'
+    ];
+    
+    const lowerMessage = message.toLowerCase();
+    return escalationKeywords.some(keyword => lowerMessage.includes(keyword));
+  };
+
+  const handleEscalationToHuman = async () => {
+    setEscalationRequested(true);
+    
+    const escalationMessage = {
+      id: Date.now().toString(),
+      type: 'agent' as const,
+      content: 'I understand you\'d like to speak with a human agent. I\'m escalating your request to our support team. A human representative will be with you shortly to help you complete your USDOT application. In the meantime, please provide a brief description of your issue so they can assist you better.',
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, escalationMessage]);
+    
+    // Save escalation request to database
+    try {
+      await fetch('/api/client-portal/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message_type: 'escalation_request',
+          content: 'Client requested human agent assistance during onboarding',
+          metadata: { 
+            timestamp: new Date().toISOString(),
+            escalation_type: 'human_agent_request',
+            client_data: applicationData,
+            onboarding_step: applicationData.currentStep
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Error saving escalation request:', error);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (newMessage.trim() && !isProcessing) {
       const userMessage = {
@@ -129,6 +235,13 @@ const OnboardingAgent: React.FC = () => {
       setIsProcessing(true);
       const messageToProcess = newMessage;
       setNewMessage('');
+
+      // Check if this is an escalation request
+      if (checkForEscalationRequest(messageToProcess)) {
+        await handleEscalationToHuman();
+        setIsProcessing(false);
+        return;
+      }
 
       try {
         const context: OnboardingContext = {
@@ -181,13 +294,36 @@ const OnboardingAgent: React.FC = () => {
 
       } catch (error) {
         console.error('Error processing message:', error);
+        
+        // If AI service fails, offer escalation to human
         const errorResponse = {
           id: (Date.now() + 1).toString(),
           type: 'agent' as const,
-          content: 'I apologize, but I\'m having trouble processing your request. Please try again or contact our support team.',
+          content: 'I apologize, but I\'m experiencing technical difficulties right now. Would you like me to connect you with a human agent who can help you complete your USDOT application?',
           timestamp: new Date()
         };
         setMessages(prev => [...prev, errorResponse]);
+        
+        // Save error for tracking
+        try {
+          await fetch('/api/client-portal/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              session_id: sessionId,
+              message_type: 'system_error',
+              content: 'AI service error during onboarding - offering human escalation',
+              metadata: { 
+                timestamp: new Date().toISOString(),
+                error_type: 'ai_service_failure',
+                error_details: error instanceof Error ? error.message : 'Unknown error',
+                onboarding_step: applicationData.currentStep
+              }
+            })
+          });
+        } catch (saveError) {
+          console.error('Error saving error message:', saveError);
+        }
       } finally {
         setIsProcessing(false);
       }
@@ -200,19 +336,72 @@ const OnboardingAgent: React.FC = () => {
     }
   };
 
-  const speakMessage = (text: string) => {
-    if ('speechSynthesis' in window) {
+  const speakMessage = async (text: string, voiceIdFromAI?: string) => {
+    // Stop any current speech before starting new speech
+    if (isSpeaking) {
       speechSynthesis.cancel();
-      
+    }
+
+    setIsSpeaking(true);
+    try {
+      // Find the correct voice ID for Unreal Speech
+      const voiceToFind = (voiceIdFromAI || selectedVoice)?.toLowerCase();
+      const selectedVoiceData = availableVoices.find(v => v.id.toLowerCase() === voiceToFind);
+      let unrealSpeechVoiceId = selectedVoiceData?.voiceId || 'Jasper';
+
+      // Force Jasper if available and not already selected
+      if (unrealSpeechVoiceId !== 'Jasper') {
+        const jasperVoice = availableVoices.find(v => 
+          v.name.toLowerCase().includes('jasper') || 
+          v.id.toLowerCase().includes('jasper')
+        );
+        if (jasperVoice) {
+          unrealSpeechVoiceId = jasperVoice.voiceId;
+        } else {
+          unrealSpeechVoiceId = 'Jasper';
+        }
+      }
+
+      // Truncate text to 1000 characters for Unreal Speech API
+      const truncatedText = text.length > 1000 ? text.substring(0, 997) + '...' : text;
+
+      const response = await fetch('http://localhost:3001/api/ai/unreal-speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: truncatedText,
+          voiceId: unrealSpeechVoiceId,
+          speed: 0,
+          pitch: 1.0
+        })
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        await audio.play();
+      } else {
+        // Fallback to browser TTS
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+        speechSynthesis.speak(utterance);
+      }
+    } catch (error) {
+      console.error('TTS Error:', error);
+      // Fallback to browser TTS
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 0.8;
-      
-      utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
-      
       speechSynthesis.speak(utterance);
     }
   };
@@ -256,12 +445,37 @@ const OnboardingAgent: React.FC = () => {
     const result = await onboardingAgentService.completeOnboarding(context);
     
     if (result.success) {
+      // Add completion message
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         type: 'agent',
         content: result.message,
         timestamp: new Date()
       }]);
+
+      // Perform seamless handoff to customer service
+      if (sessionId) {
+        const handoffContext: HandoffContext = {
+          clientData: applicationData,
+          onboardingMessages: messages,
+          onboardingCompleted: true,
+          handoffReason: 'onboarding_complete',
+          sessionId: sessionId
+        };
+
+        const handoffResult = await agentHandoffService.performSeamlessHandoff(handoffContext);
+        
+        if (handoffResult.success) {
+          // Add handoff message
+          setMessages(prev => [...prev, {
+            id: (Date.now() + 1).toString(),
+            type: 'agent',
+            content: handoffResult.handoffMessage,
+            timestamp: new Date()
+          }]);
+        }
+      }
+
       setHandoffComplete(true);
     }
   };
@@ -318,35 +532,26 @@ const OnboardingAgent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">RC</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Rapid Compliance - USDOT Application
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Step {applicationData.currentStep} of {applicationData.totalSteps}: {getStepTitle(applicationData.currentStep)}
-                </p>
-              </div>
+      {/* Application Header */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                USDOT Application
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Step {applicationData.currentStep} of {applicationData.totalSteps}: {getStepTitle(applicationData.currentStep)}
+              </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {applicationData.legalBusinessName || 'New Application'}
-              </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {applicationData.legalBusinessName || 'New Application'}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Progress Sidebar */}
           <div className="lg:col-span-1">
@@ -447,13 +652,32 @@ const OnboardingAgent: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      USDOT Application Assistant
+                      {escalationRequested ? 'Escalated to Human Agent' : 'USDOT Application Assistant'}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      I'll help you complete your application step by step
+                      {escalationRequested 
+                        ? 'Human agent will join shortly to help complete your application'
+                        : 'I\'ll help you complete your application step by step'
+                      }
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
+                    {/* Voice Selection */}
+                    <div className="flex items-center space-x-1">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Voice:</label>
+                      <select
+                        value={selectedVoice}
+                        onChange={(e) => setSelectedVoice(e.target.value)}
+                        className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs max-w-24"
+                      >
+                        {availableVoices.map((voice) => (
+                          <option key={voice.id} value={voice.id}>
+                            {voice.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
                     <button
                       onClick={handleVoiceToggle}
                       className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -477,6 +701,22 @@ const OnboardingAgent: React.FC = () => {
                       <SpeakerphoneIcon className="h-4 w-4 mr-1" />
                       Test
                     </button>
+                  </div>
+                </div>
+                
+                {/* Status Indicator */}
+                <div className="flex items-center justify-center mt-4">
+                  <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
+                    escalationRequested 
+                      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                      : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${
+                      escalationRequested ? 'bg-orange-500' : 'bg-green-500'
+                    }`}></div>
+                    <span>
+                      {escalationRequested ? 'Escalated to Human Agent' : 'AI Assistant Active'}
+                    </span>
                   </div>
                 </div>
               </div>

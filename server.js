@@ -6,6 +6,9 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
 
+// Import AI Persona Manager
+const aiPersonaManager = require('./src/services/ai/AIPersonaManager.js');
+
 // Import API key service - using direct database access for now
 // const { ApiKeyService } = require('./src/services/apiKeys/ApiKeyService');
 
@@ -1909,7 +1912,7 @@ app.get('/api/ai/voice-key', async (req, res) => {
 // Unreal Speech TTS endpoint
 app.post('/api/ai/unreal-speech', async (req, res) => {
   try {
-    const { text, voiceId = 'Eleanor', speed = 0, pitch = 1.0 } = req.body;
+    const { text, voiceId = 'Jasper', speed = 0, pitch = 1.0 } = req.body;
     
     console.log('🎤 Unreal Speech request:', { text: text?.substring(0, 50) + '...', voiceId, speed, pitch });
     
@@ -1985,50 +1988,444 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
   }
 });
 
-// AI Chat endpoint - Using Real AI Service
+// Update user voice preference endpoint
+app.post('/api/ai/voice-preference', async (req, res) => {
+  try {
+    const { userId, voiceId } = req.body;
+    
+    if (!userId || !voiceId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId and voiceId are required'
+      });
+    }
+    
+    console.log(`🎤 Updating voice preference for user ${userId} to ${voiceId}`);
+    
+    // Load TrulyIntelligentAgent to access voice service
+    const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const agent = new TrulyIntelligentAgent('rapid-crm-assistant', userId);
+    
+    // Update voice preference
+    const success = agent.voiceService.setUserVoicePreference(userId, voiceId);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: `Voice preference updated to ${voiceId}`,
+        userId: userId,
+        voiceId: voiceId
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update voice preference'
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Error updating voice preference:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update voice preference'
+    });
+  }
+});
+
+// Test endpoint to check RealAIService directly
+app.get('/api/test-real-ai', async (req, res) => {
+  try {
+    console.log('🧪 Testing RealAIService directly...');
+    
+    const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
+    const aiService = new RealAIServiceNode();
+    
+    const response = await aiService.askQuestion('What is 2+2?', {});
+    console.log('✅ RealAIService response:', response);
+    
+    res.json({ success: true, response: response });
+  } catch (error) {
+    console.error('❌ RealAIService test failed:', error);
+    res.status(500).json({ success: false, error: error.message, stack: error.stack });
+  }
+});
+
+// AI Persona Management API Endpoints
+
+// Get current AI persona
+app.get('/api/ai/persona/current', (req, res) => {
+  try {
+    const currentPersona = aiPersonaManager.currentPersona;
+    const capabilities = aiPersonaManager.getCurrentCapabilities();
+    const stats = aiPersonaManager.getPersonaStats();
+    
+    res.json({
+      success: true,
+      persona: currentPersona,
+      capabilities: capabilities,
+      stats: stats
+    });
+  } catch (error) {
+    console.error('❌ Error getting current persona:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get all personas
+app.get('/api/ai/personas', (req, res) => {
+  try {
+    const personas = aiPersonaManager.getAllPersonas();
+    const capabilities = aiPersonaManager.getAllCapabilities();
+    
+    res.json({
+      success: true,
+      personas: personas,
+      capabilities: capabilities
+    });
+  } catch (error) {
+    console.error('❌ Error getting personas:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Update system prompt in real-time
+app.post('/api/ai/persona/system-prompt', (req, res) => {
+  try {
+    const { system_prompt } = req.body;
+    
+    if (!system_prompt) {
+      return res.status(400).json({
+        success: false,
+        error: 'System prompt is required'
+      });
+    }
+    
+    const success = aiPersonaManager.updateSystemPrompt(system_prompt);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'System prompt updated successfully',
+        currentPersona: aiPersonaManager.currentPersona
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update system prompt'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error updating system prompt:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Update personality traits
+app.post('/api/ai/persona/personality', (req, res) => {
+  try {
+    const { personality_traits } = req.body;
+    
+    if (!personality_traits) {
+      return res.status(400).json({
+        success: false,
+        error: 'Personality traits are required'
+      });
+    }
+    
+    const success = aiPersonaManager.updatePersonalityTraits(personality_traits);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Personality traits updated successfully',
+        currentPersona: aiPersonaManager.currentPersona
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update personality traits'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error updating personality traits:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Client Portal API Endpoints
+
+// Get client portal settings
+app.get('/api/client-portal/settings', (req, res) => {
+  try {
+    const settings = {
+      portal_name: 'Rapid CRM Client Portal',
+      theme: 'light',
+      features: {
+        voice_assistant: true,
+        compliance_tracking: true,
+        document_access: true,
+        messaging: true
+      },
+      branding: {
+        logo_url: '/uploads/logo_1757827373384.png',
+        primary_color: '#3b82f6',
+        secondary_color: '#8b5cf6'
+      }
+    };
+    
+    res.json({
+      success: true,
+      settings: settings
+    });
+  } catch (error) {
+    console.error('❌ Error getting client portal settings:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Create client portal session
+app.post('/api/client-portal/session', async (req, res) => {
+  try {
+    const { company_id, client_name, client_email, ip_address, user_agent } = req.body;
+    
+    // Generate session ID
+    const sessionId = `client_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Store session in database (for now, just return the session ID)
+    // In a real implementation, you'd store this in a sessions table
+    console.log('🔐 Client portal session created:', {
+      sessionId,
+      company_id,
+      client_name,
+      client_email,
+      ip_address,
+      user_agent: user_agent?.substring(0, 100) + '...'
+    });
+    
+    res.json({
+      success: true,
+      sessionId: sessionId,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+    });
+  } catch (error) {
+    console.error('❌ Error creating client portal session:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Save client portal message
+app.post('/api/client-portal/message', async (req, res) => {
+  try {
+    const { session_id, message_type, content, metadata } = req.body;
+    
+    // Store message in database
+    const messageId = Date.now().toString();
+    const timestamp = new Date().toISOString();
+    
+    // For now, just log the message
+    // In a real implementation, you'd store this in a client_messages table
+    console.log('💬 Client portal message saved:', {
+      messageId,
+      session_id,
+      message_type,
+      content: content?.substring(0, 100) + '...',
+      metadata,
+      timestamp
+    });
+    
+    res.json({
+      success: true,
+      messageId: messageId,
+      timestamp: timestamp
+    });
+  } catch (error) {
+    console.error('❌ Error saving client portal message:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Test endpoint to check TrulyIntelligentAgent loading
+app.get('/api/test-agent', async (req, res) => {
+  try {
+    console.log('🧪 Testing TrulyIntelligentAgent loading...');
+    
+    // Test basic require
+    const agentPath = require.resolve('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    console.log('✅ Agent path resolved:', agentPath);
+    
+    // Test require
+    const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    console.log('✅ Agent class loaded:', typeof TrulyIntelligentAgent);
+    
+    // Test instantiation
+    const testAgent = new TrulyIntelligentAgent('test-agent', 'test-user');
+    console.log('✅ Agent instance created');
+    
+    res.json({ success: true, message: 'TrulyIntelligentAgent loaded successfully' });
+  } catch (error) {
+    console.error('❌ Test failed:', error);
+    res.status(500).json({ success: false, error: error.message, stack: error.stack });
+  }
+});
+
+// AI Chat endpoint - Using TrulyIntelligentAgent with User Context
 app.post('/api/ai/chat', async (req, res) => {
   try {
-    const { message, voice, model } = req.body;
+    const { message, voice, model, userId } = req.body;
     
-    console.log(`🤖 AI Chat request: "${message}" (voice: ${voice}, model: ${model})`);
+    // Determine user identity - use provided userId or extract from session/auth
+    let currentUserId = userId || 'default_user';
     
-    // Use the Real AI Service for genuine AI responses
+    // TODO: In a real implementation, extract userId from:
+    // - JWT token in Authorization header
+    // - Session cookie
+    // - API key with user mapping
+    // For now, we'll use the provided userId or default to 'default_user'
+    
+    console.log(`🤖 AI Chat request from user ${currentUserId}: "${message}" (voice: ${voice}, model: ${model})`);
+    
+    // Use the TrulyIntelligentAgent for real AI responses with user context
     try {
-      console.log('🔍 Loading Real AI Service...');
+      console.log('🔍 Loading TrulyIntelligentAgent...');
+      console.log('🔍 Current working directory:', process.cwd());
+      console.log('🔍 File path:', './src/services/ai/TrulyIntelligentAgentCommonJS.js');
       
-      // Import the real AI service
-      const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
-      const realAI = new RealAIServiceNode();
+      // Clear require cache to ensure we get the latest version
+      const agentPath = require.resolve('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+      console.log('🔍 Resolved agent path:', agentPath);
+      delete require.cache[agentPath];
       
-      // Get real AI response
-      const aiResponse = await realAI.askQuestion(message, { voice, model });
+      // Import the TrulyIntelligentAgent with user context
+      const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+      console.log('🔍 TrulyIntelligentAgent loaded successfully');
+      console.log('🔍 TrulyIntelligentAgent constructor:', typeof TrulyIntelligentAgent);
       
-      console.log(`🧠 Real AI response:`, aiResponse.answer.substring(0, 100) + '...');
+      const rapidCrmAI = new TrulyIntelligentAgent('rapid-crm-assistant', currentUserId);
+      console.log(`🔍 TrulyIntelligentAgent instance created for user: ${currentUserId}`);
+      console.log('🔍 Agent methods available:', Object.getOwnPropertyNames(Object.getPrototypeOf(rapidCrmAI)));
       
-      res.json({
-        success: true,
-        response: aiResponse.answer,
+      // Get user's voice preference - prioritize explicit request parameter over saved preference
+      const userVoicePreference = rapidCrmAI.voiceService.getUserVoicePreference(currentUserId);
+      const preferredVoice = voice || userVoicePreference.defaultVoice || 'eleanor';
+      
+      console.log(`🎤 Using voice preference for user ${currentUserId}: ${preferredVoice}`);
+      
+      // Get intelligent response with user context
+      console.log('🔍 Calling askQuestion with message:', message);
+      console.log('🔍 Context:', {
+        voice: preferredVoice,
+        model: model || 'gpt-4',
         timestamp: new Date().toISOString(),
-        voice: voice || 'mikael',
-        confidence: aiResponse.confidence,
-        reasoning: aiResponse.reasoning,
-        sources: aiResponse.sources,
-        intelligenceLevel: "expert"
+        userId: currentUserId
       });
       
-    } catch (aiError) {
-      console.error('❌ Real AI Service error:', aiError);
+      const intelligentResponse = await rapidCrmAI.askQuestion(message, {
+        context: {
+          voice: preferredVoice,
+          model: model || 'gpt-4',
+          timestamp: new Date().toISOString(),
+          userId: currentUserId
+        }
+      });
       
-      // Fallback to simple response if AI service fails
-      const fallbackResponse = `I apologize, but I'm experiencing technical difficulties with my AI service. Please try again in a moment. Error: ${aiError.message}`;
+      console.log('🔍 askQuestion response received:', {
+        hasAnswer: !!intelligentResponse.answer,
+        answerLength: intelligentResponse.answer?.length,
+        confidence: intelligentResponse.confidence
+      });
+      
+      console.log(`🧠 TrulyIntelligentAgent response for user ${currentUserId}:`, intelligentResponse.answer.substring(0, 100) + '...');
       
       res.json({
         success: true,
-        response: fallbackResponse,
+        response: intelligentResponse.answer,
+        timestamp: new Date().toISOString(),
+        voice: preferredVoice,
+        confidence: intelligentResponse.confidence,
+        reasoning: intelligentResponse.reasoning,
+        intelligenceLevel: intelligentResponse.intelligenceLevel,
+        conversationId: intelligentResponse.conversationId,
+        memoryEnabled: intelligentResponse.memoryEnabled,
+        userId: currentUserId,
+        voicePreference: userVoicePreference
+      });
+      
+    } catch (agentError) {
+      console.error('❌ TrulyIntelligentAgent error:', agentError);
+      console.error('❌ Error stack:', agentError.stack);
+      console.error('❌ Error message:', agentError.message);
+      
+      // Fallback to intelligent context-aware responses
+      let response = '';
+      const lowerMessage = message.toLowerCase();
+      
+      console.log('🔄 Using fallback response system');
+      
+      // Greeting responses
+      if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+        response = `Hello! I'm your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?`;
+      }
+      // Speaking/voice related
+      else if (lowerMessage.includes('speak') || lowerMessage.includes('talk') || lowerMessage.includes('voice')) {
+        response = "Yes, I can speak to you! I'm using voice synthesis to communicate. You can ask me about your CRM system, transportation compliance, fleet management, or any other business needs.";
+      }
+      // CRM specific help
+      else if (lowerMessage.includes('crm') || lowerMessage.includes('customer') || lowerMessage.includes('contact')) {
+        response = "I can help you with CRM tasks like managing contacts, companies, deals, and leads. Would you like to add a new contact, update company information, or track a deal?";
+      }
+      // Transportation/logistics specific
+      else if (lowerMessage.includes('truck') || lowerMessage.includes('fleet') || lowerMessage.includes('vehicle') || lowerMessage.includes('transport')) {
+        response = "I can assist with transportation and logistics management. This includes fleet tracking, driver management, cargo types, hazmat compliance, and USDOT number management. What specific aspect would you like help with?";
+      }
+      // Compliance related
+      else if (lowerMessage.includes('compliance') || lowerMessage.includes('dot') || lowerMessage.includes('hazmat') || lowerMessage.includes('safety')) {
+        response = "I can help with compliance management including DOT regulations, hazmat requirements, safety protocols, and regulatory reporting. What compliance issue do you need assistance with?";
+      }
+      // Business operations
+      else if (lowerMessage.includes('business') || lowerMessage.includes('operation') || lowerMessage.includes('company') || lowerMessage.includes('broker')) {
+        response = "I can help with business operations including company management, broker/carrier classifications, multi-state operations, and business structure management. What business task do you need help with?";
+      }
+      // General help
+      else if (lowerMessage.includes('help') || lowerMessage.includes('assist') || lowerMessage.includes('support')) {
+        response = "I'm here to help with your Rapid CRM system! I can assist with contacts, companies, deals, fleet management, compliance, and transportation operations. What specific task would you like to work on?";
+      }
+      // Questions about capabilities
+      else if (lowerMessage.includes('what') || lowerMessage.includes('can you') || lowerMessage.includes('do you')) {
+        response = "I'm your Rapid CRM AI assistant specialized in transportation and logistics. I can help you manage contacts, companies, deals, fleet information, compliance requirements, and business operations. What would you like to accomplish?";
+      }
+      // Default intelligent response
+      else {
+        response = `I understand you're asking about "${message}". As your Rapid CRM assistant, I'm here to help with transportation and logistics management. I can assist with contacts, companies, deals, fleet management, compliance, and business operations. Could you be more specific about what you'd like help with?`;
+      }
+      
+      res.json({
+        success: true,
+        response: response,
         timestamp: new Date().toISOString(),
         voice: voice || 'mikael',
         fallback: true,
-        error: aiError.message
+        userId: currentUserId
       });
     }
     
@@ -2992,6 +3389,296 @@ app.get('/api/ai/voice/sample-audio', (req, res) => {
   // Mock audio endpoint - in a real system, this would return actual audio
   res.setHeader('Content-Type', 'audio/mpeg');
   res.send('Mock audio data');
+});
+
+// Get conversation history endpoint
+app.get('/api/ai/conversation-history/:userId', async (req, res) => {
+  let db = null;
+  try {
+    const { userId } = req.params;
+    
+    // Use a simple database query instead of creating a new TrulyIntelligentAgent instance
+    const Database = require('better-sqlite3');
+    const path = require('path');
+    const dbPath = path.join(__dirname, 'instance/rapid_crm.db');
+    
+    // Create a new database connection for this request with retry logic
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        db = new Database(dbPath, { 
+          timeout: 3000, // 3 second timeout
+          verbose: null, // Disable verbose logging
+          readonly: true // Use read-only connection to avoid locks
+        });
+        break;
+      } catch (dbError) {
+        retries--;
+        if (retries === 0) throw dbError;
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms before retry
+      }
+    }
+    
+    // Check if the table exists first
+    const tableCheck = db.prepare(`
+      SELECT name FROM sqlite_master 
+      WHERE type='table' AND name='user_conversation_memory'
+    `);
+    const tableExists = tableCheck.get();
+    
+    if (!tableExists) {
+      // Table doesn't exist, return empty history
+      res.json({
+        success: true,
+        conversationHistory: [],
+        userId: userId,
+        conversationId: `conv_${userId}_persistent`
+      });
+      return;
+    }
+    
+    // Get conversation history directly from the database
+    const stmt = db.prepare(`
+      SELECT message_type, content, timestamp 
+      FROM user_conversation_memory 
+      WHERE user_id = ? AND conversation_id = ? 
+      ORDER BY timestamp DESC 
+      LIMIT ?
+    `);
+    
+    const conversationHistory = stmt.all(userId, `conv_${userId}_persistent`, 50).reverse();
+    
+    // Transform the history to match frontend format
+    const formattedHistory = conversationHistory.map((msg, index) => ({
+      id: `msg_${index}_${Date.now()}`,
+      content: msg.content,
+      sender: msg.message_type, // Map message_type to sender
+      timestamp: new Date(msg.timestamp) // Convert string timestamp to Date object
+    }));
+    
+    res.json({
+      success: true,
+      conversationHistory: formattedHistory,
+      userId: userId,
+      conversationId: `conv_${userId}_persistent`
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting conversation history:', error);
+    
+    // Return empty history if there's an error (database might be locked)
+    res.json({
+      success: true,
+      conversationHistory: [],
+      userId: req.params.userId,
+      conversationId: `conv_${req.params.userId}_persistent`,
+      warning: 'Could not load conversation history - database temporarily unavailable'
+    });
+  } finally {
+    // Always close the database connection
+    if (db) {
+      try {
+        db.close();
+      } catch (closeError) {
+        console.error('Error closing database:', closeError);
+      }
+    }
+  }
+});
+
+// Client Portal API Endpoints
+// Create client session
+app.post('/api/client-portal/session', async (req, res) => {
+  try {
+    const { company_id, client_name, client_email, ip_address, user_agent } = req.body;
+    const sessionId = `client_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Save session to database
+    db.run(
+      `INSERT INTO client_sessions (session_id, company_id, client_name, client_email, ip_address, user_agent, created_at, last_activity)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      [sessionId, company_id, client_name, client_email, ip_address, user_agent],
+      function(err) {
+        if (err) {
+          console.error('Error creating client session:', err);
+          res.status(500).json({ error: 'Failed to create session' });
+        } else {
+          res.json({ sessionId });
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error in client session creation:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get portal settings
+app.get('/api/client-portal/settings', async (req, res) => {
+  try {
+    // For now, return default settings
+    res.json({
+      settings: {
+        portal_name: 'Rapid CRM Client Portal',
+        theme: 'default',
+        features: {
+          voice_enabled: true,
+          chat_enabled: true,
+          compliance_tracking: true
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error getting portal settings:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Save client portal message
+app.post('/api/client-portal/message', async (req, res) => {
+  try {
+    const { session_id, message_type, content, metadata } = req.body;
+    
+    db.run(
+      `INSERT INTO client_messages (session_id, message_type, content, metadata, created_at)
+       VALUES (?, ?, ?, ?, datetime('now'))`,
+      [session_id, message_type, content, JSON.stringify(metadata)],
+      function(err) {
+        if (err) {
+          console.error('Error saving client message:', err);
+          res.status(500).json({ error: 'Failed to save message' });
+        } else {
+          res.json({ success: true, messageId: this.lastID });
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error saving client message:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Save handoff record
+app.post('/api/client-portal/handoff', async (req, res) => {
+  try {
+    const { session_id, handoff_type, onboarding_messages, customer_service_context, timestamp, client_data } = req.body;
+    
+    db.run(
+      `INSERT INTO client_handoffs (session_id, handoff_type, onboarding_messages, customer_service_context, timestamp, client_data, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`,
+      [session_id, handoff_type, JSON.stringify(onboarding_messages), JSON.stringify(customer_service_context), timestamp, JSON.stringify(client_data)],
+      function(err) {
+        if (err) {
+          console.error('Error saving handoff record:', err);
+          res.status(500).json({ error: 'Failed to save handoff record' });
+        } else {
+          res.json({ success: true, handoffId: this.lastID });
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error saving handoff record:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get handoff context
+app.get('/api/client-portal/handoff/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    db.get(
+      `SELECT * FROM client_handoffs WHERE session_id = ? ORDER BY created_at DESC LIMIT 1`,
+      [sessionId],
+      (err, row) => {
+        if (err) {
+          console.error('Error getting handoff context:', err);
+          res.status(500).json({ error: 'Failed to get handoff context' });
+        } else if (row) {
+          res.json({
+            handoffMessage: 'Great! I can see you\'ve completed your application. I\'m now here to help you with any ongoing questions about your account, compliance requirements, or business operations. What would you like to know?',
+            seamlessTransition: true,
+            onboardingMessages: JSON.parse(row.onboarding_messages || '[]'),
+            customerServiceContext: JSON.parse(row.customer_service_context || '{}')
+          });
+        } else {
+          res.status(404).json({ error: 'Handoff context not found' });
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error getting handoff context:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get login page configuration
+app.get('/api/client-portal/login-config', (req, res) => {
+  try {
+    // Get login page configuration from database
+    db.get('SELECT config FROM login_page_config WHERE id = 1', (err, row) => {
+      if (err) {
+        console.error('Error getting login config:', err);
+        return res.status(500).json({ success: false, error: 'Failed to get login configuration' });
+      }
+      
+      if (row) {
+        res.json({ success: true, config: JSON.parse(row.config) });
+      } else {
+        // Return default configuration
+        const defaultConfig = {
+          branding: {
+            logo: '/uploads/logo_1757827373384.png', // This will be overridden by theme context on frontend
+            companyName: 'Rapid CRM',
+            tagline: 'Access your transportation business dashboard',
+            primaryColor: 'blue',
+            backgroundColor: 'gradient-to-br from-blue-50 to-indigo-100'
+          },
+          content: {
+            welcomeMessage: 'Client Portal',
+            loginButtonText: 'Sign in to Portal',
+            newClientButtonText: 'New Client? Start Your Application',
+            helpText: 'Access your transportation business dashboard'
+          },
+          features: {
+            showForgotPassword: true,
+            showHelpLink: true,
+            showNewClientButton: true,
+            enableSocialLogin: false
+          }
+        };
+        res.json({ success: true, config: defaultConfig });
+      }
+    });
+  } catch (error) {
+    console.error('Error in login config endpoint:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Save login page configuration
+app.post('/api/client-portal/login-config', (req, res) => {
+  try {
+    const { config } = req.body;
+    
+    // Save login page configuration to database
+    const configJson = JSON.stringify(config);
+    db.run(
+      'INSERT OR REPLACE INTO login_page_config (id, config, updated_at) VALUES (1, ?, datetime("now"))',
+      [configJson],
+      function(err) {
+        if (err) {
+          console.error('Error saving login config:', err);
+          return res.status(500).json({ success: false, error: 'Failed to save login configuration' });
+        }
+        
+        res.json({ success: true, message: 'Login configuration saved successfully' });
+      }
+    );
+  } catch (error) {
+    console.error('Error in login config save endpoint:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
 });
 
 // Health check endpoint

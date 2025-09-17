@@ -8,6 +8,7 @@ import { ClientProvider } from './contexts/ClientContext';
 import { UIStateProvider } from './contexts/UIStateContext';
 import { TooltipProvider } from './contexts/TooltipContext';
 import Layout from './components/Layout';
+import ClientLayout from './components/ClientLayout';
 
 // Import modules directly (not lazy loaded for now)
 import DashboardModule from './modules/Dashboard/index';
@@ -30,6 +31,7 @@ import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIAdminPage from './pages/AIAdminPage';
 import ClientPortal from './pages/ClientPortal';
+import ClientLogin from './pages/ClientLogin';
 import OnboardingAgent from './pages/OnboardingAgent';
 import ClaudeEventListener from './components/ClaudeEventListener';
 // import CursorAICollaborationPanel from './components/CursorAICollaborationPanel'; // Component not found
@@ -61,52 +63,71 @@ function App() {
               <Router>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
                 <ClaudeEventListener />
-                <Layout>
-                  <Routes>
-                    {/* Core Dashboard - Always loaded */}
-                    <Route path="/" element={<DashboardModule />} />
-                    
-                    {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
-                    <Route path="/companies" element={<Companies />} />
-                    <Route path="/companies/:id" element={<CompanyDetail />} />
-                    <Route path="/leads" element={<Leads />} />
-                    <Route path="/deals" element={<Deals />} />
-                    <Route path="/services" element={<Services />} />
-                    <Route path="/compliance" element={<ComplianceModule />} />
-                    <Route path="/tasks" element={<Tasks />} />
-                    <Route path="/conversations" element={<Conversations />} />
-                    <Route path="/settings/api-keys" element={<ApiKeys />} />
-                    <Route path="/database" element={<DatabaseManagement />} />
-                    <Route path="/users" element={<UserManagement />} />
-                    
-                    {/* Reports */}
-                    <Route path="/reports" element={<AnalyticsModule />} />
-                    
-                    {/* Theme Customizer - Editor access only */}
-                    <Route path="/theme" element={<ThemeCustomizer />} />
-                    
-                    {/* Client Portal Designer - Editor access only */}
-                    <Route path="/client-portal" element={<ClientPortalDesigner />} />
-                    
-                    {/* Live Client Portal - For testing onboarding agent */}
-                    <Route path="/portal" element={<ClientPortal />} />
-                    <Route path="/onboarding" element={<OnboardingAgent />} />
-                    
-                    {/* AI Administration - Admin access only */}
-                    <Route path="/admin/ai-control" element={<AIAdminPage />} />
-                    
-                    {/* AI Collaboration - True AI-to-AI communication */}
-                    {/* <Route path="/ai-collaboration" element={<CursorAICollaborationPanel />} /> */}
-                    <Route path="/workflow-optimization" element={<WorkflowOptimizationDemo />} />
-                    
-                    {/* Legacy routes for backward compatibility */}
-                    <Route path="/data" element={<DataManagement />} />
-                    <Route path="/schema" element={<SchemaManagement />} />
-                    <Route path="/monitoring/*" element={<SystemMonitoringModule />} />
-                    <Route path="/compliance/*" element={<ComplianceModule />} />
-                    <Route path="/analytics/*" element={<AnalyticsModule />} />
-                  </Routes>
-                </Layout>
+                <Routes>
+                  {/* Client Login Route */}
+                  <Route path="/client-login" element={<ClientLogin />} />
+                  
+                  {/* Client Login Preview Route (for admin testing) */}
+                  <Route path="/preview-login" element={<ClientLogin />} />
+                  
+                  {/* Client Portal Routes - Use ClientLayout (No Admin Interface) */}
+                  <Route path="/portal" element={
+                    <ClientLayout>
+                      <ClientPortal />
+                    </ClientLayout>
+                  } />
+                  <Route path="/onboarding" element={
+                    <ClientLayout>
+                      <OnboardingAgent />
+                    </ClientLayout>
+                  } />
+                  
+                  {/* Admin Routes - Use Layout (Full Admin Interface) */}
+                  <Route path="/*" element={
+                    <Layout>
+                      <Routes>
+                        {/* Core Dashboard - Always loaded */}
+                        <Route path="/" element={<DashboardModule />} />
+                        
+                        {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
+                        <Route path="/companies" element={<Companies />} />
+                        <Route path="/companies/:id" element={<CompanyDetail />} />
+                        <Route path="/leads" element={<Leads />} />
+                        <Route path="/deals" element={<Deals />} />
+                        <Route path="/services" element={<Services />} />
+                        <Route path="/compliance" element={<ComplianceModule />} />
+                        <Route path="/tasks" element={<Tasks />} />
+                        <Route path="/conversations" element={<Conversations />} />
+                        <Route path="/settings/api-keys" element={<ApiKeys />} />
+                        <Route path="/database" element={<DatabaseManagement />} />
+                        <Route path="/users" element={<UserManagement />} />
+                        
+                        {/* Reports */}
+                        <Route path="/reports" element={<AnalyticsModule />} />
+                        
+                        {/* Theme Customizer - Editor access only */}
+                        <Route path="/theme" element={<ThemeCustomizer />} />
+                        
+                        {/* Client Portal Designer - Editor access only */}
+                        <Route path="/client-portal" element={<ClientPortalDesigner />} />
+                        
+                        {/* AI Administration - Admin access only */}
+                        <Route path="/admin/ai-control" element={<AIAdminPage />} />
+                        
+                        {/* AI Collaboration - True AI-to-AI communication */}
+                        {/* <Route path="/ai-collaboration" element={<CursorAICollaborationPanel />} /> */}
+                        <Route path="/workflow-optimization" element={<WorkflowOptimizationDemo />} />
+                        
+                        {/* Legacy routes for backward compatibility */}
+                        <Route path="/data" element={<DataManagement />} />
+                        <Route path="/schema" element={<SchemaManagement />} />
+                        <Route path="/monitoring/*" element={<SystemMonitoringModule />} />
+                        <Route path="/compliance/*" element={<ComplianceModule />} />
+                        <Route path="/analytics/*" element={<AnalyticsModule />} />
+                      </Routes>
+                    </Layout>
+                  } />
+                </Routes>
                 <Toaster
                   position="top-right"
                   toastOptions={{
