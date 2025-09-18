@@ -110,8 +110,7 @@ export class ApiKeyManager {
   public async loadApiKeys(): Promise<void> {
     try {
       console.log('Loading API keys from database...');
-      const { getApiBaseUrl } = await import('../../config/api');
-      const response = await fetch(`${getApiBaseUrl()}/api-keys`);
+      const response = await fetch('/api/api-keys');
       console.log('API keys response status:', response.status);
       
       if (response.ok) {

@@ -1,5 +1,5 @@
-import { BaseRepository } from '../database/repositories/BaseRepository';
-import { databaseService } from '../database/DatabaseService';
+// Using direct database connection - no separate repository
+// Using direct database connection - no separate database service
 import { apiKeyService } from '../apiKeys/ApiKeyService';
 import { AdvancedAgent, AgentCapability, AgentPersonality, AgentLearningProfile } from './AdvancedAgentCreationService';
 

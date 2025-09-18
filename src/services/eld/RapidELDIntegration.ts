@@ -91,7 +91,7 @@ export class RapidELDService {
           h.location,
           h.odometer_reading
         FROM drivers d
-        LEFT JOIN hos_logs h ON d.id = h.driver_id
+        LEFT JOIN eld_hos_logs h ON d.id = h.driver_id
         WHERE d.is_active = 1
       `;
       
@@ -181,7 +181,7 @@ export class RapidELDService {
 
       // Get recent HOS logs
       const hosLogs = await runQuery(`
-        SELECT * FROM hos_logs 
+        SELECT * FROM eld_hos_logs 
         WHERE driver_id = ? 
         ORDER BY start_time DESC 
         LIMIT 50
@@ -189,7 +189,7 @@ export class RapidELDService {
 
       // Get recent DVIR reports
       const dvirReports = await runQuery(`
-        SELECT * FROM dvir_reports 
+        SELECT * FROM eld_dvir_reports 
         WHERE driver_id = ? 
         ORDER BY inspection_date DESC 
         LIMIT 10
@@ -198,7 +198,7 @@ export class RapidELDService {
       // Get current vehicle
       const currentVehicle = await runQuery(`
         SELECT v.* FROM vehicles v
-        JOIN hos_logs h ON v.id = h.vehicle_id
+        JOIN eld_hos_logs h ON v.id = h.vehicle_id
         WHERE h.driver_id = ? AND h.end_time IS NULL
         ORDER BY h.start_time DESC
         LIMIT 1
@@ -251,7 +251,7 @@ export class RapidELDService {
       }
 
       const result = await runExecute(`
-        INSERT INTO hos_logs (
+        INSERT INTO eld_hos_logs (
           driver_id, vehicle_id, log_type, start_time, end_time, 
           location, odometer_reading, is_edited, edit_reason, 
           created_at, updated_at
@@ -300,7 +300,7 @@ export class RapidELDService {
       }
 
       const result = await runExecute(`
-        INSERT INTO dvir_reports (
+        INSERT INTO eld_dvir_reports (
           driver_id, vehicle_id, inspection_type, inspection_date,
           defects, is_safe_to_drive, signature, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)

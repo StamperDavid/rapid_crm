@@ -1,4 +1,4 @@
-import { databaseService } from '../database/DatabaseService';
+// Using direct database connection - no separate database service
 import { AICollaborationService } from './AICollaborationService';
 import { parallelAgentBuilder } from './ParallelAgentBuilder';
 
@@ -322,9 +322,28 @@ export class AdvancedAgentCreationService {
   // Agent Management Methods
   async getAgent(id: string): Promise<AdvancedAgent | null> {
     try {
-      const query = 'SELECT * FROM advanced_agents WHERE id = ?';
-      const result = await databaseService.query(query, [id]);
-      return result.data?.[0] || null;
+      // Use API endpoint instead of direct database access
+      const response = await fetch(`/api/ai/agents/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch agent');
+      }
+      
+      return data.agent ? this.mapDbRowToAgent(data.agent) : null;
     } catch (error) {
       console.error('Error fetching agent:', error);
       throw new Error('Failed to fetch agent');
@@ -338,25 +357,26 @@ export class AdvancedAgentCreationService {
     createdBy?: string;
   } = {}): Promise<AdvancedAgent[]> {
     try {
-      let query = 'SELECT * FROM agents WHERE 1=1';
-      const params: any[] = [];
+      // Use API endpoint instead of direct database access
+      const response = await fetch('/api/ai/agents', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
-      if (filters.status) {
-        query += ' AND status = ?';
-        params.push(filters.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      if (filters.type) {
-        query += ' AND type = ?';
-        params.push(filters.type);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch agents');
       }
-      
-      query += ' ORDER BY created_at DESC';
-      
-      const result = await databaseService.executeQuery('primary', query, params);
       
       // Convert database rows to AdvancedAgent objects
-      return result.data.map((row: any) => this.mapDbRowToAgent(row));
+      return data.agents.map((row: any) => this.mapDbRowToAgent(row));
     } catch (error) {
       console.error('Error fetching agents:', error);
       throw new Error('Failed to fetch agents');
@@ -386,9 +406,25 @@ export class AdvancedAgentCreationService {
 
   async deleteAgent(id: string): Promise<boolean> {
     try {
-      const query = 'DELETE FROM advanced_agents WHERE id = ?';
-      const result = await databaseService.query(query, [id]);
-      return result.changes > 0;
+      // Use API endpoint instead of direct database access
+      const response = await fetch(`/api/ai/agents/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to delete agent');
+      }
+      
+      return data.deleted;
     } catch (error) {
       console.error('Error deleting agent:', error);
       throw new Error('Failed to delete agent');
@@ -579,33 +615,24 @@ export class AdvancedAgentCreationService {
 
   // Private Helper Methods
   private async saveAgent(agent: AdvancedAgent): Promise<void> {
-    const query = `
-      INSERT OR REPLACE INTO advanced_agents (
-        id, name, description, version, status, type, personality, capabilities,
-        learningProfile, memoryBank, customPrompts, decisionMatrix, behaviorRules,
-        escalationTriggers, performanceScore, successRate, userSatisfaction,
-        efficiencyRating, apiEndpoints, webhookUrls, databaseAccess,
-        externalIntegrations, accessLevel, permissions, auditLog, encryptionLevel,
-        createdBy, createdAt, updatedAt, lastActive, totalInteractions, tags
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const values = [
-      agent.id, agent.name, agent.description, agent.version, agent.status, agent.type,
-      JSON.stringify(agent.personality), JSON.stringify(agent.capabilities),
-      JSON.stringify(agent.learningProfile), JSON.stringify(agent.memoryBank),
-      JSON.stringify(agent.customPrompts), JSON.stringify(agent.decisionMatrix),
-      JSON.stringify(agent.behaviorRules), JSON.stringify(agent.escalationTriggers),
-      agent.performanceScore, agent.successRate, agent.userSatisfaction,
-      agent.efficiencyRating, JSON.stringify(agent.apiEndpoints),
-      JSON.stringify(agent.webhookUrls), JSON.stringify(agent.databaseAccess),
-      JSON.stringify(agent.externalIntegrations), agent.accessLevel,
-      JSON.stringify(agent.permissions), agent.auditLog, agent.encryptionLevel,
-      agent.createdBy, agent.createdAt, agent.updatedAt, agent.lastActive,
-      agent.totalInteractions, JSON.stringify(agent.tags)
-    ];
-
-    await databaseService.query(query, values);
+    // Use API endpoint instead of direct database access
+    const response = await fetch('/api/ai/agents', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(agent),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to save agent');
+    }
   }
 
   private async buildCapabilities(baseCapabilities: string[], customCapabilities: any[] = []): Promise<AgentCapability[]> {

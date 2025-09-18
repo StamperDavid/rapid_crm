@@ -19,6 +19,16 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/api-keys/, '/api/api-keys')
       },
+      '/uploads': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/vite.svg': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   }
 })

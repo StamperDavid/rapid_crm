@@ -30,6 +30,9 @@ import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIAdminPage from './pages/AIAdminPage';
+import ELDDashboard from './pages/ELDDashboard';
+import IFTADashboard from './pages/IFTADashboard';
+import SEODashboard from './pages/SEODashboard';
 import ClientPortal from './pages/ClientPortal';
 import ClientLogin from './pages/ClientLogin';
 import OnboardingAgent from './pages/OnboardingAgent';
@@ -96,6 +99,9 @@ function App() {
                         <Route path="/deals" element={<Deals />} />
                         <Route path="/services" element={<Services />} />
                         <Route path="/compliance" element={<ComplianceModule />} />
+                        <Route path="/eld" element={<ELDDashboard />} />
+                        <Route path="/ifta" element={<IFTADashboard />} />
+                        <Route path="/seo" element={<SEODashboard />} />
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/conversations" element={<Conversations />} />
                         <Route path="/settings/api-keys" element={<ApiKeys />} />

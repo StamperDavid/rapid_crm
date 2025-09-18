@@ -6,7 +6,7 @@
  * performance monitoring, and business intelligence features.
  */
 
-import { databaseService } from '../database/DatabaseService';
+// Using direct database connection - no separate database service
 
 export interface AIProvider {
   id: string;

@@ -1,195 +1,137 @@
+/**
+ * Add ELD Tables to Existing rapid_crm.db
+ * This script extends the existing CRM database with ELD compliance functionality
+ */
+
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
 
-// Database file path - same as existing rapid_crm.db
+// Path to the existing CRM database
 const dbPath = path.join(__dirname, '..', '..', 'instance', 'rapid_crm.db');
 
-// ELD migration file path
-const eldMigrationPath = path.join(__dirname, '..', 'services', 'database', 'migrations', '001_create_eld_service_tables.sql');
-
-console.log('🚀 Adding ELD Service Tables to Rapid CRM Database...');
+console.log('🚀 Adding ELD tables to existing CRM database...');
 console.log('📁 Database path:', dbPath);
-console.log('📄 ELD Migration path:', eldMigrationPath);
 
 // Check if database exists
 if (!fs.existsSync(dbPath)) {
-    console.error('❌ Database file not found. Please run the main database initialization first.');
+    console.error('❌ Database file not found at:', dbPath);
+    console.log('💡 Please run the main database initialization first: npm run init-db');
     process.exit(1);
 }
 
-// Check if ELD migration file exists
-if (!fs.existsSync(eldMigrationPath)) {
-    console.error('❌ ELD migration file not found:', eldMigrationPath);
+// Read the ELD schema
+const schemaPath = path.join(__dirname, 'eld_schema.sql');
+if (!fs.existsSync(schemaPath)) {
+    console.error('❌ ELD schema file not found at:', schemaPath);
     process.exit(1);
 }
 
-// Create database connection
-const db = new sqlite3.Database(dbPath);
+const schema = fs.readFileSync(schemaPath, 'utf8');
 
-// Function to execute SQL file
-function executeELDMigration() {
-    return new Promise((resolve, reject) => {
-        console.log('📄 Reading ELD migration file...');
-        
-        fs.readFile(eldMigrationPath, 'utf8', (err, data) => {
-            if (err) {
-                console.error('❌ Error reading ELD migration file:', err);
-                reject(err);
-                return;
-            }
-
-            // Remove comments and normalize whitespace, then split by semicolon
-            const cleanData = data
-                .split('\n')
-                .map(line => {
-                    // Remove comments (everything after -- on a line)
-                    const commentIndex = line.indexOf('--');
-                    if (commentIndex !== -1) {
-                        line = line.substring(0, commentIndex);
-                    }
-                    return line.trim();
-                })
-                .filter(line => line.length > 0) // Remove empty lines
-                .join(' '); // Join all lines with spaces
-            
-            // Split by semicolon and filter out empty statements
-            const statements = cleanData
-                .split(';')
-                .map(stmt => stmt.trim())
-                .filter(stmt => stmt.length > 0);
-
-            let completed = 0;
-            let errors = [];
-
-            if (statements.length === 0) {
-                console.log('✅ ELD migration completed (no statements)');
-                resolve();
-                return;
-            }
-
-            console.log(`📊 Found ${statements.length} SQL statements to execute`);
-
-            // Execute statements sequentially to ensure proper order
-            let currentIndex = 0;
-            
-            function executeNext() {
-                if (currentIndex >= statements.length) {
-                    if (errors.length > 0) {
-                        console.error(`❌ ELD migration completed with ${errors.length} errors`);
-                        reject(new Error(`ELD migration failed with ${errors.length} errors`));
-                    } else {
-                        console.log('✅ ELD migration completed successfully');
-                        resolve();
-                    }
-                    return;
-                }
-                
-                const statement = statements[currentIndex];
-                const index = currentIndex;
-                currentIndex++;
-                
-                db.run(statement, (err) => {
-                    if (err) {
-                        console.error(`❌ Error in statement ${index + 1}:`, err.message);
-                        console.error(`   Statement: ${statement.substring(0, 100)}...`);
-                        errors.push({ statement: index + 1, error: err.message, sql: statement });
-                    } else {
-                        console.log(`✅ Statement ${index + 1} executed successfully`);
-                    }
-                    
-                    // Continue with next statement
-                    executeNext();
-                });
-            }
-            
-            // Start executing statements
-            executeNext();
-        });
-    });
-}
-
-// Function to verify ELD tables were created
-function verifyELDTables() {
-    return new Promise((resolve, reject) => {
-        const expectedTables = [
-            'eld_service_subscriptions',
-            'eld_devices',
-            'eld_driver_logs',
-            'eld_violations',
-            'eld_service_billing',
-            'eld_compliance_reports',
-            'eld_service_analytics'
-        ];
-
-        let verifiedTables = 0;
-        let missingTables = [];
-
-        function checkNextTable() {
-            if (verifiedTables >= expectedTables.length) {
-                if (missingTables.length > 0) {
-                    console.error('❌ Missing ELD tables:', missingTables.join(', '));
-                    reject(new Error(`Missing ELD tables: ${missingTables.join(', ')}`));
-                } else {
-                    console.log('✅ All ELD tables verified successfully');
-                    resolve();
-                }
-                return;
-            }
-
-            const tableName = expectedTables[verifiedTables];
-            db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`, [tableName], (err, row) => {
-                if (err) {
-                    console.error(`❌ Error checking table ${tableName}:`, err.message);
-                    missingTables.push(tableName);
-                } else if (row) {
-                    console.log(`✅ Table ${tableName} exists`);
-                } else {
-                    console.error(`❌ Table ${tableName} not found`);
-                    missingTables.push(tableName);
-                }
-                
-                verifiedTables++;
-                checkNextTable();
-            });
-        }
-
-        checkNextTable();
-    });
-}
-
-// Run ELD migration
-async function runELDMigration() {
-    try {
-        // Execute ELD migration
-        await executeELDMigration();
-        
-        // Verify tables were created
-        await verifyELDTables();
-        
-        console.log('🎉 ELD Service Tables added successfully to rapid_crm.db!');
-        console.log('📊 ELD tables now available:');
-        console.log('   • eld_service_subscriptions - Client ELD service subscriptions');
-        console.log('   • eld_devices - ELD devices assigned to clients');
-        console.log('   • eld_driver_logs - Driver hours of service logs');
-        console.log('   • eld_violations - ELD violations and alerts');
-        console.log('   • eld_service_billing - ELD service billing and usage');
-        console.log('   • eld_compliance_reports - ELD compliance reports');
-        console.log('   • eld_service_analytics - ELD service analytics');
-        
-    } catch (error) {
-        console.error('💥 ELD migration failed:', error.message);
+// Open database connection
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('❌ Error opening database:', err.message);
         process.exit(1);
-    } finally {
-        db.close((err) => {
+    }
+    console.log('✅ Connected to existing CRM database');
+});
+
+// Split schema into individual statements
+const statements = schema
+    .split(';')
+    .map(stmt => {
+        // Remove comments (everything after -- on any line)
+        return stmt
+            .split('\n')
+            .map(line => {
+                const commentIndex = line.indexOf('--');
+                if (commentIndex !== -1) {
+                    line = line.substring(0, commentIndex);
+                }
+                return line.trim();
+            })
+            .filter(line => line.length > 0)
+            .join(' ');
+    })
+    .map(stmt => stmt.trim())
+    .filter(stmt => stmt.length > 0);
+
+// Separate CREATE TABLE and CREATE INDEX statements
+const createTableStatements = statements.filter(stmt => 
+    stmt.toUpperCase().startsWith('CREATE TABLE')
+);
+const createIndexStatements = statements.filter(stmt => 
+    stmt.toUpperCase().startsWith('CREATE INDEX')
+);
+
+// Execute CREATE TABLE statements first, then CREATE INDEX statements
+const orderedStatements = [...createTableStatements, ...createIndexStatements];
+
+console.log(`📋 Found ${orderedStatements.length} SQL statements to execute`);
+console.log(`   • ${createTableStatements.length} CREATE TABLE statements`);
+console.log(`   • ${createIndexStatements.length} CREATE INDEX statements`);
+
+// Execute each statement
+let completed = 0;
+let errors = 0;
+
+orderedStatements.forEach((statement, index) => {
+    if (statement.trim()) {
+        db.run(statement, (err) => {
+            completed++;
+            
             if (err) {
-                console.error('❌ Error closing database:', err.message);
+                errors++;
+                console.error(`❌ Error executing statement ${index + 1}:`, err.message);
+                console.error(`   Statement: ${statement.substring(0, 100)}...`);
             } else {
-                console.log('🔒 Database connection closed');
+                console.log(`✅ Statement ${index + 1} executed successfully`);
+            }
+            
+            // Check if all statements are complete
+            if (completed === orderedStatements.length) {
+                console.log('\n📊 Summary:');
+                console.log(`   ✅ Successful: ${completed - errors}`);
+                console.log(`   ❌ Errors: ${errors}`);
+                
+                if (errors === 0) {
+                    console.log('\n🎉 All ELD tables added successfully!');
+                    console.log('📋 Added tables:');
+                    console.log('   • eld_hos_logs (Hours of Service)');
+                    console.log('   • eld_dvir_reports (Driver Vehicle Inspection Reports)');
+                    console.log('   • eld_alerts (ELD Alerts and Notifications)');
+                    console.log('   • compliance_services (Compliance Service Packages)');
+                    console.log('   • driver_qualification_files (Driver Qualification Files)');
+                    console.log('   • drug_alcohol_tests (Drug & Alcohol Testing)');
+                    console.log('   • fmcsa_clearinghouse_records (FMCSA Clearinghouse)');
+                    console.log('   • dot_physicals (DOT Physical Examinations)');
+                    console.log('   • usdot_registrations (USDOT Number Management)');
+                    console.log('   • mc_registrations (MC Number & BOC-3)');
+                    console.log('   • ifta_registrations (IFTA Registration)');
+                    console.log('   • ifta_quarterly_filings (IFTA Quarterly Filings)');
+                    console.log('   • irp_registrations (IRP Registration)');
+                    console.log('   • irs2290_filings (IRS 2290 / Heavy Vehicle Use Tax)');
+                    console.log('   • compliance_alerts (Compliance Alerts)');
+                    console.log('   • compliance_violations (Compliance Violations)');
+                    console.log('   • geotab_devices (Geotab Device Configuration)');
+                    console.log('   • geotab_credentials (Geotab API Credentials)');
+                    console.log('\n🚀 ELD compliance system is now ready!');
+                } else {
+                    console.log('\n⚠️  Some errors occurred. Please review the output above.');
+                }
+                
+                // Close database connection
+                db.close((err) => {
+                    if (err) {
+                        console.error('❌ Error closing database:', err.message);
+                    } else {
+                        console.log('🔒 Database connection closed');
+                    }
+                    process.exit(errors > 0 ? 1 : 0);
+                });
             }
         });
     }
-}
-
-// Run migration
-runELDMigration();
+});

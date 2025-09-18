@@ -5,7 +5,7 @@
  */
 
 import { AICollaborationService } from './AICollaborationService';
-import { databaseService } from '../database/DatabaseService';
+// Using direct database connection - no separate database service
 
 export interface AgentBuildTask {
   id: string;

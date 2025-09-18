@@ -15,17 +15,17 @@ const AvatarPreview: React.FC<AvatarPreviewProps> = ({ onSelectAvatar }) => {
   const avatarConfigs = {
     professional: {
       name: 'David',
-      src: uploadedImage || '/uploads/david_headshot.jpg', // Your professional headshot
+      src: uploadedImage || '/uploads/logo_1757827373384.png', // Using existing logo as fallback
       description: 'Professional headshot style - builds trust and authority'
     },
     illustrated: {
       name: 'David',
-      src: uploadedImage || '/uploads/david_headshot.jpg', // Same image, different styling
+      src: uploadedImage || '/uploads/logo_1757827373384.png', // Using existing logo as fallback
       description: 'Illustrated/cartoon style - friendly and approachable'
     },
     business: {
       name: 'David',
-      src: uploadedImage || '/uploads/david_headshot.jpg', // Same image, business context
+      src: uploadedImage || '/uploads/logo_1757827373384.png', // Using existing logo as fallback
       description: 'Business context - with transportation elements'
     }
   };

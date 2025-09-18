@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useCRM } from './CRMContext';
 
 interface Client {
   id: string;
@@ -30,6 +29,8 @@ interface ClientContextType {
   switchToClient: (clientId: string) => void;
   switchToAdmin: () => void;
   loading: boolean;
+  companies: any[];
+  contacts: any[];
 }
 
 const ClientContext = createContext<ClientContextType | undefined>(undefined);
@@ -43,7 +44,10 @@ export const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
   const [isClientMode, setIsClientMode] = useState(false);
   const [isAdminPreview, setIsAdminPreview] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { companies, contacts } = useCRM();
+  
+  // Initialize with empty arrays - CRM data will be loaded separately
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [contacts, setContacts] = useState<any[]>([]);
 
   // Mock client data - in real implementation, this would come from API
   const mockClients: Client[] = [
@@ -145,6 +149,8 @@ export const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
     switchToClient,
     switchToAdmin,
     loading,
+    companies,
+    contacts,
   };
 
   return (

@@ -1,4 +1,4 @@
-import { BaseRepository } from '../database/repositories/BaseRepository';
+// Using direct database connection - no separate repository
 
 export interface MarketplaceAgent {
   id: string;

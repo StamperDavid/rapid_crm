@@ -16,6 +16,9 @@ import {
   DocumentIcon,
   ChipIcon,
   QuestionMarkCircleIcon,
+  TruckIcon,
+  LightningBoltIcon,
+  ChartBarIcon,
 } from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 import { useTheme } from '../contexts/ThemeContext';
@@ -40,6 +43,8 @@ const getNavigation = () => [
   { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
   { name: 'Deals', href: '/deals', icon: DocumentIcon, color: 'text-indigo-600' },
   { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
+  { name: 'ELD', href: '/eld', icon: TruckIcon, color: 'text-red-600' },
+  { name: 'IFTA', href: '/ifta', icon: LightningBoltIcon, color: 'text-blue-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },
 ];

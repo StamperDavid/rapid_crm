@@ -24,3 +24,4 @@ db.all("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'ai_%'",
 
 
 
+

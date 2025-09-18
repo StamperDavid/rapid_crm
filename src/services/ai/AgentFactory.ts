@@ -1,4 +1,4 @@
-import { db } from '../database';
+// Using direct database connection - no separate database import
 import { aiIntegrationService } from './AIIntegrationService';
 import { claudeCollaborationService } from './ClaudeCollaborationService';
 import { advancedAICustomizationService } from './AdvancedAICustomizationService';
@@ -616,6 +616,7 @@ export class AgentFactory {
 }
 
 export const agentFactory = AgentFactory.getInstance();
+
 
 
 

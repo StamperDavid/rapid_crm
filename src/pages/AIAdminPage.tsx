@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChipIcon, ChartBarIcon, CogIcon, ExclamationIcon, CheckCircleIcon, RefreshIcon, PlayIcon,
   PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon, ChatIcon,
@@ -121,7 +121,7 @@ const AIAdminPage: React.FC = () => {
             onClick={() => setShowTooltip(null)}
             className="absolute top-1 right-1 text-gray-400 hover:text-white"
           >
-            ×
+            �
           </button>
         </div>
       )}
@@ -497,7 +497,7 @@ const AIAdminPage: React.FC = () => {
                           onClick={() => setShowTooltip(showTooltip === 'language-selection' ? null : 'language-selection')}
                           className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         >
-                          ℹ️
+                          ??
                         </button>
                       </label>
                     </Tooltip>
@@ -528,7 +528,7 @@ const AIAdminPage: React.FC = () => {
                           onClick={() => setShowTooltip(showTooltip === 'voice-model' ? null : 'voice-model')}
                           className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         >
-                          ℹ️
+                          ??
                         </button>
                       </label>
                     </Tooltip>
@@ -564,7 +564,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'speech-rate' ? null : 'speech-rate')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -594,7 +594,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'voice-pitch' ? null : 'voice-pitch')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -624,7 +624,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'volume-level' ? null : 'volume-level')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -660,7 +660,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'emotion-control' ? null : 'emotion-control')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -689,7 +689,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'speaking-style' ? null : 'speaking-style')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -717,7 +717,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'emphasis-level' ? null : 'emphasis-level')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -743,7 +743,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'voice-style' ? null : 'voice-style')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -777,7 +777,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'stability' ? null : 'stability')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -807,7 +807,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'clarity' ? null : 'clarity')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -837,7 +837,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'breathiness' ? null : 'breathiness')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -867,7 +867,7 @@ const AIAdminPage: React.FC = () => {
                               onClick={() => setShowTooltip(showTooltip === 'roughness' ? null : 'roughness')}
                               className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
-                              ℹ️
+                              ??
                             </button>
                           </label>
                         </Tooltip>
@@ -900,7 +900,7 @@ const AIAdminPage: React.FC = () => {
                           onClick={() => setShowTooltip(showTooltip === 'voice-presets' ? null : 'voice-presets')}
                           className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         >
-                          ℹ️
+                          ??
                         </button>
                       </h4>
                     </Tooltip>
@@ -973,7 +973,7 @@ const AIAdminPage: React.FC = () => {
                                 onClick={() => setShowTooltip(showTooltip === 'enable-voice' ? null : 'enable-voice')}
                                 className="ml-2 w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                               >
-                                ℹ️
+                                ??
                               </button>
                             </label>
                           </div>
@@ -1011,7 +1011,7 @@ const AIAdminPage: React.FC = () => {
                             className="w-4 h-4 text-purple-400 hover:text-purple-600"
                             title="Voice test information"
                           >
-                            ℹ️
+                            ??
                           </button>
                         </div>
 
@@ -1036,7 +1036,7 @@ const AIAdminPage: React.FC = () => {
                             className="w-4 h-4 text-gray-400 hover:text-gray-600"
                             title="Stop voice information"
                           >
-                            ℹ️
+                            ??
                           </button>
                         </div>
                       </div>
@@ -1060,7 +1060,7 @@ const AIAdminPage: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <div className="text-sm text-purple-100">AI Intelligence Level</div>
-                      <div className="text-lg font-semibold">🧠 Adaptive</div>
+                      <div className="text-lg font-semibold">?? Adaptive</div>
                     </div>
                     <button className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
                       <RefreshIcon className="h-5 w-5" />
@@ -1429,7 +1429,7 @@ const AIAdminPage: React.FC = () => {
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">AI-to-AI Development</h4>
                     <div className="space-y-4">
                       <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
-                        <div className="font-medium text-gray-900 dark:text-white mb-2">🚀 Accelerated Development</div>
+                        <div className="font-medium text-gray-900 dark:text-white mb-2">?? Accelerated Development</div>
                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                           Leverage AI-to-AI collaboration to build the comprehensive control panel with specialized agents working in parallel.
                         </div>
@@ -1478,7 +1478,7 @@ const AIAdminPage: React.FC = () => {
                         <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex justify-between items-start mb-1">
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {message.from_ai} → {message.to_ai}
+                              {message.from_ai} ? {message.to_ai}
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {new Date(message.created_at).toLocaleTimeString()}
@@ -1896,14 +1896,14 @@ const AIAdminPage: React.FC = () => {
                           <div className="font-medium text-gray-900 dark:text-white">Competitor A</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">Last checked: 2 hours ago</div>
                         </div>
-                        <div className="text-sm text-green-600">↓ 3% pricing</div>
+                        <div className="text-sm text-green-600">? 3% pricing</div>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div>
                           <div className="font-medium text-gray-900 dark:text-white">Competitor B</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">Last checked: 1 hour ago</div>
                         </div>
-                        <div className="text-sm text-red-600">↑ 5% pricing</div>
+                        <div className="text-sm text-red-600">? 5% pricing</div>
                       </div>
                     </div>
                     <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">

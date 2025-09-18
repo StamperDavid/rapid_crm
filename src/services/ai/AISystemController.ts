@@ -4,7 +4,7 @@
  * Includes file operations, database management, API control, and more
  */
 
-import { databaseService } from '../database/DatabaseService';
+// Using direct database connection - no separate database service
 import { aiIntegrationService } from './AIIntegrationService';
 
 export interface SystemOperation {

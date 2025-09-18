@@ -1,5 +1,5 @@
 import { Lead } from '../../types/schema';
-import { LeadRepository } from '../database/repositories/LeadRepository';
+// Using direct database connection - no separate repository
 
 export class LeadService {
   private leadRepository: LeadRepository;

@@ -4,7 +4,7 @@
  * for collaborative building of the Rapid CRM system
  */
 
-import { databaseService } from '../database/DatabaseService';
+// Using direct database connection - no separate database service
 import { aiIntegrationService } from './AIIntegrationService';
 
 export interface DevelopmentTask {
