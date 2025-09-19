@@ -12,7 +12,8 @@ import {
   ClockIcon,
   CheckCircleIcon,
   ExclamationIcon,
-  PencilIcon
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/outline';
 import { Service } from '../../../types/schema';
 import { useUser } from '../../../contexts/UserContext';
@@ -337,6 +338,20 @@ const Services: React.FC = () => {
     navigate(`/services/edit/${service.id}`);
   };
 
+  const handleDeleteService = async (serviceId: string) => {
+    if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      // TODO: Implement deleteService function
+      alert('Delete functionality coming soon!');
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      alert('Error deleting service. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -478,13 +493,22 @@ const Services: React.FC = () => {
                 </div>
                 
                 <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 mt-auto">
-                  <button
-                    onClick={() => handleEditService(service)}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
-                    <PencilIcon className="h-4 w-4 mr-2" />
-                    Edit Service
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEditService(service)}
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      <PencilIcon className="h-4 w-4 mr-2" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteService(service.id)}
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      <TrashIcon className="h-4 w-4 mr-2" />
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             );

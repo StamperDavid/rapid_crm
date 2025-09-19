@@ -391,6 +391,21 @@ const UserManagement: React.FC = () => {
     setUsers(prev => prev.filter(user => user.id !== userId));
   };
 
+  const handleCreateRole = () => {
+    // TODO: Implement role creation functionality
+    alert('Create Role functionality coming soon!');
+  };
+
+  const handleExportLogs = () => {
+    // TODO: Implement log export functionality
+    alert('Export Logs functionality coming soon!');
+  };
+
+  const handleViewUser = (userId: string) => {
+    // TODO: Implement user view functionality
+    alert(`View user ${userId} functionality coming soon!`);
+  };
+
   const handlePermissionChange = (permission: keyof User['permissions'], value: boolean) => {
     setNewUser(prev => ({
       ...prev,
@@ -543,7 +558,10 @@ const UserManagement: React.FC = () => {
             Predefined role templates with specific permissions
           </p>
         </div>
-        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+        <button 
+          onClick={handleCreateRole}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+        >
           <PlusIcon className="h-4 w-4 mr-2" />
           Create Role
         </button>
@@ -608,7 +626,10 @@ const UserManagement: React.FC = () => {
             Track user actions and system access
           </p>
         </div>
-        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+        <button 
+          onClick={handleExportLogs}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+        >
           <DownloadIcon className="h-4 w-4 mr-2" />
           Export Logs
         </button>
@@ -631,7 +652,10 @@ const UserManagement: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <button className="text-blue-600 hover:text-blue-700">
+                  <button 
+                    onClick={() => handleViewUser(user.id)}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
                     <EyeIcon className="h-4 w-4" />
                   </button>
                 </div>

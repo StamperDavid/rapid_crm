@@ -16,7 +16,7 @@ const db = new sqlite3.Database(dbPath);
 
 // Read and execute schema
 const schemaPath = path.join(__dirname, 'schema.sql');
-const seedDataPath = path.join(__dirname, 'seedData.sql');
+const seedDataPath = path.join(__dirname, 'seedData_empty.sql');
 
 console.log('🚀 Initializing Rapid CRM Database...');
 console.log('📁 Database path:', dbPath);
@@ -37,13 +37,26 @@ function executeSQLFile(filePath, description) {
             const statements = data
                 .split(';')
                 .map(stmt => {
-                    // Remove comments (everything after -- on any line)
+                    // Remove comments (everything after -- on any line) but preserve inline comments after column definitions
                     return stmt
                         .split('\n')
                         .map(line => {
+                            // Only remove comments that are at the start of a line or after whitespace
+                            const trimmedLine = line.trim();
+                            if (trimmedLine.startsWith('--')) {
+                                return ''; // Remove comment-only lines
+                            }
+                            
+                            // For lines with inline comments, be more careful
                             const commentIndex = line.indexOf('--');
                             if (commentIndex !== -1) {
-                                line = line.substring(0, commentIndex);
+                                // Check if the comment is after a column definition (has comma or other SQL syntax)
+                                const beforeComment = line.substring(0, commentIndex).trim();
+                                if (beforeComment.endsWith(',') || beforeComment.endsWith(')') || 
+                                    beforeComment.includes('TEXT') || beforeComment.includes('INTEGER') || 
+                                    beforeComment.includes('REAL') || beforeComment.includes('DATE')) {
+                                    return beforeComment; // Keep the column definition, remove the comment
+                                }
                             }
                             return line.trim();
                         })

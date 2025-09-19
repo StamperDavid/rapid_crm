@@ -4,9 +4,9 @@ import {
   OfficeBuildingIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   ChipIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from '@heroicons/react/outline';
 import { useCRM } from '../../contexts/CRMContext';
 
@@ -173,9 +173,9 @@ const DashboardModule: React.FC = () => {
                         stat.changeType === 'increase' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {stat.changeType === 'increase' ? (
-                          <TrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-emerald-500" />
+                          <ArrowUpIcon className="self-center flex-shrink-0 h-4 w-4 text-emerald-500" />
                         ) : (
-                          <TrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" />
+                          <ArrowDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" />
                         )}
                         <span className="sr-only">
                           {stat.changeType === 'increase' ? 'Increased' : 'Decreased'} by

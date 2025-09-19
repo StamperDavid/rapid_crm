@@ -64,6 +64,11 @@ const Drivers: React.FC = () => {
     }
   };
 
+  const handleEditDriver = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setShowCreateModal(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -160,8 +165,9 @@ const Drivers: React.FC = () => {
                   <EyeIcon className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => setSelectedDriver(driver)}
-                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  onClick={() => handleEditDriver(driver)}
+                  className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+                  title="Edit driver"
                 >
                   <PencilIcon className="h-4 w-4" />
                 </button>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
   UsersIcon,
   CurrencyDollarIcon,
   OfficeBuildingIcon,
@@ -36,7 +36,7 @@ import {
   PaperClipIcon,
   StarIcon,
   FireIcon,
-  BoltIcon,
+  LightningBoltIcon,
   WifiIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
@@ -531,9 +531,9 @@ const AnalyticsModule: React.FC = () => {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <TrendingUpIcon className="h-4 w-4 text-green-500" />;
+        return <ArrowUpIcon className="h-4 w-4 text-green-500" />;
       case 'down':
-        return <TrendingDownIcon className="h-4 w-4 text-red-500" />;
+        return <ArrowDownIcon className="h-4 w-4 text-red-500" />;
       default:
         return <MinusIcon className="h-4 w-4 text-gray-500" />;
     }

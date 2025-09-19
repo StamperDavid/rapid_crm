@@ -18,8 +18,8 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowUpIcon,
+  ArrowDownIcon
 } from '@heroicons/react/outline';
 import { Lead } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';

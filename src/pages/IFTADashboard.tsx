@@ -78,6 +78,8 @@ const IFTADashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<IFTAComplianceAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'packages' | 'revenue' | 'alerts' | 'tax_calculator' | 'quarterly_filings' | 'registrations'>('overview');
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [showCreatePackageModal, setShowCreatePackageModal] = useState(false);
 
   useEffect(() => {
     fetchIFTAServiceData();
@@ -250,6 +252,27 @@ const IFTADashboard: React.FC = () => {
     }
   };
 
+  // Handler functions for buttons
+  const handleAddNewClient = () => {
+    setShowAddClientModal(true);
+  };
+
+  const handleCreateServicePackage = () => {
+    setShowCreatePackageModal(true);
+  };
+
+  const handleCreateNewPackage = () => {
+    alert('Create New Package functionality coming soon!');
+  };
+
+  const handleAddRegistration = () => {
+    alert('Add Registration functionality coming soon!');
+  };
+
+  const handleAddFiling = () => {
+    alert('Add Filing functionality coming soon!');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -272,10 +295,16 @@ const IFTADashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex space-x-3">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+              <button 
+                onClick={handleAddNewClient}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+              >
                 Add New Client
               </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+              <button 
+                onClick={handleCreateServicePackage}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
                 Create Service Package
               </button>
             </div>
@@ -428,7 +457,10 @@ const IFTADashboard: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">IFTA Service Packages</h3>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={handleCreateNewPackage}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   Create New Package
                 </button>
               </div>
@@ -467,7 +499,10 @@ const IFTADashboard: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">IFTA Service Revenue</h3>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={() => alert('Generate Report functionality coming soon!')}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   Generate Report
                 </button>
               </div>
@@ -533,7 +568,10 @@ const IFTADashboard: React.FC = () => {
                         </p>
                       </div>
                       {alert.status !== 'resolved' && (
-                        <button className="ml-4 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                        <button 
+                          onClick={() => alert('Resolve Alert functionality coming soon!')}
+                          className="ml-4 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                        >
                           Resolve
                         </button>
                       )}
@@ -557,7 +595,10 @@ const IFTADashboard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Quarterly IFTA Filings</h3>
                   <p className="text-sm text-gray-600">Manage quarterly fuel tax returns and submissions</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={handleAddFiling}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   New Filing
                 </button>
               </div>
@@ -577,7 +618,10 @@ const IFTADashboard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">IFTA Registrations</h3>
                   <p className="text-sm text-gray-600">Manage IFTA registrations and renewals</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={handleAddRegistration}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   New Registration
                 </button>
               </div>

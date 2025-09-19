@@ -128,7 +128,7 @@ class RealAIServiceNode {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:3001',
+          'HTTP-Referer': 'http://localhost:3000',
           'X-Title': 'Rapid CRM AI Assistant'
         },
         body: JSON.stringify({

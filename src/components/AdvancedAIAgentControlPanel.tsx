@@ -32,10 +32,10 @@ import {
   DocumentIcon,
   ChatIcon,
   AcademicCapIcon,
-  TrendingUpIcon,
+  ArrowUpIcon,
   CodeIcon,
   ServerIcon,
-  TrendingDownIcon,
+  ArrowDownIcon,
   MinusIcon
 } from '@heroicons/react/outline';
 // Import services - we'll fix the syntax errors in the services themselves
@@ -201,6 +201,25 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
       case 'advanced': return 'text-purple-600 bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400';
       case 'expert': return 'text-red-600 bg-red-100 dark:bg-red-900/20 dark:text-red-400';
       default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
+
+  // Download handlers
+  const handleDownloadAgent = (agentId: string) => {
+    try {
+      // TODO: Implement agent download functionality
+      alert(`Download agent ${agentId} functionality coming soon!`);
+    } catch (error) {
+      console.error('Error downloading agent:', error);
+    }
+  };
+
+  const handleDownloadWorkflow = (workflowId: string) => {
+    try {
+      // TODO: Implement workflow download functionality
+      alert(`Download workflow ${workflowId} functionality coming soon!`);
+    } catch (error) {
+      console.error('Error downloading workflow:', error);
     }
   };
 
@@ -801,7 +820,10 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     <HeartIcon className="h-4 w-4" />
                   </button>
                 </div>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <button 
+                  onClick={() => handleDownloadAgent(agent.id)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
                   Download
                 </button>
               </div>
@@ -876,7 +898,10 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   <HeartIcon className="h-4 w-4" />
                 </button>
               </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <button 
+                onClick={() => handleDownloadWorkflow(workflow.id)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
                 Download
               </button>
             </div>
@@ -1308,7 +1333,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   </span>
                 </div>
                 <div className="flex items-center">
-                    <TrendingUpIcon className="h-4 w-4 text-gray-400 mr-1" />
+                    <ArrowUpIcon className="h-4 w-4 text-gray-400 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-300">
                     {workflow.successRate || 0}% success
                   </span>

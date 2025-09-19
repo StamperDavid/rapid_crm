@@ -9,7 +9,7 @@ import {
   GlobeAltIcon,
   CogIcon,
   SparklesIcon,
-  BoltIcon,
+  LightningBoltIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
   ClockIcon,

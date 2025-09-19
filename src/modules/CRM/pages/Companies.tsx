@@ -7,7 +7,9 @@ import {
   UserGroupIcon,
   TruckIcon,
   IdentificationIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/outline';
 import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
@@ -27,6 +29,7 @@ const Companies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Organization | null>(null);
 
 
   // Filter companies based on search term and status
@@ -72,6 +75,25 @@ const Companies: React.FC = () => {
     } catch (error) {
       console.error('Error creating company:', error);
       alert('Error creating company. Please try again.');
+    }
+  };
+
+  const handleEditCompany = (company: Organization) => {
+    setEditingCompany(company);
+    setShowCreateModal(true);
+  };
+
+  const handleDeleteCompany = async (companyId: string) => {
+    if (!confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      // TODO: Implement deleteCompany function in CRMContext
+      alert('Delete functionality coming soon!');
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      alert('Error deleting company. Please try again.');
     }
   };
 
@@ -187,6 +209,28 @@ const Companies: React.FC = () => {
                           <CurrencyDollarIcon className="h-4 w-4 mr-1" />
                           {companyDeals.length}
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCompany(company);
+                            }}
+                            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                            title="Edit company"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCompany(company.id);
+                            }}
+                            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                            title="Delete company"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
                         <div className="text-gray-400">
                           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -226,11 +270,20 @@ const Companies: React.FC = () => {
         )}
       </div>
 
-      {/* Create Company Modal */}
+      {/* Create/Edit Company Modal */}
       {showCreateModal && (
         <ComprehensiveCompanyForm
-          onSave={handleCreateCompany}
-          onCancel={() => setShowCreateModal(false)}
+          onSave={editingCompany ? (data) => {
+            // TODO: Implement updateCompany function
+            alert('Update functionality coming soon!');
+            setShowCreateModal(false);
+            setEditingCompany(null);
+          } : handleCreateCompany}
+          onCancel={() => {
+            setShowCreateModal(false);
+            setEditingCompany(null);
+          }}
+          company={editingCompany}
         />
       )}
     </div>

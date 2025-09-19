@@ -5,13 +5,13 @@ import {
   ChartBarIcon,
   GlobeAltIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
+  ExclamationIcon,
   UsersIcon,
   CheckCircleIcon,
   XCircleIcon,
   PlayIcon,
   PauseIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   DocumentTextIcon,
   EyeIcon,
   TrashIcon,
@@ -429,7 +429,7 @@ const FunctionalAIConfigPanel: React.FC = () => {
                     disabled={loading}
                     className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
-                    <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
               </div>
@@ -622,7 +622,7 @@ const FunctionalAIConfigPanel: React.FC = () => {
                 disabled={loading}
                 className="w-full px-3 py-2 text-left text-sm bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded border flex items-center"
               >
-                <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh Metrics
               </button>
               <button className="w-full px-3 py-2 text-left text-sm bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded border flex items-center">
@@ -1285,7 +1285,7 @@ const FunctionalAIConfigPanel: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{metrics.errorRate}%</p>
               </div>
               <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
+                <ExclamationIcon className="h-4 w-4 text-red-600" />
               </div>
             </div>
             <div className="mt-2">

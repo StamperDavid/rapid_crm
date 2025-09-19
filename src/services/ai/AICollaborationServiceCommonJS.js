@@ -7,7 +7,7 @@
 
 class AICollaborationService {
   constructor() {
-    this.apiBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3001/api' : 'http://localhost:3001/api';
+    this.apiBaseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/api' : 'http://localhost:3000/api';
     this.messages = [];
     this.projects = new Map();
     this.tasks = new Map();

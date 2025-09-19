@@ -24,11 +24,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      '/vite.svg': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      },
     },
   }
 })

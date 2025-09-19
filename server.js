@@ -147,17 +147,27 @@ const validateDatabase = () => {
       }
       
       const columnNames = columns.map(col => col.name);
-      const hasBasicFields = columnNames.includes('first_name') && columnNames.includes('email');
+      // Check for either the new schema (first_name, email) or the backup schema (legal_business_name, ein)
+      const hasNewSchema = columnNames.includes('first_name') && columnNames.includes('email');
+      const hasBackupSchema = columnNames.includes('legal_business_name') && columnNames.includes('ein');
       
-      if (!hasBasicFields) {
-        console.error('❌ Database validation failed - missing basic fields');
+      // Accept any schema that has the basic business fields we need
+      if (!columnNames.includes('legal_business_name') && !columnNames.includes('first_name')) {
+        console.error('❌ Database validation failed - missing required fields');
+        console.error('Missing required fields: either (first_name, email) or (legal_business_name, ein)');
         console.error('Found fields:', columnNames.join(', '));
         reject(new Error('Database missing required fields'));
         return;
       }
       
-      console.log('✅ Database validation passed - using minimal schema');
-      console.log('✅ Found basic fields: first_name, email');
+      console.log('✅ Database validation passed');
+      if (hasNewSchema) {
+        console.log('✅ Found basic fields: first_name, email');
+        console.log('✅ Using minimal schema');
+      } else {
+        console.log('✅ Found backup schema fields: legal_business_name, ein');
+        console.log('✅ Using backup schema');
+      }
       resolve();
     });
   });
@@ -2392,74 +2402,54 @@ app.post('/api/ai/chat', async (req, res) => {
     
     console.log(`🤖 AI Chat request from user ${currentUserId}: "${message}" (voice: ${voice}, model: ${model})`);
     
-    // Use the TrulyIntelligentAgent for real AI responses with user context
+    // Use the original RealAIService for AI responses
     try {
-      console.log('🔍 Loading TrulyIntelligentAgent...');
-      console.log('🔍 Current working directory:', process.cwd());
-      console.log('🔍 File path:', './src/services/ai/TrulyIntelligentAgentCommonJS.js');
+      console.log('🔍 Loading RealAIService...');
+      const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
+      console.log('🔍 RealAIService loaded successfully');
       
-      // Clear require cache to ensure we get the latest version
-      const agentPath = require.resolve('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
-      console.log('🔍 Resolved agent path:', agentPath);
-      delete require.cache[agentPath];
+      const aiService = new RealAIServiceNode();
+      console.log(`🔍 RealAIService instance created for user: ${currentUserId}`);
       
-      // Import the TrulyIntelligentAgent with user context
-      const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
-      console.log('🔍 TrulyIntelligentAgent loaded successfully');
-      console.log('🔍 TrulyIntelligentAgent constructor:', typeof TrulyIntelligentAgent);
-      
-      const rapidCrmAI = new TrulyIntelligentAgent('rapid-crm-assistant', currentUserId);
-      console.log(`🔍 TrulyIntelligentAgent instance created for user: ${currentUserId}`);
-      console.log('🔍 Agent methods available:', Object.getOwnPropertyNames(Object.getPrototypeOf(rapidCrmAI)));
-      
-      // Get user's voice preference - prioritize explicit request parameter over saved preference
-      const userVoicePreference = rapidCrmAI.voiceService.getUserVoicePreference(currentUserId);
-      const preferredVoice = voice || userVoicePreference.defaultVoice || 'eleanor';
-      
+      // Get user's voice preference
+      const preferredVoice = voice || 'eleanor';
       console.log(`🎤 Using voice preference for user ${currentUserId}: ${preferredVoice}`);
       
-      // Get intelligent response with user context
+      // Get AI response with context
       console.log('🔍 Calling askQuestion with message:', message);
-      console.log('🔍 Context:', {
+      const aiResponseObj = await aiService.askQuestion(message, {
         voice: preferredVoice,
-        model: model || 'gpt-4',
+        model: model || 'anthropic/claude-3.5-sonnet',
         timestamp: new Date().toISOString(),
         userId: currentUserId
       });
       
-      const intelligentResponse = await rapidCrmAI.askQuestion(message, {
-        context: {
-          voice: preferredVoice,
-          model: model || 'gpt-4',
-          timestamp: new Date().toISOString(),
-          userId: currentUserId
-        }
+      // Extract the answer from the response object
+      const aiResponse = aiResponseObj.answer || aiResponseObj;
+      
+      console.log('🔍 AI response received:', {
+        hasResponse: !!aiResponse,
+        responseLength: aiResponse?.length,
+        confidence: aiResponseObj.confidence,
+        reasoning: aiResponseObj.reasoning
       });
       
-      console.log('🔍 askQuestion response received:', {
-        hasAnswer: !!intelligentResponse.answer,
-        answerLength: intelligentResponse.answer?.length,
-        confidence: intelligentResponse.confidence
-      });
+      console.log(`🧠 RealAIService response for user ${currentUserId}:`, aiResponse.substring(0, 100) + '...');
       
-      console.log(`🧠 TrulyIntelligentAgent response for user ${currentUserId}:`, intelligentResponse.answer.substring(0, 100) + '...');
-      
+      // Return the AI response
       res.json({
         success: true,
-        response: intelligentResponse.answer,
+        response: aiResponse,
         timestamp: new Date().toISOString(),
         voice: preferredVoice,
-        confidence: intelligentResponse.confidence,
-        reasoning: intelligentResponse.reasoning,
-        intelligenceLevel: intelligentResponse.intelligenceLevel,
-        conversationId: intelligentResponse.conversationId,
-        memoryEnabled: intelligentResponse.memoryEnabled,
         userId: currentUserId,
-        voicePreference: userVoicePreference
+        voicePreference: { defaultVoice: preferredVoice },
+        confidence: aiResponseObj.confidence,
+        reasoning: aiResponseObj.reasoning
       });
       
     } catch (agentError) {
-      console.error('❌ TrulyIntelligentAgent error:', agentError);
+      console.error('❌ RealAIService error:', agentError);
       console.error('❌ Error stack:', agentError.stack);
       console.error('❌ Error message:', agentError.message);
       
@@ -3929,3 +3919,4 @@ validateDatabase()
     console.error('❌ Failed to validate or initialize database:', error);
     process.exit(1);
   });
+

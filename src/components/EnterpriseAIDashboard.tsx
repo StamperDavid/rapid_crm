@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   ExclamationIcon,
   CheckCircleIcon,
   ClockIcon,
@@ -90,7 +88,7 @@ const EnterpriseAIDashboard: React.FC = () => {
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-    { id: 'predictive', name: 'Predictive Analytics', icon: TrendingUpIcon },
+    { id: 'predictive', name: 'Predictive Analytics', icon: ArrowUpIcon },
     { id: 'learning', name: 'AI Learning', icon: LightBulbIcon },
     { id: 'workflows', name: 'Automation', icon: CogIcon },
     { id: 'performance', name: 'Performance', icon: ClockIcon }
@@ -250,7 +248,7 @@ const EnterpriseAIDashboard: React.FC = () => {
                   onClick={generateSalesForecast}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                 >
-                  <TrendingUpIcon className="h-4 w-4 mr-2" />
+                  <ArrowUpIcon className="h-4 w-4 mr-2" />
                   Generate Sales Forecast
                 </button>
                 <button

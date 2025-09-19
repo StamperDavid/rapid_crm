@@ -12,74 +12,57 @@ import {
   MailIcon,
   MapPinIcon,
 } from '@heroicons/react/outline';
+import { useCRM } from '../../../contexts/CRMContext';
 
 const CRMDashboard: React.FC = () => {
+  const { companies, contacts, deals, leads, isLoading, refreshCompanies, refreshContacts, refreshDeals, refreshLeads } = useCRM();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
 
-  // Mock client data - converted to state so it can be updated
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: 'Acme Transportation',
-      industry: 'Logistics',
-      email: 'contact@acmetrans.com',
-      phone: '(555) 123-4567',
-      address: '123 Main St, City, State 12345',
-      status: 'active',
-      created_at: '2024-01-15',
-      last_contact: '2024-01-20'
-    },
-    {
-      id: 2,
-      name: 'Global Shipping Co',
-      industry: 'Maritime',
-      email: 'info@globalshipping.com',
-      phone: '(555) 987-6543',
-      address: '456 Harbor Blvd, Port City, State 67890',
-      status: 'prospect',
-      created_at: '2024-01-10',
-      last_contact: '2024-01-18'
-    },
-    {
-      id: 3,
-      name: 'Metro Freight Lines',
-      industry: 'Trucking',
-      email: 'dispatch@metrofreight.com',
-      phone: '(555) 456-7890',
-      address: '789 Industrial Way, Metro City, State 54321',
-      status: 'active',
-      created_at: '2024-01-05',
-      last_contact: '2024-01-22'
-    }
-  ]);
-
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.email.toLowerCase().includes(searchTerm.toLowerCase());
+  // Use real companies data instead of mock clients
+  const filteredClients = companies.filter(company => {
+    const matchesSearch = company.legalBusinessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         company.physicalCity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         company.physicalState?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = filterStatus === 'all' || client.status === filterStatus;
+    const matchesFilter = filterStatus === 'all' || (filterStatus === 'active' ? company.physicalState : !company.physicalState);
     
     return matchesSearch && matchesFilter;
   });
 
-  const handleCreateClient = (clientData: any) => {
-    const newClient = {
-      id: Math.max(...clients.map(c => c.id)) + 1,
-      ...clientData,
-      created_at: new Date().toISOString().split('T')[0],
-      last_contact: new Date().toISOString().split('T')[0]
-    };
-    setClients([...clients, newClient]);
-    setShowCreateModal(false);
+  const handleCreateClient = async (clientData: any) => {
+    try {
+      // This would use the real createCompany function from CRMContext
+      // For now, just refresh the data
+      await refreshCompanies();
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Error creating client:', error);
+    }
   };
 
-  const handleDeleteClient = (clientId: number) => {
-    setClients(clients.filter(client => client.id !== clientId));
+  const handleDeleteClient = async (clientId: string) => {
+    try {
+      // This would use the real deleteCompany function from CRMContext
+      // For now, just refresh the data
+      await refreshCompanies();
+    } catch (error) {
+      console.error('Error deleting client:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading CRM data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -170,21 +153,19 @@ const CRMDashboard: React.FC = () => {
                     <div className="ml-4">
                       <div className="flex items-center">
                         <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
-                          {client.name}
+                          {client.legalBusinessName || 'Unnamed Company'}
                         </p>
                         <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          client.status === 'active' 
+                          client.physicalState 
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : client.status === 'prospect'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                             : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                         }`}>
-                          {client.status}
+                          {client.physicalState ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                       <div className="mt-1">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {client.industry}
+                          {client.physicalCity}, {client.physicalState}
                         </p>
                       </div>
                     </div>

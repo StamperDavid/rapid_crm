@@ -4,8 +4,8 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  DocumentArrowUpIcon,
-  DocumentArrowDownIcon,
+  UploadIcon,
+  DownloadIcon,
   MagnifyingGlassIcon,
   TagIcon,
   CalendarIcon,
@@ -231,7 +231,7 @@ export const KnowledgeManagementPanel: React.FC<KnowledgeManagementPanelProps> =
                       </div>
                       <div className="flex items-center space-x-1">
                         {entry.source === 'excel_file' ? (
-                          <DocumentArrowUpIcon className="h-4 w-4" />
+                          <UploadIcon className="h-4 w-4" />
                         ) : entry.source === 'boss_directive' ? (
                           <ExclamationTriangleIcon className="h-4 w-4" />
                         ) : (

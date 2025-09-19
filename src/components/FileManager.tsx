@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   DocumentIcon, 
-  PhotoIcon, 
+  PhotographIcon, 
   VideoCameraIcon, 
   SpeakerphoneIcon,
   ArchiveBoxIcon,

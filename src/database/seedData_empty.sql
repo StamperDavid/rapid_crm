@@ -1,0 +1,3 @@
+-- Rapid CRM Database Seed Data (Empty)
+-- Create empty database with no seed data
+-- This allows the application to start with empty tables

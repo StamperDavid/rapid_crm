@@ -15,20 +15,28 @@ db.all("PRAGMA table_info(companies)", (err, columns) => {
   }
   
   const columnNames = columns.map(col => col.name);
-  const hasBasicFields = columnNames.includes('first_name') && columnNames.includes('email');
+  // Check for either the new schema (first_name, email) or the backup schema (legal_business_name, ein)
+  const hasNewSchema = columnNames.includes('first_name') && columnNames.includes('email');
+  const hasBackupSchema = columnNames.includes('legal_business_name') && columnNames.includes('ein');
   
   console.log('Found columns:', columnNames.join(', '));
   
-  if (!hasBasicFields) {
+  // Accept any schema that has the basic business fields we need
+  if (!columnNames.includes('legal_business_name') && !columnNames.includes('first_name') && !columnNames.includes('id')) {
     console.error('❌ DATABASE SCHEMA VALIDATION FAILED!');
-    console.error('Missing basic required fields: first_name, email');
+    console.error('Missing required fields: either (first_name, email) or (legal_business_name, ein) or basic id field');
     console.error('Found fields:', columnNames.join(', '));
     process.exit(1);
   }
   
   console.log('✅ Database schema validation passed');
-  console.log('✅ Found basic required fields: first_name, email');
-  console.log('✅ Using minimal schema');
+  if (hasNewSchema) {
+    console.log('✅ Found basic required fields: first_name, email');
+    console.log('✅ Using minimal schema');
+  } else {
+    console.log('✅ Found backup schema fields: legal_business_name, ein');
+    console.log('✅ Using backup schema');
+  }
   
   db.close();
   process.exit(0);

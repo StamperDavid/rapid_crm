@@ -23,10 +23,10 @@ INSERT INTO companies (
     id, physical_street_address, physical_suite_apt, physical_city, physical_state, 
     physical_country, physical_zip, is_mailing_address_same, mailing_street_address, 
     mailing_city, mailing_state, mailing_country, mailing_zip, legal_business_name, 
-    has_dba, dba_name, business_type, ein, business_started, classification, 
-    operation_type, interstate_intrastate, usdot_number, operation_class, 
-    fleet_type, number_of_vehicles, number_of_drivers, gvwr, vehicle_types, 
-    cargo_types, hazmat_required, phmsa_work, regulatory_details, 
+    has_dba, dba_name, business_type, ein, business_started, business_classification, 
+    transportation_operation_type, interstate_intrastate, usdot_number, operation_class, 
+    vehicle_fleet_type, number_of_vehicles, number_of_drivers, gvwr, vehicle_types_used, 
+    cargo_types_transported, hazmat_placard_required, phmsa_work, additional_regulatory_details, 
     has_duns_bradstreet_number, duns_bradstreet_number, created_at, updated_at
 ) VALUES 
 (
@@ -238,26 +238,23 @@ INSERT INTO vehicles (
 
 -- Insert Drivers
 INSERT INTO drivers (
-    id, company_id, driver_name, first_name, last_name, phone, email, 
-    license_number, license_class, license_expiry, medical_card_expiry, 
-    hire_date, employment_status, position, pay_type, created_at, updated_at
+    id, company_id, full_name, address, phone, email, 
+    license_number, license_expiry, dot_medical_certificate_expiry, 
+    hire_date, employment_status, position, created_at, updated_at
 ) VALUES 
 (
     '1',
     '1',
     'John Smith',
-    'John',
-    'Smith',
+    '123 Driver St, City, State 12345',
     '(555) 123-4567',
     'john.smith@acmetransport.com',
     'CDL123456789',
-    'Class A',
     '2025-06-15',
     '2024-12-15',
     '2020-01-15',
     'Active',
     'Driver',
-    'Mileage',
     '2024-01-15T00:00:00.000Z',
     '2024-01-20T00:00:00.000Z'
 ),

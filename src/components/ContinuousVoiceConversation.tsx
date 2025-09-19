@@ -6,7 +6,7 @@ import {
   PlayIcon,
   PauseIcon,
   CogIcon,
-  ChatBubbleLeftRightIcon
+  ChatIcon
 } from '@heroicons/react/outline';
 import { useContinuousVoice } from '../hooks/useContinuousVoice';
 
@@ -72,7 +72,7 @@ export const ContinuousVoiceConversation: React.FC<ContinuousVoiceConversationPr
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-            <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <ChatIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">

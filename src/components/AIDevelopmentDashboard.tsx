@@ -11,7 +11,7 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon,
+  RefreshIcon,
 } from '@heroicons/react/outline';
 import { aiDevelopmentAssistant, DevelopmentTask, ComponentAnalysis } from '../services/ai/AIDevelopmentAssistant';
 import { aiSystemController, SystemOperation } from '../services/ai/AISystemController';
@@ -155,7 +155,7 @@ const AIDevelopmentDashboard: React.FC = () => {
             onClick={performHealthCheck}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
           >
-            <ArrowPathIcon className="h-4 w-4" />
+            <RefreshIcon className="h-4 w-4" />
             <span>Refresh</span>
           </button>
           <button

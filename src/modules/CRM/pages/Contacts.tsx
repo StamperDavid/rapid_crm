@@ -12,7 +12,8 @@ import {
   OfficeBuildingIcon,
   IdentificationIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  PencilIcon
 } from '@heroicons/react/outline';
 import { Person, SELECT_OPTIONS } from '../../../types/schema';
 
@@ -147,6 +148,51 @@ const Contacts: React.FC = () => {
 
   const handleDeleteContact = (contactId: string) => {
     setContacts(contacts.filter(contact => contact.id !== contactId));
+  };
+
+  const handleEditContact = (contact: Person) => {
+    setEditingContact(contact);
+    setNewContact({
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      email: contact.email,
+      phone: contact.phone,
+      preferredContactMethod: contact.preferredContactMethod,
+      isCompanyOwner: contact.isCompanyOwner,
+      isPrimaryContact: contact.isPrimaryContact
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleUpdateContact = () => {
+    if (newContact.firstName && newContact.lastName && newContact.email && newContact.phone && editingContact) {
+      const updatedContact: Person = {
+        ...editingContact,
+        firstName: newContact.firstName,
+        lastName: newContact.lastName,
+        email: newContact.email,
+        phone: newContact.phone,
+        preferredContactMethod: newContact.preferredContactMethod,
+        isCompanyOwner: newContact.isCompanyOwner,
+        isPrimaryContact: newContact.isPrimaryContact
+      };
+      
+      setContacts(contacts.map(contact => 
+        contact.id === editingContact.id ? updatedContact : contact
+      ));
+      
+      setNewContact({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        preferredContactMethod: 'Phone',
+        isCompanyOwner: true,
+        isPrimaryContact: true
+      });
+      setEditingContact(null);
+      setShowCreateModal(false);
+    }
   };
 
   const totalContacts = contacts.length;
@@ -410,6 +456,13 @@ const Contacts: React.FC = () => {
                       <EyeIcon className="h-5 w-5" />
                     </button>
                     <button
+                      onClick={() => handleEditContact(contact)}
+                      className="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      title="Edit contact"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
                       onClick={() => handleDeleteContact(contact.id)}
                       className="p-2 text-red-600 hover:text-red-800"
                       title="Delete contact"
@@ -564,7 +617,7 @@ const Contacts: React.FC = () => {
             <div className="mt-3">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100">
-                  Add New Transportation Contact
+                  {editingContact ? 'Edit Transportation Contact' : 'Add New Transportation Contact'}
                 </h3>
                 <button
                   onClick={() => setShowCreateModal(false)}
@@ -729,16 +782,19 @@ const Contacts: React.FC = () => {
               
               <div className="flex justify-end space-x-3 pt-6">
                 <button
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setEditingContact(null);
+                  }}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleCreateContact}
+                  onClick={editingContact ? handleUpdateContact : handleCreateContact}
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  Add Contact
+                  {editingContact ? 'Update Contact' : 'Add Contact'}
                 </button>
               </div>
             </div>

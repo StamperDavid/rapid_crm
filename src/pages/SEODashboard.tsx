@@ -9,8 +9,6 @@ import {
   CheckCircleIcon,
   ExclamationIcon,
   ClockIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
 } from '@heroicons/react/outline';
@@ -227,6 +225,15 @@ const SEODashboard: React.FC = () => {
     }
   };
 
+  const createContent = async () => {
+    try {
+      // TODO: Implement content creation functionality
+      alert('Content creation functionality coming soon!');
+    } catch (error) {
+      console.error('Error creating content:', error);
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
@@ -306,7 +313,7 @@ const SEODashboard: React.FC = () => {
           {[
             { id: 'overview', name: 'Overview', icon: ChartBarIcon },
             { id: 'competitors', name: 'Competitors', icon: EyeIcon },
-            { id: 'trending', name: 'Trending Topics', icon: TrendingUpIcon },
+            { id: 'trending', name: 'Trending Topics', icon: ArrowUpIcon },
             { id: 'spy', name: 'Competitor Spy', icon: EyeIcon },
             { id: 'recommendations', name: 'Recommendations', icon: LightBulbIcon },
             { id: 'content', name: 'Content Opportunities', icon: DocumentTextIcon },
@@ -397,7 +404,7 @@ const SEODashboard: React.FC = () => {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <TrendingUpIcon className="h-6 w-6 text-gray-400" />
+                    <ArrowUpIcon className="h-6 w-6 text-gray-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -647,7 +654,10 @@ const SEODashboard: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <button className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                      <button 
+                        onClick={createContent}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
                         <DocumentTextIcon className="h-4 w-4 mr-1" />
                         Create Content
                       </button>
@@ -733,9 +743,9 @@ const SEODashboard: React.FC = () => {
                           topic.trendDirection === 'rising' ? 'text-green-600' : 'text-gray-600'
                         }`}>
                           {topic.trendDirection === 'rising' ? (
-                            <TrendingUpIcon className="h-4 w-4 mr-1" />
+                            <ArrowUpIcon className="h-4 w-4 mr-1" />
                           ) : (
-                            <TrendingDownIcon className="h-4 w-4 mr-1" />
+                            <ArrowDownIcon className="h-4 w-4 mr-1" />
                           )}
                           {topic.trendDirection}
                         </span>
@@ -758,7 +768,7 @@ const SEODashboard: React.FC = () => {
               
               {trendingTopics.length === 0 && (
                 <div className="text-center py-8">
-                  <TrendingUpIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <ArrowUpIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 dark:text-gray-400">No trending topics found</p>
                   <button
                     onClick={() => {

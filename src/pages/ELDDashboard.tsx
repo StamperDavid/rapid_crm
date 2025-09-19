@@ -69,6 +69,8 @@ const ELDDashboard: React.FC = () => {
   const [revenue, setRevenue] = useState<ELDRevenue[]>([]);
   const [alerts, setAlerts] = useState<ComplianceAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [showCreatePackageModal, setShowCreatePackageModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'packages' | 'revenue' | 'alerts' | 'hos_logs' | 'dvir_reports' | 'drivers' | 'vehicles'>('overview');
 
   useEffect(() => {
@@ -228,6 +230,27 @@ const ELDDashboard: React.FC = () => {
     }
   };
 
+  // Handler functions for buttons
+  const handleAddNewClient = () => {
+    setShowAddClientModal(true);
+  };
+
+  const handleCreateServicePackage = () => {
+    setShowCreatePackageModal(true);
+  };
+
+  const handleAddHOSLog = () => {
+    alert('Add HOS Log functionality coming soon!');
+  };
+
+  const handleAddDriver = () => {
+    alert('Add Driver functionality coming soon!');
+  };
+
+  const handleAddVehicle = () => {
+    alert('Add Vehicle functionality coming soon!');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -246,10 +269,16 @@ const ELDDashboard: React.FC = () => {
             <p className="text-gray-600">Manage ELD compliance services for transportation clients</p>
           </div>
           <div className="flex space-x-3">
-            <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+            <button 
+              onClick={handleAddNewClient}
+              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            >
               Add New Client
             </button>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <button 
+              onClick={handleCreateServicePackage}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
               Create Service Package
             </button>
           </div>
@@ -401,7 +430,10 @@ const ELDDashboard: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">Hours of Service Logs</h3>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={handleAddHOSLog}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   Add HOS Log
                 </button>
               </div>
@@ -597,7 +629,10 @@ const ELDDashboard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Driver Management</h3>
                   <p className="text-sm text-gray-600">Manage driver qualifications, certifications, and compliance</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={handleAddDriver}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   Add Driver
                 </button>
               </div>
@@ -617,7 +652,10 @@ const ELDDashboard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Vehicle Management</h3>
                   <p className="text-sm text-gray-600">Manage fleet vehicles, maintenance schedules, and compliance</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={handleAddVehicle}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
                   Add Vehicle
                 </button>
               </div>
