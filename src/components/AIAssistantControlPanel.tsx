@@ -47,7 +47,7 @@ import {
   CubeIcon,
   CogIcon,
   MagnifyingGlassIcon,
-  XMarkIcon,
+  XIcon,
   ChevronRightIcon,
   ChevronDownIcon,
   ArrowTopRightOnSquareIcon,
@@ -63,7 +63,7 @@ import {
   PhotographIcon,
   VideoCameraIcon,
   // SpeakerIcon, // Not available in this Heroicons version
-  SpeakerXMarkIcon,
+  SpeakerXIcon,
   MicrophoneIcon,
   MicrophoneSlashIcon,
   CameraIcon,
@@ -270,7 +270,7 @@ const AIAssistantControlPanel: React.FC<AIAssistantControlPanelProps> = ({ isOpe
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <XMarkIcon className="h-6 w-6" />
+            <XIcon className="h-6 w-6" />
           </button>
         </div>
 

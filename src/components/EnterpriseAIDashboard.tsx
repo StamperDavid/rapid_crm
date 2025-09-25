@@ -16,7 +16,7 @@ import {
   ArrowDownIcon,
   MinusIcon
 } from '@heroicons/react/outline';
-import { enterpriseAIService } from '../services/ai/EnterpriseAIService';
+import { enterpriseAIService } from '../services/ai/EnterpriseAIService.ts';
 
 interface DashboardData {
   insights: any[];

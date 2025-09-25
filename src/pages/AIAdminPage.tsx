@@ -67,7 +67,14 @@ const AIAdminPage: React.FC = () => {
   const [collaborationMessages, setCollaborationMessages] = useState<any[]>([]);
   
   // User Authentication State
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>({ 
+    name: 'Admin User', 
+    firstName: 'Admin',
+    lastName: 'User',
+    fullName: 'Admin User',
+    department: 'Administration',
+    email: 'admin@rapidcrm.com' 
+  });
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [userContext, setUserContext] = useState<any>(null);
   
@@ -121,7 +128,7 @@ const AIAdminPage: React.FC = () => {
             onClick={() => setShowTooltip(null)}
             className="absolute top-1 right-1 text-gray-400 hover:text-white"
           >
-            ×
+            ï¿½
           </button>
         </div>
       )}

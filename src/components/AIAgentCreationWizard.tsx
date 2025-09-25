@@ -26,6 +26,8 @@ interface AIAgentCreationWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onAgentCreated: (agent: any) => void;
+  editingAgent?: any;
+  mode?: 'create' | 'edit';
 }
 
 interface WizardStep {
@@ -38,28 +40,30 @@ interface WizardStep {
 const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
   isOpen,
   onClose,
-  onAgentCreated
+  onAgentCreated,
+  editingAgent,
+  mode = 'create'
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [availableApiKeys, setAvailableApiKeys] = useState<any[]>([]);
   const [agentConfig, setAgentConfig] = useState({
-    name: '',
-    description: '',
-    type: 'general',
-    personality: {
+    name: editingAgent?.name || '',
+    description: editingAgent?.description || '',
+    type: editingAgent?.type || 'crm_automation',
+    personality: editingAgent?.configuration?.personality || {
       communicationStyle: 'friendly',
       responseLength: 'detailed',
       expertise: []
     },
-    capabilities: [],
-    learningProfile: {
+    capabilities: editingAgent?.capabilities || [],
+    learningProfile: editingAgent?.configuration?.learningProfile || {
       learningRate: 0.8,
       adaptationSpeed: 'fast',
       collaborationPreference: 'hybrid'
     },
     autoSelectApiKeys: true,
-    preferredPlatforms: [],
+    preferredPlatforms: editingAgent?.configuration?.preferredPlatforms || [],
     createdBy: 'user'
   });
 
@@ -132,12 +136,19 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
   const handleCreateAgent = async () => {
     setIsCreating(true);
     try {
-      const agent = await integratedAgentCreationService.createIntegratedAgent(agentConfig);
+      let agent;
+      if (mode === 'edit' && editingAgent) {
+        // Update existing agent
+        agent = await integratedAgentCreationService.updateAgent(editingAgent.id, agentConfig);
+      } else {
+        // Create new agent
+        agent = await integratedAgentCreationService.createIntegratedAgent(agentConfig);
+      }
       onAgentCreated(agent);
       onClose();
     } catch (error) {
-      console.error('Error creating agent:', error);
-      alert('Failed to create agent. Please try again.');
+      console.error(`Error ${mode === 'edit' ? 'updating' : 'creating'} agent:`, error);
+      alert(`Failed to ${mode === 'edit' ? 'update' : 'create'} agent. Please try again.`);
     } finally {
       setIsCreating(false);
     }
@@ -186,12 +197,65 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
           onChange={(e) => setAgentConfig({ ...agentConfig, type: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
         >
-          <option value="general">General Purpose</option>
+          <option value="crm_automation">CRM Automation</option>
+          <option value="document_review">Document Review & Analysis</option>
+          <option value="form_processing">Form Submission & Processing</option>
+          <option value="rpa_automation">Robotic Process Automation (RPA)</option>
           <option value="customer_service">Customer Service</option>
-          <option value="data_analysis">Data Analysis</option>
-          <option value="automation">Automation</option>
-          <option value="communication">Communication</option>
-          <option value="sales_marketing">Sales & Marketing</option>
+          <option value="sales_workflow">Sales Workflow</option>
+          <option value="compliance_monitoring">Compliance & ELD Monitoring</option>
+          <option value="data_analysis">Data Analysis & Reporting</option>
+          <option value="content_generation">Content Generation</option>
+          <option value="voice_assistant">Voice Assistant</option>
+          <option value="billing_automation">Billing & Finance</option>
+          <option value="fleet_management">Fleet Management</option>
+          <option value="ifta_compliance">IFTA Compliance</option>
+          <option value="usdot_management">USDOT Management</option>
+          <option value="safety_monitoring">Safety & DOT Monitoring</option>
+          <option value="load_optimization">Load Planning & Optimization</option>
+          <option value="route_planning">Route Planning</option>
+          <option value="driver_management">Driver Management</option>
+          <option value="vehicle_maintenance">Vehicle Maintenance</option>
+          <option value="fuel_management">Fuel Management</option>
+          <option value="insurance_tracking">Insurance Tracking</option>
+          <option value="permit_management">Permit Management</option>
+          <option value="invoice_processing">Invoice Processing</option>
+          <option value="payment_tracking">Payment Tracking</option>
+          <option value="contract_management">Contract Management</option>
+          <option value="supplier_relations">Supplier Relations</option>
+          <option value="customer_onboarding">Customer Onboarding</option>
+          <option value="lead_qualification">Lead Qualification</option>
+          <option value="market_research">Market Research</option>
+          <option value="competitive_analysis">Competitive Analysis</option>
+          <option value="workflow_orchestration">Workflow Orchestration</option>
+          <option value="api_integration">API Integration</option>
+          <option value="database_management">Database Management</option>
+          <option value="report_generation">Report Generation</option>
+          <option value="alert_management">Alert & Notification Management</option>
+          <option value="quality_assurance">Quality Assurance</option>
+          <option value="risk_assessment">Risk Assessment</option>
+          <option value="audit_preparation">Audit Preparation</option>
+          <option value="training_assistant">Training Assistant</option>
+          <option value="knowledge_management">Knowledge Management</option>
+          <option value="communication_coordinator">Communication Coordinator</option>
+          <option value="project_management">Project Management</option>
+          <option value="task_scheduler">Task Scheduler</option>
+          <option value="event_monitoring">Event Monitoring</option>
+          <option value="performance_analytics">Performance Analytics</option>
+          <option value="predictive_analytics">Predictive Analytics</option>
+          <option value="machine_learning">Machine Learning</option>
+          <option value="ai_training">AI Training & Optimization</option>
+          <option value="system_monitoring">System Monitoring</option>
+          <option value="security_monitoring">Security Monitoring</option>
+          <option value="backup_management">Backup Management</option>
+          <option value="disaster_recovery">Disaster Recovery</option>
+          <option value="integration_testing">Integration Testing</option>
+          <option value="performance_testing">Performance Testing</option>
+          <option value="user_management">User Management</option>
+          <option value="permission_management">Permission Management</option>
+          <option value="access_control">Access Control</option>
+          <option value="multi_tenant">Multi-Tenant Management</option>
+          <option value="custom_workflow">Custom Workflow</option>
         </select>
       </div>
     </div>
@@ -462,13 +526,92 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
 
   const renderReview = () => (
     <div className="space-y-6">
+      {/* Current Agent Information (Edit Mode Only) */}
+      {mode === 'edit' && editingAgent && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-4 flex items-center">
+            <InformationCircleIcon className="h-5 w-5 mr-2" />
+            Current Agent Configuration
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Name:</span>
+              <span className="ml-2 text-sm text-blue-900 dark:text-blue-100">{editingAgent.name}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Type:</span>
+              <span className="ml-2 text-sm text-blue-900 dark:text-blue-100">{editingAgent.type}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Status:</span>
+              <span className="ml-2 text-sm text-blue-900 dark:text-blue-100">{editingAgent.status}</span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Created:</span>
+              <span className="ml-2 text-sm text-blue-900 dark:text-blue-100">
+                {new Date(editingAgent.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="md:col-span-2">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Description:</span>
+              <p className="ml-2 text-sm text-blue-900 dark:text-blue-100 mt-1">{editingAgent.description}</p>
+            </div>
+            {editingAgent.capabilities && editingAgent.capabilities.length > 0 && (
+              <div className="md:col-span-2">
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Current Capabilities:</span>
+                <div className="ml-2 mt-1 flex flex-wrap gap-1">
+                  {editingAgent.capabilities.map((capability: string, index: number) => (
+                    <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                      {capability}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {editingAgent.metrics && (
+              <div className="md:col-span-2">
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Performance Metrics:</span>
+                <div className="ml-2 mt-1 grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="text-xs">
+                    <span className="text-blue-600 dark:text-blue-400">Interactions:</span>
+                    <span className="ml-1 text-blue-900 dark:text-blue-100">{editingAgent.metrics.totalInteractions || 0}</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-blue-600 dark:text-blue-400">Success Rate:</span>
+                    <span className="ml-1 text-blue-900 dark:text-blue-100">{editingAgent.metrics.successRate || 0}%</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-blue-600 dark:text-blue-400">Avg Response:</span>
+                    <span className="ml-1 text-blue-900 dark:text-blue-100">{editingAgent.metrics.averageResponseTime || 0}ms</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-blue-600 dark:text-blue-400">Satisfaction:</span>
+                    <span className="ml-1 text-blue-900 dark:text-blue-100">{editingAgent.metrics.userSatisfaction || 0}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Updated Configuration Preview */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Agent Configuration</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {mode === 'edit' ? 'Updated Configuration' : 'Agent Configuration'}
+        </h3>
         
         <div className="space-y-3">
-          <div>
+          <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Name:</span>
-            <span className="ml-2 text-sm text-gray-900 dark:text-white">{agentConfig.name}</span>
+            <span className="ml-2 text-sm text-gray-900 dark:text-white">
+              {agentConfig.name}
+              {mode === 'edit' && editingAgent && agentConfig.name !== editingAgent.name && (
+                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                  Changed
+                </span>
+              )}
+            </span>
           </div>
           
           <div>
@@ -548,7 +691,7 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
               <SparklesIcon className="h-8 w-8 text-purple-600 mr-3" />
-              Create AI Agent
+              {mode === 'edit' ? 'Update Workflow Agent' : 'Create Workflow Agent'}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
@@ -617,10 +760,10 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
 
           <div className="flex space-x-2">
             {currentStep === steps.length - 1 ? (
-              <EnhancedTooltip content="Create your AI agent with the configured settings. The agent will be automatically connected to your API keys and ready to use immediately.">
+              <EnhancedTooltip content={mode === 'edit' ? "Update your AI agent with the modified settings. Changes will be applied immediately." : "Create your AI agent with the configured settings. The agent will be automatically connected to your API keys and ready to use immediately."}>
                 <button
                   onClick={handleCreateAgent}
-                  disabled={isCreating || !agentConfig.name || !agentConfig.description}
+                  disabled={isCreating || (mode === 'create' && (!agentConfig.name || !agentConfig.description))}
                   className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCreating ? (
@@ -631,16 +774,16 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
                   ) : (
                     <>
                       <SparklesIcon className="h-4 w-4 mr-2" />
-                      Create Agent
+                      {mode === 'edit' ? 'Update Workflow Agent' : 'Create Workflow Agent'}
                     </>
                   )}
                 </button>
               </EnhancedTooltip>
             ) : (
-              <EnhancedTooltip content="Continue to the next step in the agent creation process.">
+              <EnhancedTooltip content={mode === 'edit' ? "Continue to the next step to review and update agent configuration." : "Continue to the next step in the agent creation process."}>
                 <button
                   onClick={handleNext}
-                  disabled={currentStep === 0 && (!agentConfig.name || !agentConfig.description)}
+                  disabled={mode === 'create' && currentStep === 0 && (!agentConfig.name || !agentConfig.description)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next

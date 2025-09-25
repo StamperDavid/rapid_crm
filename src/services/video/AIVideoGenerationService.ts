@@ -445,3 +445,9 @@ class AIVideoGenerationService {
 export const aiVideoGenerationService = new AIVideoGenerationService();
 export default aiVideoGenerationService;
 
+
+
+
+
+
+

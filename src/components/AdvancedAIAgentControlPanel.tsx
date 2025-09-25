@@ -71,6 +71,16 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
   const [showMarketplaceModal, setShowMarketplaceModal] = useState(false);
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [deletingAgent, setDeletingAgent] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Search and filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
+  const [selectedComplexity, setSelectedComplexity] = useState('All Complexity');
+  const [selectedStatus, setSelectedStatus] = useState('All Status');
 
   // Load data on component mount
   useEffect(() => {
@@ -175,11 +185,8 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
     { id: 'agents', name: 'My Agents', icon: ChipIcon },
-    { id: 'marketplace', name: 'Marketplace', icon: GlobeAltIcon },
-    { id: 'training', name: 'Training', icon: AcademicCapIcon },
-    { id: 'workflows', name: 'Workflows', icon: TerminalIcon },
+    { id: 'workflows', name: 'Workflows & Training', icon: TerminalIcon },
     { id: 'collaboration', name: 'Collaboration', icon: UsersIcon },
-    { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
     { id: 'settings', name: 'Settings', icon: CogIcon }
   ];
 
@@ -220,6 +227,47 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
       alert(`Download workflow ${workflowId} functionality coming soon!`);
     } catch (error) {
       console.error('Error downloading workflow:', error);
+    }
+  };
+
+  // Agent management handlers
+  const handleEditAgent = (agent: any) => {
+    setEditingAgent(agent);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAgent = async (updatedData: any) => {
+    setLoading(true);
+    try {
+      const updatedAgent = await advancedAgentCreationService.updateAgent(editingAgent.id, updatedData);
+      setAgents(prev => prev.map(agent => agent.id === editingAgent.id ? updatedAgent : agent));
+      setShowEditModal(false);
+      setEditingAgent(null);
+    } catch (error) {
+      console.error('Failed to update agent:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAgent = (agent: any) => {
+    setDeletingAgent(agent);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAgent = async () => {
+    if (!deletingAgent) return;
+    
+    setLoading(true);
+    try {
+      await advancedAgentCreationService.deleteAgent(deletingAgent.id);
+      setAgents(prev => prev.filter(agent => agent.id !== deletingAgent.id));
+      setShowDeleteModal(false);
+      setDeletingAgent(null);
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -489,8 +537,36 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
       );
     }
 
-    // Use the real agents data for display
-    const displayAgents = allAgents;
+    // Filter agents based on search and filters
+    const filteredAgents = allAgents.filter(agent => {
+      const matchesSearch = !searchQuery || 
+        agent.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.type?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesDepartment = selectedDepartment === 'All Departments' ||
+        agent.department === selectedDepartment ||
+        (selectedDepartment === 'Sales & CRM' && ['sales', 'crm_automation'].includes(agent.type)) ||
+        (selectedDepartment === 'Customer Service' && ['customer_service', 'support'].includes(agent.type)) ||
+        (selectedDepartment === 'Operations' && ['operations', 'workflow_automation'].includes(agent.type)) ||
+        (selectedDepartment === 'Compliance & ELD' && ['compliance_monitoring', 'eld_monitoring'].includes(agent.type)) ||
+        (selectedDepartment === 'Finance & Billing' && ['billing_automation', 'finance'].includes(agent.type)) ||
+        (selectedDepartment === 'Data Analysis' && ['data_analysis', 'report_generation'].includes(agent.type)) ||
+        (selectedDepartment === 'Content Generation' && ['content_generation'].includes(agent.type)) ||
+        (selectedDepartment === 'Workflow Automation' && agent.type?.includes('workflow')) ||
+        (selectedDepartment === 'System Integration' && agent.type?.includes('integration'));
+      
+      const matchesComplexity = selectedComplexity === 'All Complexity' ||
+        agent.complexity === selectedComplexity;
+      
+      const matchesStatus = selectedStatus === 'All Status' ||
+        agent.status === selectedStatus.toLowerCase();
+      
+      return matchesSearch && matchesDepartment && matchesComplexity && matchesStatus;
+    });
+
+    // Use the filtered agents data for display
+    const displayAgents = filteredAgents;
 
     const getStatusColor = (status: string) => {
       switch (status) {
@@ -532,6 +608,61 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
             <SparklesIcon className="h-4 w-4 mr-2" />
             Create Agent
           </button>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search agents by name, type, or workflow function..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select 
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option>All Departments</option>
+                <option>Sales & CRM</option>
+                <option>Customer Service</option>
+                <option>Operations</option>
+                <option>Compliance & ELD</option>
+                <option>Finance & Billing</option>
+                <option>Data Analysis</option>
+                <option>Content Generation</option>
+                <option>Workflow Automation</option>
+                <option>System Integration</option>
+              </select>
+              <select 
+                value={selectedComplexity}
+                onChange={(e) => setSelectedComplexity(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option>All Complexity</option>
+                <option>Simple Automation</option>
+                <option>Intermediate Workflow</option>
+                <option>Advanced Process</option>
+                <option>Expert System</option>
+              </select>
+              <select 
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option>All Status</option>
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Training</option>
+                <option>Error</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Stats */}
@@ -612,10 +743,24 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     </div>
                   </div>
                   <div className="flex space-x-1">
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditAgent(agent);
+                      }}
+                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      title="Edit Agent"
+                    >
                       <PencilIcon className="h-4 w-4" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteAgent(agent);
+                      }}
+                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                      title="Delete Agent"
+                    >
                       <TrashIcon className="h-4 w-4" />
                     </button>
                   </div>
@@ -697,18 +842,18 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
       {/* Marketplace Header */}
       <div className="flex items-center justify-between">
         <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Agent Marketplace</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Internal Agent Library</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Discover, download, and deploy pre-built AI agents from the community
+            Deploy and manage AI agents for internal business workflow automation
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <button 
             onClick={() => {
-              // AI-to-AI: Request marketplace recommendations
+              // AI-to-AI: Request workflow automation recommendations
               if ((window as any).addAIToAIMessage) {
-                (window as any).addAIToAIMessage('claude', 'Requesting AI marketplace recommendations from Rapid CRM AI. Please suggest the best agents for our current needs and analyze trending agents.', {
-                  task: 'marketplace_recommendations',
+                (window as any).addAIToAIMessage('claude', 'Analyze our current business processes and recommend AI agents to automate workflows and improve efficiency.', {
+                  task: 'workflow_automation_analysis',
                   priority: 'medium'
                 });
               }
@@ -716,11 +861,11 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <GlobeAltIcon className="h-4 w-4 mr-2" />
-            AI Recommend
+            Analyze Workflows
           </button>
           <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
             <PlusIcon className="h-4 w-4 mr-2" />
-            Publish Agent
+            Deploy Agent
           </button>
         </div>
       </div>
@@ -731,40 +876,42 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
           <div className="flex-1">
           <input
             type="text"
-              placeholder="Search agents, categories, or features..."
+              placeholder="Search agents by workflow, department, or business function..."
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
           />
           </div>
           <div className="flex gap-2">
           <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-            <option>All Categories</option>
+            <option>All Departments</option>
+            <option>Sales & CRM</option>
             <option>Customer Service</option>
+            <option>Operations</option>
+            <option>Compliance & ELD</option>
+            <option>Finance & Billing</option>
             <option>Data Analysis</option>
-            <option>Automation</option>
-              <option>Sales & Marketing</option>
-              <option>Content Generation</option>
-              <option>Voice & Audio</option>
-            </select>
-            <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              <option>All Complexity</option>
-              <option>Beginner</option>
-              <option>Intermediate</option>
-              <option>Advanced</option>
-              <option>Expert</option>
-            </select>
-            <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              <option>All Pricing</option>
-              <option>Free</option>
-              <option>Paid</option>
-              <option>Subscription</option>
+            <option>Content Generation</option>
+          </select>
+          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+            <option>All Complexity</option>
+            <option>Simple Automation</option>
+            <option>Intermediate Workflow</option>
+            <option>Advanced Process</option>
+            <option>Expert System</option>
+          </select>
+          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Development</option>
+            <option>Testing</option>
+            <option>Deployed</option>
           </select>
           </div>
         </div>
       </div>
 
-      {/* Featured Agents */}
+      {/* Active Workflow Agents */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Featured Agents</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Active Workflow Agents</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {marketplaceAgents.slice(0, 3).map((agent) => (
             <div key={agent.id} className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
@@ -777,8 +924,8 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full">
-                    Featured
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
+                    Active
                   </span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getComplexityColor(agent.complexity)}`}>
                     {agent.complexity}
@@ -803,9 +950,9 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <CurrencyDollarIcon className="h-4 w-4 text-gray-400 mr-1" />
+                    <ClockIcon className="h-4 w-4 text-gray-400 mr-1" />
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {agent.price === 0 ? 'Free' : `$${agent.price}`}
+                      {agent.status || 'Active'}
                     </span>
                   </div>
                 </div>
@@ -824,7 +971,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   onClick={() => handleDownloadAgent(agent.id)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
-                  Download
+                  Deploy
                 </button>
               </div>
             </div>
@@ -832,19 +979,19 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         </div>
       </div>
 
-      {/* All Agents */}
+      {/* All Workflow Agents */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">All Agents</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">All Workflow Agents</h3>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {marketplaceAgents.length} agents available
+              {marketplaceAgents.length} agents deployed
             </span>
             <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              <option>Sort by Popularity</option>
-              <option>Sort by Rating</option>
-              <option>Sort by Price</option>
-              <option>Sort by Date</option>
+              <option>Sort by Usage</option>
+              <option>Sort by Performance</option>
+              <option>Sort by Department</option>
+              <option>Sort by Last Deployed</option>
             </select>
           </div>
         </div>
@@ -1157,44 +1304,52 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
     </div>
   );
 
-  const renderWorkflows = () => (
-    <div className="space-y-6">
-      {/* Workflows Header */}
+  const renderWorkflowsAndTraining = () => (
+    <div className="space-y-8">
+      {/* Combined Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Workflows</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workflows & Training</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Create and manage automated AI agent workflows and processes
+            Create automated workflows and train AI agents for optimal performance
           </p>
         </div>
         <div className="flex items-center space-x-2">
-        <button
-          onClick={() => setShowWorkflowModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Create Workflow
-        </button>
+          <button
+            onClick={() => setShowWorkflowModal(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Create Workflow
+          </button>
+          <button
+            onClick={() => setShowTrainingModal(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+          >
+            <AcademicCapIcon className="h-4 w-4 mr-2" />
+            Start Training
+          </button>
           <button 
             onClick={() => {
-              // AI-to-AI: Request workflow optimization
+              // AI-to-AI: Request optimization for both workflows and training
               if ((window as any).addAIToAIMessage) {
-                (window as any).addAIToAIMessage('claude', 'Requesting AI workflow optimization from Rapid CRM AI. Please analyze current workflows and suggest improvements for efficiency and automation.', {
-                  task: 'workflow_optimization',
+                (window as any).addAIToAIMessage('claude', 'Requesting AI optimization from Rapid CRM AI. Please analyze current workflows and training jobs to suggest improvements for efficiency, automation, and performance.', {
+                  task: 'workflow_and_training_optimization',
                   priority: 'medium'
                 });
               }
             }}
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            <TerminalIcon className="h-4 w-4 mr-2" />
+            <ChipIcon className="h-4 w-4 mr-2" />
             AI Optimize
           </button>
         </div>
       </div>
 
-      {/* Workflow Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Combined Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+        {/* Workflow Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -1212,7 +1367,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
               <PlayIcon className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Workflows</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {workflows.filter(w => w.status === 'active').length}
               </p>
@@ -1232,17 +1387,88 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
             </div>
           </div>
         </div>
+        
+        {/* Training Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <ClockIcon className="h-8 w-8 text-yellow-600" />
+              <AcademicCapIcon className="h-8 w-8 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Runtime</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Jobs</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {workflows.length > 0 ? Math.round(workflows.reduce((sum, w) => sum + (w.avgRuntime || 0), 0) / workflows.length) : 0}s
+                {trainingJobs.filter(job => job.status === 'running').length}
               </p>
             </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <CheckCircleIcon className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {trainingJobs.filter(job => job.status === 'completed').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Training Cost</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                ${trainingJobs.reduce((sum, job) => sum + (job.cost || 0), 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Training Methods Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Training Methods</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center mb-3">
+              <AcademicCapIcon className="h-6 w-6 text-blue-600 mr-3" />
+              <h4 className="font-medium text-gray-900 dark:text-white">Fine-tuning</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Customize pre-trained models with your specific data
+            </p>
+            <button className="w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+              Start Fine-tuning
+            </button>
+          </div>
+          <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center mb-3">
+              <ChipIcon className="h-6 w-6 text-green-600 mr-3" />
+              <h4 className="font-medium text-gray-900 dark:text-white">Reinforcement Learning</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Train agents through reward-based learning
+            </p>
+            <button className="w-full px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+              Start RL Training
+            </button>
+          </div>
+          <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center mb-3">
+              <BeakerIcon className="h-6 w-6 text-purple-600 mr-3" />
+              <h4 className="font-medium text-gray-900 dark:text-white">Custom Training</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Create custom training pipelines for specific needs
+            </p>
+            <button className="w-full px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm">
+              Create Pipeline
+            </button>
           </div>
         </div>
       </div>
@@ -1361,6 +1587,91 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         ))}
         </div>
       </div>
+
+      {/* Training Jobs Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Training Jobs</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Job
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Progress
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Duration
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Cost
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {trainingJobs.map((job) => (
+                <tr key={job.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {job.agentId}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {job.trainingMethod}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                      {job.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{ width: `${job.progress || 0}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
+                        {job.progress || 0}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    {job.duration ? `${Math.round(job.duration / 60)}m` : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    ${job.cost || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button className="text-blue-600 hover:text-blue-900">
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      {job.status === 'running' && (
+                        <button className="text-red-600 hover:text-red-900">
+                          <StopIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 
@@ -1370,12 +1681,8 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         return renderOverview();
       case 'agents':
         return renderAgents();
-      case 'marketplace':
-        return renderMarketplace();
-      case 'training':
-        return renderTraining();
       case 'workflows':
-        return renderWorkflows();
+        return renderWorkflowsAndTraining();
       case 'collaboration':
         return (
           <div className="space-y-6">
@@ -2067,6 +2374,49 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         onClose={() => setShowCreateModal(false)}
         onAgentCreated={handleAgentCreated}
       />
+
+      {/* Edit Agent Modal - Full Agent Creation Wizard */}
+      <AIAgentCreationWizard
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingAgent(null);
+        }}
+        onAgentCreated={handleUpdateAgent}
+        editingAgent={editingAgent}
+        mode="edit"
+      />
+
+      {/* Delete Agent Confirmation Modal */}
+      {showDeleteModal && deletingAgent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Delete Agent
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete the agent "{deletingAgent.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletingAgent(null);
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteAgent}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Delete Agent
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

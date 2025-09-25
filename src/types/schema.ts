@@ -597,6 +597,7 @@ export const SELECT_OPTIONS = {
 export interface Agent {
   id: string;
   name: string;
+  displayName?: string; // Human name for client-facing interactions (optional)
   type: 'onboarding' | 'customer_service' | 'sales' | 'support' | 'custom';
   description: string;
   status: 'active' | 'inactive' | 'training' | 'error';

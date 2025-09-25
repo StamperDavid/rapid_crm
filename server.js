@@ -21,6 +21,9 @@ const { createIFTAComplianceApiRoutes } = require('./src/services/ifta/IFTACompl
 // ELD Service Integration
 const { createELDComplianceApiRoutes } = require('./src/services/eld/ELDComplianceApiRoutesCommonJS');
 
+// Video Creation Service
+const VideoCreationService = require('./src/services/video/VideoCreationService.js');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -111,29 +114,53 @@ app.get('/api/database/stats', (req, res) => {
   }
 });
 
-// Database setup
+// Enterprise Database Connection Pool
+const { getConnectionPool } = require('./src/services/enterprise/DatabaseConnectionPool');
+const { getResponseCache } = require('./src/services/enterprise/ResponseCache');
+const { getRateLimiter } = require('./src/services/enterprise/RateLimiter');
+
+// Initialize enterprise services
+const connectionPool = getConnectionPool();
+const responseCache = getResponseCache();
+const rateLimiter = getRateLimiter();
+
+// Legacy database connection for backward compatibility
 const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
 const db = new sqlite3.Database(dbPath);
+
+// Initialize Video Creation Service
+const videoCreationService = new VideoCreationService();
+console.log('🎬 Video Creation Service initialized');
 
 // Initialize API key service - using direct database access for now
 // const apiKeyService = new ApiKeyService();
 
-// Helper function to get API key from database
+// Enterprise API key retrieval with caching
 const getApiKeyFromDatabase = async (provider) => {
-  return new Promise((resolve, reject) => {
-    db.get(
+  try {
+    // Check cache first
+    const cachedKey = responseCache.getCachedAPIKey(provider);
+    if (cachedKey) {
+      return cachedKey;
+    }
+
+    // Get from database using connection pool
+    const row = await connectionPool.executeQueryOne(
       'SELECT key_value FROM api_keys WHERE provider = ?',
-      [provider],
-      (err, row) => {
-        if (err) {
-          console.error('❌ Database query error:', err);
-          resolve(null);
-        } else {
-          resolve(row ? row.key_value : null);
-        }
-      }
+      [provider]
     );
-  });
+    
+    if (row) {
+      const apiKey = row.key_value;
+      responseCache.cacheAPIKey(provider, apiKey);
+      return apiKey;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('❌ Enterprise API key retrieval error:', error);
+    return null;
+  }
 };
 
 // Database validation - check if basic tables exist
@@ -1748,15 +1775,15 @@ const checkAndInitializeDatabase = async () => {
 // Theme API endpoints
 app.get('/api/theme', async (req, res) => {
   try {
-    // Return default theme with logo
+    // Return default dark theme with logo
     const defaultTheme = {
       primaryColor: '#3b82f6',
       secondaryColor: '#8b5cf6',
       accentColor: '#10b981',
-      backgroundColor: '#f8fafc',
-      surfaceColor: '#ffffff',
-      textColor: '#1f2937',
-      borderColor: '#e5e7eb',
+      backgroundColor: '#111827',
+      surfaceColor: '#1f2937',
+      textColor: '#f9fafb',
+      borderColor: '#374151',
       successColor: '#10b981',
       warningColor: '#f59e0b',
       errorColor: '#ef4444',
@@ -1770,7 +1797,8 @@ app.get('/api/theme', async (req, res) => {
     
     res.json({
       success: true,
-      theme: defaultTheme
+      theme: 'dark',
+      customTheme: defaultTheme
     });
   } catch (error) {
     console.error('❌ Error loading theme:', error);
@@ -2009,9 +2037,15 @@ app.get('/api/ai/voice-key', async (req, res) => {
 // Unreal Speech TTS endpoint
 app.post('/api/ai/unreal-speech', async (req, res) => {
   try {
-    const { text, voiceId = 'Jasper', speed = 0, pitch = 1.0 } = req.body;
+    const { text, voiceId = 'Jasper', speed = 0.1, pitch = 1.05 } = req.body;
     
-    console.log('🎤 Unreal Speech request:', { text: text?.substring(0, 50) + '...', voiceId, speed, pitch });
+    console.log('🎤 Unreal Speech request:', { 
+      text: text?.substring(0, 50) + '...', 
+      voiceId, 
+      speed, 
+      pitch,
+      textLength: text?.length 
+    });
     
     // Get Unreal Speech API key from API key service
     const unrealSpeechKey = await getApiKeyFromDatabase('unreal-speech');
@@ -2032,6 +2066,138 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
       });
     }
     
+    // Truncate text to prevent API errors
+    const truncatedText = text.length > 1000 ? text.substring(0, 997) + '...' : text;
+    console.log('🎤 Using truncated text:', truncatedText.length, 'characters');
+    
+    // Call Unreal Speech API with proper error handling
+    console.log('🎤 Calling Unreal Speech API...');
+    const response = await fetch('https://api.v8.unrealspeech.com/stream', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${unrealSpeechKey}`,
+        'Content-Type': 'application/json'
+      },
+        body: JSON.stringify({
+          Text: truncatedText,
+          VoiceId: voiceId,
+          Bitrate: '320k', // Higher quality audio
+          Speed: speed,
+          Pitch: pitch,
+          Codec: 'libmp3lame'
+      })
+    });
+    
+    console.log('🎤 Unreal Speech API response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Unreal Speech API error:', response.status, errorText);
+      console.error('❌ Request body was:', JSON.stringify({
+        Text: truncatedText.substring(0, 100) + '...',
+        VoiceId: voiceId,
+        Bitrate: '192k',
+        Speed: speed,
+        Pitch: pitch,
+        Codec: 'libmp3lame'
+      }));
+      
+      // Return a more specific error
+      return res.status(500).json({
+        success: false,
+        error: `Unreal Speech API error: ${response.status} - ${errorText}`,
+        details: {
+          status: response.status,
+          statusText: response.statusText,
+          voiceId: voiceId,
+          textLength: truncatedText.length
+        }
+      });
+    }
+    
+    // Get the audio data
+    console.log('🎤 Processing audio response...');
+    const audioBuffer = await response.arrayBuffer();
+    console.log('🎤 Audio buffer size:', audioBuffer.byteLength, 'bytes');
+    
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': audioBuffer.byteLength
+    });
+    
+    res.send(Buffer.from(audioBuffer));
+    console.log('✅ Unreal Speech response sent successfully');
+    
+  } catch (error) {
+    console.error('❌ Error with Unreal Speech TTS:', error);
+    console.error('❌ Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate speech',
+      details: error.message
+    });
+  }
+});
+
+// Fast Voice Synthesis endpoint using enterprise services
+app.post('/api/ai/fast-voice', async (req, res) => {
+  try {
+    const { text, voice, userId } = req.body;
+    
+    console.log('⚡ Fast voice synthesis request:', { 
+      text: text?.substring(0, 50) + '...', 
+      voice, 
+      userId,
+      textLength: text?.length 
+    });
+    
+    // Rate limiting for voice requests
+    const rateLimitResult = rateLimiter.isVoiceRequestAllowed(userId);
+    if (!rateLimitResult.allowed) {
+      console.log(`🚫 Voice rate limit exceeded for user ${userId}`);
+      return res.status(429).json({
+        success: false,
+        error: 'Voice rate limit exceeded',
+        resetTime: rateLimitResult.resetTime
+      });
+    }
+    
+    // Check cache first
+    const cacheKey = `voice_${voice}_${text.substring(0, 100).replace(/[^a-zA-Z0-9]/g, '')}`;
+    const cachedAudio = responseCache.get(cacheKey);
+    
+    if (cachedAudio) {
+      console.log('⚡ Voice cache hit');
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': cachedAudio.length,
+        'X-Cache': 'HIT'
+      });
+      return res.send(cachedAudio);
+    }
+    
+    // Get Unreal Speech API key
+    const unrealSpeechKey = await getApiKeyFromDatabase('unreal-speech');
+    
+    if (!unrealSpeechKey) {
+      console.error('❌ Unreal Speech API key not found');
+      return res.status(400).json({
+        success: false,
+        error: 'Unreal Speech API key not configured'
+      });
+    }
+    
+    if (!text) {
+      return res.status(400).json({
+        success: false,
+        error: 'Text is required'
+      });
+    }
+    
+    // Truncate text for faster processing
+    const truncatedText = text.length > 500 ? text.substring(0, 497) + '...' : text;
+    console.log('⚡ Using truncated text:', truncatedText.length, 'characters');
+    
     // Call Unreal Speech API
     const response = await fetch('https://api.v8.unrealspeech.com/stream', {
       method: 'POST',
@@ -2040,47 +2206,46 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        Text: text,
-        VoiceId: voiceId,
-        Bitrate: '192k',
-        Speed: speed,
-        Pitch: pitch,
+        Text: truncatedText,
+        voiceId: (voice && voice.toLowerCase() === 'jasper') ? 'Jasper' : (voice || 'Jasper'),
+        Bitrate: '128k', // Lower bitrate for faster processing
+        Speed: 0,
+        Pitch: 1.0,
         Codec: 'libmp3lame'
       })
     });
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Unreal Speech API error:', response.status, errorText);
-      console.error('❌ Request body was:', JSON.stringify({
-        Text: text,
-        VoiceId: voiceId,
-        Bitrate: '192k',
-        Speed: speed,
-        Pitch: pitch,
-        Codec: 'libmp3lame'
-      }));
-      return res.status(response.status).json({
+      console.error('❌ Fast voice API error:', response.status, errorText);
+      return res.status(500).json({
         success: false,
-        error: `Unreal Speech API error: ${response.status} - ${errorText}`
+        error: `Voice synthesis failed: ${response.status}`
       });
     }
     
-    // Get the audio data
     const audioBuffer = await response.arrayBuffer();
+    const audioData = Buffer.from(audioBuffer);
+    
+    // Cache the result
+    responseCache.set(cacheKey, audioData, 300000); // 5 minutes
     
     res.set({
       'Content-Type': 'audio/mpeg',
-      'Content-Length': audioBuffer.byteLength
+      'Content-Length': audioData.length,
+      'X-Cache': 'MISS',
+      'X-Processing-Time': Date.now() - Date.now()
     });
     
-    res.send(Buffer.from(audioBuffer));
+    res.send(audioData);
+    console.log('✅ Fast voice synthesis completed');
     
   } catch (error) {
-    console.error('❌ Error with Unreal Speech TTS:', error);
+    console.error('❌ Fast voice synthesis error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to generate speech'
+      error: 'Fast voice synthesis failed',
+      details: error.message
     });
   }
 });
@@ -2268,7 +2433,7 @@ app.get('/api/client-portal/settings', (req, res) => {
   try {
     const settings = {
       portal_name: 'Rapid CRM Client Portal',
-      theme: 'light',
+      theme: 'dark',
       features: {
         voice_assistant: true,
         compliance_tracking: true,
@@ -2379,14 +2544,64 @@ app.get('/api/test-agent', async (req, res) => {
     const testAgent = new TrulyIntelligentAgent('test-agent', 'test-user');
     console.log('✅ Agent instance created');
     
-    res.json({ success: true, message: 'TrulyIntelligentAgent loaded successfully' });
+    // Test asking a question
+    const response = await testAgent.askQuestion('What are your capabilities?', {});
+    console.log('✅ Agent response:', response);
+    
+    res.json({ 
+      success: true, 
+      message: 'TrulyIntelligentAgent loaded and working successfully',
+      response: response
+    });
   } catch (error) {
     console.error('❌ Test failed:', error);
     res.status(500).json({ success: false, error: error.message, stack: error.stack });
   }
 });
 
-// AI Chat endpoint - Using TrulyIntelligentAgent with User Context
+// Persistent Agent Session Manager for continuous chat
+const agentSessions = new Map();
+
+const getOrCreateAgent = (userId) => {
+  if (!agentSessions.has(userId)) {
+    console.log(`🧠 Creating new persistent agent session for user: ${userId}`);
+    try {
+      const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+      console.log(`🧠 TrulyIntelligentAgent class loaded successfully`);
+      const agent = new TrulyIntelligentAgent('rapid-crm-assistant', userId);
+      console.log(`🧠 TrulyIntelligentAgent instance created successfully`);
+      agentSessions.set(userId, {
+        agent,
+        lastActivity: Date.now()
+      });
+      console.log(`🧠 Persistent agent session created for user: ${userId}`);
+    } catch (error) {
+      console.error(`❌ Error creating agent for user ${userId}:`, error);
+      console.error(`❌ Error stack:`, error.stack);
+      throw error;
+    }
+  } else {
+    // Update last activity
+    agentSessions.get(userId).lastActivity = Date.now();
+    console.log(`🧠 Using existing persistent agent session for user: ${userId}`);
+  }
+  return agentSessions.get(userId).agent;
+};
+
+// Cleanup inactive agent sessions every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  const inactiveThreshold = 30 * 60 * 1000; // 30 minutes
+  
+  for (const [userId, session] of agentSessions.entries()) {
+    if (now - session.lastActivity > inactiveThreshold) {
+      console.log(`🧹 Cleaning up inactive agent session for user: ${userId}`);
+      agentSessions.delete(userId);
+    }
+  }
+}, 30 * 60 * 1000); // Run every 30 minutes
+
+// AI Chat endpoint - Using Persistent TrulyIntelligentAgent for continuous chat
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const { message, voice, model, userId } = req.body;
@@ -2394,49 +2609,64 @@ app.post('/api/ai/chat', async (req, res) => {
     // Determine user identity - use provided userId or extract from session/auth
     let currentUserId = userId || 'default_user';
     
-    // TODO: In a real implementation, extract userId from:
-    // - JWT token in Authorization header
-    // - Session cookie
-    // - API key with user mapping
-    // For now, we'll use the provided userId or default to 'default_user'
+    console.log(`🤖 Enterprise AI Chat request from user ${currentUserId}: "${message}" (voice: ${voice}, model: ${model})`);
     
-    console.log(`🤖 AI Chat request from user ${currentUserId}: "${message}" (voice: ${voice}, model: ${model})`);
+    // Rate limiting check
+    const rateLimitResult = rateLimiter.isAIRequestAllowed(currentUserId);
+    if (!rateLimitResult.allowed) {
+      console.log(`🚫 Rate limit exceeded for user ${currentUserId}`);
+      return res.status(429).json({
+        success: false,
+        error: 'Rate limit exceeded',
+        message: rateLimitResult.reason,
+        resetTime: rateLimitResult.resetTime,
+        remaining: rateLimitResult.remaining
+      });
+    }
     
-    // Use the original RealAIService for AI responses
+    // Use persistent TrulyIntelligentAgent for continuous chat experience
     try {
-      console.log('🔍 Loading RealAIService...');
-      const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
-      console.log('🔍 RealAIService loaded successfully');
-      
-      const aiService = new RealAIServiceNode();
-      console.log(`🔍 RealAIService instance created for user: ${currentUserId}`);
+      const aiService = getOrCreateAgent(currentUserId);
       
       // Get user's voice preference
-      const preferredVoice = voice || 'eleanor';
+      const preferredVoice = voice || 'jasper';
       console.log(`🎤 Using voice preference for user ${currentUserId}: ${preferredVoice}`);
       
-      // Get AI response with context
-      console.log('🔍 Calling askQuestion with message:', message);
+      // Cache voice preference
+      responseCache.cacheVoicePreference(currentUserId, preferredVoice);
+      
+      // Get AI response with persistent memory and persona
+      console.log('🧠 Calling askQuestion with message and persistent memory:', message);
       const aiResponseObj = await aiService.askQuestion(message, {
         voice: preferredVoice,
         model: model || 'anthropic/claude-3.5-sonnet',
         timestamp: new Date().toISOString(),
-        userId: currentUserId
+        userId: currentUserId,
+        agentId: 'rapid-crm-assistant'
       });
       
       // Extract the answer from the response object
       const aiResponse = aiResponseObj.answer || aiResponseObj;
       
-      console.log('🔍 AI response received:', {
+      console.log('🧠 TrulyIntelligentAgent response received:', {
         hasResponse: !!aiResponse,
         responseLength: aiResponse?.length,
         confidence: aiResponseObj.confidence,
-        reasoning: aiResponseObj.reasoning
+        reasoning: aiResponseObj.reasoning,
+        processingTime: aiResponseObj.processingTime,
+        memoryEnabled: aiResponseObj.memoryEnabled,
+        conversationId: aiResponseObj.conversationId
       });
       
-      console.log(`🧠 RealAIService response for user ${currentUserId}:`, aiResponse.substring(0, 100) + '...');
+      console.log(`🧠 TrulyIntelligentAgent response for user ${currentUserId}:`, aiResponse.substring(0, 100) + '...');
       
-      // Return the AI response
+      // Return the AI response with rate limit headers
+      res.set({
+        'X-RateLimit-Limit': rateLimitResult.limit || 20,
+        'X-RateLimit-Remaining': rateLimitResult.remaining || 0,
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime || Date.now() + 60000).toISOString()
+      });
+      
       res.json({
         success: true,
         response: aiResponse,
@@ -2445,23 +2675,30 @@ app.post('/api/ai/chat', async (req, res) => {
         userId: currentUserId,
         voicePreference: { defaultVoice: preferredVoice },
         confidence: aiResponseObj.confidence,
-        reasoning: aiResponseObj.reasoning
+        reasoning: aiResponseObj.reasoning,
+        processingTime: aiResponseObj.processingTime,
+        enterprise: true
       });
       
     } catch (agentError) {
-      console.error('❌ RealAIService error:', agentError);
+      console.error('❌ Enterprise AI Service error:', agentError);
       console.error('❌ Error stack:', agentError.stack);
       console.error('❌ Error message:', agentError.message);
+      console.error('❌ Full error object:', JSON.stringify(agentError, null, 2));
       
-      // Fallback to intelligent context-aware responses
+      // Fallback to intelligent context-aware responses with correct Jasper identity
       let response = '';
       const lowerMessage = message.toLowerCase();
       
-      console.log('🔄 Using fallback response system');
+      console.log('🔄 Using fallback response system with Jasper identity');
       
+      // Identity and name responses
+      if (lowerMessage.includes('name') || lowerMessage.includes('who are you') || lowerMessage.includes('jasper')) {
+        response = `Hello David! I'm Jasper, your Rapid CRM AI assistant. I'm your specialized transportation compliance and CRM management AI with full database access. I help you manage your transportation business operations, compliance, and I can create and manage other AI agents. What would you like to work on today?`;
+      }
       // Greeting responses
-      if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-        response = `Hello! I'm your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?`;
+      else if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+        response = `Hello David! I'm Jasper, your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?`;
       }
       // Speaking/voice related
       else if (lowerMessage.includes('speak') || lowerMessage.includes('talk') || lowerMessage.includes('voice')) {
@@ -2500,7 +2737,7 @@ app.post('/api/ai/chat', async (req, res) => {
         success: true,
         response: response,
         timestamp: new Date().toISOString(),
-        voice: voice || 'mikael',
+        voice: voice || 'jasper',
         fallback: true,
         userId: currentUserId
       });
@@ -2514,6 +2751,275 @@ app.post('/api/ai/chat', async (req, res) => {
     });
   }
 });
+
+// Video Creation API endpoints
+app.post('/api/video/create', async (req, res) => {
+  try {
+    const { name, description, prompt, style, duration, resolution, aspectRatio, fps, quality, userId } = req.body;
+    
+    console.log('🎬 Video creation request:', { name, prompt, userId });
+    
+    const videoRequest = {
+      name: name || `Video ${Date.now()}`,
+      description: description || prompt,
+      prompt: prompt,
+      style: style || 'realistic',
+      duration: duration || 30,
+      resolution: resolution || '1080p',
+      aspectRatio: aspectRatio || '16:9',
+      fps: fps || 30,
+      quality: quality || 'standard'
+    };
+    
+    const result = await videoCreationService.createVideo(videoRequest);
+    
+    if (result.success) {
+      console.log('✅ Video creation started:', result.videoId);
+      res.json({
+        success: true,
+        videoId: result.videoId,
+        project: result.project,
+        message: result.message
+      });
+    } else {
+      console.error('❌ Video creation failed:', result.error);
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error in video creation:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create video'
+    });
+  }
+});
+
+app.get('/api/video/projects', async (req, res) => {
+  try {
+    const projects = await videoCreationService.getAllVideoProjects();
+    console.log(`📋 Retrieved ${projects.length} video projects`);
+    res.json({
+      success: true,
+      projects: projects
+    });
+  } catch (error) {
+    console.error('❌ Error getting video projects:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get video projects'
+    });
+  }
+});
+
+app.get('/api/video/project/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const project = await videoCreationService.getVideoProject(videoId);
+    
+    if (project) {
+      console.log(`📋 Retrieved video project: ${videoId}`);
+      res.json({
+        success: true,
+        project: project
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Video project not found'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error getting video project:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get video project'
+    });
+  }
+});
+
+app.delete('/api/video/project/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const result = await videoCreationService.deleteVideoProject(videoId);
+    
+    if (result.success) {
+      console.log(`🗑️ Deleted video project: ${videoId}`);
+      res.json({
+        success: true,
+        message: result.message
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: result.message
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error deleting video project:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete video project'
+    });
+  }
+});
+
+// Video shortcode and embed endpoints
+app.get('/api/video/shortcode/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const options = req.query;
+    
+    const shortcode = videoCreationService.generateVideoShortcode(videoId, options);
+    
+    res.json({
+      success: true,
+      shortcode: shortcode,
+      videoId: videoId
+    });
+  } catch (error) {
+    console.error('❌ Error generating video shortcode:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate video shortcode'
+    });
+  }
+});
+
+app.get('/api/video/embed/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const options = req.query;
+    
+    const embedCode = videoCreationService.generateVideoEmbedCode(videoId, options);
+    
+    res.json({
+      success: true,
+      embedCode: embedCode,
+      videoId: videoId
+    });
+  } catch (error) {
+    console.error('❌ Error generating video embed code:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate video embed code'
+    });
+  }
+});
+
+// AI Video Generation endpoint
+app.post('/api/video/generate-ai', async (req, res) => {
+  try {
+    const {
+      prompt,
+      style,
+      duration,
+      resolution,
+      quality,
+      aspectRatio,
+      fps,
+      negativePrompt,
+      seed,
+      guidance,
+      steps,
+      userId = 'default_user'
+    } = req.body;
+
+    console.log('🎬 AI Video Generation request:', {
+      prompt,
+      style,
+      duration,
+      resolution,
+      quality,
+      aspectRatio,
+      fps,
+      negativePrompt,
+      seed,
+      guidance,
+      steps,
+      userId
+    });
+
+    // Enhanced video request with AI generation parameters
+    const videoRequest = {
+      name: `AI Generated: ${prompt.substring(0, 50)}...`,
+      description: prompt,
+      prompt: prompt,
+      style: style,
+      duration: duration || 30,
+      resolution: resolution || '1080p',
+      aspectRatio: aspectRatio || '16:9',
+      fps: fps || 30,
+      quality: quality || 'standard',
+      // AI Generation specific parameters
+      negativePrompt: negativePrompt,
+      seed: seed,
+      guidance: guidance || 7.5,
+      steps: steps || 50,
+      userId: userId,
+      // Detailed prompt breakdown for better AI processing
+      detailedPrompt: {
+        mainConcept: prompt,
+        style: style,
+        quality: quality,
+        technicalParams: {
+          guidance: guidance || 7.5,
+          steps: steps || 50,
+          seed: seed
+        }
+      }
+    };
+
+    const result = await videoCreationService.createVideo(videoRequest);
+
+    if (result.success) {
+      console.log('✅ AI Video generation started:', result.videoId);
+      res.json({
+        success: true,
+        videoId: result.videoId,
+        project: result.project,
+        message: 'AI video generation initiated successfully',
+        estimatedTime: getEstimatedTime(quality, duration),
+        cost: getEstimatedCost(quality, duration)
+      });
+    } else {
+      console.error('❌ AI Video generation failed:', result.error);
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error in AI video generation:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate AI video'
+    });
+  }
+});
+
+// Helper functions for AI video generation
+function getEstimatedTime(quality, duration) {
+  const baseTime = {
+    'draft': 2,
+    'standard': 5,
+    'premium': 10,
+    'cinema': 20
+  };
+  return baseTime[quality] || 5;
+}
+
+function getEstimatedCost(quality, duration) {
+  const baseCost = {
+    'draft': 0.10,
+    'standard': 0.50,
+    'premium': 1.00,
+    'cinema': 2.00
+  };
+  return baseCost[quality] || 0.50;
+}
 
 // AI Collaboration endpoints - Basic implementation
 app.post('/api/ai/collaborate/send', async (req, res) => {
@@ -3054,7 +3560,7 @@ app.post('/api/ai/performance/record-metric', async (req, res) => {
 app.get('/api/ai/agents', async (req, res) => {
   try {
     const agents = await new Promise((resolve, reject) => {
-      db.all('SELECT * FROM advanced_agents ORDER BY createdAt DESC', (err, rows) => {
+      db.all('SELECT * FROM advanced_agents ORDER BY created_at DESC', (err, rows) => {
         if (err) reject(err);
         else resolve(rows);
       });

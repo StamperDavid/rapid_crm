@@ -14,13 +14,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // Add API keys for AI functionality
+// NOTE: These are demo keys - buyers should replace with their own keys via the UI
 const apiKeys = [
   {
     id: 'openrouter_key_1',
     name: 'OpenRouter API Key',
     provider: 'openrouter',
     key_value: 'sk-or-v1-demo-key-replace-with-real-key', // Replace with your actual OpenRouter key
-    description: 'OpenRouter API key for AI chat functionality',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   },
@@ -29,7 +29,6 @@ const apiKeys = [
     name: 'Unreal Speech API Key',
     provider: 'unreal_speech',
     key_value: 'demo-key-replace-with-real-key', // Replace with your actual Unreal Speech key
-    description: 'Unreal Speech API key for text-to-speech functionality',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }
@@ -41,8 +40,8 @@ const total = apiKeys.length;
 apiKeys.forEach((key, index) => {
   const sql = `
     INSERT OR REPLACE INTO api_keys 
-    (id, name, provider, key_value, description, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    (id, name, provider, key_value, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
   
   db.run(sql, [
@@ -50,7 +49,6 @@ apiKeys.forEach((key, index) => {
     key.name,
     key.provider,
     key.key_value,
-    key.description,
     key.created_at,
     key.updated_at
   ], function(err) {

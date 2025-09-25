@@ -22,7 +22,7 @@ import {
   EyeIcon,
   PencilIcon,
   PlusIcon,
-  XMarkIcon,
+  XIcon,
   ChatIcon,
   UserGroupIcon
 } from '@heroicons/react/outline';

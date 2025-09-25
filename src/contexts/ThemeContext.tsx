@@ -45,8 +45,15 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
   const [customTheme, setCustomTheme] = useState<CustomThemeSettings | null>(null);
+
+  // Force dark mode immediately on mount
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+    console.log('🌙 Dark mode forced on mount');
+  }, []);
 
   useEffect(() => {
     // Load theme from database
@@ -78,7 +85,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         if (savedTheme) {
           setTheme(savedTheme as Theme);
         } else {
-          setTheme('light');
+          setTheme('dark');
         }
         
         // Load custom theme settings
@@ -92,15 +99,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             console.error('Error parsing custom theme from localStorage:', parseError);
           }
         } else {
-          // Set default theme with logo if no custom theme exists
+          // Set default dark theme with logo if no custom theme exists
           const defaultTheme = {
             primaryColor: '#3b82f6',
             secondaryColor: '#8b5cf6',
             accentColor: '#10b981',
-            backgroundColor: '#f8fafc',
-            surfaceColor: '#ffffff',
-            textColor: '#1f2937',
-            borderColor: '#e5e7eb',
+            backgroundColor: '#111827',
+            surfaceColor: '#1f2937',
+            cardColor: '#374151',
+            textPrimary: '#f9fafb',
+            textSecondary: '#d1d5db',
+            textMuted: '#9ca3af',
+            borderColor: '#374151',
+            shadowColor: '#000000',
             successColor: '#10b981',
             warningColor: '#f59e0b',
             errorColor: '#ef4444',
@@ -108,20 +119,30 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             logoHeight: 48,
             borderRadius: 8,
             fontFamily: 'inherit',
+            fontSize: 16,
             fontWeight: '400'
           };
           setCustomTheme(defaultTheme);
-          console.log('Default theme with logo set:', defaultTheme);
+          console.log('Default dark theme with logo set:', defaultTheme);
         }
       } catch (error) {
         console.error('Error loading theme:', error);
-        setTheme('light');
+        setTheme('dark');
       }
     };
     loadTheme();
   }, []);
 
   useEffect(() => {
+    // Apply theme to DOM
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+    
     // Save theme to database
     const saveTheme = async () => {
       try {
@@ -153,13 +174,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             localStorage.setItem('customTheme', JSON.stringify(customTheme));
             console.log('Custom theme saved to localStorage as fallback');
           }
-        }
-        
-        // Apply theme to DOM
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
         }
       } catch (error) {
         console.error('Error saving theme:', error);

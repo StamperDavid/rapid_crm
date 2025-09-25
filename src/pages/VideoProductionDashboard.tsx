@@ -93,28 +93,26 @@ const VideoProductionDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Load all data in parallel
-      const [projectsRes, socialRes, blogRes, templatesRes] = await Promise.all([
-        fetch('/api/video/projects'),
-        fetch('/api/social/posts'),
-        fetch('/api/blog/articles'),
-        fetch('/api/content/templates')
-      ]);
+      // Only load video projects for now (other endpoints don't exist yet)
+      const projectsRes = await fetch('http://localhost:3001/api/video/projects');
+      const projectsData = await projectsRes.json();
 
-      const [projectsData, socialData, blogData, templatesData] = await Promise.all([
-        projectsRes.json(),
-        socialRes.json(),
-        blogRes.json(),
-        templatesRes.json()
-      ]);
+      if (projectsData.success) {
+        setProjects(projectsData.projects);
+      }
 
-      if (projectsData.success) setProjects(projectsData.projects);
-      if (socialData.success) setSocialPosts(socialData.posts);
-      if (blogData.success) setBlogArticles(blogData.articles);
-      if (templatesData.success) setTemplates(templatesData.templates);
+      // Set empty arrays for other data types until their APIs are implemented
+      setSocialPosts([]);
+      setBlogArticles([]);
+      setTemplates([]);
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Set empty arrays on error
+      setProjects([]);
+      setSocialPosts([]);
+      setBlogArticles([]);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -130,7 +128,7 @@ const VideoProductionDashboard: React.FC = () => {
       case 'failed':
         return <XCircleIcon className="h-5 w-5 text-red-500" />;
       default:
-        return <ExclamationIcon className="h-5 w-5 text-gray-500" />;
+        return <ExclamationIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -177,7 +175,7 @@ const VideoProductionDashboard: React.FC = () => {
       let endpoint = '';
       switch (type) {
         case 'video':
-          endpoint = `/api/video/projects/${id}`;
+          endpoint = `/api/video/project/${id}`;
           break;
         case 'social':
           endpoint = `/api/social/posts/${id}`;
@@ -240,59 +238,59 @@ const VideoProductionDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <VideoCameraIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Video Projects</p>
-              <p className="text-2xl font-bold text-gray-900">{projects.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 ">Video Projects</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white ">{projects.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <ShareIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Social Posts</p>
-              <p className="text-2xl font-bold text-gray-900">{socialPosts.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 ">Social Posts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white ">{socialPosts.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <DocumentTextIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Blog Articles</p>
-              <p className="text-2xl font-bold text-gray-900">{blogArticles.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 ">Blog Articles</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white ">{blogArticles.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-orange-100 rounded-lg">
               <FilmIcon className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Templates</p>
-              <p className="text-2xl font-bold text-gray-900">{templates.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300 ">Templates</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white ">{templates.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 ">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white ">Recent Activity</h3>
         </div>
         <div className="p-6">
           <div className="space-y-4">
@@ -300,8 +298,8 @@ const VideoProductionDashboard: React.FC = () => {
               <div key={project.id} className="flex items-center space-x-4">
                 {getStatusIcon(project.status)}
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{project.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white ">{project.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
                     {project.project_type} • {formatDuration(project.duration)} • {project.resolution}
                   </p>
                 </div>
@@ -319,7 +317,7 @@ const VideoProductionDashboard: React.FC = () => {
   const renderVideoProjects = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Video Projects</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">Video Projects</h2>
         <div className="flex space-x-3">
           <button
             onClick={() => setShowAIVideoEngine(true)}
@@ -354,11 +352,11 @@ const VideoProductionDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <div key={project.id} className="bg-white rounded-lg shadow overflow-hidden">
+          <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
             {project.thumbnail_path && (
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
+              <div className="h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                 <img
-                  src={project.thumbnail_path}
+                  src={`http://localhost:3001${project.thumbnail_path}`}
                   alt={project.name}
                   className="h-full w-full object-cover"
                 />
@@ -366,11 +364,11 @@ const VideoProductionDashboard: React.FC = () => {
             )}
             <div className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white ">{project.name}</h3>
                 {getStatusIcon(project.status)}
               </div>
-              <p className="text-sm text-gray-600 mb-4">{project.description}</p>
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300  mb-4">{project.description}</p>
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mb-4">
                 <span>{project.project_type}</span>
                 <span>{formatDuration(project.duration)}</span>
                 <span>{project.resolution}</span>
@@ -412,7 +410,7 @@ const VideoProductionDashboard: React.FC = () => {
   const renderSocialMedia = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Social Media Posts</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Social Media Posts</h2>
         <button
           onClick={() => handleCreateContent('social')}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
@@ -424,19 +422,19 @@ const VideoProductionDashboard: React.FC = () => {
 
       <div className="space-y-4">
         {socialPosts.map((post) => (
-          <div key={post.id} className="bg-white rounded-lg shadow p-6">
+          <div key={post.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
                   {post.content_type === 'video' ? (
-                    <VideoCameraIcon className="h-5 w-5 text-gray-600" />
+                    <VideoCameraIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                   ) : (
-                    <PhotographIcon className="h-5 w-5 text-gray-600" />
+                    <PhotographIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{post.platform}</h3>
-                  <p className="text-sm text-gray-500">{post.content_type}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{post.platform}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{post.content_type}</p>
                 </div>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(post.status)}`}>
@@ -445,7 +443,7 @@ const VideoProductionDashboard: React.FC = () => {
             </div>
             <p className="text-gray-700 mb-4">{post.content}</p>
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 <span>Created: {new Date(post.created_at).toLocaleDateString()}</span>
                 {post.scheduled_at && (
                   <span className="ml-4">Scheduled: {new Date(post.scheduled_at).toLocaleDateString()}</span>
@@ -475,7 +473,7 @@ const VideoProductionDashboard: React.FC = () => {
   const renderBlogArticles = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Blog Articles</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Blog Articles</h2>
         <button
           onClick={() => handleCreateContent('blog')}
           className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
@@ -487,16 +485,16 @@ const VideoProductionDashboard: React.FC = () => {
 
       <div className="space-y-4">
         {blogArticles.map((article) => (
-          <div key={article.id} className="bg-white rounded-lg shadow p-6">
+          <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{article.title}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{article.title}</h3>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(article.status)}`}>
                 {article.status}
               </span>
             </div>
             <p className="text-gray-700 mb-4 line-clamp-3">{article.content}</p>
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 <span>Created: {new Date(article.created_at).toLocaleDateString()}</span>
                 {article.published_at && (
                   <span className="ml-4">Published: {new Date(article.published_at).toLocaleDateString()}</span>
@@ -526,7 +524,7 @@ const VideoProductionDashboard: React.FC = () => {
   const renderTemplates = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Content Templates</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Content Templates</h2>
         <button
           onClick={() => {
             setNewProjectType('template');
@@ -541,14 +539,14 @@ const VideoProductionDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates.map((template) => (
-          <div key={template.id} className="bg-white rounded-lg shadow p-6">
+          <div key={template.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="p-2 bg-orange-100 rounded-lg">
                 <FilmIcon className="h-5 w-5 text-orange-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{template.name}</h3>
-                <p className="text-sm text-gray-500">{template.template_type}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{template.name}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{template.template_type}</p>
               </div>
             </div>
             <p className="text-gray-700 mb-4">{template.description}</p>
@@ -596,11 +594,11 @@ const VideoProductionDashboard: React.FC = () => {
       case 'templates':
         return renderTemplates();
       case 'calendar':
-        return <div className="text-center py-12 text-gray-500">Content Calendar coming soon...</div>;
+        return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Content Calendar coming soon...</div>;
       case 'analytics':
-        return <div className="text-center py-12 text-gray-500">Analytics coming soon...</div>;
+        return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Analytics coming soon...</div>;
       case 'settings':
-        return <div className="text-center py-12 text-gray-500">Settings coming soon...</div>;
+        return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Settings coming soon...</div>;
       default:
         return renderOverview();
     }
@@ -615,18 +613,20 @@ const VideoProductionDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Video Production & Content Marketing</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">
+            Video Production & Content Marketing
+          </h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300 dark:text-gray-300">
             Create professional videos, manage social media content, and publish blog articles
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="border-b border-gray-200 dark:border-gray-700 dark:border-gray-700 mb-8">
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -637,7 +637,7 @@ const VideoProductionDashboard: React.FC = () => {
                   className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
                   }`}
                 >
                   <Icon className="h-5 w-5" />
@@ -655,9 +655,9 @@ const VideoProductionDashboard: React.FC = () => {
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 Create New {newProjectType === 'video' ? 'Video Project' : 
                            newProjectType === 'social' ? 'Social Media Post' :
                            newProjectType === 'blog' ? 'Blog Article' : 'Template'}
@@ -710,9 +710,9 @@ const VideoProductionDashboard: React.FC = () => {
       {/* Edit Modal */}
       {showEditModal && editingItem && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 Edit {editingItem.type === 'video' ? 'Video Project' : 
                       editingItem.type === 'social' ? 'Social Media Post' :
                       editingItem.type === 'blog' ? 'Blog Article' : 'Template'}
@@ -775,15 +775,15 @@ const VideoProductionDashboard: React.FC = () => {
       {/* Video Player Modal */}
       {showVideoPlayer && selectedVideo && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-4/5 max-w-4xl shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-4/5 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                   {selectedVideo.name}
                 </h3>
                 <button
                   onClick={() => setShowVideoPlayer(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
                 >
                   <XCircleIcon className="h-6 w-6" />
                 </button>
@@ -794,9 +794,9 @@ const VideoProductionDashboard: React.FC = () => {
                   <video
                     controls
                     className="w-full h-96"
-                    poster={selectedVideo.thumbnail_path}
+                    poster={`http://localhost:3001${selectedVideo.thumbnail_path}`}
                   >
-                    <source src={selectedVideo.file_path} type="video/mp4" />
+                    <source src={`http://localhost:3001${selectedVideo.file_path}`} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                 ) : (
@@ -832,15 +832,15 @@ const VideoProductionDashboard: React.FC = () => {
       {/* Video Editor Modal */}
       {showVideoEditor && selectedVideo && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                   Edit Video: {selectedVideo.name}
                 </h3>
                 <button
                   onClick={() => setShowVideoEditor(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
                 >
                   <XCircleIcon className="h-6 w-6" />
                 </button>
@@ -853,9 +853,9 @@ const VideoProductionDashboard: React.FC = () => {
                     <video
                       controls
                       className="w-full h-64"
-                      poster={selectedVideo.thumbnail_path}
+                      poster={`http://localhost:3001${selectedVideo.thumbnail_path}`}
                     >
-                      <source src={selectedVideo.file_path} type="video/mp4" />
+                      <source src={`http://localhost:3001${selectedVideo.file_path}`} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   ) : (

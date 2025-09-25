@@ -9,12 +9,23 @@ const path = require('path');
 class PersistentMemoryService {
   constructor() {
     this.dbPath = path.join(__dirname, '../../../instance/rapid_crm.db');
-    this.db = new Database(this.dbPath, { 
-      timeout: 10000, // 10 second timeout
-      verbose: null // Disable verbose logging
-    });
+    // Use singleton database connection to prevent connection explosion
+    if (!PersistentMemoryService.sharedDb) {
+      PersistentMemoryService.sharedDb = new Database(this.dbPath, { 
+        timeout: 10000, // 10 second timeout
+        verbose: null, // Disable verbose logging
+        pragma: {
+          journal_mode: 'WAL', // Better concurrency
+          synchronous: 'NORMAL', // Better performance
+          cache_size: -64000, // 64MB cache
+          temp_store: 'MEMORY' // Store temp tables in memory
+        }
+      });
+    }
+    this.db = PersistentMemoryService.sharedDb;
     this.initializeTables();
-    console.log('🧠 Persistent Memory Service initialized');
+    this.startCleanupTimer(); // Start automatic cleanup of old conversations
+    console.log('🧠 Persistent Memory Service initialized with shared connection');
   }
 
   /**
@@ -276,6 +287,56 @@ class PersistentMemoryService {
     } catch (error) {
       console.error('❌ Error cleaning up old conversations:', error);
       return 0;
+    }
+  }
+
+  /**
+   * Start automatic cleanup timer for old conversations
+   */
+  startCleanupTimer() {
+    // Clean up old conversations every hour
+    setInterval(() => {
+      this.cleanupOldConversations();
+    }, 3600000); // 1 hour
+    
+    // Run initial cleanup
+    this.cleanupOldConversations();
+  }
+
+  /**
+   * Clean up conversations older than 30 days
+   */
+  cleanupOldConversations() {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      // Delete old conversations
+      const deleteStmt = this.db.prepare(`
+        DELETE FROM user_conversation_memory 
+        WHERE timestamp < ?
+      `);
+      
+      const result = deleteStmt.run(thirtyDaysAgo.toISOString());
+      
+      if (result.changes > 0) {
+        console.log(`🧹 Cleaned up ${result.changes} old conversation entries (older than 30 days)`);
+      }
+      
+      // Delete old conversation contexts
+      const deleteContextStmt = this.db.prepare(`
+        DELETE FROM conversation_context 
+        WHERE last_updated < ?
+      `);
+      
+      const contextResult = deleteContextStmt.run(thirtyDaysAgo.toISOString());
+      
+      if (contextResult.changes > 0) {
+        console.log(`🧹 Cleaned up ${contextResult.changes} old conversation contexts`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error cleaning up old conversations:', error);
     }
   }
 

@@ -409,6 +409,23 @@ CREATE TABLE IF NOT EXISTS agents (
     updated_at TEXT NOT NULL
 );
 
+-- Advanced AI Agents Table (for the new agent system)
+CREATE TABLE IF NOT EXISTS advanced_agents (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL, -- Functional/technical name
+    display_name TEXT, -- Human name for client-facing interactions (optional)
+    description TEXT,
+    type TEXT NOT NULL, -- 'onboarding', 'customer_service', 'sales', 'support', 'custom'
+    status TEXT DEFAULT 'active', -- 'active', 'inactive', 'training', 'error'
+    capabilities TEXT, -- JSON array of capabilities
+    knowledge_bases TEXT, -- JSON array of knowledge base IDs
+    rules TEXT, -- JSON array of behavior rules
+    configuration TEXT, -- JSON object with model settings, prompts, etc.
+    metrics TEXT, -- JSON object with performance metrics
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 -- Knowledge Bases Table
 CREATE TABLE IF NOT EXISTS knowledge_bases (
     id TEXT PRIMARY KEY,
@@ -606,6 +623,129 @@ CREATE TABLE IF NOT EXISTS api_keys (
     provider TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
+);
+
+-- Video Projects Table
+CREATE TABLE IF NOT EXISTS video_projects (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    prompt TEXT,
+    project_type TEXT DEFAULT 'AI Generated Video',
+    style TEXT DEFAULT 'realistic',
+    duration INTEGER DEFAULT 30,
+    resolution TEXT DEFAULT '1080p',
+    aspect_ratio TEXT DEFAULT '16:9',
+    fps INTEGER DEFAULT 30,
+    quality TEXT DEFAULT 'standard',
+    negative_prompt TEXT,
+    seed TEXT,
+    guidance REAL DEFAULT 7.5,
+    steps INTEGER DEFAULT 50,
+    status TEXT DEFAULT 'pending',
+    progress INTEGER DEFAULT 0,
+    file_path TEXT,
+    thumbnail_path TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- ELD Service Tables
+CREATE TABLE IF NOT EXISTS eld_clients (
+    id TEXT PRIMARY KEY,
+    company_id TEXT,
+    company_name TEXT NOT NULL,
+    contact_person TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    service_package TEXT NOT NULL,
+    status TEXT DEFAULT 'active',
+    start_date TEXT NOT NULL,
+    monthly_revenue REAL NOT NULL,
+    total_trucks INTEGER NOT NULL,
+    compliance_score INTEGER DEFAULT 100,
+    last_audit TEXT,
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+);
+
+CREATE TABLE IF NOT EXISTS eld_service_packages (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    monthly_price REAL NOT NULL,
+    setup_fee REAL NOT NULL,
+    max_trucks INTEGER NOT NULL,
+    features TEXT, -- JSON array
+    compliance_level TEXT DEFAULT 'basic',
+    stripe_price_id TEXT,
+    stripe_setup_price_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS revenue_data (
+    id TEXT PRIMARY KEY,
+    month TEXT NOT NULL,
+    recurring_revenue REAL NOT NULL,
+    setup_fees REAL NOT NULL,
+    consulting_fees REAL NOT NULL,
+    total_revenue REAL NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS compliance_alerts (
+    id TEXT PRIMARY KEY,
+    client_id TEXT NOT NULL,
+    client_name TEXT NOT NULL,
+    alert_type TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    due_date TEXT NOT NULL,
+    status TEXT DEFAULT 'open',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (client_id) REFERENCES eld_clients(id)
+);
+
+CREATE TABLE IF NOT EXISTS hos_logs (
+    id TEXT PRIMARY KEY,
+    driver_id TEXT NOT NULL,
+    vehicle_id TEXT NOT NULL,
+    log_type TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT,
+    location TEXT, -- JSON object
+    is_edited BOOLEAN DEFAULT 0,
+    edit_reason TEXT,
+    certifying_driver TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    eld_provider TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+);
+
+CREATE TABLE IF NOT EXISTS dvir_reports (
+    id TEXT PRIMARY KEY,
+    driver_id TEXT NOT NULL,
+    vehicle_id TEXT NOT NULL,
+    inspection_type TEXT NOT NULL,
+    inspection_date TEXT NOT NULL,
+    is_safe_to_drive BOOLEAN NOT NULL,
+    defects TEXT, -- JSON object
+    repairs TEXT, -- JSON object
+    certifying_driver TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    eld_provider TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
 );
 
 -- Index for API keys table

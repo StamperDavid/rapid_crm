@@ -10,7 +10,7 @@ import {
   PlusIcon, 
   TrashIcon, 
   CheckIcon, 
-  XMarkIcon,
+  XIcon,
   ChipIcon,
   TruckIcon,
   ChartBarIcon,
@@ -280,7 +280,7 @@ const AIIdentityManager: React.FC = () => {
                     onClick={() => setEditingField(null)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                   >
-                    <XMarkIcon className="h-4 w-4" />
+                    <XIcon className="h-4 w-4" />
                   </button>
                 </div>
               ) : (

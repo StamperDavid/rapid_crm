@@ -13,6 +13,10 @@ import {
   DesktopComputerIcon,
   TemplateIcon,
   CubeIcon,
+  XIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  CogIcon,
   ChartSquareBarIcon,
   PlayIcon,
   PauseIcon,
@@ -68,14 +72,14 @@ const defaultTheme: ThemeSettings = {
   primaryColor: '#3b82f6', // blue-500
   secondaryColor: '#8b5cf6', // violet-500
   accentColor: '#10b981', // emerald-500
-  backgroundColor: '#f8fafc', // slate-50
-  surfaceColor: '#ffffff', // white
+  backgroundColor: '#ffffff', // white
+  surfaceColor: '#f9fafb', // gray-50
   cardColor: '#ffffff', // white
-  textPrimary: '#1e293b', // slate-800
-  textSecondary: '#64748b', // slate-500
-  textMuted: '#94a3b8', // slate-400
-  borderColor: '#e2e8f0', // slate-200
-  shadowColor: '#00000010', // black with opacity
+  textPrimary: '#111827', // gray-900
+  textSecondary: '#374151', // gray-700
+  textMuted: '#6b7280', // gray-500
+  borderColor: '#e5e7eb', // gray-200
+  shadowColor: '#000000', // black
   borderRadius: 8,
   fontFamily: 'Inter',
   fontSize: 14,
@@ -609,6 +613,261 @@ const ThemeCustomizer: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Preview Mode Overlay */}
+      {previewMode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Theme Preview
+              </h3>
+              <button
+                onClick={() => setPreviewMode(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-auto max-h-[calc(90vh-80px)]">
+              <div className="space-y-6">
+                {/* Preview Header */}
+                <div 
+                  className="p-6 rounded-lg"
+                  style={{ backgroundColor: settings.backgroundColor }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
+                        style={{ backgroundColor: settings.primaryColor }}
+                      >
+                        R
+                      </div>
+                      <div>
+                        <h1 
+                          className="text-xl font-bold"
+                          style={{ color: settings.textColor }}
+                        >
+                          Rapid CRM
+                        </h1>
+                        <p 
+                          className="text-sm"
+                          style={{ color: settings.textColor, opacity: 0.7 }}
+                        >
+                          Customer Relationship Management
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{ 
+                          backgroundColor: settings.secondaryColor,
+                          color: settings.textColor 
+                        }}
+                      >
+                        Dashboard
+                      </button>
+                      <button 
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{ 
+                          backgroundColor: settings.primaryColor,
+                          color: 'white' 
+                        }}
+                      >
+                        Settings
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div 
+                    className="p-6 rounded-lg shadow-sm"
+                    style={{ backgroundColor: settings.surfaceColor }}
+                  >
+                    <div className="flex items-center mb-4">
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center mr-3"
+                        style={{ backgroundColor: settings.accentColor }}
+                      >
+                        <ChartBarIcon className="h-4 w-4 text-white" />
+                      </div>
+                      <h3 
+                        className="text-lg font-semibold"
+                        style={{ color: settings.textColor }}
+                      >
+                        Analytics
+                      </h3>
+                    </div>
+                    <p 
+                      className="text-sm mb-4"
+                      style={{ color: settings.textColor, opacity: 0.8 }}
+                    >
+                      View your business performance metrics and insights.
+                    </p>
+                    <button 
+                      className="w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                      style={{ 
+                        backgroundColor: settings.primaryColor,
+                        color: 'white' 
+                      }}
+                    >
+                      View Analytics
+                    </button>
+                  </div>
+
+                  <div 
+                    className="p-6 rounded-lg shadow-sm"
+                    style={{ backgroundColor: settings.surfaceColor }}
+                  >
+                    <div className="flex items-center mb-4">
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center mr-3"
+                        style={{ backgroundColor: settings.secondaryColor }}
+                      >
+                        <UserGroupIcon className="h-4 w-4 text-white" />
+                      </div>
+                      <h3 
+                        className="text-lg font-semibold"
+                        style={{ color: settings.textColor }}
+                      >
+                        Customers
+                      </h3>
+                    </div>
+                    <p 
+                      className="text-sm mb-4"
+                      style={{ color: settings.textColor, opacity: 0.8 }}
+                    >
+                      Manage your customer relationships and interactions.
+                    </p>
+                    <button 
+                      className="w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                      style={{ 
+                        backgroundColor: settings.primaryColor,
+                        color: 'white' 
+                      }}
+                    >
+                      Manage Customers
+                    </button>
+                  </div>
+
+                  <div 
+                    className="p-6 rounded-lg shadow-sm"
+                    style={{ backgroundColor: settings.surfaceColor }}
+                  >
+                    <div className="flex items-center mb-4">
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center mr-3"
+                        style={{ backgroundColor: settings.accentColor }}
+                      >
+                        <CogIcon className="h-4 w-4 text-white" />
+                      </div>
+                      <h3 
+                        className="text-lg font-semibold"
+                        style={{ color: settings.textColor }}
+                      >
+                        Settings
+                      </h3>
+                    </div>
+                    <p 
+                      className="text-sm mb-4"
+                      style={{ color: settings.textColor, opacity: 0.8 }}
+                    >
+                      Configure your application preferences and settings.
+                    </p>
+                    <button 
+                      className="w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                      style={{ 
+                        backgroundColor: settings.primaryColor,
+                        color: 'white' 
+                      }}
+                    >
+                      Open Settings
+                    </button>
+                  </div>
+                </div>
+
+                {/* Preview Form */}
+                <div 
+                  className="p-6 rounded-lg shadow-sm"
+                  style={{ backgroundColor: settings.surfaceColor }}
+                >
+                  <h3 
+                    className="text-lg font-semibold mb-4"
+                    style={{ color: settings.textColor }}
+                  >
+                    Sample Form
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label 
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: settings.textColor }}
+                      >
+                        Name
+                      </label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: settings.backgroundColor,
+                          borderColor: settings.borderColor,
+                          color: settings.textColor
+                        }}
+                        placeholder="Enter your name"
+                      />
+                    </div>
+                    <div>
+                      <label 
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: settings.textColor }}
+                      >
+                        Email
+                      </label>
+                      <input 
+                        type="email" 
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: settings.backgroundColor,
+                          borderColor: settings.borderColor,
+                          color: settings.textColor
+                        }}
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    <div className="flex space-x-3">
+                      <button 
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{ 
+                          backgroundColor: settings.primaryColor,
+                          color: 'white' 
+                        }}
+                      >
+                        Submit
+                      </button>
+                      <button 
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{ 
+                          backgroundColor: settings.backgroundColor,
+                          borderColor: settings.borderColor,
+                          color: settings.textColor,
+                          border: '1px solid'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

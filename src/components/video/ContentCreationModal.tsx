@@ -65,7 +65,6 @@ import {
   InformationCircleIcon,
   QuestionMarkCircleIcon,
   CheckIcon,
-  XMarkIcon,
   ChevronUpIcon,
   ChevronDownIcon,
   ChevronLeftIcon,

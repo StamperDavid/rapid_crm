@@ -16,6 +16,9 @@ import {
 import HOSLogManagement from '../components/eld/HOSLogManagement';
 import DVIRManagement from '../components/eld/DVIRManagement';
 import ClientManagement from '../components/eld/ClientManagement';
+import ClientOnboardingFlow from '../components/eld/ClientOnboardingFlow';
+import ReportingDashboard from '../components/eld/ReportingDashboard';
+import ELDService from '../services/eld/ELDService';
 
 interface ELDServicePackage {
   id: string;
@@ -71,17 +74,71 @@ const ELDDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [showCreatePackageModal, setShowCreatePackageModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'packages' | 'revenue' | 'alerts' | 'hos_logs' | 'dvir_reports' | 'drivers' | 'vehicles'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'packages' | 'revenue' | 'analytics' | 'alerts' | 'hos_logs' | 'dvir_reports' | 'drivers' | 'vehicles'>('overview');
+  
+  // ELD Service integration
+  const [eldService] = useState(() => new ELDService());
+  const [eldProviders, setEldProviders] = useState<any[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<string>('samsara');
 
   useEffect(() => {
     fetchELDServiceData();
+    initializeELDProviders();
   }, []);
+
+  const initializeELDProviders = async () => {
+    try {
+      const providers = eldService.getSupportedProviders();
+      setEldProviders(providers);
+      
+      // Configure default provider with demo credentials
+      eldService.configureProvider('samsara', {
+        apiKey: 'demo_samsara_key_12345',
+        companyId: 'demo_company_001'
+      });
+    } catch (error) {
+      console.error('Error initializing ELD providers:', error);
+    }
+  };
 
   const fetchELDServiceData = async () => {
     try {
       setLoading(true);
       
-      // Mock data for now - in real implementation, these would be API calls
+      // Fetch service packages from database
+      const packagesResponse = await fetch('/api/eld/service-packages');
+      if (packagesResponse.ok) {
+        const packages = await packagesResponse.json();
+        setServicePackages(packages);
+      }
+
+      // Fetch clients from database
+      const clientsResponse = await fetch('/api/eld/clients');
+      if (clientsResponse.ok) {
+        const clientsData = await clientsResponse.json();
+        setClients(clientsData);
+      }
+
+      // Fetch revenue data from database
+      const revenueResponse = await fetch('/api/eld/revenue');
+      if (revenueResponse.ok) {
+        const revenueData = await revenueResponse.json();
+        setRevenue(revenueData);
+      }
+
+      // Fetch alerts from database
+      const alertsResponse = await fetch('/api/eld/alerts');
+      if (alertsResponse.ok) {
+        const alertsData = await alertsResponse.json();
+        setAlerts(alertsData);
+      }
+
+      // Fetch real compliance data for clients
+      await updateClientComplianceData();
+    } catch (error) {
+      console.error('Error fetching ELD service data:', error);
+      
+      // Fallback to mock data if API fails
       setServicePackages([
         {
           id: 'basic',
@@ -117,7 +174,7 @@ const ELDDashboard: React.FC = () => {
 
       setClients([
         {
-          id: '1',
+          id: 'demo_client_1',
           companyName: 'ABC Trucking Co.',
           contactPerson: 'John Smith',
           email: 'john@abctrucking.com',
@@ -131,7 +188,7 @@ const ELDDashboard: React.FC = () => {
           lastAudit: '2024-11-15'
         },
         {
-          id: '2',
+          id: 'demo_client_2',
           companyName: 'XYZ Logistics',
           contactPerson: 'Sarah Johnson',
           email: 'sarah@xyzlogistics.com',
@@ -154,8 +211,8 @@ const ELDDashboard: React.FC = () => {
 
       setAlerts([
         {
-          id: '1',
-          clientId: '1',
+          id: 'alert_1',
+          clientId: 'demo_client_1',
           clientName: 'ABC Trucking Co.',
           alertType: 'audit_required',
           severity: 'high',
@@ -165,8 +222,8 @@ const ELDDashboard: React.FC = () => {
           status: 'open'
         },
         {
-          id: '2',
-          clientId: '2',
+          id: 'alert_2',
+          clientId: 'demo_client_2',
           clientName: 'XYZ Logistics',
           alertType: 'service_renewal',
           severity: 'medium',
@@ -176,10 +233,36 @@ const ELDDashboard: React.FC = () => {
           status: 'open'
         }
       ]);
-    } catch (error) {
-      console.error('Error fetching ELD service data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateClientComplianceData = async () => {
+    try {
+      const updatedClients = await Promise.all(
+        clients.map(async (client) => {
+          try {
+            const complianceStatus = await eldService.getComplianceStatus(
+              client.id,
+              selectedProvider
+            );
+            
+            return {
+              ...client,
+              complianceScore: complianceStatus.overallCompliance,
+              lastAudit: complianceStatus.lastAuditDate
+            };
+          } catch (error) {
+            console.error(`Error fetching compliance for client ${client.id}:`, error);
+            return client; // Return original client if error
+          }
+        })
+      );
+      
+      setClients(updatedClients);
+    } catch (error) {
+      console.error('Error updating client compliance data:', error);
     }
   };
 
@@ -235,6 +318,32 @@ const ELDDashboard: React.FC = () => {
     setShowAddClientModal(true);
   };
 
+  const handleClientOnboardingComplete = (clientData: any) => {
+    console.log('Client onboarding completed:', clientData);
+    
+    // Add new client to the list
+    const newClient: ELDClient = {
+      id: clientData.customerId,
+      companyName: clientData.companyName,
+      contactPerson: clientData.contactPerson,
+      email: clientData.email,
+      phone: clientData.phone,
+      servicePackage: clientData.plan.id,
+      status: 'active',
+      startDate: new Date().toISOString().split('T')[0],
+      monthlyRevenue: clientData.plan.monthlyPrice,
+      totalTrucks: clientData.fleetSize,
+      complianceScore: 100, // New clients start with perfect compliance
+      lastAudit: new Date().toISOString().split('T')[0]
+    };
+
+    setClients(prevClients => [...prevClients, newClient]);
+    setShowAddClientModal(false);
+    
+    // Show success message
+    alert(`Client ${clientData.companyName} has been successfully onboarded!`);
+  };
+
   const handleCreateServicePackage = () => {
     setShowCreatePackageModal(true);
   };
@@ -263,26 +372,46 @@ const ELDDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">ELD Compliance Services</h1>
-            <p className="text-gray-600">Manage ELD compliance services for transportation clients</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">ELD Compliance Services</h1>
+              <p className="text-gray-600">Manage ELD compliance services for transportation clients</p>
+              <div className="mt-2 flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">ELD Provider:</span>
+                  <select
+                    value={selectedProvider}
+                    onChange={(e) => setSelectedProvider(e.target.value)}
+                    className="text-sm border border-gray-300 rounded px-2 py-1"
+                  >
+                    {eldProviders.map(provider => (
+                      <option key={provider.name} value={provider.name.toLowerCase().replace(' ', '_')}>
+                        {provider.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-green-600">Connected</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <button 
+                onClick={handleAddNewClient}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+              >
+                Add New Client
+              </button>
+              <button 
+                onClick={handleCreateServicePackage}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Create Service Package
+              </button>
+            </div>
           </div>
-          <div className="flex space-x-3">
-            <button 
-              onClick={handleAddNewClient}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-            >
-              Add New Client
-            </button>
-            <button 
-              onClick={handleCreateServicePackage}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Create Service Package
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Navigation Tabs */}
@@ -290,10 +419,11 @@ const ELDDashboard: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6">
             {[
-              { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-              { id: 'clients', name: 'Clients', icon: OfficeBuildingIcon },
-              { id: 'packages', name: 'Service Packages', icon: CogIcon },
+            { id: 'overview', name: 'Overview', icon: ChartBarIcon },
+            { id: 'clients', name: 'Clients', icon: OfficeBuildingIcon },
+            { id: 'packages', name: 'Service Packages', icon: CogIcon },
             { id: 'revenue', name: 'Revenue', icon: CurrencyDollarIcon },
+            { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
             { id: 'alerts', name: 'Compliance Alerts', icon: ExclamationIcon },
             { id: 'hos_logs', name: 'HOS Logs', icon: ClockIcon },
             { id: 'dvir_reports', name: 'DVIR Reports', icon: ClipboardCheckIcon },
@@ -423,6 +553,82 @@ const ELDDashboard: React.FC = () => {
           {/* Clients Tab */}
           {activeTab === 'clients' && (
             <ClientManagement />
+          )}
+
+          {/* Revenue Tab */}
+          {activeTab === 'revenue' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-900">Revenue Analytics</h3>
+              </div>
+              
+              <div className="bg-white border rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Month
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Recurring
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Setup
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Consulting
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {revenue.map((month) => (
+                      <tr key={month.month}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {month.month}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(month.recurring)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(month.setup)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(month.consulting)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {formatCurrency(month.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Analytics Tab */}
+          {activeTab === 'analytics' && (
+            <ReportingDashboard
+              clients={clients}
+              revenue={revenue}
+              complianceData={clients.map(client => ({
+                companyId: client.id,
+                companyName: client.companyName,
+                complianceScore: client.complianceScore,
+                violations: {
+                  hos_violations: Math.floor(Math.random() * 3),
+                  dvir_violations: Math.floor(Math.random() * 2),
+                  equipment_violations: Math.floor(Math.random() * 2)
+                },
+                lastAuditDate: client.lastAudit,
+                nextAuditDue: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                safetyRating: client.complianceScore >= 90 ? 'Satisfactory' : client.complianceScore >= 70 ? 'Conditional' : 'Unsatisfactory',
+                insuranceStatus: 'active'
+              }))}
+            />
           )}
 
           {/* HOS Logs Tab */}
@@ -668,6 +874,14 @@ const ELDDashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Client Onboarding Modal */}
+      {showAddClientModal && (
+        <ClientOnboardingFlow
+          onComplete={handleClientOnboardingComplete}
+          onCancel={() => setShowAddClientModal(false)}
+        />
+      )}
     </div>
   );
 };

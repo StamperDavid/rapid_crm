@@ -34,7 +34,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isContinuousMode, setIsContinuousMode] = useState(false);
+  const [isContinuousMode, setIsContinuousMode] = useState(true); // Auto-start continuous mode like Gemini
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const recognitionStateRef = useRef<'idle' | 'starting' | 'listening' | 'stopping'>('idle');
@@ -46,6 +46,20 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   useEffect(() => {
     isContinuousModeRef.current = isContinuousMode;
   }, [isContinuousMode]);
+
+  // Auto-start continuous mode when chat opens (like Gemini)
+  useEffect(() => {
+    if (isOpen && isContinuousMode) {
+      console.log('🎤 Chat opened - auto-starting continuous mode like Gemini');
+      // Start listening after a short delay to ensure everything is initialized
+      setTimeout(() => {
+        if (recognitionRef.current && recognitionStateRef.current === 'idle') {
+          console.log('🎤 Auto-starting speech recognition for continuous mode');
+          startListening();
+        }
+      }, 500);
+    }
+  }, [isOpen, isContinuousMode]);
 
   useEffect(() => {
     isSpeakingRef.current = isSpeaking;
@@ -340,6 +354,16 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     }
   };
 
+  // Add a function to stop continuous mode when chat closes
+  const handleClose = () => {
+    console.log('🎤 Chat closing - stopping continuous mode');
+    setIsContinuousMode(false);
+    if (isListening || recognitionStateRef.current === 'listening') {
+      stopListening();
+    }
+    onClose();
+  };
+
   // Removed handleMicrophoneClick - using only continuous chat mode now
 
   // Global audio reference for interruption handling
@@ -422,15 +446,16 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         body: JSON.stringify({
           text: truncatedText,
           voiceId: unrealSpeechVoiceId,
-          speed: 0,
-          pitch: 1.0
+          speed: 0.1, // Slightly faster for more natural speech
+          pitch: 1.05 // Slightly higher pitch for more natural sound
         })
       });
 
-      console.log('🚀 DIAGNOSTIC: Unreal Speech API response:', {
+      console.log('⚡ Fast Voice API response:', {
         ok: response.ok,
         status: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
+        cache: response.headers.get('X-Cache')
       });
 
       if (response.ok) {
@@ -454,9 +479,10 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         };
 
         await audio.play();
+        console.log('⚡ Fast voice synthesis completed successfully');
       } else {
         const errorText = await response.text();
-        console.error('❌ Unreal Speech API error:', response.status, errorText);
+        console.error('❌ Fast Voice API error:', response.status, errorText);
         // Fallback to browser TTS
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.onend = () => setIsSpeaking(false);
@@ -617,7 +643,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
             </div>
             
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
             >
               <XIcon className="h-4 w-4" />
@@ -634,6 +660,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
               </div>
               <h3 className="text-base font-medium mb-1">Hey David! I'm your Rapid CRM AI partner.</h3>
               <p className="text-xs mb-1">I'm here to help you with transportation compliance, CRM systems, and project management.</p>
+              <p className="text-xs mb-2">🎤 <strong>Continuous conversation is active!</strong> Just speak naturally like you would with Gemini.</p>
               <p className="text-xs">What would you like to work on today?</p>
             </div>
           ) : (
@@ -678,11 +705,23 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         <div className="p-3 border-t border-gray-200 dark:border-gray-700">
           {/* Continuous Mode Indicator */}
           {isContinuousMode && (
-            <div className="mb-2 p-2 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-md">
+            <div className="mb-2 p-2 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 border border-green-300 dark:border-green-700 rounded-md">
               <div className="flex items-center space-x-2">
                 <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm text-green-700 dark:text-green-300 font-medium">
-                  Continuous conversation mode active - speak naturally!
+                  🎤 Continuous conversation active - just speak naturally like Gemini!
+                </span>
+              </div>
+            </div>
+          )}
+          
+          {/* Manual Mode Indicator */}
+          {!isContinuousMode && (
+            <div className="mb-2 p-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded-md">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-sm text-yellow-700 dark:text-yellow-300 font-medium">
+                  Manual mode - click the chat icon to start continuous conversation
                 </span>
               </div>
             </div>
@@ -694,7 +733,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={isContinuousMode ? "Speaking... (continuous conversation active)" : "Type your message here or click 'Start Chat' for voice..."}
+                placeholder={isContinuousMode ? "🎤 Continuous conversation active - just speak naturally!" : "Type your message here or click the chat icon for voice..."}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
                 rows={2}
                 disabled={isLoading || isContinuousMode}
@@ -768,9 +807,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
           {/* Instructions */}
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             {isContinuousMode ? (
-              <span>💬 Continuous conversation active: Just speak naturally! You can interrupt the AI by speaking. Click the animated chat icon to end.</span>
+              <span>💬 <strong>Gemini-style continuous chat:</strong> Just speak naturally! You can interrupt the AI by speaking. Click the animated chat icon to switch to manual mode.</span>
             ) : (
-              <span>💡 Click the chat icon to start continuous voice conversation with interruption support</span>
+              <span>💡 Click the chat icon to start Gemini-style continuous voice conversation</span>
             )}
           </div>
         </div>

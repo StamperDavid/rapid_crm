@@ -40,6 +40,7 @@ import ClaudeEventListener from './components/ClaudeEventListener';
 // import CursorAICollaborationPanel from './components/CursorAICollaborationPanel'; // Component not found
 import WorkflowOptimizationDemo from './components/WorkflowOptimizationDemo';
 import RapidCRMAIProfile from './components/RapidCRMAIProfile';
+import VideoProductionDashboard from './pages/VideoProductionDashboard';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -64,7 +65,7 @@ function App() {
               <UIStateProvider>
               <QueryClientProvider client={queryClient}>
               <Router>
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+              <div className="min-h-screen">
                 <ClaudeEventListener />
                 <Routes>
                   {/* Client Login Route */}
@@ -102,6 +103,7 @@ function App() {
                         <Route path="/eld" element={<ELDDashboard />} />
                         <Route path="/ifta" element={<IFTADashboard />} />
                         <Route path="/seo" element={<SEODashboard />} />
+                        <Route path="/video-production" element={<VideoProductionDashboard />} />
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/conversations" element={<Conversations />} />
                         <Route path="/settings/api-keys" element={<ApiKeys />} />

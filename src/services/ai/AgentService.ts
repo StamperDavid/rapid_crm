@@ -69,6 +69,7 @@ export class AgentService {
         {
           id: 'usdot-onboarding',
           name: 'USDOT Application Agent',
+          displayName: 'Sarah Johnson',
           type: 'custom',
           description: 'Specialized agent for USDOT application assistance and data collection',
           status: 'active',
@@ -101,6 +102,7 @@ export class AgentService {
         {
           id: 'usdot-rpa',
           name: 'USDOT RPA Agent',
+          displayName: 'Alex Martinez',
           type: 'custom',
           description: 'Robotic Process Automation agent for USDOT application submission',
           status: 'active',
@@ -133,6 +135,7 @@ export class AgentService {
         {
           id: 'customer-service',
           name: 'Customer Service Agent',
+          displayName: 'Michael Chen',
           type: 'customer_service',
           description: 'General customer service and support agent',
           status: 'active',
@@ -165,6 +168,7 @@ export class AgentService {
         {
           id: 'sales-assistant',
           name: 'Sales Assistant Agent',
+          displayName: 'Emma Rodriguez',
           type: 'sales',
           description: 'Sales support and lead qualification agent',
           status: 'active',

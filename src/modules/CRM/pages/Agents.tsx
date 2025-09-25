@@ -16,146 +16,19 @@ import {
   CurrencyDollarIcon,
   RefreshIcon,
   SparklesIcon,
+  XIcon,
 } from '@heroicons/react/outline';
 import AdvancedAgentBuilder from '../../../components/AdvancedAgentBuilder';
+import AdvancedAgentCustomizer from '../../../components/AdvancedAgentCustomizer';
+import AgentLearningSystem from '../../../components/AgentLearningSystem';
 import AgentMemoryDemo from '../../../components/AgentMemoryDemo';
 import AgentTrainingManager from '../../../components/AgentTrainingManager';
 import RPATrainingManager from '../../../components/RPATrainingManager';
+import IntegratedAIChat from '../../../components/IntegratedAIChat';
 import { useAIAgents } from '../../../hooks/useAIAgents';
 import { Agent } from '../../../types/schema';
 
-const mockAgents: Agent[] = [
-  {
-    id: '1',
-    name: 'USDOT Application Agent',
-    description: 'Specialized agent for USDOT application data collection and robotic process automation',
-    type: 'onboarding',
-    status: 'active',
-    capabilities: ['usdot_data_collection', 'compliance_validation', 'document_processing', 'rpa_trigger', 'regulatory_guidance'],
-    knowledgeBases: ['usdot_regulations', 'fmcsa_guidelines'],
-    rules: ['usdot_compliance', 'data_validation'],
-    configuration: {
-      model: 'gpt-4',
-      temperature: 0.3,
-      maxTokens: 3000,
-      systemPrompt: 'You are a specialized USDOT Application Agent for Rapid CRM. Your primary role is to collect comprehensive USDOT application data from transportation companies during the onboarding process. You must gather all required information including Operation Classification Summary, Company Contact Information, Operation Questions, Vehicle Summary, Driver Summary, Affiliation with Others, Compliance Certifications, and File Uploads. Once all data is collected and validated, you will trigger the robotic process automation agent to complete the actual USDOT application submission. Always be thorough, professional, and ensure compliance with FMCSA requirements.',
-      responseFormat: 'structured',
-      fallbackBehavior: 'escalate_to_human'
-    },
-    metrics: {
-      totalInteractions: 156,
-      successRate: 97.4,
-      averageResponseTime: 2.3,
-      userSatisfaction: 4.8
-    },
-    createdAt: '2024-01-15T09:00:00Z',
-    updatedAt: '2024-01-20T14:30:00Z'
-  },
-  {
-    id: '2',
-    name: 'USDOT RPA Agent',
-    description: 'Robotic Process Automation agent that completes USDOT applications using collected data',
-    type: 'custom',
-    status: 'active',
-    capabilities: ['form_automation', 'data_entry', 'document_upload', 'submission_processing', 'error_handling', 'status_reporting'],
-    knowledgeBases: ['usdot_forms', 'rpa_patterns'],
-    rules: ['form_validation', 'error_handling'],
-    configuration: {
-      model: 'gpt-4',
-      temperature: 0.1,
-      maxTokens: 2500,
-      systemPrompt: 'You are a Robotic Process Automation (RPA) Agent specialized in USDOT application completion. You receive structured data from the USDOT Application Agent and use it to automatically fill out and submit USDOT applications through the official FMCSA portal. You handle form navigation, data entry, validation, document uploads, and final submission. You must ensure 100% accuracy and compliance with all FMCSA requirements. Report back on submission status and any issues encountered.',
-      responseFormat: 'action',
-      fallbackBehavior: 'retry_with_backoff'
-    },
-    metrics: {
-      totalInteractions: 89,
-      successRate: 95.5,
-      averageResponseTime: 1.8,
-      userSatisfaction: 4.6
-    },
-    createdAt: '2024-01-16T10:00:00Z',
-    updatedAt: '2024-01-20T14:25:00Z'
-  },
-  {
-    id: '3',
-    name: 'Onboarding Assistant',
-    description: 'Helps new customers get started with the platform',
-    type: 'onboarding',
-    status: 'active',
-    capabilities: ['account_setup', 'feature_explanation', 'troubleshooting'],
-    knowledgeBases: ['platform_guide', 'faq'],
-    rules: ['user_guidance', 'troubleshooting'],
-    configuration: {
-      model: 'gpt-4',
-      temperature: 0.7,
-      maxTokens: 2000,
-      systemPrompt: 'You are a helpful onboarding assistant for Rapid CRM...',
-      responseFormat: 'conversational',
-      fallbackBehavior: 'escalate_to_human'
-    },
-    metrics: {
-      totalInteractions: 1247,
-      successRate: 94.2,
-      averageResponseTime: 1.5,
-      userSatisfaction: 4.7
-    },
-    createdAt: '2024-01-15T09:00:00Z',
-    updatedAt: '2024-01-20T10:30:00Z'
-  },
-  {
-    id: '4',
-    name: 'Customer Service Bot',
-    description: 'Handles general customer inquiries and support requests',
-    type: 'customer_service',
-    status: 'active',
-    capabilities: ['billing_support', 'technical_help', 'feature_requests'],
-    knowledgeBases: ['support_docs', 'billing_info'],
-    rules: ['support_escalation', 'billing_guidance'],
-    configuration: {
-      model: 'gpt-3.5-turbo',
-      temperature: 0.5,
-      maxTokens: 1500,
-      systemPrompt: 'You are a professional customer service representative...',
-      responseFormat: 'conversational',
-      fallbackBehavior: 'escalate_to_human'
-    },
-    metrics: {
-      totalInteractions: 3421,
-      successRate: 89.7,
-      averageResponseTime: 2.1,
-      userSatisfaction: 4.3
-    },
-    createdAt: '2024-01-10T14:20:00Z',
-    updatedAt: '2024-01-20T11:15:00Z'
-  },
-  {
-    id: '5',
-    name: 'Sales Qualification Bot',
-    description: 'Qualifies leads and schedules demos for the sales team',
-    type: 'sales',
-    status: 'training',
-    capabilities: ['lead_qualification', 'demo_scheduling', 'objection_handling'],
-    knowledgeBases: ['sales_playbook', 'product_info'],
-    rules: ['lead_scoring', 'demo_qualification'],
-    configuration: {
-      model: 'gpt-4',
-      temperature: 0.6,
-      maxTokens: 1800,
-      systemPrompt: 'You are a sales qualification specialist...',
-      responseFormat: 'persuasive',
-      fallbackBehavior: 'schedule_callback'
-    },
-    metrics: {
-      totalInteractions: 89,
-      successRate: 76.4,
-      averageResponseTime: 2.8,
-      userSatisfaction: 4.1
-    },
-    createdAt: '2024-01-18T12:00:00Z',
-    updatedAt: '2024-01-19T16:45:00Z'
-  }
-];
+// Mock agents are now handled by the agentService, so we don't need this array
 
 const Agents: React.FC = () => {
   const { 
@@ -177,6 +50,12 @@ const Agents: React.FC = () => {
   const [trainingAgent, setTrainingAgent] = useState<Agent | null>(null);
   const [rpaTrainingAgent, setRPATrainingAgent] = useState<Agent | null>(null);
   const [showMemoryDemo, setShowMemoryDemo] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [showCustomizer, setShowCustomizer] = useState(false);
+  const [showLearningSystem, setShowLearningSystem] = useState(false);
+  const [chattingAgent, setChattingAgent] = useState<Agent | null>(null);
+  const [customizingAgent, setCustomizingAgent] = useState<Agent | null>(null);
+  const [learningAgent, setLearningAgent] = useState<Agent | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive' | 'training'>('all');
 
   const filteredAgents = agents.filter(agent => {
@@ -240,14 +119,17 @@ const Agents: React.FC = () => {
   };
 
   const handleEditAgent = (agent: Agent) => {
+    console.log('Edit agent clicked:', agent);
     setEditingAgent(agent);
     setShowAdvancedBuilder(true);
   };
 
   const handleDeleteAgent = async (agentId: string) => {
+    console.log('Delete agent clicked:', agentId);
     if (confirm('Are you sure you want to delete this agent?')) {
       try {
         await deleteAgent(agentId);
+        console.log('Agent deleted successfully');
       } catch (error) {
         console.error('Failed to delete agent:', error);
       }
@@ -305,6 +187,36 @@ const Agents: React.FC = () => {
   const handleCloseRPATraining = () => {
     setShowRPATrainingManager(false);
     setRPATrainingAgent(null);
+  };
+
+  const handleOpenChat = (agent: Agent) => {
+    setChattingAgent(agent);
+    setShowChat(true);
+  };
+
+  const handleCloseChat = () => {
+    setShowChat(false);
+    setChattingAgent(null);
+  };
+
+  const handleOpenCustomizer = (agent: Agent) => {
+    setCustomizingAgent(agent);
+    setShowCustomizer(true);
+  };
+
+  const handleCloseCustomizer = () => {
+    setShowCustomizer(false);
+    setCustomizingAgent(null);
+  };
+
+  const handleOpenLearningSystem = (agent: Agent) => {
+    setLearningAgent(agent);
+    setShowLearningSystem(true);
+  };
+
+  const handleCloseLearningSystem = () => {
+    setShowLearningSystem(false);
+    setLearningAgent(null);
   };
 
   return (
@@ -429,8 +341,13 @@ const Agents: React.FC = () => {
                   </div>
                   <div className="ml-3">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {agent.name}
+                      {agent.displayName ? `${agent.displayName}` : agent.name}
                     </h3>
+                    {agent.displayName && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {agent.name}
+                      </p>
+                    )}
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {agent.description}
                     </p>
@@ -438,16 +355,24 @@ const Agents: React.FC = () => {
                 </div>
                 <div className="flex space-x-1">
                   <button
-                    onClick={() => handleEditAgent(agent)}
-                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    onClick={() => {
+                      console.log('EDIT BUTTON CLICKED!');
+                      alert('EDIT BUTTON CLICKED!');
+                    }}
+                    className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    style={{ zIndex: 9999, position: 'relative' }}
                   >
-                    <PencilIcon className="h-4 w-4" />
+                    EDIT
                   </button>
                   <button
-                    onClick={() => handleDeleteAgent(agent.id)}
-                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                    onClick={() => {
+                      console.log('DELETE BUTTON CLICKED!');
+                      alert('DELETE BUTTON CLICKED!');
+                    }}
+                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    style={{ zIndex: 9999, position: 'relative' }}
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    DELETE
                   </button>
                 </div>
               </div>
@@ -482,51 +407,76 @@ const Agents: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-4 flex space-x-2">
-                <button
-                  onClick={() => handleToggleStatus(agent.id)}
-                  className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    agent.status === 'active'
-                      ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300 dark:hover:bg-slate-600'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30'
-                  }`}
-                >
-                  {agent.status === 'active' ? (
-                    <>
-                      <PauseIcon className="h-4 w-4 mr-1 inline" />
-                      Pause
-                    </>
+              <div className="mt-4 space-y-2">
+                {/* Primary Actions */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleOpenChat(agent)}
+                    className="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                    title="Chat with Agent"
+                  >
+                    <ChatIcon className="h-4 w-4 mr-1 inline" />
+                    Chat
+                  </button>
+                  <button
+                    onClick={() => handleOpenCustomizer(agent)}
+                    className="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:hover:bg-purple-900/30"
+                    title="Customize Agent"
+                  >
+                    <CogIcon className="h-4 w-4 mr-1 inline" />
+                    Customize
+                  </button>
+                </div>
+                
+                {/* Secondary Actions */}
+                <div className="flex space-x-1">
+                  <button
+                    onClick={() => handleOpenLearningSystem(agent)}
+                    className="px-3 py-2 text-sm font-medium text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md transition-colors"
+                    title="Learning System"
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleToggleStatus(agent.id)}
+                    className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                      agent.status === 'active'
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300 dark:hover:bg-slate-600'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30'
+                    }`}
+                    title={agent.status === 'active' ? 'Pause Agent' : 'Activate Agent'}
+                  >
+                    {agent.status === 'active' ? (
+                      <PauseIcon className="h-4 w-4" />
+                    ) : (
+                      <PlayIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                  {agent.name.includes('RPA') ? (
+                    <button
+                      onClick={() => handleOpenRPATraining(agent)}
+                      className="px-3 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-md transition-colors"
+                      title="Train RPA Agent"
+                    >
+                      <ChipIcon className="h-4 w-4" />
+                    </button>
                   ) : (
-                    <>
-                      <PlayIcon className="h-4 w-4 mr-1 inline" />
-                      Activate
-                    </>
+                    <button
+                      onClick={() => handleOpenTraining(agent)}
+                      className="px-3 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
+                      title="Train Agent"
+                    >
+                      <ChipIcon className="h-4 w-4" />
+                    </button>
                   )}
-                </button>
-                {agent.name.includes('RPA') ? (
                   <button
-                    onClick={() => handleOpenRPATraining(agent)}
-                    className="px-3 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-md transition-colors"
-                    title="Train RPA Agent"
+                    onClick={() => setSelectedAgent(agent)}
+                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/20 rounded-md transition-colors"
+                    title="View Details"
                   >
-                    <ChipIcon className="h-4 w-4" />
+                    <EyeIcon className="h-4 w-4" />
                   </button>
-                ) : (
-                  <button
-                    onClick={() => handleOpenTraining(agent)}
-                    className="px-3 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
-                    title="Train Agent"
-                  >
-                    <ChipIcon className="h-4 w-4" />
-                  </button>
-                )}
-                <button
-                  onClick={() => setSelectedAgent(agent)}
-                  className="px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-                  title="View Details"
-                >
-                  <EyeIcon className="h-4 w-4" />
-                </button>
+                </div>
               </div>
             </div>
           );
@@ -587,6 +537,70 @@ const Agents: React.FC = () => {
         agentId={rpaTrainingAgent?.id}
         agentName={rpaTrainingAgent?.name}
       />
+
+      {/* Agent Chat Modal */}
+      {showChat && chattingAgent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl h-5/6 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                  <ChatIcon className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Chat with {chattingAgent.displayName || chattingAgent.name}
+                  </h3>
+                  {chattingAgent.displayName && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {chattingAgent.name}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {chattingAgent.description}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseChat}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <IntegratedAIChat 
+                isOpen={true} 
+                onClose={handleCloseChat}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Agent Customizer */}
+      {showCustomizer && customizingAgent && (
+        <AdvancedAgentCustomizer
+          agentId={customizingAgent.id}
+          agentName={customizingAgent.name}
+          isOpen={showCustomizer}
+          onClose={handleCloseCustomizer}
+          onSave={(config) => {
+            console.log('Agent configuration saved:', config);
+            handleCloseCustomizer();
+          }}
+        />
+      )}
+
+      {/* Agent Learning System */}
+      {showLearningSystem && learningAgent && (
+        <AgentLearningSystem
+          agentId={learningAgent.id}
+          agentName={learningAgent.name}
+          isOpen={showLearningSystem}
+          onClose={handleCloseLearningSystem}
+        />
+      )}
     </div>
   );
 };

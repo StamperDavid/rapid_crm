@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CurrencyDollarIcon,
   PlusIcon,
@@ -10,11 +10,18 @@ import {
   XIcon,
   DocumentTextIcon,
   CalendarIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  CogIcon
 } from '@heroicons/react/outline';
 import { Deal } from '../../../types/schema';
+import { Service } from '../../../types/schema';
 
-const Deals: React.FC = () => {
+interface DealsProps {
+  preSelectedCompanyId?: string;
+  preSelectedCompanyName?: string;
+}
+
+const Deals: React.FC<DealsProps> = ({ preSelectedCompanyId, preSelectedCompanyName }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -31,7 +38,10 @@ const Deals: React.FC = () => {
       stage: 'Negotiation',
       probability: 75,
       expectedCloseDate: '2024-02-15',
-      software: 'JotForm',
+      software: 'Website',
+      serviceId: '1',
+      serviceName: 'USDOT Number Registration',
+      customPrice: 150000,
       contactId: '1',
       companyId: '1',
       createdAt: '2024-01-15',
@@ -45,7 +55,10 @@ const Deals: React.FC = () => {
       stage: 'Proposal',
       probability: 60,
       expectedCloseDate: '2024-03-01',
-      software: 'JotForm',
+      software: 'Website',
+      serviceId: '1',
+      serviceName: 'USDOT Number Registration',
+      customPrice: 150000,
       contactId: '2',
       companyId: '2',
       createdAt: '2024-01-10',
@@ -60,7 +73,10 @@ const Deals: React.FC = () => {
       probability: 100,
       expectedCloseDate: '2024-01-25',
       actualCloseDate: '2024-01-25',
-      software: 'JotForm',
+      software: 'Website',
+      serviceId: '1',
+      serviceName: 'USDOT Number Registration',
+      customPrice: 150000,
       contactId: '3',
       companyId: '3',
       createdAt: '2024-01-05',
@@ -68,13 +84,18 @@ const Deals: React.FC = () => {
     }
   ]);
 
+  const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
   const [newDeal, setNewDeal] = useState<Partial<Deal>>({
     title: '',
     description: '',
     value: 0,
     stage: 'Prospecting',
     probability: 10,
-    software: 'JotForm'
+    software: 'Website',
+    companyId: preSelectedCompanyId || '',
+    contactId: preSelectedCompanyId || ''
   });
 
   const filteredDeals = deals.filter(deal => {
@@ -101,7 +122,7 @@ const Deals: React.FC = () => {
   };
 
   const handleCreateDeal = () => {
-    if (newDeal.title && newDeal.value) {
+    if (newDeal.title && newDeal.value && newDeal.companyId) {
       const deal: Deal = {
         id: (deals.length + 1).toString(),
         title: newDeal.title,
@@ -111,7 +132,10 @@ const Deals: React.FC = () => {
         probability: newDeal.probability || 10,
         expectedCloseDate: newDeal.expectedCloseDate,
         actualCloseDate: newDeal.actualCloseDate,
-        software: newDeal.software || 'JotForm',
+        software: newDeal.software || 'Custom Onboarding',
+        serviceId: newDeal.serviceId,
+        serviceName: newDeal.serviceName,
+        customPrice: newDeal.customPrice,
         contactId: newDeal.contactId,
         companyId: newDeal.companyId,
         createdAt: new Date().toISOString().split('T')[0],
@@ -124,14 +148,14 @@ const Deals: React.FC = () => {
         value: 0,
         stage: 'Prospecting',
         probability: 10,
-        software: 'JotForm'
+        software: 'Custom Onboarding'
       });
       setShowCreateModal(false);
     }
   };
 
   const handleUpdateDeal = () => {
-    if (editingDeal && newDeal.title && newDeal.value) {
+    if (editingDeal && newDeal.title && newDeal.value && newDeal.companyId) {
       const updatedDeal: Deal = {
         ...editingDeal,
         ...newDeal,
@@ -145,7 +169,7 @@ const Deals: React.FC = () => {
         value: 0,
         stage: 'Prospecting',
         probability: 10,
-        software: 'JotForm'
+        software: 'Custom Onboarding'
       });
       setShowCreateModal(false);
     }
@@ -163,14 +187,189 @@ const Deals: React.FC = () => {
       value: deal.value,
       stage: deal.stage,
       probability: deal.probability,
-      expectedCloseDate: deal.expectedCloseDate,
-      actualCloseDate: deal.actualCloseDate,
-      software: deal.software,
-      contactId: deal.contactId,
-      companyId: deal.companyId
+        expectedCloseDate: deal.expectedCloseDate,
+        actualCloseDate: deal.actualCloseDate,
+        software: deal.software,
+        serviceId: deal.serviceId,
+        serviceName: deal.serviceName,
+        productId: deal.productId,
+        productName: deal.productName,
+        customPrice: deal.customPrice,
+        contactId: deal.contactId,
+        companyId: deal.companyId
     });
     setShowCreateModal(true);
   };
+
+  // Load services and companies on component mount
+  useEffect(() => {
+    // Mock services data - in real app, this would come from API
+    const mockServices: Service[] = [
+      {
+        id: '1',
+        name: 'USDOT Number Registration',
+        description: 'Complete USDOT number registration for commercial vehicles',
+        category: 'Registration',
+        basePrice: 299,
+        estimatedDuration: '1-2 business days',
+        requirements: ['Legal business name', 'Fleet information'],
+        deliverables: ['USDOT number assignment', 'Registration confirmation'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '2',
+        name: 'Operating Authority (MC Number)',
+        description: 'Motor Carrier number registration for for-hire carriers',
+        category: 'Registration',
+        basePrice: 399,
+        estimatedDuration: '2-4 weeks',
+        requirements: ['USDOT number', 'Insurance documentation'],
+        deliverables: ['MC number assignment', 'Operating authority certificate'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '3',
+        name: 'Biennial Updates (MCS-150)',
+        description: 'Federal Motor Carrier Safety Administration required updates',
+        category: 'Compliance',
+        basePrice: 199,
+        estimatedDuration: '1-3 business days',
+        requirements: ['Current company information', 'Fleet updates'],
+        deliverables: ['Updated MCS-150 filing', 'Confirmation receipt'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '4',
+        name: 'Unified Carrier Registration (UCR)',
+        description: 'Annual registration required for most interstate carriers and brokers',
+        category: 'Registration',
+        basePrice: 149,
+        estimatedDuration: '1-2 business days',
+        requirements: ['USDOT number', 'Fleet size information'],
+        deliverables: ['UCR registration', 'State permits'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '5',
+        name: 'ELD Compliance Package',
+        description: 'Complete ELD setup and compliance management',
+        category: 'Compliance',
+        basePrice: 899,
+        estimatedDuration: '2-4 weeks',
+        requirements: ['Fleet information', 'Driver list', 'ELD provider selection'],
+        deliverables: ['ELD installation', 'Compliance training', 'Ongoing support'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      }
+    ];
+    setServices(mockServices);
+
+    // Mock products data - in real app, this would come from API
+    const mockProducts = [
+      {
+        id: '1',
+        name: 'ELD Hardware Package',
+        description: 'Complete ELD device with installation',
+        category: 'Hardware',
+        basePrice: 1299,
+        estimatedDuration: '1-2 weeks',
+        requirements: ['Fleet size', 'Vehicle types', 'Installation preferences'],
+        deliverables: ['ELD devices', 'Installation service', 'Training'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '2',
+        name: 'Fleet Management Software',
+        description: 'Complete fleet tracking and management platform',
+        category: 'Software',
+        basePrice: 499,
+        estimatedDuration: '1 week',
+        requirements: ['Fleet information', 'Integration needs'],
+        deliverables: ['Software license', 'Setup and configuration', 'Training'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '3',
+        name: 'Driver Safety Training Package',
+        description: 'Comprehensive safety training for drivers',
+        category: 'Training',
+        basePrice: 299,
+        estimatedDuration: '2-3 days',
+        requirements: ['Driver list', 'Training schedule'],
+        deliverables: ['Training materials', 'Certification', 'Records'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      },
+      {
+        id: '4',
+        name: 'Compliance Monitoring Dashboard',
+        description: 'Real-time compliance tracking and reporting',
+        category: 'Software',
+        basePrice: 199,
+        estimatedDuration: '3-5 days',
+        requirements: ['ELD integration', 'Reporting preferences'],
+        deliverables: ['Dashboard access', 'Setup', 'Training'],
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z'
+      }
+    ];
+    setProducts(mockProducts);
+
+    // Mock companies data - in real app, this would come from API
+    const mockCompanies = [
+      {
+        id: '1',
+        name: 'Acme Transportation LLC',
+        contact: 'John Smith',
+        email: 'john@acmetransport.com',
+        phone: '(555) 123-4567'
+      },
+      {
+        id: '2',
+        name: 'Global Shipping Inc',
+        contact: 'Sarah Johnson',
+        email: 'sarah@globalshipping.com',
+        phone: '(555) 234-5678'
+      },
+      {
+        id: '3',
+        name: 'Metro Freight Services',
+        contact: 'Mike Davis',
+        email: 'mike@metrofreight.com',
+        phone: '(555) 345-6789'
+      },
+      {
+        id: '4',
+        name: 'Fast Track Logistics',
+        contact: 'Lisa Wilson',
+        email: 'lisa@fasttracklogistics.com',
+        phone: '(555) 456-7890'
+      },
+      {
+        id: '5',
+        name: 'Premier Carrier Co',
+        contact: 'Robert Brown',
+        email: 'robert@premiercarrier.com',
+        phone: '(555) 567-8901'
+      }
+    ];
+    setCompanies(mockCompanies);
+  }, []);
 
   const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
   const openDeals = deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost');
@@ -408,6 +607,18 @@ const Deals: React.FC = () => {
                         Source: {deal.software}
                       </div>
                     )}
+                    {deal.serviceName && (
+                      <div className="flex items-center">
+                        <CogIcon className="h-3 w-3 mr-1" />
+                        Service: {deal.serviceName}
+                      </div>
+                    )}
+                    {deal.productName && (
+                      <div className="flex items-center">
+                        <CogIcon className="h-3 w-3 mr-1" />
+                        Product: {deal.productName}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -525,17 +736,121 @@ const Deals: React.FC = () => {
                   </div>
                 </div>
                 
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                       Company/Client *
+                     </label>
+                     {preSelectedCompanyId ? (
+                       <div className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-gray-100">
+                         {preSelectedCompanyName || companies.find(c => c.id === preSelectedCompanyId)?.name || 'Selected Company'}
+                       </div>
+                     ) : (
+                       <select
+                         value={newDeal.companyId || ''}
+                         onChange={(e) => {
+                           const selectedCompany = companies.find(c => c.id === e.target.value);
+                           setNewDeal(prev => ({
+                             ...prev,
+                             companyId: e.target.value,
+                             contactId: selectedCompany?.id // For now, using company ID as contact ID
+                           }));
+                         }}
+                         required
+                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                       >
+                         <option value="">Select a company...</option>
+                         {companies.map(company => (
+                           <option key={company.id} value={company.id}>
+                             {company.name} - {company.contact}
+                           </option>
+                         ))}
+                       </select>
+                     )}
+                   </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Service
+                    </label>
+                    <select
+                      value={newDeal.serviceId || ''}
+                      onChange={(e) => {
+                        const selectedService = services.find(s => s.id === e.target.value);
+                        setNewDeal(prev => ({
+                          ...prev,
+                          serviceId: e.target.value,
+                          serviceName: selectedService?.name || '',
+                          customPrice: selectedService?.basePrice || 0,
+                          value: selectedService?.basePrice || prev.value,
+                          productId: '', // Clear product when service is selected
+                          productName: ''
+                        }));
+                      }}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">Select a service...</option>
+                      {services.map(service => (
+                        <option key={service.id} value={service.id}>
+                          {service.name} - ${service.basePrice}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Product
+                    </label>
+                    <select
+                      value={newDeal.productId || ''}
+                      onChange={(e) => {
+                        const selectedProduct = products.find(p => p.id === e.target.value);
+                        setNewDeal(prev => ({
+                          ...prev,
+                          productId: e.target.value,
+                          productName: selectedProduct?.name || '',
+                          customPrice: selectedProduct?.basePrice || 0,
+                          value: selectedProduct?.basePrice || prev.value,
+                          serviceId: '', // Clear service when product is selected
+                          serviceName: ''
+                        }));
+                      }}
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">Select a product...</option>
+                      {products.map(product => (
+                        <option key={product.id} value={product.id}>
+                          {product.name} - ${product.basePrice}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Source Software
+                    Lead Source
                   </label>
-                  <input
-                    type="text"
-                    value={newDeal.software || 'JotForm'}
+                  <select
+                    value={newDeal.software || 'Website'}
                     onChange={(e) => setNewDeal(prev => ({ ...prev, software: e.target.value }))}
                     className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="e.g., JotForm, Website, Referral"
-                  />
+                  >
+                    <option value="Website">Website Contact Form</option>
+                    <option value="Referral">Client Referral</option>
+                    <option value="Cold Outreach">Cold Outreach/Cold Call</option>
+                    <option value="Trade Show">Trade Show/Conference</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Google Ads">Google Ads</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="Email Campaign">Email Campaign</option>
+                    <option value="Direct Mail">Direct Mail</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Where did this lead come from?
+                  </p>
                 </div>
               </div>
               

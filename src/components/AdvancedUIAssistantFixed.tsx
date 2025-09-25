@@ -174,8 +174,8 @@ const AdvancedUIAssistantFixed: React.FC = () => {
       chatHistoryService.addMessage(assistantMessage);
       
       // Speak the response
-      console.log('🧠 AdvancedUIAssistant - Speaking intelligent response:', intelligentResponse.answer.substring(0, 50) + '...');
-      await speak(intelligentResponse.answer);
+      console.log('🧠 AdvancedUIAssistant - Speaking intelligent response:', data.response.substring(0, 50) + '...');
+      await speak(data.response);
       
     } catch (error) {
       console.error('Error with TrulyIntelligentAgent:', error);

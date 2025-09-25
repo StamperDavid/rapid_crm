@@ -15,7 +15,7 @@ interface FieldDefinition {
   id: string;
   name: string;
   display_name: string;
-  field_type: 'text' | 'number' | 'date' | 'datetime' | 'time' | 'boolean' | 'select' | 'multiselect' | 'textarea' | 'email' | 'phone' | 'url' | 'currency' | 'percentage' | 'rating' | 'attachment' | 'lookup' | 'rollup' | 'formula' | 'autonumber' | 'barcode' | 'button' | 'created_time' | 'last_modified_time' | 'created_by' | 'last_modified_by';
+  field_type: 'text' | 'number' | 'date' | 'datetime' | 'time' | 'boolean' | 'select' | 'multiselect' | 'textarea' | 'email' | 'phone' | 'url' | 'currency' | 'percentage' | 'rating' | 'attachment' | 'lookup' | 'rollup' | 'formula' | 'autonumber' | 'barcode' | 'button' | 'created_time' | 'last_modified_time' | 'created_by' | 'last_modified_by' | 'relationship';
   is_required: boolean;
   is_unique: boolean;
   options?: string[];
@@ -27,6 +27,13 @@ interface FieldDefinition {
     max_value?: number;
     pattern?: string;
     custom_validation?: string;
+  };
+  relationship_config?: {
+    target_entity: string;
+    relationship_type: 'one_to_one' | 'one_to_many' | 'many_to_one' | 'many_to_many';
+    display_field: string;
+    cascade_delete: boolean;
+    is_parent: boolean;
   };
   order: number;
 }
@@ -61,10 +68,31 @@ const FIELD_TYPES = [
   { value: 'autonumber', label: 'Auto Number' },
   { value: 'barcode', label: 'Barcode' },
   { value: 'button', label: 'Button' },
+  { value: 'relationship', label: 'Relationship' },
   { value: 'created_time', label: 'Created Time' },
   { value: 'last_modified_time', label: 'Last Modified Time' },
   { value: 'created_by', label: 'Created By' },
   { value: 'last_modified_by', label: 'Last Modified By' },
+];
+
+const RELATIONSHIP_TYPES = [
+  { value: 'one_to_one', label: 'One to One' },
+  { value: 'one_to_many', label: 'One to Many (Parent)' },
+  { value: 'many_to_one', label: 'Many to One (Child)' },
+  { value: 'many_to_many', label: 'Many to Many' },
+];
+
+const AVAILABLE_ENTITIES = [
+  'companies',
+  'contacts', 
+  'vehicles',
+  'drivers',
+  'deals',
+  'invoices',
+  'tasks',
+  'leads',
+  'campaigns',
+  'services'
 ];
 
 const SchemaEditor: React.FC<SchemaEditorProps> = ({ 
@@ -180,6 +208,11 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         ({field.field_type})
                       </span>
+                      {field.field_type === 'relationship' && field.relationship_config && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          → {field.relationship_config.target_entity}
+                        </span>
+                      )}
                       {field.is_required && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                           Required
@@ -188,6 +221,11 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({
                       {field.is_unique && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                           Unique
+                        </span>
+                      )}
+                      {field.relationship_config?.is_parent && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          Parent
                         </span>
                       )}
                     </div>
@@ -303,6 +341,130 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({
                         <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Unique</span>
                       </label>
                     </div>
+
+                    {/* Relationship Configuration */}
+                    {editingField.field_type === 'relationship' && (
+                      <div className="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
+                        <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                          Relationship Configuration
+                        </h5>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Target Entity
+                            </label>
+                            <select
+                              value={editingField.relationship_config?.target_entity || ''}
+                              onChange={(e) => setEditingField({
+                                ...editingField,
+                                relationship_config: {
+                                  ...editingField.relationship_config,
+                                  target_entity: e.target.value,
+                                  relationship_type: 'one_to_one',
+                                  display_field: 'name',
+                                  cascade_delete: false,
+                                  is_parent: false
+                                }
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select target entity...</option>
+                              {AVAILABLE_ENTITIES.filter(entity => entity !== entityType).map(entity => (
+                                <option key={entity} value={entity}>
+                                  {entity.charAt(0).toUpperCase() + entity.slice(1)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Relationship Type
+                            </label>
+                            <select
+                              value={editingField.relationship_config?.relationship_type || 'one_to_one'}
+                              onChange={(e) => setEditingField({
+                                ...editingField,
+                                relationship_config: {
+                                  ...editingField.relationship_config,
+                                  relationship_type: e.target.value as any
+                                }
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              {RELATIONSHIP_TYPES.map(type => (
+                                <option key={type.value} value={type.value}>
+                                  {type.label}
+                                </option>
+                              ))}
+                            </select>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {editingField.relationship_config?.relationship_type === 'one_to_many' && 
+                                'This entity will be the parent. Children will reference this entity.'}
+                              {editingField.relationship_config?.relationship_type === 'many_to_one' && 
+                                'This entity will be a child. It will reference a parent entity.'}
+                              {editingField.relationship_config?.relationship_type === 'one_to_one' && 
+                                'Direct relationship between two entities.'}
+                              {editingField.relationship_config?.relationship_type === 'many_to_many' && 
+                                'Multiple entities can be related to multiple entities.'}
+                            </p>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Display Field
+                            </label>
+                            <input
+                              type="text"
+                              value={editingField.relationship_config?.display_field || 'name'}
+                              onChange={(e) => setEditingField({
+                                ...editingField,
+                                relationship_config: {
+                                  ...editingField.relationship_config,
+                                  display_field: e.target.value
+                                }
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Field name to display (e.g., name, title)"
+                            />
+                          </div>
+
+                          <div className="flex items-center space-x-4">
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={editingField.relationship_config?.cascade_delete || false}
+                                onChange={(e) => setEditingField({
+                                  ...editingField,
+                                  relationship_config: {
+                                    ...editingField.relationship_config,
+                                    cascade_delete: e.target.checked
+                                  }
+                                })}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Cascade Delete</span>
+                            </label>
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={editingField.relationship_config?.is_parent || false}
+                                onChange={(e) => setEditingField({
+                                  ...editingField,
+                                  relationship_config: {
+                                    ...editingField.relationship_config,
+                                    is_parent: e.target.checked
+                                  }
+                                })}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Is Parent Entity</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-end space-x-3 mt-6">

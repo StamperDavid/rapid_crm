@@ -10,13 +10,16 @@ import {
   PencilIcon,
   TrashIcon,
   DocumentTextIcon,
+  LinkIcon,
 } from '@heroicons/react/outline';
 import SchemaEditor from '../components/SchemaEditor';
+import RelationshipManager from '../components/RelationshipManager';
 import { schemaService, SchemaDefinition } from '../services/schemaService';
 
 const SchemaManagement: React.FC = () => {
   const [selectedEntityType, setSelectedEntityType] = useState<string | null>(null);
   const [showCreateCustomObject, setShowCreateCustomObject] = useState(false);
+  const [showRelationshipManager, setShowRelationshipManager] = useState(false);
   const [schemas, setSchemas] = useState<SchemaDefinition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -164,13 +167,22 @@ const SchemaManagement: React.FC = () => {
                 Define and customize the structure of your data entities
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateCustomObject(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Create Custom Object
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowRelationshipManager(true)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Manage Relationships
+              </button>
+              <button
+                onClick={() => setShowCreateCustomObject(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Create Custom Object
+              </button>
+            </div>
           </div>
         </div>
 
@@ -290,6 +302,18 @@ const SchemaManagement: React.FC = () => {
             }
           }}
           onCancel={() => setShowCreateCustomObject(false)}
+        />
+      )}
+
+      {/* Relationship Manager Modal */}
+      {showRelationshipManager && (
+        <RelationshipManager
+          onSave={(relationships) => {
+            console.log('Relationships saved:', relationships);
+            setShowRelationshipManager(false);
+            alert('Relationships saved successfully!');
+          }}
+          onCancel={() => setShowRelationshipManager(false)}
         />
       )}
     </div>

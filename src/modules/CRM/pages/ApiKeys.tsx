@@ -22,7 +22,6 @@ import {
   LinkIcon,
   ExternalLinkIcon,
   CheckIcon,
-  XMarkIcon,
 } from '@heroicons/react/outline';
 import { useApiKeys } from '../../../hooks/useApiKeys';
 import { useAIProviders } from '../../../hooks/useAIProviders';
