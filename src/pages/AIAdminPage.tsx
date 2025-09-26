@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ChipIcon, ChartBarIcon, CogIcon, ExclamationIcon, CheckCircleIcon, RefreshIcon, PlayIcon,
   PauseIcon, EyeIcon, ShieldCheckIcon, GlobeAltIcon, UserIcon, SpeakerphoneIcon, ChatIcon,
-  SparklesIcon, AcademicCapIcon
+  SparklesIcon, AcademicCapIcon, WrenchScrewdriverIcon, CodeBracketIcon
 } from '@heroicons/react/outline';
 import AICollaborationMonitor from '../components/AICollaborationMonitor';
 import EnterpriseAIDashboard from '../components/EnterpriseAIDashboard';

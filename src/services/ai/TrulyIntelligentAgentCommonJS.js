@@ -23,9 +23,13 @@ class TrulyIntelligentAgent {
     // Use a persistent conversation ID based on user ID to maintain memory across requests
     this.currentConversationId = `conv_${this.userId}_persistent`;
     
-    // Initialize response cache for performance
+    // Initialize response cache for performance (CLEARED FOR DEBUGGING)
     this.responseCache = new Map();
     this.cacheTimeout = 300000; // 5 minutes
+    
+    // Clear any existing cache to prevent stale responses
+    console.log('🧹 Clearing response cache to prevent stale responses');
+    this.responseCache.clear();
     
     // Initialize with Jasper persona and Rapid CRM identity
     this.persona = RAPID_CRM_AI_IDENTITY;
@@ -319,10 +323,10 @@ class TrulyIntelligentAgent {
     
     // Video creation is now handled by intent analysis below
     
-    // Check cache first for performance
+    // Check cache first for performance (DISABLED FOR DEBUGGING)
     const cacheKey = `${this.userId}_${question.toLowerCase().trim()}`;
     const cachedResponse = this.responseCache.get(cacheKey);
-    if (cachedResponse && (Date.now() - cachedResponse.timestamp) < this.cacheTimeout) {
+    if (false && cachedResponse && (Date.now() - cachedResponse.timestamp) < this.cacheTimeout) {
       console.log(`⚡ Cache hit for question: "${question}"`);
       return cachedResponse.response;
     }
@@ -517,12 +521,21 @@ class TrulyIntelligentAgent {
   analyzeIntent(question) {
     const lowerQuestion = question.toLowerCase();
     
-    // Video creation intent detection (highest priority)
+    // Video creation intent detection (highest priority) - BUT RESPECT EXPLICIT INSTRUCTIONS
     console.log('🎬 Checking video creation intent for:', lowerQuestion);
+    
+    // First check if user explicitly says NOT to create videos
+    if (lowerQuestion.includes('do not create') || lowerQuestion.includes('don\'t create') || 
+        lowerQuestion.includes('no video') || lowerQuestion.includes('not create video')) {
+      console.log('🚫 Explicit instruction NOT to create video detected - skipping video creation');
+      return { type: 'general', subtype: 'conversation' };
+    }
+    
+    // Only trigger video creation for explicit creation requests
     if ((lowerQuestion.includes('create') && lowerQuestion.includes('video')) || 
         (lowerQuestion.includes('make') && lowerQuestion.includes('video')) ||
         (lowerQuestion.includes('generate') && lowerQuestion.includes('video'))) {
-      console.log('🎬 Video creation intent detected!');
+      console.log('🎬 Explicit video creation intent detected!');
       return { type: 'video_creation', subtype: 'api_call' };
     }
     
@@ -2000,11 +2013,17 @@ class TrulyIntelligentAgent {
   generateVideoInfoAnswer(question, context) {
     const lowerQuestion = question.toLowerCase();
     
-    if (lowerQuestion.includes('video') && (lowerQuestion.includes('made') || lowerQuestion.includes('created') || lowerQuestion.includes('about'))) {
-      return "Yes, I just created a video for you! I have full video creation capabilities and can generate videos from text prompts. The video I created includes text overlays and is based on your request. You can find it in your video library or video production dashboard.";
+    // Only respond about video creation if explicitly asked about creating videos
+    if ((lowerQuestion.includes('create') || lowerQuestion.includes('make')) && lowerQuestion.includes('video')) {
+      return "I can create videos from text prompts using my AI video generation system. Just ask me to 'make a video' or 'create a video' and I'll generate one for you!";
     }
     
-    return "I can create videos from text prompts using my AI video generation system. Just ask me to 'make a video' or 'create a video' and I'll generate one for you!";
+    // For general video questions, provide helpful information without assuming creation
+    if (lowerQuestion.includes('video')) {
+      return "I can help with video-related questions. If you want me to create a video, just ask me to 'create a video' or 'make a video' with your specifications.";
+    }
+    
+    return "I can help with various topics. What would you like to know?";
   }
 
   /**

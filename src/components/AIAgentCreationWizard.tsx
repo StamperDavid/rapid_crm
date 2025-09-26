@@ -16,7 +16,11 @@ import {
   UserIcon,
   LightBulbIcon,
   ArrowRightIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  BookOpenIcon,
+  DocumentArrowUpIcon,
+  PlusIcon,
+  TrashIcon
 } from '@heroicons/react/outline';
 import { integratedAgentCreationService } from '../services/ai/IntegratedAgentCreationService';
 import { apiKeyService } from '../services/apiKeys/ApiKeyService';
@@ -47,24 +51,60 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [availableApiKeys, setAvailableApiKeys] = useState<any[]>([]);
-  const [agentConfig, setAgentConfig] = useState({
-    name: editingAgent?.name || '',
-    description: editingAgent?.description || '',
-    type: editingAgent?.type || 'crm_automation',
-    personality: editingAgent?.configuration?.personality || {
-      communicationStyle: 'friendly',
-      responseLength: 'detailed',
-      expertise: []
-    },
-    capabilities: editingAgent?.capabilities || [],
-    learningProfile: editingAgent?.configuration?.learningProfile || {
-      learningRate: 0.8,
-      adaptationSpeed: 'fast',
-      collaborationPreference: 'hybrid'
-    },
-    autoSelectApiKeys: true,
-    preferredPlatforms: editingAgent?.configuration?.preferredPlatforms || [],
-    createdBy: 'user'
+  const [agentConfig, setAgentConfig] = useState(() => {
+    // Initialize with editingAgent data if in edit mode
+    if (mode === 'edit' && editingAgent) {
+      return {
+        name: editingAgent.name || '',
+        description: editingAgent.description || '',
+        type: editingAgent.type || 'crm_automation',
+        personality: editingAgent.configuration?.personality || {
+          communicationStyle: 'friendly',
+          responseLength: 'detailed',
+          expertise: []
+        },
+        capabilities: editingAgent.capabilities || [],
+        learningProfile: {
+          learningRate: editingAgent.configuration?.learningProfile?.learningRate ?? 0.8,
+          adaptationSpeed: editingAgent.configuration?.learningProfile?.adaptationSpeed ?? 'fast',
+          collaborationPreference: editingAgent.configuration?.learningProfile?.collaborationPreference ?? 'hybrid'
+        },
+        knowledgeBase: editingAgent.configuration?.knowledgeBase || {
+          qualifiedStates: [],
+          regulatoryDocuments: [],
+          referenceMaterials: []
+        },
+        autoSelectApiKeys: true,
+        preferredPlatforms: editingAgent.configuration?.preferredPlatforms || [],
+        createdBy: 'user'
+      };
+    }
+    
+    // Default values for create mode
+    return {
+      name: '',
+      description: '',
+      type: 'crm_automation',
+      personality: {
+        communicationStyle: 'friendly',
+        responseLength: 'detailed',
+        expertise: []
+      },
+      capabilities: [],
+      learningProfile: {
+        learningRate: 0.8,
+        adaptationSpeed: 'fast',
+        collaborationPreference: 'hybrid'
+      },
+      knowledgeBase: {
+        qualifiedStates: [],
+        regulatoryDocuments: [],
+        referenceMaterials: []
+      },
+      autoSelectApiKeys: true,
+      preferredPlatforms: [],
+      createdBy: 'user'
+    };
   });
 
   const steps: WizardStep[] = [
@@ -85,6 +125,12 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
       title: 'Capabilities & Skills',
       description: 'Choose what your agent can do and learn',
       icon: CogIcon
+    },
+    {
+      id: 'knowledge_base',
+      title: 'Knowledge Base',
+      description: 'Upload regulatory data and reference materials',
+      icon: BookOpenIcon
     },
     {
       id: 'api_keys',
@@ -111,6 +157,61 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
       loadApiKeys();
     }
   }, [isOpen]);
+
+  // Update agentConfig when editingAgent changes
+  useEffect(() => {
+    if (mode === 'edit' && editingAgent) {
+      setAgentConfig({
+        name: editingAgent.name || '',
+        description: editingAgent.description || '',
+        type: editingAgent.type || 'crm_automation',
+        personality: editingAgent.configuration?.personality || {
+          communicationStyle: 'friendly',
+          responseLength: 'detailed',
+          expertise: []
+        },
+        capabilities: editingAgent.capabilities || [],
+        learningProfile: {
+          learningRate: editingAgent.configuration?.learningProfile?.learningRate ?? 0.8,
+          adaptationSpeed: editingAgent.configuration?.learningProfile?.adaptationSpeed ?? 'fast',
+          collaborationPreference: editingAgent.configuration?.learningProfile?.collaborationPreference ?? 'hybrid'
+        },
+        autoSelectApiKeys: true,
+        preferredPlatforms: editingAgent.configuration?.preferredPlatforms || [],
+        createdBy: 'user'
+      });
+    }
+  }, [editingAgent, mode]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep(0);
+      setIsCreating(false);
+      // Reset to default values when closing
+      if (mode === 'create') {
+        setAgentConfig({
+          name: '',
+          description: '',
+          type: 'crm_automation',
+          personality: {
+            communicationStyle: 'friendly',
+            responseLength: 'detailed',
+            expertise: []
+          },
+          capabilities: [],
+          learningProfile: {
+            learningRate: 0.8,
+            adaptationSpeed: 'fast',
+            collaborationPreference: 'hybrid'
+          },
+          autoSelectApiKeys: true,
+          preferredPlatforms: [],
+          createdBy: 'user'
+        });
+      }
+    }
+  }, [isOpen, mode]);
 
   const loadApiKeys = async () => {
     try {
@@ -224,6 +325,7 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
           <option value="contract_management">Contract Management</option>
           <option value="supplier_relations">Supplier Relations</option>
           <option value="customer_onboarding">Customer Onboarding</option>
+          <option value="onboarding">Onboarding Agent</option>
           <option value="lead_qualification">Lead Qualification</option>
           <option value="market_research">Market Research</option>
           <option value="competitive_analysis">Competitive Analysis</option>
@@ -310,11 +412,12 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
             <label key={expertise} className="flex items-center">
               <input
                 type="checkbox"
-                checked={agentConfig.personality.expertise.includes(expertise)}
+                checked={agentConfig.personality.expertise?.includes(expertise) || false}
                 onChange={(e) => {
+                  const currentExpertise = agentConfig.personality.expertise || [];
                   const expertiseList = e.target.checked
-                    ? [...agentConfig.personality.expertise, expertise]
-                    : agentConfig.personality.expertise.filter(exp => exp !== expertise);
+                    ? [...currentExpertise, expertise]
+                    : currentExpertise.filter(exp => exp !== expertise);
                   setAgentConfig({
                     ...agentConfig,
                     personality: { ...agentConfig.personality, expertise: expertiseList }
@@ -350,11 +453,12 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
             <label key={capability.id} className="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
               <input
                 type="checkbox"
-                checked={agentConfig.capabilities.includes(capability.id)}
+                checked={agentConfig.capabilities?.includes(capability.id) || false}
                 onChange={(e) => {
+                  const currentCapabilities = agentConfig.capabilities || [];
                   const capabilities = e.target.checked
-                    ? [...agentConfig.capabilities, capability.id]
-                    : agentConfig.capabilities.filter(cap => cap !== capability.id);
+                    ? [...currentCapabilities, capability.id]
+                    : currentCapabilities.filter(cap => cap !== capability.id);
                   setAgentConfig({ ...agentConfig, capabilities });
                 }}
                 className="mt-1 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
@@ -416,11 +520,12 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
               <label key={platform} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={agentConfig.preferredPlatforms.includes(platform)}
+                  checked={agentConfig.preferredPlatforms?.includes(platform) || false}
                   onChange={(e) => {
+                    const currentPlatforms = agentConfig.preferredPlatforms || [];
                     const platforms = e.target.checked
-                      ? [...agentConfig.preferredPlatforms, platform]
-                      : agentConfig.preferredPlatforms.filter(p => p !== platform);
+                      ? [...currentPlatforms, platform]
+                      : currentPlatforms.filter(p => p !== platform);
                     setAgentConfig({ ...agentConfig, preferredPlatforms: platforms });
                   }}
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
@@ -681,6 +786,151 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
     }
   };
 
+  // Render comprehensive settings view for edit mode
+  const renderComprehensiveSettings = () => {
+    if (!editingAgent) return null;
+
+    return (
+      <div className="space-y-8">
+        {/* Current Agent Configuration Display */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center">
+            <InformationCircleIcon className="h-5 w-5 mr-2" />
+            Current Agent Configuration
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Basic Information</h4>
+              <div className="space-y-2 text-sm">
+                <div><span className="font-medium">Name:</span> {editingAgent.name}</div>
+                <div><span className="font-medium">Type:</span> {editingAgent.type}</div>
+                <div><span className="font-medium">Status:</span> <span className={`px-2 py-1 rounded text-xs ${editingAgent.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>{editingAgent.status}</span></div>
+                <div><span className="font-medium">Description:</span> {editingAgent.description}</div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Configuration</h4>
+              <div className="space-y-2 text-sm">
+                <div><span className="font-medium">Model:</span> {editingAgent.configuration?.model || 'Not set'}</div>
+                <div><span className="font-medium">Temperature:</span> {editingAgent.configuration?.temperature || 'Not set'}</div>
+                <div><span className="font-medium">Max Tokens:</span> {editingAgent.configuration?.maxTokens || 'Not set'}</div>
+                <div><span className="font-medium">Response Format:</span> {editingAgent.configuration?.responseFormat || 'Not set'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* All Settings Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Basic Information */}
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <UserIcon className="h-5 w-5 mr-2 text-blue-600" />
+              Basic Information
+            </h3>
+            {renderBasicInfo()}
+          </div>
+
+          {/* Personality & Behavior */}
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-600" />
+              Personality & Behavior
+            </h3>
+            {renderPersonality()}
+          </div>
+
+          {/* Capabilities & Skills */}
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <CogIcon className="h-5 w-5 mr-2 text-green-600" />
+              Capabilities & Skills
+            </h3>
+            {renderCapabilities()}
+          </div>
+
+          {/* API Integration */}
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <KeyIcon className="h-5 w-5 mr-2 text-purple-600" />
+              API Integration
+            </h3>
+            {renderApiKeys()}
+          </div>
+
+          {/* Learning Profile */}
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <CogIcon className="h-5 w-5 mr-2 text-indigo-600" />
+              Learning Profile
+            </h3>
+            {renderLearning()}
+          </div>
+
+          {/* Advanced Settings */}
+          <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <ShieldCheckIcon className="h-5 w-5 mr-2 text-red-600" />
+              Advanced Settings
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  System Prompt
+                </label>
+                <textarea
+                  value={editingAgent.configuration?.systemPrompt || ''}
+                  onChange={(e) => setAgentConfig({
+                    ...agentConfig,
+                    systemPrompt: e.target.value
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  rows={6}
+                  placeholder="Enter the system prompt that defines how the agent should behave..."
+                />
+              </div>
+              
+              {editingAgent.customerFacing && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Human Persona</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Name:</span> {editingAgent.humanPersona?.name || 'Not set'}</div>
+                    <div><span className="font-medium">Title:</span> {editingAgent.humanPersona?.title || 'Not set'}</div>
+                    <div><span className="font-medium">Role:</span> {editingAgent.humanPersona?.role || 'Not set'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Save Changes Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => handleCreateAgent()}
+            disabled={isCreating}
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCreating ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Updating Agent...
+              </>
+            ) : (
+              <>
+                <SparklesIcon className="h-5 w-5 mr-2" />
+                Update Agent
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -693,9 +943,15 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
               <SparklesIcon className="h-8 w-8 text-purple-600 mr-3" />
               {mode === 'edit' ? 'Update Workflow Agent' : 'Create Workflow Agent'}
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
-            </p>
+            {mode === 'edit' ? (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Review and modify all agent settings
+              </p>
+            ) : (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -705,63 +961,68 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
           </button>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  index <= currentStep 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
-                }`}>
-                  {index < currentStep ? (
-                    <CheckIcon className="h-5 w-5" />
-                  ) : (
-                    React.createElement(step.icon, { className: "h-5 w-5" })
-                  )}
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    index < currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
-                  }`} />
-                )}
+        {/* Content */}
+        {mode === 'edit' ? (
+          renderComprehensiveSettings()
+        ) : (
+          <>
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                {steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center">
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                      index <= currentStep 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                    }`}>
+                      {index < currentStep ? (
+                        <CheckIcon className="h-5 w-5" />
+                      ) : (
+                        React.createElement(step.icon, { className: "h-5 w-5" })
+                      )}
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div className={`w-16 h-1 mx-2 ${
+                        index < currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                      }`} />
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Step Content */}
-        <div className="mb-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-              {React.createElement(steps[currentStep].icon, { className: "h-5 w-5 mr-2" })}
-              {steps[currentStep].title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {steps[currentStep].description}
-            </p>
-          </div>
-          {renderStepContent()}
-        </div>
+            {/* Step Content */}
+            <div className="mb-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                  {React.createElement(steps[currentStep].icon, { className: "h-5 w-5 mr-2" })}
+                  {steps[currentStep].title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {steps[currentStep].description}
+                </p>
+              </div>
+              {renderStepContent()}
+            </div>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between">
-          <EnhancedTooltip content="Go back to the previous step to modify your agent configuration.">
-            <button
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              Previous
-            </button>
-          </EnhancedTooltip>
-
-          <div className="flex space-x-2">
-            {currentStep === steps.length - 1 ? (
-              <EnhancedTooltip content={mode === 'edit' ? "Update your AI agent with the modified settings. Changes will be applied immediately." : "Create your AI agent with the configured settings. The agent will be automatically connected to your API keys and ready to use immediately."}>
+            {/* Navigation */}
+            <div className="flex items-center justify-between">
+              <EnhancedTooltip content="Go back to the previous step to modify your agent configuration.">
                 <button
+                  onClick={handlePrevious}
+                  disabled={currentStep === 0}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                  Previous
+                </button>
+              </EnhancedTooltip>
+
+              <div className="flex space-x-2">
+                {currentStep === steps.length - 1 ? (
+                  <EnhancedTooltip content={mode === 'edit' ? "Update your AI agent with the modified settings. Changes will be applied immediately." : "Create your AI agent with the configured settings. The agent will be automatically connected to your API keys and ready to use immediately."}>
+                    <button
                   onClick={handleCreateAgent}
                   disabled={isCreating || (mode === 'create' && (!agentConfig.name || !agentConfig.description))}
                   className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -793,6 +1054,8 @@ const AIAgentCreationWizard: React.FC<AIAgentCreationWizardProps> = ({
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

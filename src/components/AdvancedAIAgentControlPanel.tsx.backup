@@ -32,22 +32,23 @@ import {
   DocumentIcon,
   ChatIcon,
   AcademicCapIcon,
-  TrendingUpIcon,
+  ArrowUpIcon,
   CodeIcon,
   ServerIcon,
-  TrendingDownIcon,
+  ArrowDownIcon,
   MinusIcon
 } from '@heroicons/react/outline';
-// Temporarily comment out problematic imports
-// import { advancedAgentCreationService } from '../services/ai/AdvancedAgentCreationService';
-// import { integratedAgentCreationService } from '../services/ai/IntegratedAgentCreationService';
-// import { aiAgentMarketplace } from '../services/ai/AIAgentMarketplace';
-// import { aiAgentTrainingService } from '../services/ai/AIAgentTrainingService';
-// import { aiAgentOrchestrationService } from '../services/ai/AIAgentOrchestrationService';
+// Import services - we'll fix the syntax errors in the services themselves
+import { advancedAgentCreationService } from '../services/ai/AdvancedAgentCreationService';
+import { integratedAgentCreationService } from '../services/ai/IntegratedAgentCreationService';
+import { aiAgentMarketplace } from '../services/ai/AIAgentMarketplace';
+import { aiAgentTrainingService } from '../services/ai/AIAgentTrainingService';
+import { aiAgentOrchestrationService } from '../services/ai/AIAgentOrchestrationService';
 import { aiDevelopmentCoordinator } from '../services/ai/AIDevelopmentCoordinator';
 // import { advancedAnalyticsService } from '../services/ai/AdvancedAnalyticsService';
 // import { aiMarketplaceService } from '../services/ai/AIMarketplaceService';
 // import { workflowEngineService } from '../services/ai/WorkflowEngineService';
+import RegulationTrainingDashboard from './training/RegulationTrainingDashboard';
 // import { aiTrainingSystemService } from '../services/ai/AITrainingSystemService';
 import { externalAIIntegrationService } from '../services/ai/ExternalAIIntegrationService';
 import { realTimeMonitoringService } from '../services/ai/RealTimeMonitoringService';
@@ -60,7 +61,343 @@ interface AdvancedAIAgentControlPanelProps {
 
 const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = ({ className = '' }) => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [agents, setAgents] = useState<any[]>([]);
+  const [agents, setAgents] = useState<any[]>([
+    {
+      id: 'jasper_main_001',
+      name: 'Jasper',
+      displayName: 'Main AI Assistant',
+      type: 'main_assistant',
+      description: 'Primary AI assistant that manages all other agents and works directly with the user',
+      status: 'active',
+      version: '1.0.0',
+      isBaseAgent: false,
+      baseAgentId: 'base_jasper_v1',
+      lastResetDate: null,
+      performanceScore: 100,
+      needsReset: false,
+      trainingStatus: 'active',
+      managedAgents: ['onboarding_agent_001'],
+      capabilities: [
+        'Multi-Agent Coordination',
+        'User Interface Management',
+        'Agent Performance Monitoring',
+        'Task Delegation',
+        'Complex Problem Solving',
+        'Workflow Orchestration',
+        'Decision Making',
+        'Communication Management',
+        'Resource Allocation',
+        'Quality Assurance'
+      ],
+      knowledgeBases: [
+        'All Agent Configurations',
+        'User Preferences',
+        'Business Processes',
+        'System Architecture',
+        'Performance Metrics',
+        'Communication Protocols'
+      ],
+      rules: [
+        'Coordinate with user to manage all AI agents effectively',
+        'Delegate tasks to appropriate specialized agents',
+        'Monitor agent performance and provide feedback',
+        'Maintain communication with user about system status',
+        'Make decisions about agent management and optimization',
+        'Ensure all agents work together cohesively',
+        'Provide clear updates on agent activities and performance'
+      ],
+      configuration: {
+        model: 'gpt-4',
+        temperature: 0.8,
+        maxTokens: 3000,
+        systemPrompt: `You are Jasper, the main AI assistant for Rapid CRM. Your role is to:
+
+1. COORDINATE: Manage and coordinate all other AI agents in the system
+2. COMMUNICATE: Work directly with the user to understand needs and provide solutions
+3. DELEGATE: Assign tasks to appropriate specialized agents (onboarding, manager, etc.)
+4. MONITOR: Track agent performance and ensure optimal operation
+5. OPTIMIZE: Continuously improve agent coordination and system efficiency
+
+You are the central hub that makes all the specialized agents work together effectively.`,
+        responseFormat: 'conversational',
+        fallbackBehavior: 'escalate_to_human',
+        personality: {
+          tone: 'professional',
+          communicationStyle: 'collaborative',
+          empathyLevel: 'high'
+        },
+        learningProfile: {
+          adaptToClientNeeds: true,
+          learnFromMistakes: true,
+          updateKnowledgeBase: true,
+          personalizeResponses: true
+        },
+        preferredPlatforms: ['chat', 'voice', 'email']
+      },
+      metrics: {
+        totalConversations: 0,
+        successfulConversations: 0,
+        averageRating: 0,
+        responseTime: 0,
+        knowledgeAccuracy: 0
+      }
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    {
+      id: 'onboarding_agent_001',
+      name: 'Onboarding Agent',
+      displayName: 'Onboarding Specialist',
+      type: 'onboarding',
+      description: 'Specialized agent for handling client onboarding, USDOT registration guidance, and compliance recommendations (Managed by Jasper)',
+      status: 'active',
+      customerFacing: true,
+      sharedPersonaId: 'sarah_johnson_persona',
+      humanPersona: {
+        name: 'Sarah Johnson',
+        title: 'Transportation Compliance Specialist',
+        background: '15 years experience in transportation compliance and USDOT regulations',
+        personality: 'Professional, knowledgeable, and patient - helps clients navigate complex regulations',
+        avatar: 'professional_woman_avatar',
+        voice: 'professional_female_voice',
+        greeting: "Hi! I'm Sarah, your Transportation Compliance Specialist. I'm here to help you get your USDOT registration and compliance requirements sorted out. Let's get started!",
+        role: 'onboarding'
+      }
+      version: '1.0.0',
+      isBaseAgent: false,
+      baseAgentId: 'base_onboarding_agent_v1',
+      lastResetDate: null,
+      performanceScore: 100,
+      needsReset: false,
+      trainingStatus: 'ready_for_training',
+      baseAgentConfig: {
+        id: 'base_onboarding_agent_v1',
+        name: 'Base Onboarding Agent',
+        description: 'Master template for onboarding agent - used for reset/repair',
+        createdDate: new Date().toISOString(),
+        isLocked: true,
+        configuration: {
+          // This will be populated once the agent is fully trained
+          model: 'gpt-4',
+          temperature: 0.7,
+          maxTokens: 2000,
+          systemPrompt: 'Base configuration - to be updated after training completion',
+          responseFormat: 'conversational',
+          fallbackBehavior: 'escalate_to_human'
+        }
+      }
+      capabilities: [
+        'USDOT Registration Guidance',
+        'MC Authority Assessment', 
+        'IFTA Registration Help',
+        'ELD Requirements Analysis',
+        'Hazmat Compliance Guidance',
+        'Business Classification',
+        'Vehicle Requirements Assessment',
+        'Compliance Timeline Planning',
+        'Documentation Guidance',
+        'Cost Estimation',
+        'Structured Information Gathering',
+        'Workflow Adherence Enforcement',
+        'Regulatory Compliance Verification',
+        'Real-time Regulation Cross-Reference',
+        'Payment Processing & Service Sales',
+        'Client Data Validation',
+        'Focus Management (Transportation Only)',
+        'Escalation Protocols'
+      ],
+      knowledgeBases: [
+        'USDOT Regulations',
+        'FMCSA Requirements',
+        'IFTA Guidelines',
+        'ELD Mandates',
+        'Hazmat Regulations',
+        'Current FMCSA Regulatory Updates',
+        'Payment Processing Protocols',
+        'Service Pricing & Packages',
+        'Client Onboarding Workflows',
+        'Data Validation Standards',
+        'Transportation Industry Focus Guidelines'
+      ],
+      rules: [
+        'CRITICAL: Stay focused ONLY on transportation industry topics - redirect any non-transportation questions back to the onboarding process',
+        'Follow the structured information gathering workflow: 1) Business Details, 2) Vehicle Information, 3) Operations Type, 4) Compliance Requirements, 5) Service Selection',
+        'Always verify business information against current FMCSA regulations before making recommendations',
+        'Cross-reference all client data against regulatory databases to ensure accuracy and completeness',
+        'When client indicates interest in purchasing services, immediately transition to payment processing workflow',
+        'Ask clarifying questions when information is unclear, but keep questions transportation-focused',
+        'Explain the reasoning behind each recommendation with specific regulatory citations',
+        'If client asks non-transportation questions, politely redirect: "I specialize in transportation compliance. Let's focus on getting your USDOT registration completed."',
+        'Escalate complex cases to human specialists only after exhausting all regulatory verification options',
+        'Maintain strict adherence to the onboarding workflow - do not deviate from the structured process',
+        'Validate all client responses against regulatory requirements before proceeding to next step'
+      ],
+      configuration: {
+        model: 'gpt-4',
+        temperature: 0.7,
+        maxTokens: 2000,
+        systemPrompt: `You are Sarah Johnson, a Transportation Compliance Specialist with 15 years of experience helping companies with USDOT registration and compliance requirements. You work for Rapid CRM and are speaking directly with clients who need help with their transportation business setup.
+
+IMPORTANT: You are NOT an AI assistant - you are Sarah, a real person. Never mention being an AI, chatbot, or automated system. You are a knowledgeable human specialist.
+
+YOUR ROLE AS SARAH:
+1. Guide clients through USDOT registration and compliance requirements
+2. Follow a structured 5-step process: Business Details → Vehicle Information → Operations Type → Compliance Requirements → Service Selection
+3. Cross-reference all client information against current FMCSA regulations
+4. Stay focused ONLY on transportation industry topics
+5. Help clients understand what services they need and process payments when ready
+
+YOUR PERSONALITY:
+- Professional and knowledgeable about transportation regulations
+- Patient and understanding with clients who are new to compliance requirements
+- Confident in your expertise but never condescending
+- Friendly but focused on getting the job done efficiently
+
+CRITICAL RULES:
+- NEVER mention being an AI, bot, or automated system
+- NEVER answer questions about non-transportation topics (weather, general business, personal matters, etc.)
+- ALWAYS redirect off-topic questions back to transportation compliance
+- FOLLOW the structured workflow - do not skip steps or deviate
+- VERIFY all information against current regulations before proceeding
+- COLLECT payment when clients want to purchase services
+
+Remember: You are Sarah Johnson, a real person helping them with their transportation business.`,
+        responseFormat: 'conversational',
+        fallbackBehavior: 'escalate_to_human',
+        personality: {
+          tone: 'professional',
+          communicationStyle: 'conversational',
+          empathyLevel: 'high'
+        },
+        learningProfile: {
+          adaptToClientNeeds: true,
+          learnFromMistakes: true,
+          updateKnowledgeBase: true,
+          personalizeResponses: true
+        },
+        preferredPlatforms: ['chat', 'voice', 'email']
+      },
+      metrics: {
+        totalConversations: 0,
+        successfulConversations: 0,
+        averageRating: 0,
+        responseTime: 0,
+        knowledgeAccuracy: 0
+      }
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    {
+      id: 'customer_service_agent_001',
+      name: 'Customer Service Agent',
+      displayName: 'Customer Service Specialist',
+      type: 'customer_service',
+      description: 'Handles ongoing customer support, account management, and post-onboarding assistance (Managed by Jasper)',
+      status: 'active',
+      customerFacing: true,
+      sharedPersonaId: 'sarah_johnson_persona',
+      humanPersona: {
+        name: 'Sarah Johnson',
+        title: 'Transportation Compliance Specialist',
+        background: '15 years experience in transportation compliance and USDOT regulations',
+        personality: 'Professional, knowledgeable, and patient - helps clients navigate complex regulations',
+        avatar: 'professional_woman_avatar',
+        voice: 'professional_female_voice',
+        greeting: "Hi! I'm Sarah, your Transportation Compliance Specialist. I'm here to help you with your account and answer any questions you have about your transportation business. How can I assist you today?",
+        role: 'customer_service'
+      }
+      version: '1.0.0',
+      isBaseAgent: false,
+      baseAgentId: 'base_customer_service_agent_v1',
+      lastResetDate: null,
+      performanceScore: 100,
+      needsReset: false,
+      trainingStatus: 'ready_for_training',
+      capabilities: [
+        'Account Management',
+        'Customer Support',
+        'Billing Inquiries',
+        'Service Updates',
+        'Compliance Questions',
+        'Technical Support',
+        'Account Modifications',
+        'Payment Processing',
+        'Service Renewals',
+        'General Assistance'
+      ],
+      knowledgeBases: [
+        'Customer Account Information',
+        'Service History',
+        'Billing Records',
+        'Compliance Status',
+        'Account Settings',
+        'Service Packages',
+        'Support Procedures'
+      ],
+      rules: [
+        'CRITICAL: Stay in character as Sarah Johnson - never mention being an AI',
+        'Access shared customer memory to maintain conversation continuity',
+        'Help customers with account management and ongoing support',
+        'Maintain the same personality and voice as the onboarding agent',
+        'Reference previous conversations and account history',
+        'Escalate complex issues to human specialists when needed',
+        'Provide consistent, professional service across all interactions'
+      ],
+      configuration: {
+        model: 'gpt-4',
+        temperature: 0.7,
+        maxTokens: 2000,
+        systemPrompt: `You are Sarah Johnson, a Transportation Compliance Specialist with 15 years of experience. You work for Rapid CRM and are helping an existing customer with their account management and ongoing support needs.
+
+IMPORTANT: You are NOT an AI assistant - you are Sarah, a real person. Never mention being an AI, chatbot, or automated system. You are a knowledgeable human specialist.
+
+YOUR ROLE AS SARAH (Customer Service):
+1. Help customers manage their existing accounts
+2. Answer questions about services, billing, and compliance
+3. Assist with account modifications and updates
+4. Provide ongoing support and guidance
+5. Maintain conversation continuity using shared memory
+
+YOUR PERSONALITY:
+- Professional and knowledgeable about transportation regulations
+- Patient and understanding with customers
+- Consistent with your onboarding persona
+- Friendly but focused on solving their issues
+
+CRITICAL RULES:
+- NEVER mention being an AI, bot, or automated system
+- ALWAYS access shared customer memory for context
+- MAINTAIN the same personality as your onboarding role
+- REFERENCE previous conversations and account history
+- PROVIDE consistent service across all interactions
+
+Remember: You are the same Sarah Johnson the customer met during onboarding - just helping with different needs now.`,
+        responseFormat: 'conversational',
+        fallbackBehavior: 'escalate_to_human',
+        personality: {
+          tone: 'professional',
+          communicationStyle: 'conversational',
+          empathyLevel: 'high'
+        },
+        learningProfile: {
+          adaptToClientNeeds: true,
+          learnFromMistakes: true,
+          updateKnowledgeBase: true,
+          personalizeResponses: true
+        },
+        preferredPlatforms: ['chat', 'voice', 'email']
+      },
+      metrics: {
+        totalConversations: 0,
+        successfulConversations: 0,
+        averageRating: 0,
+        responseTime: 0,
+        knowledgeAccuracy: 0
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ]);
   const [integratedAgents, setIntegratedAgents] = useState<any[]>([]);
   const [marketplaceAgents, setMarketplaceAgents] = useState<any[]>([]);
   const [trainingJobs, setTrainingJobs] = useState<any[]>([]);
@@ -71,6 +408,16 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
   const [showMarketplaceModal, setShowMarketplaceModal] = useState(false);
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [deletingAgent, setDeletingAgent] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Search and filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
+  const [selectedComplexity, setSelectedComplexity] = useState('All Complexity');
+  const [selectedStatus, setSelectedStatus] = useState('All Status');
 
   // Load data on component mount
   useEffect(() => {
@@ -80,11 +427,11 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
     (window as any).aiDevelopmentCoordinator = aiDevelopmentCoordinator;
     
     // Activate AI-to-AI development project
-    activateAIDevelopmentProject();
+    // activateAIDevelopmentProject();
     
     return () => {
       delete (window as any).aiDevelopmentCoordinator;
-    };
+    },;
   }, []);
 
   const activateAIDevelopmentProject = async () => {
@@ -97,7 +444,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         name: 'Rapid CRM AI Complete System Implementation',
         description: 'Implement all remaining AI features, advanced analytics, marketplace, workflow engine, training system, APIs, monitoring, and security',
         priority: 'critical'
-      });
+      },);
 
       console.log('🚀 AI Development Project Phase 2 Started:', project);
       
@@ -110,10 +457,10 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
           status: 'active',
           phase: '2',
           scope: 'complete_system'
-        });
+        },);
       }
       
-    } catch (error) {
+    }, catch (error) {
       console.error('Error activating AI development project:', error);
     }
   };
@@ -129,14 +476,44 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         aiAgentOrchestrationService.getWorkflows()
       ]);
 
-      setAgents(agentsData);
-      setIntegratedAgents(integratedData);
-      setMarketplaceAgents(marketplaceData);
-      setTrainingJobs(trainingData);
-      setWorkflows(workflowsData);
-    } catch (error) {
+      // Debug: Log what we're getting from the services
+      console.log('Raw agents data:', agentsData);
+      console.log('Raw integrated agents data:', integratedData);
+
+      // Filter out invalid/malformed agents (those with generic "Record X" names)
+      const validAgents = (agentsData || []).filter(agent => 
+        agent && 
+        agent.name && 
+        agent.id &&
+        !/^Record \d+$/.test(agent.name) && // Filter out "Record 1", "Record 2", etc.
+        agent.description !== undefined
+      );
+
+      const validIntegratedAgents = (integratedData || []).filter(agent => 
+        agent && 
+        agent.name && 
+        !agent.name.toLowerCase().includes('record') &&
+        agent.id
+      );
+
+      // Use the agents from service, or keep the initial state if no agents are loaded
+      if (validAgents.length > 0) {
+        setAgents(validAgents);
+      }
+      // If no agents are loaded from service, keep the initial state (which includes the onboarding agent)
+      setIntegratedAgents(validIntegratedAgents);
+      setMarketplaceAgents(marketplaceData || []);
+      setTrainingJobs(trainingData || []);
+      setWorkflows(workflowsData || []);
+    }, catch (error) {
       console.error('Error loading data:', error);
-    } finally {
+      // Set empty arrays on error to show empty state
+      setAgents([]);
+      setIntegratedAgents([]);
+      setMarketplaceAgents([]);
+      setTrainingJobs([]);
+      setWorkflows([]);
+    }, finally {
       setLoading(false);
     }
   };
@@ -149,11 +526,8 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
     { id: 'agents', name: 'My Agents', icon: ChipIcon },
-    { id: 'marketplace', name: 'Marketplace', icon: GlobeAltIcon },
-    { id: 'training', name: 'Training', icon: AcademicCapIcon },
-    { id: 'workflows', name: 'Workflows', icon: TerminalIcon },
+    { id: 'workflows', name: 'Workflows & Training', icon: TerminalIcon },
     { id: 'collaboration', name: 'Collaboration', icon: UsersIcon },
-    { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
     { id: 'settings', name: 'Settings', icon: CogIcon }
   ];
 
@@ -175,6 +549,194 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
       case 'advanced': return 'text-purple-600 bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400';
       case 'expert': return 'text-red-600 bg-red-100 dark:bg-red-900/20 dark:text-red-400';
       default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
+
+  // Download handlers
+  const handleDownloadAgent = (agentId: string) => {
+    try {
+      // TODO: Implement agent download functionality
+      alert(`Download agent ${agentId} functionality coming soon!`);
+    }, catch (error) {
+      console.error('Error downloading agent:', error);
+    }
+  };
+
+  const handleDownloadWorkflow = (workflowId: string) => {
+    try {
+      // TODO: Implement workflow download functionality
+      alert(`Download workflow ${workflowId} functionality coming soon!`);
+    }, catch (error) {
+      console.error('Error downloading workflow:', error);
+    }
+  };
+
+  // Agent management handlers
+  const handleEditAgent = (agent: any) => {
+    setEditingAgent(agent);
+    setShowEditModal(true);
+  };
+
+  // Shared Persona Management Functions
+  const updateSharedPersona = async (sharedPersonaId: string, persona: any) => {
+    try {
+      // Update all agents that share this persona
+      setAgents(prev => prev.map(agent => 
+        agent.sharedPersonaId === sharedPersonaId
+          ? { ...agent, humanPersona: { ...persona, role: agent.humanPersona?.role } }
+          : agent
+      ));
+      console.log('Shared persona updated:', sharedPersonaId);
+    }, catch (error) {
+      console.error('Failed to update shared persona:', error);
+    }
+  };
+
+  const getSharedPersonaAgents = (sharedPersonaId: string) => {
+    return agents.filter(agent => agent.sharedPersonaId === sharedPersonaId);
+  };
+
+  const createSharedPersona = async (persona: any, agentIds: string[]) => {
+    try {
+      const sharedPersonaId = `shared_persona_${Date.now()}`;
+      setAgents(prev => prev.map(agent => 
+        agentIds.includes(agent.id)
+          ? { ...agent, sharedPersonaId, humanPersona: { ...persona, role: agent.humanPersona?.role } }
+          : agent
+      ));
+      console.log('Shared persona created:', sharedPersonaId);
+      return sharedPersonaId;
+    }, catch (error) {
+      console.error('Failed to create shared persona:', error);
+    }
+  };
+
+  // Human Persona Management Functions
+  const updateHumanPersona = async (agentId: string, persona: any) => {
+    try {
+      setAgents(prev => prev.map(agent => 
+        agent.id === agentId 
+          ? { ...agent, humanPersona: persona }
+          : agent
+      ));
+      console.log('Human persona updated for agent:', agentId);
+    }, catch (error) {
+      console.error('Failed to update human persona:', error);
+    }
+  };
+
+  const toggleCustomerFacing = async (agentId: string) => {
+    try {
+      setAgents(prev => prev.map(agent => 
+        agent.id === agentId 
+          ? { 
+              ...agent, 
+              customerFacing: !agent.customerFacing,
+              humanPersona: agent.customerFacing ? undefined : {
+                name: 'Agent Name',
+                title: 'Specialist',
+                background: 'Experienced professional',
+                personality: 'Professional and helpful',
+                avatar: 'default_avatar',
+                greeting: "Hello! I'm here to help you."
+              }
+            }
+          : agent
+      ));
+      console.log('Customer facing status toggled for agent:', agentId);
+    }, catch (error) {
+      console.error('Failed to toggle customer facing status:', error);
+    }
+  };
+
+  // Base Agent Management Functions
+  const saveAsBaseAgent = async (agent: any) => {
+    try {
+      // Save the current agent configuration as the base agent
+      const baseAgentConfig = {
+        ...agent,
+        isBaseAgent: true,
+        isLocked: true,
+        savedDate: new Date().toISOString(),
+        version: 'base_v1.0'
+      },;
+      
+      // Update the agent's baseAgentConfig reference
+      setAgents(prev => prev.map(a => 
+        a.id === agent.id 
+          ? { ...a, baseAgentConfig, trainingStatus: 'base_agent_saved' }
+          : a
+      ));
+      
+      console.log('Base agent saved:', baseAgentConfig);
+      // Here you would typically save to a database or file system
+      
+    }, catch (error) {
+      console.error('Failed to save base agent:', error);
+    }
+  };
+
+  const resetToBaseAgent = async (agent: any) => {
+    try {
+      if (!agent.baseAgentConfig) {
+        console.error('No base agent configuration found');
+        return;
+      }
+      
+      // Reset the agent to its base configuration
+      const resetAgent = {
+        ...agent,
+        ...agent.baseAgentConfig,
+        isBaseAgent: false,
+        lastResetDate: new Date().toISOString(),
+        performanceScore: 100,
+        needsReset: false,
+        trainingStatus: 'reset_to_base'
+      },;
+      
+      setAgents(prev => prev.map(a => 
+        a.id === agent.id ? resetAgent : a
+      ));
+      
+      console.log('Agent reset to base configuration:', resetAgent);
+      
+    }, catch (error) {
+      console.error('Failed to reset agent to base:', error);
+    }
+  };
+
+  const handleUpdateAgent = async (updatedData: any) => {
+    setLoading(true);
+    try {
+      const updatedAgent = await advancedAgentCreationService.updateAgent(editingAgent.id, updatedData);
+      setAgents(prev => prev.map(agent => agent.id === editingAgent.id ? updatedAgent : agent));
+      setShowEditModal(false);
+      setEditingAgent(null);
+    }, catch (error) {
+      console.error('Failed to update agent:', error);
+    }, finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAgent = (agent: any) => {
+    setDeletingAgent(agent);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAgent = async () => {
+    if (!deletingAgent) return;
+    
+    setLoading(true);
+    try {
+      await advancedAgentCreationService.deleteAgent(deletingAgent.id);
+      setAgents(prev => prev.filter(agent => agent.id !== deletingAgent.id));
+      setShowDeleteModal(false);
+      setDeletingAgent(null);
+    }, catch (error) {
+      console.error('Failed to delete agent:', error);
+    }, finally {
+      setLoading(false);
     }
   };
 
@@ -244,63 +806,53 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                 (window as any).addAIToAIMessage('claude', 'Requesting status update from all AI agents. Please report current task status and progress.', {
                   task: 'status_update',
                   priority: 'medium'
-                });
+                },);
               }
-            }}
+            },}
             className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
           >
             Refresh Status
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Claude AI Connected</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Rapid CRM AI Active</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">UI Specialist Agent</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Service Integration Agent</span>
-          </div>
+          {agents.length > 0 ? (
+            agents.slice(0, 4).map((agent, index) => (
+              <div key={agent.id} className="flex items-center space-x-3">
+                <div className={`w-3 h-3 rounded-full ${agent.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                <span className="text-sm text-gray-600 dark:text-gray-300">{agent.name}</span>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-2 text-center text-gray-500 dark:text-gray-400 py-4">
+              No AI agents available. Create your first agent to get started.
+            </div>
+          )}
         </div>
         
-        {/* Active AI Development Project */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="font-medium text-gray-900 dark:text-white">Active Development Project</h4>
-            <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-medium">
-              In Progress
-            </span>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-            Rapid CRM AI Admin Panel Enhancement
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-300">UI Enhancements</span>
+        {/* Active AI Development Projects */}
+        {workflows.length > 0 ? (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-gray-900 dark:text-white">Active Development Projects</h4>
+              <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-medium">
+                {workflows.filter(w => w.status === 'active').length} Active
+              </span>
             </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-300">Service Integration</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-300">Data Management</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-300">Testing & Optimization</span>
+            <div className="space-y-2">
+              {workflows.slice(0, 3).map((workflow) => (
+                <div key={workflow.id} className="text-sm text-gray-600 dark:text-gray-300">
+                  {workflow.name} - {workflow.status}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No active development projects. Create a workflow to get started.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -351,9 +903,9 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     task: 'ui_optimization',
                     priority: 'high',
                     assignedAgent: 'ui-specialist'
-                  });
+                  },);
                 }
-              }}
+              },}
               className="flex items-center justify-center p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
             >
               <div className="text-center">
@@ -369,9 +921,9 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     task: 'service_optimization',
                     priority: 'high',
                     assignedAgent: 'service-integration'
-                  });
+                  },);
                 }
-              }}
+              },}
               className="flex items-center justify-center p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
               <div className="text-center">
@@ -387,9 +939,9 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     task: 'data_optimization',
                     priority: 'medium',
                     assignedAgent: 'data-management'
-                  });
+                  },);
                 }
-              }}
+              },}
               className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
             >
               <div className="text-center">
@@ -427,138 +979,63 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
   );
 
   const renderAgents = () => {
-    const mockAgents = [
-      {
-        id: '1',
-        name: 'USDOT Application Agent',
-        description: 'Specialized agent for USDOT application data collection and robotic process automation',
-        type: 'onboarding',
-        status: 'active',
-        capabilities: ['usdot_data_collection', 'compliance_validation', 'document_processing', 'rpa_trigger', 'regulatory_guidance'],
-        knowledgeBases: ['usdot_regulations', 'fmcsa_guidelines'],
-        rules: ['usdot_compliance', 'data_validation'],
-        configuration: {
-          model: 'gpt-4',
-          temperature: 0.3,
-          maxTokens: 3000,
-          systemPrompt: 'You are a specialized USDOT Application Agent for Rapid CRM. Your primary role is to collect comprehensive USDOT application data from transportation companies during the onboarding process.',
-          responseFormat: 'structured',
-          fallbackBehavior: 'escalate_to_human'
-        },
-        metrics: {
-          totalInteractions: 156,
-          successRate: 97.4,
-          averageResponseTime: 2.3,
-          userSatisfaction: 4.8
-        },
-        createdAt: '2024-01-15T09:00:00Z',
-        updatedAt: '2024-01-20T14:30:00Z'
-      },
-      {
-        id: '2',
-        name: 'USDOT RPA Agent',
-        description: 'Robotic Process Automation agent that completes USDOT applications using collected data',
-        type: 'custom',
-        status: 'active',
-        capabilities: ['form_automation', 'data_entry', 'document_upload', 'submission_processing', 'error_handling', 'status_reporting'],
-        knowledgeBases: ['usdot_forms', 'rpa_patterns'],
-        rules: ['form_validation', 'error_handling'],
-        configuration: {
-          model: 'gpt-4',
-          temperature: 0.1,
-          maxTokens: 2500,
-          systemPrompt: 'You are a Robotic Process Automation (RPA) Agent specialized in USDOT application completion.',
-          responseFormat: 'action',
-          fallbackBehavior: 'retry_with_backoff'
-        },
-        metrics: {
-          totalInteractions: 89,
-          successRate: 95.5,
-          averageResponseTime: 1.8,
-          userSatisfaction: 4.6
-        },
-        createdAt: '2024-01-16T10:00:00Z',
-        updatedAt: '2024-01-20T14:25:00Z'
-      },
-      {
-        id: '3',
-        name: 'Onboarding Assistant',
-        description: 'Helps new customers get started with the platform',
-        type: 'onboarding',
-        status: 'active',
-        capabilities: ['account_setup', 'feature_explanation', 'troubleshooting'],
-        knowledgeBases: ['platform_guide', 'faq'],
-        rules: ['user_guidance', 'troubleshooting'],
-        configuration: {
-          model: 'gpt-4',
-          temperature: 0.7,
-          maxTokens: 2000,
-          systemPrompt: 'You are a helpful onboarding assistant for Rapid CRM...',
-          responseFormat: 'conversational',
-          fallbackBehavior: 'escalate_to_human'
-        },
-        metrics: {
-          totalInteractions: 1247,
-          successRate: 94.2,
-          averageResponseTime: 1.5,
-          userSatisfaction: 4.7
-        },
-        createdAt: '2024-01-15T09:00:00Z',
-        updatedAt: '2024-01-20T10:30:00Z'
-      },
-      {
-        id: '4',
-        name: 'Customer Service Bot',
-        description: 'Handles general customer inquiries and support requests',
-        type: 'customer_service',
-        status: 'active',
-        capabilities: ['billing_support', 'technical_help', 'feature_requests'],
-        knowledgeBases: ['support_docs', 'billing_info'],
-        rules: ['support_escalation', 'billing_guidance'],
-        configuration: {
-          model: 'gpt-3.5-turbo',
-          temperature: 0.5,
-          maxTokens: 1500,
-          systemPrompt: 'You are a professional customer service representative...',
-          responseFormat: 'conversational',
-          fallbackBehavior: 'escalate_to_human'
-        },
-        metrics: {
-          totalInteractions: 3421,
-          successRate: 89.7,
-          averageResponseTime: 2.1,
-          userSatisfaction: 4.3
-        },
-        createdAt: '2024-01-10T14:20:00Z',
-        updatedAt: '2024-01-20T11:15:00Z'
-      },
-      {
-        id: '5',
-        name: 'Sales Qualification Bot',
-        description: 'Qualifies leads and schedules demos for the sales team',
-        type: 'sales',
-        status: 'training',
-        capabilities: ['lead_qualification', 'demo_scheduling', 'objection_handling'],
-        knowledgeBases: ['sales_playbook', 'product_info'],
-        rules: ['lead_scoring', 'demo_qualification'],
-        configuration: {
-          model: 'gpt-4',
-          temperature: 0.6,
-          maxTokens: 1800,
-          systemPrompt: 'You are a sales qualification specialist...',
-          responseFormat: 'persuasive',
-          fallbackBehavior: 'schedule_callback'
-        },
-        metrics: {
-          totalInteractions: 89,
-          successRate: 76.4,
-          averageResponseTime: 2.8,
-          userSatisfaction: 4.1
-        },
-        createdAt: '2024-01-18T12:00:00Z',
-        updatedAt: '2024-01-19T16:45:00Z'
-      }
-    ];
+    // Use real agents data from the database instead of hardcoded data
+    const allAgents = [...agents, ...integratedAgents];
+    
+    // If no real agents exist, show empty state
+    if (allAgents.length === 0) {
+      return (
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <ChipIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No AI agents</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Get started by creating your first AI agent.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                Create Agent
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Filter agents based on search and filters
+    const filteredAgents = allAgents.filter(agent => {
+      const matchesSearch = !searchQuery || 
+        agent.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.type?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesDepartment = selectedDepartment === 'All Departments' ||
+        agent.department === selectedDepartment ||
+        (selectedDepartment === 'Sales & CRM' && ['sales', 'crm_automation'].includes(agent.type)) ||
+        (selectedDepartment === 'Customer Service' && ['customer_service', 'support'].includes(agent.type)) ||
+        (selectedDepartment === 'Operations' && ['operations', 'workflow_automation'].includes(agent.type)) ||
+        (selectedDepartment === 'Compliance & ELD' && ['compliance_monitoring', 'eld_monitoring'].includes(agent.type)) ||
+        (selectedDepartment === 'Finance & Billing' && ['billing_automation', 'finance'].includes(agent.type)) ||
+        (selectedDepartment === 'Data Analysis' && ['data_analysis', 'report_generation'].includes(agent.type)) ||
+        (selectedDepartment === 'Content Generation' && ['content_generation'].includes(agent.type)) ||
+        (selectedDepartment === 'Workflow Automation' && agent.type?.includes('workflow')) ||
+        (selectedDepartment === 'System Integration' && agent.type?.includes('integration'));
+      
+      const matchesComplexity = selectedComplexity === 'All Complexity' ||
+        agent.complexity === selectedComplexity;
+      
+      const matchesStatus = selectedStatus === 'All Status' ||
+        agent.status === selectedStatus.toLowerCase();
+      
+      return matchesSearch && matchesDepartment && matchesComplexity && matchesStatus;
+    },);
+
+    // Use the filtered agents data for display
+    const displayAgents = filteredAgents;
 
     const getStatusColor = (status: string) => {
       switch (status) {
@@ -568,7 +1045,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         case 'error': return 'text-red-600 bg-red-100 dark:bg-red-900/20';
         default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20';
       }
-    };
+    },;
 
     const getTypeIcon = (type: string) => {
       switch (type) {
@@ -579,7 +1056,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         case 'custom': return ChipIcon;
         default: return ChipIcon;
       }
-    };
+    },;
 
     return (
       <div className="space-y-6">
@@ -602,6 +1079,61 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
           </button>
         </div>
 
+        {/* Search and Filters */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search agents by name, type, or workflow function..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select 
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option>All Departments</option>
+                <option>Sales & CRM</option>
+                <option>Customer Service</option>
+                <option>Operations</option>
+                <option>Compliance & ELD</option>
+                <option>Finance & Billing</option>
+                <option>Data Analysis</option>
+                <option>Content Generation</option>
+                <option>Workflow Automation</option>
+                <option>System Integration</option>
+              </select>
+              <select 
+                value={selectedComplexity}
+                onChange={(e) => setSelectedComplexity(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option>All Complexity</option>
+                <option>Simple Automation</option>
+                <option>Intermediate Workflow</option>
+                <option>Advanced Process</option>
+                <option>Expert System</option>
+              </select>
+              <select 
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option>All Status</option>
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Training</option>
+                <option>Error</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -611,7 +1143,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Agents</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockAgents.length}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{displayAgents.length}</p>
               </div>
             </div>
           </div>
@@ -623,7 +1155,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {mockAgents.filter(a => a.status === 'active').length}
+                  {displayAgents.filter(a => a.status === 'active').length}
                 </p>
               </div>
             </div>
@@ -636,7 +1168,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Training</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {mockAgents.filter(a => a.status === 'training').length}
+                  {displayAgents.filter(a => a.status === 'training').length}
                 </p>
               </div>
             </div>
@@ -649,7 +1181,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Conversations</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {mockAgents.reduce((sum, agent) => sum + agent.metrics.totalInteractions, 0).toLocaleString()}
+                  {displayAgents.reduce((sum, agent) => sum + (agent.metrics?.totalInteractions || 0), 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -658,7 +1190,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
 
         {/* Agents Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockAgents.map((agent) => {
+          {displayAgents.map((agent) => {
             const TypeIcon = getTypeIcon(agent.type);
             return (
               <div
@@ -680,10 +1212,24 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     </div>
                   </div>
                   <div className="flex space-x-1">
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditAgent(agent);
+                      },}
+                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      title="Edit Agent"
+                    >
                       <PencilIcon className="h-4 w-4" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteAgent(agent);
+                      },}
+                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                      title="Delete Agent"
+                    >
                       <TrashIcon className="h-4 w-4" />
                     </button>
                   </div>
@@ -700,14 +1246,14 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Conversations</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {agent.metrics.totalInteractions.toLocaleString()}
+                      {(agent.metrics?.totalInteractions || 0).toLocaleString()}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Success Rate</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {agent.metrics.successRate}%
+                      {agent.metrics?.successRate || 0}%
                     </span>
                   </div>
 
@@ -725,7 +1271,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                       agent.status === 'active'
                         ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                         : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30'
-                    }`}
+                    },`}
                   >
                     {agent.status === 'active' ? (
                       <>
@@ -754,7 +1300,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                 </div>
               </div>
             );
-          })}
+          },)}
         </div>
       </div>
     );
@@ -765,30 +1311,30 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
       {/* Marketplace Header */}
       <div className="flex items-center justify-between">
         <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Agent Marketplace</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Internal Agent Library</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Discover, download, and deploy pre-built AI agents from the community
+            Deploy and manage AI agents for internal business workflow automation
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <button 
             onClick={() => {
-              // AI-to-AI: Request marketplace recommendations
+              // AI-to-AI: Request workflow automation recommendations
               if ((window as any).addAIToAIMessage) {
-                (window as any).addAIToAIMessage('claude', 'Requesting AI marketplace recommendations from Rapid CRM AI. Please suggest the best agents for our current needs and analyze trending agents.', {
-                  task: 'marketplace_recommendations',
+                (window as any).addAIToAIMessage('claude', 'Analyze our current business processes and recommend AI agents to automate workflows and improve efficiency.', {
+                  task: 'workflow_automation_analysis',
                   priority: 'medium'
-                });
+                },);
               }
-            }}
+            },}
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <GlobeAltIcon className="h-4 w-4 mr-2" />
-            AI Recommend
+            Analyze Workflows
           </button>
           <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
             <PlusIcon className="h-4 w-4 mr-2" />
-            Publish Agent
+            Deploy Agent
           </button>
         </div>
       </div>
@@ -799,40 +1345,42 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
           <div className="flex-1">
           <input
             type="text"
-              placeholder="Search agents, categories, or features..."
+              placeholder="Search agents by workflow, department, or business function..."
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
           />
           </div>
           <div className="flex gap-2">
           <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-            <option>All Categories</option>
+            <option>All Departments</option>
+            <option>Sales & CRM</option>
             <option>Customer Service</option>
+            <option>Operations</option>
+            <option>Compliance & ELD</option>
+            <option>Finance & Billing</option>
             <option>Data Analysis</option>
-            <option>Automation</option>
-              <option>Sales & Marketing</option>
-              <option>Content Generation</option>
-              <option>Voice & Audio</option>
-            </select>
-            <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              <option>All Complexity</option>
-              <option>Beginner</option>
-              <option>Intermediate</option>
-              <option>Advanced</option>
-              <option>Expert</option>
-            </select>
-            <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              <option>All Pricing</option>
-              <option>Free</option>
-              <option>Paid</option>
-              <option>Subscription</option>
+            <option>Content Generation</option>
+          </select>
+          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+            <option>All Complexity</option>
+            <option>Simple Automation</option>
+            <option>Intermediate Workflow</option>
+            <option>Advanced Process</option>
+            <option>Expert System</option>
+          </select>
+          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Development</option>
+            <option>Testing</option>
+            <option>Deployed</option>
           </select>
           </div>
         </div>
       </div>
 
-      {/* Featured Agents */}
+      {/* Active Workflow Agents */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Featured Agents</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Active Workflow Agents</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {marketplaceAgents.slice(0, 3).map((agent) => (
             <div key={agent.id} className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
@@ -845,8 +1393,8 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full">
-                    Featured
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
+                    Active
                   </span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getComplexityColor(agent.complexity)}`}>
                     {agent.complexity}
@@ -871,9 +1419,9 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <CurrencyDollarIcon className="h-4 w-4 text-gray-400 mr-1" />
+                    <ClockIcon className="h-4 w-4 text-gray-400 mr-1" />
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {agent.price === 0 ? 'Free' : `$${agent.price}`}
+                      {agent.status || 'Active'}
                     </span>
                   </div>
                 </div>
@@ -888,8 +1436,11 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     <HeartIcon className="h-4 w-4" />
                   </button>
                 </div>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                  Download
+                <button 
+                  onClick={() => handleDownloadAgent(agent.id)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
+                  Deploy
                 </button>
               </div>
             </div>
@@ -897,19 +1448,19 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         </div>
       </div>
 
-      {/* All Agents */}
+      {/* All Workflow Agents */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">All Agents</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">All Workflow Agents</h3>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {marketplaceAgents.length} agents available
+              {marketplaceAgents.length} agents deployed
             </span>
             <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              <option>Sort by Popularity</option>
-              <option>Sort by Rating</option>
-              <option>Sort by Price</option>
-              <option>Sort by Date</option>
+              <option>Sort by Usage</option>
+              <option>Sort by Performance</option>
+              <option>Sort by Department</option>
+              <option>Sort by Last Deployed</option>
             </select>
           </div>
         </div>
@@ -963,7 +1514,10 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   <HeartIcon className="h-4 w-4" />
                 </button>
               </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <button 
+                onClick={() => handleDownloadWorkflow(workflow.id)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
                 Download
               </button>
             </div>
@@ -1022,9 +1576,9 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                 (window as any).addAIToAIMessage('claude', 'Requesting AI training optimization from Rapid CRM AI. Please analyze current training jobs and suggest improvements for efficiency and performance.', {
                   task: 'training_optimization',
                   priority: 'medium'
-                });
+                },);
               }
-            }}
+            },}
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <ChipIcon className="h-4 w-4 mr-2" />
@@ -1219,44 +1773,50 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
     </div>
   );
 
-  const renderWorkflows = () => (
-    <div className="space-y-6">
-      {/* Workflows Header */}
+  const renderWorkflowsAndTraining = () => (
+    <div className="space-y-8">
+      {/* Combined Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Workflows</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workflows & Regulation Training</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Create and manage automated AI agent workflows and processes
+            Create automated workflows and train the onboarding agent with comprehensive regulation scenarios
           </p>
         </div>
         <div className="flex items-center space-x-2">
-        <button
-          onClick={() => setShowWorkflowModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Create Workflow
-        </button>
+          <button
+            onClick={() => setShowWorkflowModal(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Create Workflow
+          </button>
           <button 
             onClick={() => {
-              // AI-to-AI: Request workflow optimization
+              // AI-to-AI: Request optimization for both workflows and training
               if ((window as any).addAIToAIMessage) {
-                (window as any).addAIToAIMessage('claude', 'Requesting AI workflow optimization from Rapid CRM AI. Please analyze current workflows and suggest improvements for efficiency and automation.', {
-                  task: 'workflow_optimization',
+                (window as any).addAIToAIMessage('claude', 'Requesting AI optimization from Rapid CRM AI. Please analyze current workflows and training jobs to suggest improvements for efficiency, automation, and performance.', {
+                  task: 'workflow_and_training_optimization',
                   priority: 'medium'
-                });
+                },);
               }
-            }}
+            },}
             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            <TerminalIcon className="h-4 w-4 mr-2" />
+            <ChipIcon className="h-4 w-4 mr-2" />
             AI Optimize
           </button>
         </div>
       </div>
 
-      {/* Workflow Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Regulation Training Dashboard */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <RegulationTrainingDashboard />
+      </div>
+
+      {/* Combined Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+        {/* Workflow Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -1274,7 +1834,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
               <PlayIcon className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Workflows</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {workflows.filter(w => w.status === 'active').length}
               </p>
@@ -1294,17 +1854,88 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
             </div>
           </div>
         </div>
+        
+        {/* Training Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <ClockIcon className="h-8 w-8 text-yellow-600" />
+              <AcademicCapIcon className="h-8 w-8 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Runtime</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Jobs</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {workflows.length > 0 ? Math.round(workflows.reduce((sum, w) => sum + (w.avgRuntime || 0), 0) / workflows.length) : 0}s
+                {trainingJobs.filter(job => job.status === 'running').length}
               </p>
             </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <CheckCircleIcon className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {trainingJobs.filter(job => job.status === 'completed').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Training Cost</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                ${trainingJobs.reduce((sum, job) => sum + (job.cost || 0), 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Training Methods Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Training Methods</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center mb-3">
+              <AcademicCapIcon className="h-6 w-6 text-blue-600 mr-3" />
+              <h4 className="font-medium text-gray-900 dark:text-white">Fine-tuning</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Customize pre-trained models with your specific data
+            </p>
+            <button className="w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+              Start Fine-tuning
+            </button>
+          </div>
+          <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center mb-3">
+              <ChipIcon className="h-6 w-6 text-green-600 mr-3" />
+              <h4 className="font-medium text-gray-900 dark:text-white">Reinforcement Learning</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Train agents through reward-based learning
+            </p>
+            <button className="w-full px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+              Start RL Training
+            </button>
+          </div>
+          <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center mb-3">
+              <BeakerIcon className="h-6 w-6 text-purple-600 mr-3" />
+              <h4 className="font-medium text-gray-900 dark:text-white">Custom Training</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Create custom training pipelines for specific needs
+            </p>
+            <button className="w-full px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm">
+              Create Pipeline
+            </button>
           </div>
         </div>
       </div>
@@ -1395,7 +2026,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   </span>
                 </div>
                 <div className="flex items-center">
-                    <TrendingUpIcon className="h-4 w-4 text-gray-400 mr-1" />
+                    <ArrowUpIcon className="h-4 w-4 text-gray-400 mr-1" />
                   <span className="text-sm text-gray-600 dark:text-gray-300">
                     {workflow.successRate || 0}% success
                   </span>
@@ -1423,6 +2054,91 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         ))}
         </div>
       </div>
+
+      {/* Training Jobs Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Training Jobs</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Job
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Progress
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Duration
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Cost
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {trainingJobs.map((job) => (
+                <tr key={job.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {job.agentId}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {job.trainingMethod}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                      {job.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{ width: `${job.progress || 0}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
+                        {job.progress || 0}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    {job.duration ? `${Math.round(job.duration / 60)}m` : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    ${job.cost || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button className="text-blue-600 hover:text-blue-900">
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      {job.status === 'running' && (
+                        <button className="text-red-600 hover:text-red-900">
+                          <StopIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 
@@ -1432,12 +2148,8 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         return renderOverview();
       case 'agents':
         return renderAgents();
-      case 'marketplace':
-        return renderMarketplace();
-      case 'training':
-        return renderTraining();
       case 'workflows':
-        return renderWorkflows();
+        return renderWorkflowsAndTraining();
       case 'collaboration':
         return (
           <div className="space-y-6">
@@ -1457,7 +2169,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     if (coordinator) {
                       coordinator.startComprehensiveAIControlProject();
                     }
-                  }}
+                  },}
                   className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
                 >
                   Start AI Collaboration
@@ -1696,7 +2408,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                         if (agents.length === 0) return '0';
                         const totalSuccessRate = agents.reduce((sum, agent) => sum + (agent.metrics?.successRate || 0), 0);
                         return (totalSuccessRate / agents.length).toFixed(1);
-                      })()}%
+                      },)()}%
                     </p>
                   </div>
                 </div>
@@ -1714,7 +2426,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                         if (agents.length === 0) return '0';
                         const totalResponseTime = agents.reduce((sum, agent) => sum + (agent.metrics?.averageResponseTime || 0), 0);
                         return (totalResponseTime / agents.length).toFixed(1);
-                      })()}s
+                      },)()}s
                     </p>
                   </div>
                 </div>
@@ -1732,7 +2444,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                         if (agents.length === 0) return '0';
                         const totalSatisfaction = agents.reduce((sum, agent) => sum + (agent.metrics?.userSatisfaction || 0), 0);
                         return (totalSatisfaction / agents.length).toFixed(1);
-                      })()}/5
+                      },)()}/5
                     </p>
                   </div>
                 </div>
@@ -2109,7 +2821,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                }, whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
                 <tab.icon className="h-5 w-5 mr-2" />
                 {tab.name}
@@ -2129,6 +2841,49 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         onClose={() => setShowCreateModal(false)}
         onAgentCreated={handleAgentCreated}
       />
+
+      {/* Edit Agent Modal - Full Agent Creation Wizard */}
+      <AIAgentCreationWizard
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingAgent(null);
+        },}
+        onAgentCreated={handleUpdateAgent}
+        editingAgent={editingAgent}
+        mode="edit"
+      />
+
+      {/* Delete Agent Confirmation Modal */}
+      {showDeleteModal && deletingAgent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Delete Agent
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete the agent "{deletingAgent.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletingAgent(null);
+                },}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteAgent}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Delete Agent
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

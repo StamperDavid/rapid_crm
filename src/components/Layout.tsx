@@ -48,7 +48,6 @@ const getNavigation = () => [
   { name: 'IFTA', href: '/ifta', icon: LightningBoltIcon, color: 'text-blue-600' },
   { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
   { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },
-  { name: 'Enterprise', href: '/enterprise', icon: ChartBarIcon, color: 'text-indigo-600' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {

@@ -2066,12 +2066,61 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
       });
     }
     
-    // Truncate text to prevent API errors
-    const truncatedText = text.length > 1000 ? text.substring(0, 997) + '...' : text;
-    console.log('🎤 Using truncated text:', truncatedText.length, 'characters');
+    // Handle text chunking for Unreal Speech API (1000 character limit)
+    const maxLength = 900; // Leave some buffer
+    let textToSpeak = text;
+    
+    if (text.length > maxLength) {
+      console.log('🎤 Text too long, chunking for TTS:', text.length, 'characters');
+      
+      // First, truncate to maxLength to ensure we don't exceed it
+      let truncatedText = text.substring(0, maxLength);
+      
+      // Now find the best sentence break within this truncated text
+      let breakPoint = maxLength;
+      
+      // Search for sentence endings in the last 200 characters of the truncated text
+      const searchStart = Math.max(0, truncatedText.length - 200);
+      const searchText = truncatedText.substring(searchStart);
+      
+      const lastPeriod = searchText.lastIndexOf('.');
+      const lastExclamation = searchText.lastIndexOf('!');
+      const lastQuestion = searchText.lastIndexOf('?');
+      
+      console.log('🎤 Sentence break positions in search area:', { 
+        lastPeriod: lastPeriod + searchStart, 
+        lastExclamation: lastExclamation + searchStart, 
+        lastQuestion: lastQuestion + searchStart, 
+        searchStart 
+      });
+      
+      // Find the best break point within the search area
+      const sentenceBreaks = [lastPeriod, lastExclamation, lastQuestion].filter(pos => pos >= 0);
+      if (sentenceBreaks.length > 0) {
+        const bestBreak = Math.max(...sentenceBreaks);
+        breakPoint = searchStart + bestBreak + 1; // +1 to include the punctuation
+        console.log('🎤 Found sentence break at position:', breakPoint);
+      } else {
+        // If no sentence break found, just use the truncated text
+        breakPoint = maxLength;
+        console.log('🎤 No sentence break found, using truncated text at:', breakPoint);
+      }
+      
+      textToSpeak = text.substring(0, breakPoint).trim();
+      console.log('🎤 Final chunk length:', textToSpeak.length, 'characters');
+      console.log('🎤 Chunk preview:', textToSpeak.substring(0, 100) + '...');
+    } else {
+      console.log('🎤 Using full text:', text.length, 'characters');
+    }
+    
+    // Final safety check - ensure we never exceed 1000 characters
+    if (textToSpeak.length > 1000) {
+      textToSpeak = textToSpeak.substring(0, 997) + '...';
+      console.log('🎤 Final safety truncation to:', textToSpeak.length, 'characters');
+    }
     
     // Call Unreal Speech API with proper error handling
-    console.log('🎤 Calling Unreal Speech API...');
+    console.log('🎤 Calling Unreal Speech API with final text length:', textToSpeak.length);
     const response = await fetch('https://api.v8.unrealspeech.com/stream', {
       method: 'POST',
       headers: {
@@ -2079,13 +2128,13 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
         'Content-Type': 'application/json'
       },
         body: JSON.stringify({
-          Text: truncatedText,
+          Text: textToSpeak,
           VoiceId: voiceId,
           Bitrate: '320k', // Higher quality audio
           Speed: speed,
           Pitch: pitch,
           Codec: 'libmp3lame'
-      })
+        })
     });
     
     console.log('🎤 Unreal Speech API response status:', response.status);
@@ -2094,7 +2143,7 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
       const errorText = await response.text();
       console.error('❌ Unreal Speech API error:', response.status, errorText);
       console.error('❌ Request body was:', JSON.stringify({
-        Text: truncatedText.substring(0, 100) + '...',
+        Text: text.substring(0, 100) + '...',
         VoiceId: voiceId,
         Bitrate: '192k',
         Speed: speed,
@@ -2110,7 +2159,7 @@ app.post('/api/ai/unreal-speech', async (req, res) => {
           status: response.status,
           statusText: response.statusText,
           voiceId: voiceId,
-          textLength: truncatedText.length
+          textLength: text.length
         }
       });
     }
@@ -2194,11 +2243,51 @@ app.post('/api/ai/fast-voice', async (req, res) => {
       });
     }
     
-    // Truncate text for faster processing
-    const truncatedText = text.length > 500 ? text.substring(0, 497) + '...' : text;
-    console.log('⚡ Using truncated text:', truncatedText.length, 'characters');
+    // Handle text chunking for Unreal Speech API (1000 character limit)
+    const maxLength = 900; // Leave some buffer
+    let textToSpeak = text;
+    
+    if (text.length > maxLength) {
+      console.log('⚡ Text too long, chunking for fast TTS:', text.length, 'characters');
+      
+      // First, truncate to maxLength to ensure we don't exceed it
+      let truncatedText = text.substring(0, maxLength);
+      
+      // Now find the best sentence break within this truncated text
+      let breakPoint = maxLength;
+      
+      // Search for sentence endings in the last 200 characters of the truncated text
+      const searchStart = Math.max(0, truncatedText.length - 200);
+      const searchText = truncatedText.substring(searchStart);
+      
+      const lastPeriod = searchText.lastIndexOf('.');
+      const lastExclamation = searchText.lastIndexOf('!');
+      const lastQuestion = searchText.lastIndexOf('?');
+      
+      // Find the best break point within the search area
+      const sentenceBreaks = [lastPeriod, lastExclamation, lastQuestion].filter(pos => pos >= 0);
+      if (sentenceBreaks.length > 0) {
+        const bestBreak = Math.max(...sentenceBreaks);
+        breakPoint = searchStart + bestBreak + 1; // +1 to include the punctuation
+      } else {
+        // If no sentence break found, just use the truncated text
+        breakPoint = maxLength;
+      }
+      
+      textToSpeak = text.substring(0, breakPoint).trim();
+      console.log('⚡ Using first chunk:', textToSpeak.length, 'characters');
+    } else {
+      console.log('⚡ Using full text:', text.length, 'characters');
+    }
+    
+    // Final safety check - ensure we never exceed 1000 characters
+    if (textToSpeak.length > 1000) {
+      textToSpeak = textToSpeak.substring(0, 997) + '...';
+      console.log('⚡ Final safety truncation to:', textToSpeak.length, 'characters');
+    }
     
     // Call Unreal Speech API
+    console.log('⚡ Calling Unreal Speech API with final text length:', textToSpeak.length);
     const response = await fetch('https://api.v8.unrealspeech.com/stream', {
       method: 'POST',
       headers: {
@@ -2206,7 +2295,7 @@ app.post('/api/ai/fast-voice', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        Text: truncatedText,
+        Text: textToSpeak,
         voiceId: (voice && voice.toLowerCase() === 'jasper') ? 'Jasper' : (voice || 'Jasper'),
         Bitrate: '128k', // Lower bitrate for faster processing
         Speed: 0,
@@ -2566,10 +2655,14 @@ const getOrCreateAgent = (userId) => {
   if (!agentSessions.has(userId)) {
     console.log(`🧠 Creating new persistent agent session for user: ${userId}`);
     try {
+      console.log(`🧠 Loading TrulyIntelligentAgent module...`);
       const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
       console.log(`🧠 TrulyIntelligentAgent class loaded successfully`);
+      
+      console.log(`🧠 Creating TrulyIntelligentAgent instance...`);
       const agent = new TrulyIntelligentAgent('rapid-crm-assistant', userId);
       console.log(`🧠 TrulyIntelligentAgent instance created successfully`);
+      
       agentSessions.set(userId, {
         agent,
         lastActivity: Date.now()
@@ -2578,6 +2671,8 @@ const getOrCreateAgent = (userId) => {
     } catch (error) {
       console.error(`❌ Error creating agent for user ${userId}:`, error);
       console.error(`❌ Error stack:`, error.stack);
+      console.error(`❌ Error message:`, error.message);
+      console.error(`❌ Full error object:`, JSON.stringify(error, null, 2));
       throw error;
     }
   } else {
@@ -2626,7 +2721,9 @@ app.post('/api/ai/chat', async (req, res) => {
     
     // Use persistent TrulyIntelligentAgent for continuous chat experience
     try {
+      console.log(`🧠 Attempting to get or create agent for user: ${currentUserId}`);
       const aiService = getOrCreateAgent(currentUserId);
+      console.log(`🧠 Agent retrieved successfully for user: ${currentUserId}`);
       
       // Get user's voice preference
       const preferredVoice = voice || 'jasper';
@@ -2644,6 +2741,7 @@ app.post('/api/ai/chat', async (req, res) => {
         userId: currentUserId,
         agentId: 'rapid-crm-assistant'
       });
+      console.log('🧠 askQuestion completed successfully');
       
       // Extract the answer from the response object
       const aiResponse = aiResponseObj.answer || aiResponseObj;
@@ -2686,60 +2784,16 @@ app.post('/api/ai/chat', async (req, res) => {
       console.error('❌ Error message:', agentError.message);
       console.error('❌ Full error object:', JSON.stringify(agentError, null, 2));
       
-      // Fallback to intelligent context-aware responses with correct Jasper identity
-      let response = '';
-      const lowerMessage = message.toLowerCase();
-      
-      console.log('🔄 Using fallback response system with Jasper identity');
-      
-      // Identity and name responses
-      if (lowerMessage.includes('name') || lowerMessage.includes('who are you') || lowerMessage.includes('jasper')) {
-        response = `Hello David! I'm Jasper, your Rapid CRM AI assistant. I'm your specialized transportation compliance and CRM management AI with full database access. I help you manage your transportation business operations, compliance, and I can create and manage other AI agents. What would you like to work on today?`;
-      }
-      // Greeting responses
-      else if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-        response = `Hello David! I'm Jasper, your Rapid CRM AI assistant. I'm here to help you manage your transportation and logistics business. What can I help you with today?`;
-      }
-      // Speaking/voice related
-      else if (lowerMessage.includes('speak') || lowerMessage.includes('talk') || lowerMessage.includes('voice')) {
-        response = "Yes, I can speak to you! I'm using voice synthesis to communicate. You can ask me about your CRM system, transportation compliance, fleet management, or any other business needs.";
-      }
-      // CRM specific help
-      else if (lowerMessage.includes('crm') || lowerMessage.includes('customer') || lowerMessage.includes('contact')) {
-        response = "I can help you with CRM tasks like managing contacts, companies, deals, and leads. Would you like to add a new contact, update company information, or track a deal?";
-      }
-      // Transportation/logistics specific
-      else if (lowerMessage.includes('truck') || lowerMessage.includes('fleet') || lowerMessage.includes('vehicle') || lowerMessage.includes('transport')) {
-        response = "I can assist with transportation and logistics management. This includes fleet tracking, driver management, cargo types, hazmat compliance, and USDOT number management. What specific aspect would you like help with?";
-      }
-      // Compliance related
-      else if (lowerMessage.includes('compliance') || lowerMessage.includes('dot') || lowerMessage.includes('hazmat') || lowerMessage.includes('safety')) {
-        response = "I can help with compliance management including DOT regulations, hazmat requirements, safety protocols, and regulatory reporting. What compliance issue do you need assistance with?";
-      }
-      // Business operations
-      else if (lowerMessage.includes('business') || lowerMessage.includes('operation') || lowerMessage.includes('company') || lowerMessage.includes('broker')) {
-        response = "I can help with business operations including company management, broker/carrier classifications, multi-state operations, and business structure management. What business task do you need help with?";
-      }
-      // General help
-      else if (lowerMessage.includes('help') || lowerMessage.includes('assist') || lowerMessage.includes('support')) {
-        response = "I'm here to help with your Rapid CRM system! I can assist with contacts, companies, deals, fleet management, compliance, and transportation operations. What specific task would you like to work on?";
-      }
-      // Questions about capabilities
-      else if (lowerMessage.includes('what') || lowerMessage.includes('can you') || lowerMessage.includes('do you')) {
-        response = "I'm your Rapid CRM AI assistant specialized in transportation and logistics. I can help you manage contacts, companies, deals, fleet information, compliance requirements, and business operations. What would you like to accomplish?";
-      }
-      // Default intelligent response
-      else {
-        response = `I understand you're asking about "${message}". As your Rapid CRM assistant, I'm here to help with transportation and logistics management. I can assist with contacts, companies, deals, fleet management, compliance, and business operations. Could you be more specific about what you'd like help with?`;
-      }
-      
-      res.json({
-        success: true,
-        response: response,
+      // NO FALLBACK RESPONSES - Only return intelligent AI responses
+      // If the TrulyIntelligentAgent fails, return an error instead of scripted responses
+      console.log('❌ TrulyIntelligentAgent failed - returning error instead of fallback');
+      res.status(500).json({
+        success: false,
+        error: 'AI Service temporarily unavailable',
+        message: 'The intelligent AI service is currently experiencing issues. Please try again in a moment.',
         timestamp: new Date().toISOString(),
-        voice: voice || 'jasper',
-        fallback: true,
-        userId: currentUserId
+        userId: currentUserId,
+        enterprise: true
       });
     }
     

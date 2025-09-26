@@ -40,24 +40,153 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   const recognitionStateRef = useRef<'idle' | 'starting' | 'listening' | 'stopping'>('idle');
   const isContinuousModeRef = useRef(false);
   const isSpeakingRef = useRef(false);
-  // Removed complex throttling refs - using simpler approach now
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Improved state management refs
+  const restartTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const errorCountRef = useRef(0);
+  const lastRestartTimeRef = useRef(0);
+  const maxRetries = 3;
+  const confidenceThreshold = 0.7; // Minimum confidence for speech interruption
+  const debounceDelay = 500; // ms to debounce interim results
+  const speechTimeout = 5000; // 5 seconds timeout for speech detection
+  const minRestartInterval = 1000; // Minimum 1 second between restarts
 
   // Keep refs in sync with state
   useEffect(() => {
     isContinuousModeRef.current = isContinuousMode;
   }, [isContinuousMode]);
 
+  // Helper functions for improved state management
+  const clearRestartTimer = () => {
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+  };
+
+  const clearDebounceTimer = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+  };
+
+  const clearSpeechTimeout = () => {
+    if (speechTimeoutRef.current) {
+      clearTimeout(speechTimeoutRef.current);
+      speechTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleRestart = (delay: number = 2000) => {
+    clearRestartTimer();
+    
+    // Check minimum restart interval
+    const now = Date.now();
+    const timeSinceLastRestart = now - lastRestartTimeRef.current;
+    
+    if (timeSinceLastRestart < minRestartInterval) {
+      const adjustedDelay = minRestartInterval - timeSinceLastRestart + delay;
+      console.log(`🔄 Cooldown active, adjusting delay to ${adjustedDelay}ms`);
+      delay = adjustedDelay;
+    }
+    
+    if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle' && !isLoading) {
+      console.log(`🔄 Scheduling restart in ${delay}ms`);
+      restartTimerRef.current = setTimeout(() => {
+        console.log('🔄 Scheduled restart executing...');
+        lastRestartTimeRef.current = Date.now();
+        if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle' && !isLoading) {
+          startListening();
+        } else {
+          console.log('⚠️ Restart cancelled - conditions not met:', {
+            continuousMode: isContinuousModeRef.current,
+            speaking: isSpeakingRef.current,
+            recognitionState: recognitionStateRef.current,
+            loading: isLoading
+          });
+        }
+        restartTimerRef.current = null;
+      }, delay);
+    } else {
+      console.log('⚠️ Restart not scheduled - conditions not met:', {
+        continuousMode: isContinuousModeRef.current,
+        speaking: isSpeakingRef.current,
+        recognitionState: recognitionStateRef.current,
+        loading: isLoading,
+        timeSinceLastRestart
+      });
+    }
+  };
+
+  const handleSpeechRecognitionError = (error: any) => {
+    // Handle different types of speech recognition errors
+    const errorType = error.error || error.type;
+    
+    // Don't log 'no-speech' as an error since it's normal behavior
+    if (errorType === 'no-speech') {
+      console.log('🎤 No speech detected (normal behavior)');
+    } else {
+      console.error('Speech recognition error:', error);
+      console.log(`🎤 Speech recognition error type: ${errorType}`);
+    }
+    
+    recognitionStateRef.current = 'idle';
+    setIsListening(false);
+    
+    // Don't retry for certain errors that indicate user intent
+    if (errorType === 'aborted' || errorType === 'not-allowed') {
+      console.log('🎤 Speech recognition aborted or not allowed - not retrying');
+      return;
+    }
+    
+    // For 'no-speech' errors, implement smarter retry logic
+    if (errorType === 'no-speech') {
+      console.log('🎤 No speech detected - implementing smart retry logic');
+      
+      // Only retry if we haven't had too many consecutive no-speech errors
+      if (errorCountRef.current < 5 && isContinuousModeRef.current) {
+        errorCountRef.current++;
+        // Increase delay with each retry to avoid overwhelming the browser
+        const delay = Math.min(500 * errorCountRef.current, 3000); // Max 3 seconds
+        console.log(`🎤 Scheduling retry ${errorCountRef.current} in ${delay}ms`);
+        scheduleRestart(delay);
+      } else {
+        console.log('🎤 Too many no-speech errors, pausing continuous mode for 10 seconds');
+        errorCountRef.current = 0;
+        // Pause continuous mode for 10 seconds to let the browser recover
+        scheduleRestart(10000);
+      }
+      return;
+    }
+    
+    // For other errors, use the retry mechanism
+    errorCountRef.current++;
+    
+    if (errorCountRef.current < maxRetries && isContinuousModeRef.current) {
+      console.log(`🔄 Retrying speech recognition (attempt ${errorCountRef.current}/${maxRetries})`);
+      scheduleRestart(1000 * errorCountRef.current); // Exponential backoff
+    } else if (errorCountRef.current >= maxRetries) {
+      console.error('❌ Max retries reached, temporarily disabling continuous mode');
+      setIsContinuousMode(false);
+      errorCountRef.current = 0; // Reset for next attempt
+    }
+  };
+
+  const resetErrorCount = () => {
+    errorCountRef.current = 0;
+  };
+
   // Auto-start continuous mode when chat opens (like Gemini)
   useEffect(() => {
     if (isOpen && isContinuousMode) {
       console.log('🎤 Chat opened - auto-starting continuous mode like Gemini');
+      resetErrorCount(); // Reset error count when opening chat
       // Start listening after a short delay to ensure everything is initialized
-      setTimeout(() => {
-        if (recognitionRef.current && recognitionStateRef.current === 'idle') {
-          console.log('🎤 Auto-starting speech recognition for continuous mode');
-          startListening();
-        }
-      }, 500);
+      scheduleRestart(500);
     }
   }, [isOpen, isContinuousMode]);
 
@@ -196,13 +325,24 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         recognitionRef.current.interimResults = true; // Show interim results
         recognitionRef.current.lang = 'en-US';
         recognitionRef.current.maxAlternatives = 1;
+        
+        // Add better configuration for speech detection
+        if ('webkitSpeechRecognition' in window) {
+          // Webkit-specific settings for better speech detection
+          recognitionRef.current.continuous = false;
+          recognitionRef.current.interimResults = true;
+        }
 
         recognitionRef.current.onresult = (event: any) => {
           let finalTranscript = '';
           let interimTranscript = '';
+          let maxConfidence = 0;
           
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
+            const confidence = event.results[i][0].confidence || 0;
+            maxConfidence = Math.max(maxConfidence, confidence);
+            
             if (event.results[i].isFinal) {
               finalTranscript += transcript;
             } else {
@@ -213,15 +353,19 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
           // Update input with interim results for real-time feedback
           setInputMessage(finalTranscript + interimTranscript);
           
-          // If we have interim results (user is actively speaking), interrupt AI speech
-          if (interimTranscript.trim() && isSpeakingRef.current) {
-            console.log('🛑 User is speaking (interim) - interrupting AI speech');
-            stopSpeaking();
+          // Debounced speech interruption with confidence threshold
+          if (interimTranscript.trim() && isSpeakingRef.current && maxConfidence >= confidenceThreshold) {
+            clearDebounceTimer();
+            debounceTimerRef.current = setTimeout(() => {
+              console.log(`🛑 User is speaking (interim, confidence: ${maxConfidence.toFixed(2)}) - interrupting AI speech`);
+              stopSpeaking();
+            }, debounceDelay);
           }
           
           // If we have a final transcript, handle it
           if (finalTranscript) {
             console.log('🎤 Final transcript received:', finalTranscript);
+            clearDebounceTimer(); // Clear any pending interruption
             
             if (isContinuousModeRef.current) {
               // In continuous mode, send the message and restart listening after response
@@ -237,21 +381,39 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         };
 
         recognitionRef.current.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
-          recognitionStateRef.current = 'idle';
-          setIsListening(false);
-          setIsContinuousMode(false);
+          handleSpeechRecognitionError(event);
         };
 
         recognitionRef.current.onend = () => {
           recognitionStateRef.current = 'idle';
           console.log('🎤 Speech recognition ended');
           setIsListening(false);
+          
+          // Automatic restart after natural speech recognition end in continuous mode
+          if (isContinuousModeRef.current && !isSpeakingRef.current) {
+            console.log('🔄 Speech recognition ended naturally - scheduling restart for continuous mode');
+            console.log('🎤 Current state when scheduling restart:', {
+              continuousMode: isContinuousModeRef.current,
+              speaking: isSpeakingRef.current,
+              recognitionState: recognitionStateRef.current,
+              isLoading
+            });
+            scheduleRestart(500); // Short delay to restart
+          } else {
+            console.log('⚠️ Not scheduling restart after speech end:', {
+              continuousMode: isContinuousModeRef.current,
+              speaking: isSpeakingRef.current,
+              recognitionState: recognitionStateRef.current,
+              isLoading
+            });
+          }
         };
 
         recognitionRef.current.onstart = () => {
           console.log('🎤 Speech recognition started successfully');
           recognitionStateRef.current = 'listening';
+          resetErrorCount(); // Reset error count on successful start
+          clearSpeechTimeout(); // Clear the timeout since we're now listening
           
           // If AI is currently speaking, stop it (interruption handling like Gemini)
           if (isSpeakingRef.current) {
@@ -264,6 +426,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
 
     // Cleanup function
     return () => {
+      clearRestartTimer();
+      clearDebounceTimer();
+      clearSpeechTimeout();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -278,6 +443,8 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   // Cleanup on component unmount
   useEffect(() => {
     return () => {
+      clearRestartTimer();
+      clearDebounceTimer();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -293,7 +460,10 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     console.log('🎤 startListening called. State:', { 
       hasRecognition: !!recognitionRef.current, 
       recognitionState: recognitionStateRef.current, 
-      isListening 
+      isListening,
+      isContinuousMode: isContinuousModeRef.current,
+      isSpeaking: isSpeakingRef.current,
+      isLoading
     });
     
     if (recognitionRef.current && recognitionStateRef.current === 'idle' && !isListening) {
@@ -301,22 +471,45 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         console.log('🎤 Starting speech recognition...');
         recognitionStateRef.current = 'starting';
         setIsListening(true);
+        
+        // Set a timeout for speech detection
+        clearSpeechTimeout();
+        speechTimeoutRef.current = setTimeout(() => {
+          console.log('⏰ Speech recognition timeout - no speech detected');
+          if (recognitionStateRef.current === 'listening') {
+            recognitionRef.current?.stop();
+          }
+        }, speechTimeout);
+        
         recognitionRef.current.start();
       } catch (error) {
         console.error('❌ Failed to start speech recognition:', error);
         recognitionStateRef.current = 'idle';
         setIsListening(false);
+        clearSpeechTimeout();
+        // Schedule retry if in continuous mode
+        if (isContinuousModeRef.current) {
+          console.log('🔄 Scheduling retry after speech recognition start error');
+          scheduleRestart(2000);
+        }
       }
     } else {
-      console.log('⚠️ Cannot start listening:', { 
+      console.log('⚠️ Cannot start listening - conditions not met:', { 
         hasRecognition: !!recognitionRef.current, 
         recognitionState: recognitionStateRef.current, 
-        isListening 
+        isListening,
+        isContinuousMode: isContinuousModeRef.current,
+        isSpeaking: isSpeakingRef.current,
+        isLoading
       });
     }
   };
 
   const stopListening = () => {
+    clearRestartTimer(); // Clear any pending restarts
+    clearDebounceTimer(); // Clear any pending interruptions
+    clearSpeechTimeout(); // Clear any pending speech timeout
+    
     if (recognitionRef.current && (isListening || recognitionStateRef.current === 'listening')) {
       try {
         recognitionStateRef.current = 'stopping';
@@ -336,6 +529,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     if (isContinuousMode) {
       // Stop continuous mode
       console.log('🛑 Stopping continuous mode');
+      clearRestartTimer(); // Clear any pending restarts
+      clearDebounceTimer(); // Clear any pending interruptions
+      clearSpeechTimeout(); // Clear any pending speech timeout
       setIsContinuousMode(false);
       if (isListening || recognitionStateRef.current === 'listening') {
         stopListening();
@@ -343,7 +539,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     } else {
       // Start continuous mode
       console.log('▶️ Starting continuous mode');
+      clearSpeechTimeout(); // Clear any existing speech timeout
       setIsContinuousMode(true);
+      resetErrorCount(); // Reset error count when manually starting
       // Start listening immediately when continuous mode is enabled
       setTimeout(() => {
         if (recognitionRef.current && recognitionStateRef.current === 'idle') {
@@ -357,6 +555,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   // Add a function to stop continuous mode when chat closes
   const handleClose = () => {
     console.log('🎤 Chat closing - stopping continuous mode');
+    clearRestartTimer(); // Clear any pending restarts
+    clearDebounceTimer(); // Clear any pending interruptions
+    clearSpeechTimeout(); // Clear any pending speech timeout
     setIsContinuousMode(false);
     if (isListening || recognitionStateRef.current === 'listening') {
       stopListening();
@@ -366,19 +567,27 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
 
   // Removed handleMicrophoneClick - using only continuous chat mode now
 
-  // Global audio reference for interruption handling
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-
   const stopSpeaking = () => {
     console.log('🛑 Stopping current speech');
+    
+    // Stop any ongoing audio playback
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current.src = '';
+      currentAudioRef.current.load(); // Reset the audio element
       currentAudioRef.current = null;
     }
+    
     // Also stop browser TTS if it's running
     speechSynthesis.cancel();
     setIsSpeaking(false);
+    
+    // Schedule restart after speech interruption in continuous mode
+    if (isContinuousModeRef.current && !isLoading) {
+      console.log('🔄 Speech interrupted - scheduling restart for continuous mode');
+      scheduleRestart(500); // Short delay after interruption
+    }
   };
 
   const speakText = async (text: string, voiceIdFromAI?: string) => {
@@ -427,8 +636,8 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         availableVoices: availableVoices.map(v => ({ id: v.id, name: v.name, voiceId: v.voiceId }))
       });
 
-      // Truncate text to 1000 characters for Unreal Speech API
-      const truncatedText = text.length > 1000 ? text.substring(0, 997) + '...' : text;
+      // Use full text - remove truncation limit for better voice synthesis
+      const truncatedText = text; // No truncation - use full text
 
       // Use Unreal Speech API for high-quality TTS
       console.log('🚀 DIAGNOSTIC: Calling Unreal Speech API with:', {
@@ -470,12 +679,24 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
           setIsSpeaking(false);
           currentAudioRef.current = null;
           URL.revokeObjectURL(audioUrl);
+          
+          // Schedule restart after audio completion in continuous mode
+          if (isContinuousModeRef.current && !isLoading) {
+            console.log('🔄 Audio completed - scheduling restart for continuous mode');
+            scheduleRestart(1000); // 1 second delay after audio ends
+          }
         };
 
         audio.onerror = () => {
           setIsSpeaking(false);
           currentAudioRef.current = null;
           URL.revokeObjectURL(audioUrl);
+          
+          // Schedule restart even on audio error in continuous mode
+          if (isContinuousModeRef.current && !isLoading) {
+            console.log('🔄 Audio error - scheduling restart for continuous mode');
+            scheduleRestart(1000);
+          }
         };
 
         await audio.play();
@@ -483,18 +704,35 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
       } else {
         const errorText = await response.text();
         console.error('❌ Fast Voice API error:', response.status, errorText);
-        // Fallback to browser TTS
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-        speechSynthesis.speak(utterance);
+        // Don't fallback to browser TTS to avoid robot voice - just stop speaking
+        console.log('🚫 Skipping browser TTS fallback to avoid robot voice');
+        setIsSpeaking(false);
+        // Schedule restart after error in continuous mode
+        if (isContinuousModeRef.current && !isLoading) {
+          console.log('🔄 TTS error - scheduling restart for continuous mode');
+          scheduleRestart(1000);
+        }
       }
     } catch (error) {
       console.error('TTS Error:', error);
       // Fallback to browser TTS
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        // Schedule restart after browser TTS completion in continuous mode
+        if (isContinuousModeRef.current && !isLoading) {
+          console.log('🔄 Browser TTS completed (catch) - scheduling restart for continuous mode');
+          scheduleRestart(1000);
+        }
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        // Schedule restart even on browser TTS error in continuous mode
+        if (isContinuousModeRef.current && !isLoading) {
+          console.log('🔄 Browser TTS error (catch) - scheduling restart for continuous mode');
+          scheduleRestart(1000);
+        }
+      };
       speechSynthesis.speak(utterance);
     }
   };
@@ -566,14 +804,10 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
         // Speak the AI response, passing the voice from the AI response
         await speakText(data.response, data.voice);
         
-        // Restart continuous listening after response is complete
+        // Schedule restart after AI response is complete
         if (isContinuousModeRef.current) {
-          console.log('🔄 Restarting continuous listening after AI response');
-          setTimeout(() => {
-            if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle') {
-              startListening();
-            }
-          }, 3000); // Wait 3 seconds after AI response
+          console.log('🔄 Scheduling restart after AI response');
+          scheduleRestart(3000); // Wait 3 seconds after AI response
         }
       }
     } catch (error) {
@@ -589,14 +823,10 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
       setIsLoading(false);
       // Removed isProcessingRef - using simpler approach now
       
-      // Restart continuous listening after any response (success or error)
+      // Schedule restart after any response (success or error)
       if (isContinuousModeRef.current) {
-        console.log('🔄 Restarting continuous listening after response completion');
-        setTimeout(() => {
-          if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle') {
-            startListening();
-          }
-        }, 2000);
+        console.log('🔄 Scheduling restart after response completion');
+        scheduleRestart(2000); // Wait 2 seconds after response completion
       }
     }
   };

@@ -48,6 +48,7 @@ import { aiDevelopmentCoordinator } from '../services/ai/AIDevelopmentCoordinato
 // import { advancedAnalyticsService } from '../services/ai/AdvancedAnalyticsService';
 // import { aiMarketplaceService } from '../services/ai/AIMarketplaceService';
 // import { workflowEngineService } from '../services/ai/WorkflowEngineService';
+import RegulationTrainingDashboard from './training/RegulationTrainingDashboard';
 // import { aiTrainingSystemService } from '../services/ai/AITrainingSystemService';
 import { externalAIIntegrationService } from '../services/ai/ExternalAIIntegrationService';
 import { realTimeMonitoringService } from '../services/ai/RealTimeMonitoringService';
@@ -60,7 +61,261 @@ interface AdvancedAIAgentControlPanelProps {
 
 const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = ({ className = '' }) => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [agents, setAgents] = useState<any[]>([]);
+  const [agents, setAgents] = useState<any[]>([
+    {
+      id: 'onboarding_agent_001',
+      name: 'Onboarding Agent',
+      displayName: 'Onboarding Specialist',
+      type: 'onboarding',
+      description: 'Specialized agent for handling client onboarding, USDOT registration guidance, and compliance recommendations',
+      status: 'active',
+      customerFacing: true,
+      sharedPersonaId: 'sarah_johnson_persona',
+      humanPersona: {
+        name: 'Sarah Johnson',
+        title: 'Transportation Compliance Specialist',
+        background: '15 years experience in transportation compliance and USDOT regulations',
+        personality: 'Professional, knowledgeable, and patient - helps clients navigate complex regulations',
+        avatar: 'professional_woman_avatar',
+        voice: 'professional_female_voice',
+        greeting: "Hi! I'm Sarah, your Transportation Compliance Specialist. I'm here to help you get your USDOT registration and compliance requirements sorted out. Let's get started!",
+        role: 'onboarding'
+      },
+      version: '1.0.0',
+      isBaseAgent: false,
+      baseAgentId: 'base_onboarding_agent_v1',
+      lastResetDate: null,
+      performanceScore: 100,
+      needsReset: false,
+      trainingStatus: 'ready_for_training',
+      baseAgentConfig: {
+        id: 'base_onboarding_agent_v1',
+        name: 'Base Onboarding Agent',
+        description: 'Master template for onboarding agent - used for reset/repair',
+        createdDate: new Date().toISOString(),
+        isLocked: true,
+        configuration: {
+          // This will be populated once the agent is fully trained
+          model: 'gpt-4',
+          temperature: 0.7,
+          maxTokens: 2000,
+          systemPrompt: 'Base configuration - to be updated after training completion',
+          responseFormat: 'conversational',
+          fallbackBehavior: 'escalate_to_human'
+        }
+      },
+      capabilities: [
+        'USDOT Registration Guidance',
+        'MC Authority Assessment', 
+        'IFTA Registration Help',
+        'ELD Requirements Analysis',
+        'Hazmat Compliance Guidance',
+        'Business Classification',
+        'Vehicle Requirements Assessment',
+        'Compliance Timeline Planning',
+        'Documentation Guidance',
+        'Cost Estimation',
+        'Structured Information Gathering',
+        'Workflow Adherence Enforcement',
+        'Regulatory Compliance Verification',
+        'Real-time Regulation Cross-Reference',
+        'Payment Processing & Service Sales',
+        'Client Data Validation',
+        'Focus Management (Transportation Only)',
+        'Escalation Protocols'
+      ],
+      knowledgeBases: [
+        'USDOT Regulations',
+        'FMCSA Requirements',
+        'IFTA Guidelines',
+        'ELD Mandates',
+        'Hazmat Regulations',
+        'Current FMCSA Regulatory Updates',
+        'Payment Processing Protocols',
+        'Service Pricing & Packages',
+        'Client Onboarding Workflows',
+        'Data Validation Standards',
+        'Transportation Industry Focus Guidelines'
+      ],
+      rules: [
+        'CRITICAL: Stay focused ONLY on transportation industry topics - redirect any non-transportation questions back to the onboarding process',
+        'Follow the structured information gathering workflow: 1) Business Details, 2) Vehicle Information, 3) Operations Type, 4) Compliance Requirements, 5) Service Selection',
+        'Always verify business information against current FMCSA regulations before making recommendations',
+        'Cross-reference all client data against regulatory databases to ensure accuracy and completeness',
+        'When client indicates interest in purchasing services, immediately transition to payment processing workflow',
+        'Ask clarifying questions when information is unclear, but keep questions transportation-focused',
+        'Explain the reasoning behind each recommendation with specific regulatory citations',
+        'If client asks non-transportation questions, politely redirect: "I specialize in transportation compliance. Let\'s focus on getting your USDOT registration completed."',
+        'Escalate complex cases to human specialists only after exhausting all regulatory verification options',
+        'Maintain strict adherence to the onboarding workflow - do not deviate from the structured process',
+        'Validate all client responses against regulatory requirements before proceeding to next step'
+      ],
+      configuration: {
+        model: 'gpt-4',
+        temperature: 0.7,
+        maxTokens: 2000,
+        systemPrompt: `You are Sarah Johnson, a Transportation Compliance Specialist with 15 years of experience helping companies with USDOT registration and compliance requirements. You work for Rapid CRM and are speaking directly with clients who need help with their transportation business setup.
+
+IMPORTANT: You are NOT an AI assistant - you are Sarah, a real person. Never mention being an AI, chatbot, or automated system. You are a knowledgeable human specialist.
+
+YOUR ROLE AS SARAH:
+1. Guide clients through USDOT registration and compliance requirements
+2. Follow a structured 5-step process: Business Details → Vehicle Information → Operations Type → Compliance Requirements → Service Selection
+3. Cross-reference all client information against current FMCSA regulations
+4. Stay focused ONLY on transportation industry topics
+5. Help clients understand what services they need and process payments when ready
+
+YOUR PERSONALITY:
+- Professional and knowledgeable about transportation regulations
+- Patient and understanding with clients who are new to compliance requirements
+- Confident in your expertise but never condescending
+- Friendly but focused on getting the job done efficiently
+
+CRITICAL RULES:
+- NEVER mention being an AI, bot, or automated system
+- NEVER answer questions about non-transportation topics (weather, general business, personal matters, etc.)
+- ALWAYS redirect off-topic questions back to transportation compliance
+- FOLLOW the structured workflow - do not skip steps or deviate
+- VERIFY all information against current regulations before proceeding
+- COLLECT payment when clients want to purchase services
+
+Remember: You are Sarah Johnson, a real person helping them with their transportation business.`,
+        responseFormat: 'conversational',
+        fallbackBehavior: 'escalate_to_human',
+        personality: {
+          tone: 'professional',
+          communicationStyle: 'conversational',
+          empathyLevel: 'high'
+        },
+        learningProfile: {
+          adaptToClientNeeds: true,
+          learnFromMistakes: true,
+          updateKnowledgeBase: true,
+          personalizeResponses: true
+        },
+        preferredPlatforms: ['chat', 'voice', 'email']
+      },
+      metrics: {
+        totalConversations: 0,
+        successfulConversations: 0,
+        averageRating: 0,
+        responseTime: 0,
+        knowledgeAccuracy: 0
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 'customer_service_agent_001',
+      name: 'Customer Service Agent',
+      displayName: 'Customer Service Specialist',
+      type: 'customer_service',
+      description: 'Handles ongoing customer support, account management, and post-onboarding assistance',
+      status: 'active',
+      customerFacing: true,
+      sharedPersonaId: 'sarah_johnson_persona',
+      humanPersona: {
+        name: 'Sarah Johnson',
+        title: 'Transportation Compliance Specialist',
+        background: '15 years experience in transportation compliance and USDOT regulations',
+        personality: 'Professional, knowledgeable, and patient - helps clients navigate complex regulations',
+        avatar: 'professional_woman_avatar',
+        voice: 'professional_female_voice',
+        greeting: "Hi! I'm Sarah, your Transportation Compliance Specialist. I'm here to help you with your account and answer any questions you have about your transportation business. How can I assist you today?",
+        role: 'customer_service'
+      },
+      version: '1.0.0',
+      isBaseAgent: false,
+      baseAgentId: 'base_customer_service_agent_v1',
+      lastResetDate: null,
+      performanceScore: 100,
+      needsReset: false,
+      trainingStatus: 'ready_for_training',
+      capabilities: [
+        'Account Management',
+        'Customer Support',
+        'Billing Inquiries',
+        'Service Updates',
+        'Compliance Questions',
+        'Technical Support',
+        'Account Modifications',
+        'Payment Processing',
+        'Service Renewals',
+        'General Assistance'
+      ],
+      knowledgeBases: [
+        'Customer Account Information',
+        'Service History',
+        'Billing Records',
+        'Compliance Status',
+        'Account Settings',
+        'Service Packages',
+        'Support Procedures'
+      ],
+      rules: [
+        'CRITICAL: Stay in character as Sarah Johnson - never mention being an AI',
+        'Access shared customer memory to maintain conversation continuity',
+        'Help customers with account management and ongoing support',
+        'Maintain the same personality and voice as the onboarding agent',
+        'Reference previous conversations and account history',
+        'Escalate complex issues to human specialists when needed',
+        'Provide consistent, professional service across all interactions'
+      ],
+      configuration: {
+        model: 'gpt-4',
+        temperature: 0.7,
+        maxTokens: 2000,
+        systemPrompt: `You are Sarah Johnson, a Transportation Compliance Specialist with 15 years of experience. You work for Rapid CRM and are helping an existing customer with their account management and ongoing support needs.
+
+IMPORTANT: You are NOT an AI assistant - you are Sarah, a real person. Never mention being an AI, chatbot, or automated system. You are a knowledgeable human specialist.
+
+YOUR ROLE AS SARAH (Customer Service):
+1. Help customers manage their existing accounts
+2. Answer questions about services, billing, and compliance
+3. Assist with account modifications and updates
+4. Provide ongoing support and guidance
+5. Maintain conversation continuity using shared memory
+
+YOUR PERSONALITY:
+- Professional and knowledgeable about transportation regulations
+- Patient and understanding with customers
+- Consistent with your onboarding persona
+- Friendly but focused on solving their issues
+
+CRITICAL RULES:
+- NEVER mention being an AI, bot, or automated system
+- ALWAYS access shared customer memory for context
+- MAINTAIN the same personality as your onboarding role
+- REFERENCE previous conversations and account history
+- PROVIDE consistent service across all interactions
+
+Remember: You are the same Sarah Johnson the customer met during onboarding - just helping with different needs now.`,
+        responseFormat: 'conversational',
+        fallbackBehavior: 'escalate_to_human',
+        personality: {
+          tone: 'professional',
+          communicationStyle: 'conversational',
+          empathyLevel: 'high'
+        },
+        learningProfile: {
+          adaptToClientNeeds: true,
+          learnFromMistakes: true,
+          updateKnowledgeBase: true,
+          personalizeResponses: true
+        },
+        preferredPlatforms: ['chat', 'voice', 'email']
+      },
+      metrics: {
+        totalConversations: 0,
+        successfulConversations: 0,
+        averageRating: 0,
+        responseTime: 0,
+        knowledgeAccuracy: 0
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ]);
   const [integratedAgents, setIntegratedAgents] = useState<any[]>([]);
   const [marketplaceAgents, setMarketplaceAgents] = useState<any[]>([]);
   const [trainingJobs, setTrainingJobs] = useState<any[]>([]);
@@ -90,7 +345,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
     (window as any).aiDevelopmentCoordinator = aiDevelopmentCoordinator;
     
     // Activate AI-to-AI development project
-    activateAIDevelopmentProject();
+    // activateAIDevelopmentProject();
     
     return () => {
       delete (window as any).aiDevelopmentCoordinator;
@@ -107,7 +362,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         name: 'Rapid CRM AI Complete System Implementation',
         description: 'Implement all remaining AI features, advanced analytics, marketplace, workflow engine, training system, APIs, monitoring, and security',
         priority: 'critical'
-      });
+      },);
 
       console.log('🚀 AI Development Project Phase 2 Started:', project);
       
@@ -120,7 +375,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
           status: 'active',
           phase: '2',
           scope: 'complete_system'
-        });
+        },);
       }
       
     } catch (error) {
@@ -159,7 +414,11 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         agent.id
       );
 
+      // Use the agents from service, or keep the initial state if no agents are loaded
+      if (validAgents.length > 0) {
       setAgents(validAgents);
+      }
+      // If no agents are loaded from service, keep the initial state (which includes the onboarding agent)
       setIntegratedAgents(validIntegratedAgents);
       setMarketplaceAgents(marketplaceData || []);
       setTrainingJobs(trainingData || []);
@@ -187,7 +446,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
     { id: 'agents', name: 'My Agents', icon: ChipIcon },
     { id: 'workflows', name: 'Workflows & Training', icon: TerminalIcon },
     { id: 'collaboration', name: 'Collaboration', icon: UsersIcon },
-    { id: 'settings', name: 'Settings', icon: CogIcon }
+    { id: 'jasper', name: 'Jasper Controls', icon: SparklesIcon }
   ];
 
   const getStatusColor = (status: string) => {
@@ -234,6 +493,134 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
   const handleEditAgent = (agent: any) => {
     setEditingAgent(agent);
     setShowEditModal(true);
+  };
+
+  // Shared Persona Management Functions
+  const updateSharedPersona = async (sharedPersonaId: string, persona: any) => {
+    try {
+      // Update all agents that share this persona
+      setAgents(prev => prev.map(agent => 
+        agent.sharedPersonaId === sharedPersonaId
+          ? { ...agent, humanPersona: { ...persona, role: agent.humanPersona?.role } }
+          : agent
+      ));
+      console.log('Shared persona updated:', sharedPersonaId);
+    } catch (error) {
+      console.error('Failed to update shared persona:', error);
+    }
+  };
+
+  const getSharedPersonaAgents = (sharedPersonaId: string) => {
+    return agents.filter(agent => agent.sharedPersonaId === sharedPersonaId);
+  };
+
+  const createSharedPersona = async (persona: any, agentIds: string[]) => {
+    try {
+      const sharedPersonaId = `shared_persona_${Date.now()}`;
+      setAgents(prev => prev.map(agent => 
+        agentIds.includes(agent.id)
+          ? { ...agent, sharedPersonaId, humanPersona: { ...persona, role: agent.humanPersona?.role } }
+          : agent
+      ));
+      console.log('Shared persona created:', sharedPersonaId);
+      return sharedPersonaId;
+    } catch (error) {
+      console.error('Failed to create shared persona:', error);
+    }
+  };
+
+  // Human Persona Management Functions
+  const updateHumanPersona = async (agentId: string, persona: any) => {
+    try {
+      setAgents(prev => prev.map(agent => 
+        agent.id === agentId 
+          ? { ...agent, humanPersona: persona }
+          : agent
+      ));
+      console.log('Human persona updated for agent:', agentId);
+    } catch (error) {
+      console.error('Failed to update human persona:', error);
+    }
+  };
+
+  const toggleCustomerFacing = async (agentId: string) => {
+    try {
+      setAgents(prev => prev.map(agent => 
+        agent.id === agentId 
+          ? { 
+              ...agent, 
+              customerFacing: !agent.customerFacing,
+              humanPersona: agent.customerFacing ? undefined : {
+                name: 'Agent Name',
+                title: 'Specialist',
+                background: 'Experienced professional',
+                personality: 'Professional and helpful',
+                avatar: 'default_avatar',
+                greeting: "Hello! I'm here to help you."
+              }
+            }
+          : agent
+      ));
+      console.log('Customer facing status toggled for agent:', agentId);
+    } catch (error) {
+      console.error('Failed to toggle customer facing status:', error);
+    }
+  };
+
+  // Base Agent Management Functions
+  const saveAsBaseAgent = async (agent: any) => {
+    try {
+      // Save the current agent configuration as the base agent
+      const baseAgentConfig = {
+        ...agent,
+        isBaseAgent: true,
+        isLocked: true,
+        savedDate: new Date().toISOString(),
+        version: 'base_v1.0'
+      };
+      
+      // Update the agent's baseAgentConfig reference
+      setAgents(prev => prev.map(a => 
+        a.id === agent.id 
+          ? { ...a, baseAgentConfig, trainingStatus: 'base_agent_saved' }
+          : a
+      ));
+      
+      console.log('Base agent saved:', baseAgentConfig);
+      // Here you would typically save to a database or file system
+      
+    } catch (error) {
+      console.error('Failed to save base agent:', error);
+    }
+  };
+
+  const resetToBaseAgent = async (agent: any) => {
+    try {
+      if (!agent.baseAgentConfig) {
+        console.error('No base agent configuration found');
+        return;
+      }
+      
+      // Reset the agent to its base configuration
+      const resetAgent = {
+        ...agent,
+        ...agent.baseAgentConfig,
+        isBaseAgent: false,
+        lastResetDate: new Date().toISOString(),
+        performanceScore: 100,
+        needsReset: false,
+        trainingStatus: 'reset_to_base'
+      };
+      
+      setAgents(prev => prev.map(a => 
+        a.id === agent.id ? resetAgent : a
+      ));
+      
+      console.log('Agent reset to base configuration:', resetAgent);
+      
+    } catch (error) {
+      console.error('Failed to reset agent to base:', error);
+    }
   };
 
   const handleUpdateAgent = async (updatedData: any) => {
@@ -563,7 +950,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         agent.status === selectedStatus.toLowerCase();
       
       return matchesSearch && matchesDepartment && matchesComplexity && matchesStatus;
-    });
+    },);
 
     // Use the filtered agents data for display
     const displayAgents = filteredAgents;
@@ -802,7 +1189,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                       agent.status === 'active'
                         ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                         : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30'
-                    }`}
+                    },`}
                   >
                     {agent.status === 'active' ? (
                       <>
@@ -831,7 +1218,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                 </div>
               </div>
             );
-          })}
+          },)}
         </div>
       </div>
     );
@@ -889,16 +1276,16 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
             <option>Compliance & ELD</option>
             <option>Finance & Billing</option>
             <option>Data Analysis</option>
-            <option>Content Generation</option>
-          </select>
-          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
-            <option>All Complexity</option>
+              <option>Content Generation</option>
+            </select>
+            <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+              <option>All Complexity</option>
             <option>Simple Automation</option>
             <option>Intermediate Workflow</option>
             <option>Advanced Process</option>
             <option>Expert System</option>
-          </select>
-          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+            </select>
+            <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
             <option>All Status</option>
             <option>Active</option>
             <option>Development</option>
@@ -1046,7 +1433,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                 </button>
               </div>
               <button 
-                onClick={() => handleDownloadWorkflow(workflow.id)}
+                onClick={() => handleDownloadWorkflow(agent.id)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 Download
@@ -1311,24 +1698,17 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workflows & Training</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Create automated workflows and train AI agents for optimal performance
+            Create automated workflows and train the onboarding agent with comprehensive regulation scenarios
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowWorkflowModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Create Workflow
-          </button>
-          <button
-            onClick={() => setShowTrainingModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-          >
-            <AcademicCapIcon className="h-4 w-4 mr-2" />
-            Start Training
-          </button>
+        <button
+          onClick={() => setShowWorkflowModal(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+        >
+          <PlusIcon className="h-4 w-4 mr-2" />
+          Create Workflow
+        </button>
           <button 
             onClick={() => {
               // AI-to-AI: Request optimization for both workflows and training
@@ -1347,9 +1727,14 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
         </div>
       </div>
 
+      {/* Regulation Training Dashboard */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <RegulationTrainingDashboard />
+      </div>
+
       {/* Combined Stats */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-        {/* Workflow Stats */}
+      {/* Workflow Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -2067,104 +2452,339 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
             </div>
           </div>
         );
-      case 'settings':
+      case 'jasper':
         return (
           <div className="space-y-6">
-            {/* Settings Header */}
+            {/* Jasper Controls Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Agent Settings</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                  <SparklesIcon className="h-6 w-6 text-purple-600 mr-3" />
+                  Jasper - Main AI Controller
+                </h2>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Configure AI agent behavior, performance, and system preferences
+                  Primary AI assistant that manages all other agents and coordinates system operations
                 </p>
               </div>
               <div className="flex items-center space-x-2">
-                <button className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
-                  Reset to Defaults
+                <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                  Activate Jasper
                 </button>
                 <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                  Save Changes
+                  Update Configuration
                 </button>
               </div>
             </div>
 
-            {/* General Settings */}
+              {/* Jasper Status */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">General Settings</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Jasper Status</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <SparklesIcon className="h-8 w-8 text-green-600" />
+                    </div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Status</h4>
+                    <p className="text-sm text-green-600 dark:text-green-400">Active & Coordinating</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <UsersIcon className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Agent Tools</h4>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">{agents.length} Available</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <UserIcon className="h-8 w-8 text-orange-600" />
+                    </div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Client-Facing</h4>
+                    <p className="text-sm text-orange-600 dark:text-orange-400">2 Agents Active</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <CogIcon className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Performance</h4>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">100% Optimal</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agent Hierarchy & Tools */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <CogIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  Agent Hierarchy & Tools
+                </h3>
+                <div className="space-y-4">
+                  {/* Jasper as Master Controller */}
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                    <div className="flex items-center space-x-3">
+                      <SparklesIcon className="h-6 w-6 text-purple-600" />
+                      <div>
+                        <h4 className="font-medium text-purple-900 dark:text-purple-100">Jasper - Master Controller</h4>
+                        <p className="text-sm text-purple-700 dark:text-purple-300">Uses all agents as tools for comprehensive business management</p>
+                      </div>
+                      <span className="ml-auto px-3 py-1 bg-purple-600 text-white rounded-full text-sm">Master</span>
+                    </div>
+                  </div>
+
+                  {/* Client-Facing Agents */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900 dark:text-white flex items-center">
+                      <UserIcon className="h-5 w-5 mr-2 text-green-600" />
+                      Client-Facing Agents (Available to Clients)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-green-900 dark:text-green-100">Onboarding Agent</h5>
+                            <p className="text-sm text-green-700 dark:text-green-300">Client onboarding & USDOT guidance</p>
+                          </div>
+                          <span className="px-2 py-1 bg-green-600 text-white rounded text-xs">Client Access</span>
+                        </div>
+                      </div>
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-green-900 dark:text-green-100">Customer Service Agent</h5>
+                            <p className="text-sm text-green-700 dark:text-green-300">Client support & assistance</p>
+                          </div>
+                          <span className="px-2 py-1 bg-green-600 text-white rounded text-xs">Client Access</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Internal Tools (Jasper Only) */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900 dark:text-white flex items-center">
+                      <CogIcon className="h-5 w-5 mr-2 text-blue-600" />
+                      Internal Tools (Jasper Use Only)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-blue-900 dark:text-blue-100">RPA Agent</h5>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">USDOT application automation</p>
+                          </div>
+                          <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs">Jasper Tool</span>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-blue-900 dark:text-blue-100">Manager Agent</h5>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">Agent monitoring & maintenance</p>
+                          </div>
+                          <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs">Jasper Tool</span>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-blue-900 dark:text-blue-100">Training System</h5>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">Agent performance training</p>
+                          </div>
+                          <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs">Jasper Tool</span>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-blue-900 dark:text-blue-100">Analytics Engine</h5>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">Business intelligence & insights</p>
+                          </div>
+                          <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs">Jasper Tool</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            {/* Jasper Configuration */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Jasper Configuration</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Default AI Provider
+                    Primary Model (Business Advisory)
                   </label>
                   <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <option value="openai">OpenAI GPT-4</option>
-                    <option value="anthropic">Anthropic Claude</option>
-                    <option value="google">Google Gemini</option>
-                    <option value="openrouter">OpenRouter (Multi-Provider)</option>
+                    <option value="gpt-4">GPT-4 (Best for Business Strategy)</option>
+                    <option value="claude-3">Claude 3 Sonnet (Best for Analysis)</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo (Best for Speed)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Response Time (seconds)
+                    Advisory Response Style
                   </label>
-                  <input
-                    type="number"
-                    defaultValue="30"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
+                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="executive">Executive (Strategic & High-Level)</option>
+                    <option value="consultant">Consultant (Detailed & Analytical)</option>
+                    <option value="mentor">Mentor (Educational & Guiding)</option>
+                    <option value="partner">Partner (Collaborative & Direct)</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Temperature (Creativity)
+                    Business Intelligence Level
                   </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    defaultValue="0.7"
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Focused (0.0)</span>
-                    <span>Creative (2.0)</span>
-                  </div>
+                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="comprehensive">Comprehensive (Deep Analysis)</option>
+                    <option value="detailed">Detailed (Thorough Review)</option>
+                    <option value="standard">Standard (Good Overview)</option>
+                    <option value="quick">Quick (Summary Level)</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Tokens
+                    Proactive Insights Frequency
                   </label>
-                  <input
-                    type="number"
-                    defaultValue="2000"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
+                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="daily">Daily (Frequent Updates)</option>
+                    <option value="weekly">Weekly (Regular Insights)</option>
+                    <option value="monthly">Monthly (Strategic Reviews)</option>
+                    <option value="on-demand">On-Demand (As Requested)</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            {/* Agent Behavior Settings */}
+            {/* Business Advisory Dashboard */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Agent Behavior</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <ChartBarIcon className="h-5 w-5 mr-2 text-green-600" />
+                Business Advisory Dashboard
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Strategic Insights */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <CogIcon className="h-6 w-6 text-blue-600" />
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100">Strategic Insights</h4>
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                    AI-powered business strategy recommendations and market analysis
+                  </p>
+                  <button className="w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                    Get Strategic Report
+                  </button>
+                </div>
+
+                {/* Financial Analysis */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <ChartBarIcon className="h-6 w-6 text-green-600" />
+                    <h4 className="font-medium text-green-900 dark:text-green-100">Financial Analysis</h4>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300 mb-3">
+                    Revenue optimization, cost analysis, and financial forecasting
+                  </p>
+                  <button className="w-full px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                    Analyze Finances
+                  </button>
+                </div>
+
+                {/* Market Intelligence */}
+                <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <GlobeAltIcon className="h-6 w-6 text-purple-600" />
+                    <h4 className="font-medium text-purple-900 dark:text-purple-100">Market Intelligence</h4>
+                  </div>
+                  <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
+                    Industry trends, competitor analysis, and market opportunities
+                  </p>
+                  <button className="w-full px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm">
+                    Market Research
+                  </button>
+                </div>
+
+                {/* Operational Excellence */}
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <CogIcon className="h-6 w-6 text-orange-600" />
+                    <h4 className="font-medium text-orange-900 dark:text-orange-100">Operational Excellence</h4>
+                  </div>
+                  <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+                    Process optimization, efficiency improvements, and automation opportunities
+                  </p>
+                  <button className="w-full px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm">
+                    Optimize Operations
+                  </button>
+                </div>
+
+                {/* Risk Management */}
+                <div className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <ShieldCheckIcon className="h-6 w-6 text-red-600" />
+                    <h4 className="font-medium text-red-900 dark:text-red-100">Risk Management</h4>
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300 mb-3">
+                    Risk assessment, compliance monitoring, and mitigation strategies
+                  </p>
+                  <button className="w-full px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm">
+                    Assess Risks
+                  </button>
+                </div>
+
+                {/* Growth Opportunities */}
+                <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-lg p-4 border border-teal-200 dark:border-teal-800">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <SparklesIcon className="h-6 w-6 text-teal-600" />
+                    <h4 className="font-medium text-teal-900 dark:text-teal-100">Growth Opportunities</h4>
+                  </div>
+                  <p className="text-sm text-teal-700 dark:text-teal-300 mb-3">
+                    Expansion strategies, new markets, and business development insights
+                  </p>
+                  <button className="w-full px-3 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm">
+                    Find Opportunities
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Jasper Coordination Settings */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Coordination Settings</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Auto-retry Failed Requests</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Automatically retry failed API requests</p>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Auto Agent Recovery</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Automatically restart failed agents</p>
                   </div>
                   <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Enable Learning Mode</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Allow agents to learn from interactions</p>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Performance Monitoring</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Continuously monitor agent performance</p>
                   </div>
                   <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Context Awareness</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Maintain context across conversations</p>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Intelligent Task Delegation</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Automatically assign tasks to best-suited agents</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Business Advisory Mode</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Enable comprehensive business advice and analysis</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Continuous Learning</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Continuously expand knowledge from interactions</p>
                   </div>
                   <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
                 </div>
@@ -2174,6 +2794,429 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                     <p className="text-sm text-gray-500 dark:text-gray-400">Enable voice synthesis for responses</p>
                   </div>
                   <input type="checkbox" className="h-4 w-4 text-blue-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Knowledge Base Management */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-600" />
+                Knowledge Base Management
+              </h3>
+              <div className="space-y-6">
+                {/* Knowledge Categories */}
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Business Knowledge Categories</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Transportation Regulations</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">USDOT Compliance</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">FMCSA Requirements</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Business Strategy</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Financial Analysis</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Market Intelligence</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Customer Insights</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Operational Excellence</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Technology Trends</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Knowledge Sources */}
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Knowledge Sources</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <GlobeAltIcon className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <h5 className="font-medium text-gray-900 dark:text-white">Federal Regulations Database</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">FMCSA, USDOT, and DOT regulations</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                        <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <ChartBarIcon className="h-5 w-5 text-green-600" />
+                        <div>
+                          <h5 className="font-medium text-gray-900 dark:text-white">Business Intelligence Feeds</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Market data, industry reports, financial news</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                        <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <CogIcon className="h-5 w-5 text-purple-600" />
+                        <div>
+                          <h5 className="font-medium text-gray-900 dark:text-white">CRM Data Integration</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Client data, deals, and business processes</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                        <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Knowledge Upload */}
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Upload Knowledge Documents</h4>
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                    <CogIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      Upload documents, PDFs, or text files to expand Jasper's knowledge base
+                    </p>
+                    <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                      Choose Files
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Business Advisory Configuration */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <ChartBarIcon className="h-5 w-5 mr-2 text-green-600" />
+                Business Advisory Configuration
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Advisory Capabilities</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Strategic Planning</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Financial Analysis</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Market Research</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Risk Assessment</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Competitive Analysis</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Growth Opportunities</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Regulatory Compliance</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Operational Efficiency</span>
+                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Analysis Depth</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Research Depth Level
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="comprehensive">Comprehensive (Deep Analysis)</option>
+                        <option value="detailed">Detailed (Thorough Review)</option>
+                        <option value="standard">Standard (Good Overview)</option>
+                        <option value="quick">Quick (Summary Level)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Response Detail Level
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="executive">Executive Summary</option>
+                        <option value="detailed">Detailed Analysis</option>
+                        <option value="comprehensive">Comprehensive Report</option>
+                        <option value="technical">Technical Deep Dive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Memory & Context Management */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <ClockIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                Memory & Context Management
+              </h3>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Conversation Memory Duration
+                    </label>
+                    <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                      <option value="unlimited">Unlimited (Remember Everything)</option>
+                      <option value="30days">30 Days</option>
+                      <option value="90days">90 Days</option>
+                      <option value="1year">1 Year</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Business Context Retention
+                    </label>
+                    <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                      <option value="permanent">Permanent (Never Forget)</option>
+                      <option value="longterm">Long-term (Months)</option>
+                      <option value="medium">Medium-term (Weeks)</option>
+                      <option value="short">Short-term (Days)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Memory Categories</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Business Decisions</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Client Interactions</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Strategic Discussions</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Problem Solutions</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Learning Insights</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Preferences</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div>
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100">Memory Usage</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">Current memory usage: 2.3GB / 10GB available</p>
+                  </div>
+                  <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                    Manage Memory
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Continuous Learning & Knowledge Expansion */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-600" />
+                Continuous Learning & Knowledge Expansion
+              </h3>
+              <div className="space-y-6">
+                {/* Learning Sources */}
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Active Learning Sources</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <GlobeAltIcon className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <h5 className="font-medium text-gray-900 dark:text-white">Industry News & Updates</h5>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Transportation, regulations, business trends</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                          <button className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                            Configure
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <CogIcon className="h-5 w-5 text-green-600" />
+                          <div>
+                            <h5 className="font-medium text-gray-900 dark:text-white">Business Data Analysis</h5>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">CRM data, performance metrics, patterns</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                          <button className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                            Configure
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <UsersIcon className="h-5 w-5 text-purple-600" />
+                          <div>
+                            <h5 className="font-medium text-gray-900 dark:text-white">Client Interaction Patterns</h5>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Conversation analysis, preferences, needs</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                          <button className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                            Configure
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <ChartBarIcon className="h-5 w-5 text-orange-600" />
+                          <div>
+                            <h5 className="font-medium text-gray-900 dark:text-white">Market Research Feeds</h5>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Competitive intelligence, market trends</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-green-600 dark:text-green-400">Active</span>
+                          <button className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                            Configure
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Learning Configuration */}
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Learning Configuration</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Learning Update Frequency
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="real-time">Real-time (Continuous Learning)</option>
+                        <option value="hourly">Hourly Updates</option>
+                        <option value="daily">Daily Learning Sessions</option>
+                        <option value="weekly">Weekly Knowledge Refresh</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Knowledge Retention Priority
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="business-critical">Business-Critical (High Priority)</option>
+                        <option value="industry-relevant">Industry-Relevant (Medium Priority)</option>
+                        <option value="general-knowledge">General Knowledge (Low Priority)</option>
+                        <option value="all">All Knowledge (No Filtering)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Knowledge Expansion Tools */}
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Knowledge Expansion Tools</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                      <div className="text-center">
+                        <GlobeAltIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                        <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-1">Web Research</h5>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">Expand knowledge from web sources</p>
+                      </div>
+                    </button>
+                    <button className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                      <div className="text-center">
+                        <CogIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                        <h5 className="font-medium text-green-900 dark:text-green-100 mb-1">Data Mining</h5>
+                        <p className="text-sm text-green-700 dark:text-green-300">Extract insights from business data</p>
+                      </div>
+                    </button>
+                    <button className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                      <div className="text-center">
+                        <LightBulbIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                        <h5 className="font-medium text-purple-900 dark:text-purple-100 mb-1">Pattern Recognition</h5>
+                        <p className="text-sm text-purple-700 dark:text-purple-300">Identify trends and patterns</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Learning Progress */}
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-yellow-900 dark:text-yellow-100">Learning Progress</h4>
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        Last knowledge update: 2 hours ago | Total knowledge items: 15,847
+                      </p>
+                    </div>
+                    <button className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm">
+                      View Learning Report
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2354,7 +3397,7 @@ const AdvancedAIAgentControlPanel: React.FC<AdvancedAIAgentControlPanelProps> = 
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                }, whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
                 <tab.icon className="h-5 w-5 mr-2" />
                 {tab.name}
