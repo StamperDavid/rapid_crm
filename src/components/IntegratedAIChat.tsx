@@ -34,7 +34,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isContinuousMode, setIsContinuousMode] = useState(true); // Auto-start continuous mode like Gemini
+  const [isContinuousMode, setIsContinuousMode] = useState(false); // Disable continuous mode
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const recognitionStateRef = useRef<'idle' | 'starting' | 'listening' | 'stopping'>('idle');
@@ -82,6 +82,12 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   };
 
   const scheduleRestart = (delay: number = 2000) => {
+    // Prevent multiple simultaneous restarts
+    if (restartTimerRef.current) {
+      console.log('🔄 Restart already scheduled, skipping duplicate');
+      return;
+    }
+    
     clearRestartTimer();
     
     // Check minimum restart interval
@@ -143,23 +149,9 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
       return;
     }
     
-    // For 'no-speech' errors, implement smarter retry logic
+    // For 'no-speech' errors, don't schedule restart here - let the natural end event handle it
     if (errorType === 'no-speech') {
-      console.log('🎤 No speech detected - implementing smart retry logic');
-      
-      // Only retry if we haven't had too many consecutive no-speech errors
-      if (errorCountRef.current < 5 && isContinuousModeRef.current) {
-        errorCountRef.current++;
-        // Increase delay with each retry to avoid overwhelming the browser
-        const delay = Math.min(500 * errorCountRef.current, 3000); // Max 3 seconds
-        console.log(`🎤 Scheduling retry ${errorCountRef.current} in ${delay}ms`);
-        scheduleRestart(delay);
-      } else {
-        console.log('🎤 Too many no-speech errors, pausing continuous mode for 10 seconds');
-        errorCountRef.current = 0;
-        // Pause continuous mode for 10 seconds to let the browser recover
-        scheduleRestart(10000);
-      }
+      console.log('🎤 No speech detected - letting natural end event handle restart');
       return;
     }
     
@@ -590,62 +582,46 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     }
   };
 
-  const speakText = async (text: string, voiceIdFromAI?: string) => {
-    // Stop any current speech before starting new speech (interruption handling)
-    if (isSpeaking) {
-      console.log('🛑 Interrupting current speech to start new speech');
-      stopSpeaking();
-    }
+  const clearMessages = () => {
+    console.log('🗑️ Clearing chat history');
+    setMessages([]);
+    setInputMessage('');
+  };
 
-    console.log('🚀 DIAGNOSTIC: Starting speakText with:', {
+  const speakText = async (text: string, voiceIdFromAI?: string) => {
+    // CRITICAL: Stop ALL current speech before starting new speech
+    console.log('🛑 STOPPING ALL CURRENT SPEECH');
+    stopSpeaking();
+    
+    // Wait a moment to ensure all speech is stopped
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    console.log('🚀 Starting speakText with:', {
       textLength: text.length,
       selectedVoice,
       voiceIdFromAI,
-      availableVoices: availableVoices.length,
       isSpeaking
     });
 
     setIsSpeaking(true);
     try {
-      // Find the correct voice ID for Unreal Speech (case-insensitive)
+      // Find the correct voice ID for Unreal Speech
       const voiceToFind = (voiceIdFromAI || selectedVoice)?.toLowerCase();
       const selectedVoiceData = availableVoices.find(v => v.id.toLowerCase() === voiceToFind);
       let unrealSpeechVoiceId = selectedVoiceData?.voiceId || 'Jasper';
 
-      // Force Jasper if available and not already selected
+      // Force Jasper if available
       if (unrealSpeechVoiceId !== 'Jasper') {
         const jasperVoice = availableVoices.find(v => 
           v.name.toLowerCase().includes('jasper') || 
           v.id.toLowerCase().includes('jasper')
         );
         if (jasperVoice) {
-          console.log('🎤 FORCING JASPER VOICE for TTS:', jasperVoice);
           unrealSpeechVoiceId = jasperVoice.voiceId;
         } else {
-          console.log('🎤 JASPER VOICE NOT FOUND in availableVoices, using default Jasper');
-          unrealSpeechVoiceId = 'Jasper'; // Force Jasper even if not found in availableVoices
+          unrealSpeechVoiceId = 'Jasper';
         }
       }
-
-      console.log('🚀 DIAGNOSTIC: Voice selection:', {
-        selectedVoice,
-        voiceIdFromAI,
-        voiceToFind,
-        selectedVoiceData,
-        unrealSpeechVoiceId,
-        availableVoices: availableVoices.map(v => ({ id: v.id, name: v.name, voiceId: v.voiceId }))
-      });
-
-      // Use full text - remove truncation limit for better voice synthesis
-      const truncatedText = text; // No truncation - use full text
-
-      // Use Unreal Speech API for high-quality TTS
-      console.log('🚀 DIAGNOSTIC: Calling Unreal Speech API with:', {
-        text: truncatedText.substring(0, 50) + '...',
-        voiceId: unrealSpeechVoiceId,
-        speed: 0,
-        pitch: 1.0
-      });
 
       const response = await fetch('http://localhost:3001/api/ai/unreal-speech', {
         method: 'POST',
@@ -653,18 +629,11 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: truncatedText,
+          text: text,
           voiceId: unrealSpeechVoiceId,
-          speed: 0.1, // Slightly faster for more natural speech
-          pitch: 1.05 // Slightly higher pitch for more natural sound
+          speed: 0.1,
+          pitch: 1.05
         })
-      });
-
-      console.log('⚡ Fast Voice API response:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        cache: response.headers.get('X-Cache')
       });
 
       if (response.ok) {
@@ -679,61 +648,23 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
           setIsSpeaking(false);
           currentAudioRef.current = null;
           URL.revokeObjectURL(audioUrl);
-          
-          // Schedule restart after audio completion in continuous mode
-          if (isContinuousModeRef.current && !isLoading) {
-            console.log('🔄 Audio completed - scheduling restart for continuous mode');
-            scheduleRestart(1000); // 1 second delay after audio ends
-          }
         };
 
         audio.onerror = () => {
           setIsSpeaking(false);
           currentAudioRef.current = null;
           URL.revokeObjectURL(audioUrl);
-          
-          // Schedule restart even on audio error in continuous mode
-          if (isContinuousModeRef.current && !isLoading) {
-            console.log('🔄 Audio error - scheduling restart for continuous mode');
-            scheduleRestart(1000);
-          }
         };
 
         await audio.play();
-        console.log('⚡ Fast voice synthesis completed successfully');
+        console.log('✅ Voice synthesis completed');
       } else {
-        const errorText = await response.text();
-        console.error('❌ Fast Voice API error:', response.status, errorText);
-        // Don't fallback to browser TTS to avoid robot voice - just stop speaking
-        console.log('🚫 Skipping browser TTS fallback to avoid robot voice');
+        console.error('❌ Voice API error:', response.status);
         setIsSpeaking(false);
-        // Schedule restart after error in continuous mode
-        if (isContinuousModeRef.current && !isLoading) {
-          console.log('🔄 TTS error - scheduling restart for continuous mode');
-          scheduleRestart(1000);
-        }
       }
     } catch (error) {
       console.error('TTS Error:', error);
-      // Fallback to browser TTS
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        // Schedule restart after browser TTS completion in continuous mode
-        if (isContinuousModeRef.current && !isLoading) {
-          console.log('🔄 Browser TTS completed (catch) - scheduling restart for continuous mode');
-          scheduleRestart(1000);
-        }
-      };
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        // Schedule restart even on browser TTS error in continuous mode
-        if (isContinuousModeRef.current && !isLoading) {
-          console.log('🔄 Browser TTS error (catch) - scheduling restart for continuous mode');
-          scheduleRestart(1000);
-        }
-      };
-      speechSynthesis.speak(utterance);
+      setIsSpeaking(false);
     }
   };
 
@@ -890,7 +821,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
               </div>
               <h3 className="text-base font-medium mb-1">Hey David! I'm your Rapid CRM AI partner.</h3>
               <p className="text-xs mb-1">I'm here to help you with transportation compliance, CRM systems, and project management.</p>
-              <p className="text-xs mb-2">🎤 <strong>Continuous conversation is active!</strong> Just speak naturally like you would with Gemini.</p>
+              <p className="text-xs mb-2">🎤 Click the microphone to speak, or type your message below.</p>
               <p className="text-xs">What would you like to work on today?</p>
             </div>
           ) : (
@@ -933,29 +864,6 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
 
         {/* Input */}
         <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-          {/* Continuous Mode Indicator */}
-          {isContinuousMode && (
-            <div className="mb-2 p-2 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 border border-green-300 dark:border-green-700 rounded-md">
-              <div className="flex items-center space-x-2">
-                <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-green-700 dark:text-green-300 font-medium">
-                  🎤 Continuous conversation active - just speak naturally like Gemini!
-                </span>
-              </div>
-            </div>
-          )}
-          
-          {/* Manual Mode Indicator */}
-          {!isContinuousMode && (
-            <div className="mb-2 p-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded-md">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm text-yellow-700 dark:text-yellow-300 font-medium">
-                  Manual mode - click the chat icon to start continuous conversation
-                </span>
-              </div>
-            </div>
-          )}
           
           <div className="flex items-center space-x-2">
             <div className="flex-1">
@@ -963,51 +871,31 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={isContinuousMode ? "🎤 Continuous conversation active - just speak naturally!" : "Type your message here or click the chat icon for voice..."}
+                placeholder="Type your message here or click the microphone to speak..."
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
                 rows={2}
-                disabled={isLoading || isContinuousMode}
+                disabled={isLoading}
               />
             </div>
             
-            {/* Animated Chat Icon */}
+            {/* Microphone Button */}
             <button
               onClick={() => {
-                console.log('Chat icon clicked, current state:', isContinuousMode);
-                toggleContinuousMode();
+                if (isListening) {
+                  stopListening();
+                } else {
+                  startListening();
+                }
               }}
               disabled={isLoading}
               className={`relative p-3 rounded-full transition-all duration-300 ${
-                isContinuousMode
-                  ? 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 shadow-lg shadow-blue-500/25'
-                  : 'bg-gray-600 hover:bg-gray-700 text-white'
+                isListening
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
-              title={
-                isContinuousMode 
-                  ? 'Stop continuous conversation' 
-                  : 'Start continuous voice conversation'
-              }
+              title={isListening ? 'Stop listening' : 'Start voice input'}
             >
-              {/* Animated gradient rings when active - behind the icon */}
-              {isContinuousMode && (
-                <>
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 animate-spin opacity-75 blur-sm -z-10"></div>
-                  <div className="absolute inset-1 rounded-full bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 animate-pulse -z-10"></div>
-                  <div className="absolute inset-2 rounded-full bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 -z-10"></div>
-                </>
-              )}
-              
-              {/* Chat Icon - always on top */}
-              <ChatIcon className={`h-6 w-6 transition-all duration-300 relative z-10 ${
-                isContinuousMode 
-                  ? 'text-white animate-pulse' 
-                  : 'text-white'
-              }`} />
-              
-              {/* Pulsing dot indicator */}
-              {isContinuousMode && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping z-20"></div>
-              )}
+              <MicrophoneIcon className="h-6 w-6" />
             </button>
             
             {/* Stop Speaking Button - only show when AI is speaking */}
@@ -1026,21 +914,27 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
             {/* Send Button */}
             <button
               onClick={() => sendMessage()}
-              disabled={!inputMessage.trim() || isLoading || isContinuousMode}
+              disabled={!inputMessage.trim() || isLoading}
               className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isContinuousMode ? 'Send disabled in continuous mode' : 'Send message'}
+              title="Send message"
             >
               <PaperAirplaneIcon className="h-5 w-5" />
+            </button>
+
+            {/* Clear Messages Button */}
+            <button
+              onClick={clearMessages}
+              disabled={messages.length === 0}
+              className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Clear chat history"
+            >
+              <XIcon className="h-5 w-5" />
             </button>
           </div>
           
           {/* Instructions */}
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            {isContinuousMode ? (
-              <span>💬 <strong>Gemini-style continuous chat:</strong> Just speak naturally! You can interrupt the AI by speaking. Click the animated chat icon to switch to manual mode.</span>
-            ) : (
-              <span>💡 Click the chat icon to start Gemini-style continuous voice conversation</span>
-            )}
+            <span>💡 Click the microphone to speak, or type your message and press Enter</span>
           </div>
         </div>
       </div>

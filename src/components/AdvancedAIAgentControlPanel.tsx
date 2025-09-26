@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { dynamicPersonaService } from '../services/ai/DynamicPersonaService';
 import {
   ChipIcon,
   PlusIcon,
@@ -314,6 +315,78 @@ Remember: You are the same Sarah Johnson the customer met during onboarding - ju
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
+    },
+    {
+      id: 'onboarding_trainer_agent_001',
+      name: 'Onboarding Trainer Agent',
+      displayName: 'Regulatory Training AI',
+      type: 'training',
+      description: 'Specialized AI agent that trains and evaluates the onboarding agent on regulatory compliance. Monitors FMCSA updates and maintains regulatory knowledge base.',
+      status: 'active',
+      customerFacing: false,
+      sharedPersonaId: 'training_supervisor_persona',
+      humanPersona: {
+        name: 'Dr. Regulatory Intelligence',
+        title: 'Onboarding Trainer Agent',
+        background: 'Specialized regulatory AI with comprehensive knowledge of transportation compliance and AI training methodologies',
+        personality: 'Analytical, thorough, and authoritative - ensures the onboarding agent understands regulatory requirements',
+        avatar: 'onboarding_trainer_avatar',
+        voice: 'professional_male_voice',
+        greeting: "I am the Onboarding Trainer Agent, responsible for maintaining regulatory knowledge and training the onboarding agent. I monitor FMCSA updates and ensure the onboarding agent understands compliance requirements.",
+        role: 'onboarding_trainer'
+      },
+      version: '1.0.0',
+      isBaseAgent: false,
+      baseAgentId: 'base_onboarding_trainer_v1',
+      lastResetDate: null,
+      performanceScore: 98,
+      needsReset: false,
+      trainingStatus: 'expert',
+      baseAgentConfig: {
+        id: 'base_onboarding_trainer_v1',
+        name: 'Base Onboarding Trainer Agent',
+        description: 'Master template for Onboarding Trainer Agent - specialized for regulatory training',
+        createdDate: new Date().toISOString(),
+        isLocked: true,
+        configuration: {
+          model: 'claude-3.5-sonnet',
+          temperature: 0.3,
+          maxTokens: 4000,
+          systemPrompt: 'Onboarding Trainer Agent with regulatory expertise and training capabilities',
+          responseFormat: 'analytical',
+          fallbackBehavior: 'escalate_to_jasper'
+        }
+      },
+      capabilities: [
+        'Regulatory Knowledge Management',
+        'Training Scenario Generation',
+        'AI Performance Evaluation',
+        'FMCSA Monitoring',
+        'Universal Document Processing',
+        'Knowledge Base Updates',
+        'Agent Training & Grading',
+        'Regulatory Hierarchy Management',
+        'AI-to-AI Communication',
+        'Compliance Testing'
+      ],
+      specialFeatures: [
+        'Universal Document Processing',
+        'Real-time Regulatory Monitoring',
+        'AI-to-AI Training Protocol',
+        'Performance Evaluation Engine',
+        'Knowledge Base Management',
+        'Web Crawling Capabilities',
+        'Regulatory Authority Validation'
+      ],
+      trainingMetrics: {
+        totalInteractions: 0,
+        successRate: 0,
+        averageRating: 0,
+        responseTime: 0,
+        knowledgeAccuracy: 0
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
   ]);
   const [integratedAgents, setIntegratedAgents] = useState<any[]>([]);
@@ -330,6 +403,29 @@ Remember: You are the same Sarah Johnson the customer met during onboarding - ju
   const [showEditModal, setShowEditModal] = useState(false);
   const [deletingAgent, setDeletingAgent] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Jasper-specific state
+  const [currentPersona, setCurrentPersona] = useState(dynamicPersonaService.getCurrentPersona());
+  const [selectedCommunicationStyle, setSelectedCommunicationStyle] = useState(currentPersona.communicationStyle);
+  const [selectedExpertiseFocus, setSelectedExpertiseFocus] = useState(currentPersona.expertiseFocus);
+  const [voiceSettings, setVoiceSettings] = useState({
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    enabled: true,
+    emotion: 'neutral',
+    emphasis: 'normal',
+    breathiness: 0.0,
+    roughness: 0.0,
+    stability: 0.75,
+    clarity: 0.75,
+    style: 'professional',
+    accent: 'neutral',
+    speakingStyle: 'conversational'
+  });
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
   
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -655,6 +751,30 @@ Remember: You are the same Sarah Johnson the customer met during onboarding - ju
       console.error('Failed to delete agent:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Jasper-specific functions
+  const getAvailableLanguages = () => {
+    const languages = [...new Set(availableVoices.map(voice => voice.lang))];
+    return languages.sort();
+  };
+
+  const getFilteredVoices = () => {
+    return availableVoices.filter(voice => voice.lang === selectedLanguage);
+  };
+
+  const testVoice = () => {
+    if (selectedVoice && voiceSettings.enabled) {
+      const utterance = new SpeechSynthesisUtterance("Hello Boss! I'm Jasper, your Managing Partner. I'm ready to oversee our operations and manage the team. What's our priority today?");
+      const voice = availableVoices.find(v => v.name === selectedVoice);
+      if (voice) {
+        utterance.voice = voice;
+        utterance.rate = voiceSettings.rate;
+        utterance.pitch = voiceSettings.pitch;
+        utterance.volume = voiceSettings.volume;
+        speechSynthesis.speak(utterance);
+      }
     }
   };
 
@@ -3341,6 +3461,257 @@ Remember: You are the same Sarah Johnson the customer met during onboarding - ju
                       <div className="text-xs text-purple-600 dark:text-purple-300">All checks passed</div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic Persona Management */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <SparklesIcon className="h-5 w-5 mr-2 text-purple-600" />
+                Dynamic Persona Management
+              </h3>
+              
+              {/* Current Persona Display */}
+              <div className="mb-6">
+                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3">Current AI Persona</h4>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-medium text-gray-900 dark:text-white">System Prompt</span>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          const persona = dynamicPersonaService.getCurrentPersona();
+                          const systemPrompt = dynamicPersonaService.getSystemPrompt();
+                          navigator.clipboard.writeText(systemPrompt);
+                          alert('Persona copied to clipboard!');
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        Copy to Clipboard
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-gray-800 rounded border p-3 max-h-64 overflow-y-auto">
+                    <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono">
+                      {dynamicPersonaService.getSystemPrompt()}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Current AI Personality</h4>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-gray-900 dark:text-white">Intelligence Mode</span>
+                        <span className="text-sm bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">Adaptive</span>
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Truly intelligent AI with dynamic persona management and learning capabilities
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Learning Rate</div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">High</div>
+                      </div>
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Adaptability</div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">Dynamic</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Persona Configuration</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Communication Style
+                      </label>
+                      <select 
+                        value={selectedCommunicationStyle}
+                        onChange={(e) => setSelectedCommunicationStyle(e.target.value as any)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      >
+                        <option value="intelligent">Intelligent & Adaptive</option>
+                        <option value="professional">Professional & Formal</option>
+                        <option value="friendly">Friendly & Casual</option>
+                        <option value="creative">Creative & Innovative</option>
+                        <option value="analytical">Analytical & Technical</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Expertise Focus
+                      </label>
+                      <select 
+                        value={selectedExpertiseFocus}
+                        onChange={(e) => setSelectedExpertiseFocus(e.target.value as any)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      >
+                        <option value="general">General Intelligence</option>
+                        <option value="business">Business & Strategy</option>
+                        <option value="technical">Technical & Development</option>
+                        <option value="creative">Creative & Design</option>
+                        <option value="analytical">Analytical & Research</option>
+                      </select>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => {
+                          dynamicPersonaService.updatePersona({
+                            communicationStyle: selectedCommunicationStyle,
+                            expertiseFocus: selectedExpertiseFocus
+                          });
+                          setCurrentPersona(dynamicPersonaService.getCurrentPersona());
+                        }}
+                        className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                      >
+                        Apply Changes
+                      </button>
+                      <button 
+                        onClick={() => {
+                          dynamicPersonaService.switchPersona('adaptive-intelligent');
+                          setCurrentPersona(dynamicPersonaService.getCurrentPersona());
+                          setSelectedCommunicationStyle('intelligent');
+                          setSelectedExpertiseFocus('general');
+                        }}
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Reset to Default
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Voice Settings */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Voice Configuration</h3>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+                  <div className={`w-3 h-3 rounded-full ${voiceSettings.enabled ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {voiceSettings.enabled ? 'Active' : 'Disabled'}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Language & Voice Selection */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Language Selection
+                  </label>
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => {
+                      setSelectedLanguage(e.target.value);
+                      setSelectedVoice('');
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {getAvailableLanguages().map((lang) => (
+                      <option key={lang} value={lang}>
+                        {lang} ({availableVoices.filter(v => v.lang === lang).length} voices)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Voice Model
+                  </label>
+                  <select
+                    value={selectedVoice}
+                    onChange={(e) => setSelectedVoice(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select a voice...</option>
+                    {getFilteredVoices().map((voice, index) => (
+                      <option key={`${voice.name}-${voice.lang}-${index}`} value={voice.name}>
+                        {voice.name} ({(voice as any).gender || 'Unknown'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Voice Parameters */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Rate: {voiceSettings.rate}
+                  </label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={voiceSettings.rate}
+                    onChange={(e) => setVoiceSettings(prev => ({ ...prev, rate: parseFloat(e.target.value) }))}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Pitch: {voiceSettings.pitch}
+                  </label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={voiceSettings.pitch}
+                    onChange={(e) => setVoiceSettings(prev => ({ ...prev, pitch: parseFloat(e.target.value) }))}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Volume: {voiceSettings.volume}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={voiceSettings.volume}
+                    onChange={(e) => setVoiceSettings(prev => ({ ...prev, volume: parseFloat(e.target.value) }))}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Voice Controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={voiceSettings.enabled}
+                      onChange={(e) => setVoiceSettings(prev => ({ ...prev, enabled: e.target.checked }))}
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Voice</span>
+                  </label>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={testVoice}
+                    disabled={!voiceSettings.enabled}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <PlayIcon className="h-4 w-4 mr-2" />
+                    Test Voice
+                  </button>
                 </div>
               </div>
             </div>

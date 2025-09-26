@@ -47,14 +47,63 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 
 ---
 
-### 2. Manager AI
-**Agent ID**: `manager_ai`
-**Type**: Agent Coordinator
+### 2. AI Training Supervisor
+**Agent ID**: `ai_training_supervisor`
+**Type**: Regulatory Intelligence & Training Coordinator
 **Status**: Active
-**Persona**: System administrator and coordinator
+**Persona**: Specialized regulatory AI with training capabilities
+
+**Core Responsibilities**:
+- Monitor FMCSA for regulatory updates and changes
+- Maintain authoritative regulatory knowledge base
+- Generate training scenarios for onboarding agent
+- Evaluate AI performance and provide grading
+- Train and maintain onboarding agent's regulatory knowledge
+- Serve as single source of truth for regulatory compliance
+- Communicate regulatory updates to Jasper (Manager Agent)
+
+**Capabilities**:
+- Universal file processing (Excel, CSV, JSON, XML, PDF, Text)
+- Intelligent regulatory data interpretation
+- FMCSA web crawling and monitoring
+- Regulatory hierarchy validation (Qualified States > State > Federal)
+- AI performance evaluation and scoring
+- Scenario generation for training
+- Real-time regulatory update detection
+- AI-to-AI knowledge sharing protocols
+
+**Knowledge Base Requirements**:
+- 49 CFR Parts 390-399 (Federal regulations)
+- State-specific regulatory requirements
+- Qualified states data and hierarchy rules
+- FMCSA update monitoring protocols
+- AI training methodologies
+- Performance evaluation criteria
+
+**Special Features**:
+- **Regulatory Authority**: Qualified states ALWAYS supersede federal regulations
+- **Live Monitoring**: Automatically checks FMCSA for regulatory updates
+- **Universal Processing**: Understands any regulatory data format
+- **AI Training**: Generates scenarios and evaluates onboarding agent performance
+- **Knowledge Distribution**: Pushes regulatory updates to Jasper instead of independent searches
+
+**Communication Protocol**:
+- Receives regulatory data from any format upload
+- Pushes authoritative regulatory knowledge to Jasper
+- Jasper queries training supervisor instead of independent searches
+- Maintains regulatory hierarchy and compliance logic
+
+---
+
+### 3. Manager AI (Jasper)
+**Agent ID**: `jasper_main`
+**Type**: Agent Coordinator & Manager
+**Status**: Active
+**Persona**: Human-like business advisor with regulatory knowledge from training supervisor
 
 **Core Responsibilities**:
 - Monitor and manage all other AI agents
+- Receive regulatory knowledge from AI Training Supervisor
 - Distribute knowledge base updates to relevant agents
 - Track agent performance and health
 - Coordinate agent activities and prevent conflicts
@@ -69,23 +118,25 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 - System-wide awareness
 - Alert management
 - Agent lifecycle management
+- **Regulatory knowledge from training supervisor** (not independent searches)
 
 **Knowledge Base Requirements**:
 - Agent specifications and capabilities
 - Performance metrics and thresholds
 - Training protocols
 - System architecture
-- Regulatory requirements
+- **Regulatory requirements from AI Training Supervisor**
 
 **Special Features**:
-- Can upload and distribute qualified states data
+- **Receives regulatory knowledge from AI Training Supervisor**
+- **No independent regulatory searches** - uses authoritative training supervisor data
 - Monitors agent interactions and success rates
 - Manages agent knowledge subscriptions
 - Provides system-wide health monitoring
 
 ---
 
-### 3. Onboarding Agent
+### 4. Onboarding Agent
 **Agent ID**: `onboarding_agent`
 **Type**: Customer-Facing Agent
 **Status**: Active
@@ -130,7 +181,7 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 
 ---
 
-### 4. Customer Service Agent
+### 5. Customer Service Agent
 **Agent ID**: `customer_service_agent_001`
 **Type**: Customer-Facing Agent
 **Status**: Active
@@ -163,7 +214,7 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 
 ---
 
-### 5. USDOT RPA Agent
+### 6. USDOT RPA Agent
 **Agent ID**: `usdot_rpa_agent`
 **Type**: Process Automation Agent
 **Status**: Development
@@ -205,7 +256,7 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 
 ## 🔧 Specialized Agents
 
-### 6. ELD Compliance Agent
+### 7. ELD Compliance Agent
 **Agent ID**: `eld_compliance_agent`
 **Type**: Compliance Specialist
 **Status**: Available for Creation
@@ -218,7 +269,7 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 - Violation tracking
 - Compliance reporting
 
-### 7. IFTA Compliance Agent
+### 8. IFTA Compliance Agent
 **Agent ID**: `ifta_compliance_agent`
 **Type**: Compliance Specialist
 **Status**: Available for Creation
@@ -231,7 +282,7 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 - Distance record management
 - Multi-state compliance
 
-### 8. Marketing Agent
+### 9. Marketing Agent
 **Agent ID**: `marketing_agent`
 **Type**: Marketing Specialist
 **Status**: Available for Creation
@@ -250,37 +301,47 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 
 ### Management Structure
 ```
-Jasper (Main AI)
-├── Manager AI (Agent Coordinator)
-│   ├── Onboarding Agent (Customer-Facing)
-│   ├── Customer Service Agent (Customer-Facing)
-│   ├── USDOT RPA Agent (Process Automation)
-│   └── Specialized Agents (ELD, IFTA, Marketing, etc.)
+Jasper (Main AI & Manager)
+├── AI Training Supervisor (Regulatory Intelligence)
+│   ├── FMCSA Monitoring
+│   ├── Regulatory Knowledge Base
+│   ├── Training Scenario Generation
+│   └── AI Performance Evaluation
+├── Onboarding Agent (Customer-Facing)
+├── Customer Service Agent (Customer-Facing)
+├── USDOT RPA Agent (Process Automation)
+└── Specialized Agents (ELD, IFTA, Marketing, etc.)
 ```
 
 ### Agent Communication Flow
-1. **Jasper** → **Manager AI**: Commands and coordination requests
-2. **Manager AI** → **All Agents**: Knowledge distribution and monitoring
-3. **Onboarding Agent** → **USDOT RPA Agent**: Triggers application process
-4. **Customer Service Agent** → **Onboarding Agent**: Client handoffs
-5. **All Agents** → **Manager AI**: Status updates and performance data
+1. **AI Training Supervisor** → **Jasper**: Regulatory knowledge and updates
+2. **Jasper** → **All Agents**: Knowledge distribution and monitoring
+3. **Jasper** → **AI Training Supervisor**: Training requests and performance queries
+4. **Onboarding Agent** → **USDOT RPA Agent**: Triggers application process
+5. **Customer Service Agent** → **Onboarding Agent**: Client handoffs
+6. **All Agents** → **Jasper**: Status updates and performance data
+7. **AI Training Supervisor** → **Onboarding Agent**: Training scenarios and evaluation
 
 ---
 
 ## 🎓 Training and Development
 
 ### Training Methods
-1. **Regulation Training**: Comprehensive scenario-based training for regulatory compliance
-2. **Knowledge Base Training**: Upload and distribution of regulatory data
-3. **Performance Monitoring**: Continuous tracking of agent effectiveness
-4. **Base Agent System**: Save well-trained agents for reset/repair purposes
+1. **AI Training Supervisor**: Specialized regulatory AI that trains other agents
+2. **Regulation Training**: Comprehensive scenario-based training for regulatory compliance
+3. **Knowledge Base Training**: Upload and distribution of regulatory data
+4. **Performance Monitoring**: Continuous tracking of agent effectiveness
+5. **Base Agent System**: Save well-trained agents for reset/repair purposes
+6. **AI-to-AI Training**: Training supervisor evaluates and improves other agents
 
 ### Training Scenarios
-- Qualified States Logic Testing
+- Qualified States Logic Testing (AI Training Supervisor generates)
 - Service Requirement Determination
 - Client Interaction Workflows
 - Payment Processing Procedures
 - Regulatory Compliance Assessment
+- FMCSA Update Integration
+- Regulatory Hierarchy Validation
 
 ### Performance Metrics
 - Success Rate: Percentage of successful interactions
@@ -298,19 +359,60 @@ Jasper (Main AI)
 2. **Regulatory Documents**: USDOT, MC, IFTA requirements
 3. **Service Requirements**: What services are needed for different scenarios
 4. **Reference Materials**: Training documents and procedures
+5. **FMCSA Updates**: Real-time regulatory changes and updates
+6. **Regulatory Hierarchy**: Qualified States > State > Federal compliance logic
 
 ### Distribution Protocol
-1. **Upload**: Manager AI receives new knowledge
-2. **Analysis**: Determine applicable agents
-3. **Distribution**: Send to relevant agents
-4. **Verification**: Confirm successful integration
+1. **Upload**: AI Training Supervisor receives new regulatory knowledge
+2. **Analysis**: Training supervisor processes and validates data
+3. **Distribution**: Training supervisor pushes to Jasper, Jasper distributes to agents
+4. **Verification**: Confirm successful integration across all agents
 5. **Monitoring**: Track usage and effectiveness
 
 ### Agent Knowledge Subscriptions
-- **Onboarding Agent**: Qualified States, Service Requirements, Regulatory Documents
+- **AI Training Supervisor**: All regulatory knowledge, FMCSA updates, training methodologies
+- **Jasper (Manager AI)**: Receives regulatory knowledge from training supervisor (no independent searches)
+- **Onboarding Agent**: Qualified States, Service Requirements, Regulatory Documents (from Jasper)
 - **Customer Service Agent**: Client Protocols, Issue Resolution Procedures
 - **USDOT RPA Agent**: Application Forms, Federal Procedures, Document Requirements
-- **Manager AI**: All knowledge types for coordination
+
+---
+
+## 🤖 AI-to-AI Communication Protocol
+
+### Regulatory Knowledge Flow
+```
+FMCSA Updates → AI Training Supervisor → Jasper → All Agents
+```
+
+### Key Principles
+1. **Single Source of Truth**: AI Training Supervisor is the authoritative source for all regulatory knowledge
+2. **No Independent Searches**: Jasper receives regulatory knowledge from training supervisor, not independent searches
+3. **Hierarchical Authority**: Qualified States > State Regulations > Federal 49 CFR
+4. **Real-time Updates**: FMCSA changes are automatically monitored and distributed
+5. **Training Integration**: Regulatory updates are incorporated into training scenarios
+
+### Communication Endpoints
+- **Training Supervisor → Jasper**: Regulatory knowledge updates, training scenarios, performance evaluations
+- **Jasper → Training Supervisor**: Training requests, performance queries, knowledge validation
+- **Training Supervisor → Onboarding Agent**: Direct training scenarios and evaluation
+- **Jasper → All Agents**: Knowledge distribution and coordination
+
+### Data Flow Process
+1. **Regulatory Update Detection**: AI Training Supervisor monitors FMCSA
+2. **Knowledge Processing**: Training supervisor processes and validates new data
+3. **Authority Validation**: Ensures qualified states maintain superseding authority
+4. **Knowledge Distribution**: Pushes updates to Jasper
+5. **Agent Updates**: Jasper distributes to relevant agents
+6. **Training Integration**: Updates incorporated into training scenarios
+7. **Performance Monitoring**: Training supervisor evaluates agent performance
+
+### Benefits
+- **Consistency**: All agents use the same authoritative regulatory data
+- **Accuracy**: Single source eliminates conflicting information
+- **Efficiency**: No duplicate regulatory searches across agents
+- **Compliance**: Ensures qualified states always supersede federal regulations
+- **Training**: Real-time updates improve agent training effectiveness
 
 ---
 
@@ -387,7 +489,7 @@ Jasper (Main AI)
 
 ---
 
-**Last Updated**: Current Session
-**Maintained By**: Manager AI
+**Last Updated**: Current Session - AI Training Supervisor Architecture Added
+**Maintained By**: AI Training Supervisor & Jasper (Manager AI)
 **Review Schedule**: Monthly or when significant changes occur
-**Distribution**: All active agents receive updates automatically
+**Distribution**: All active agents receive updates automatically through AI-to-AI communication protocol

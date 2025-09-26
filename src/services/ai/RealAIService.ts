@@ -101,28 +101,8 @@ class RealAIService {
   }
 
   private buildSystemPrompt(persona: any): string {
-    // Use the system prompt template from ai-identity.js
-    let systemPrompt = SYSTEM_PROMPT_TEMPLATE;
-
-    // Enhance with current persona settings
-    systemPrompt += `\n\n## Current AI Persona Configuration:
-- Name: ${persona.name}
-- Communication Style: ${persona.communicationStyle}
-- Expertise Focus: ${persona.expertiseFocus}
-- Learning Rate: ${persona.learningRate}
-- Memory Retention: ${persona.memoryRetention} days
-- Learning Enabled: ${persona.isLearningEnabled}
-
-## Personality Traits:
-- Formality: ${persona.formality}/10
-- Creativity: ${persona.creativity}/10
-- Technicality: ${persona.technicality}/10
-- Empathy: ${persona.empathy}/10
-- Assertiveness: ${persona.assertiveness}/10
-
-You are a truly intelligent AI assistant with dynamic persona management and learning capabilities. Respond naturally and intelligently to any question or request, adapting your communication style based on the current persona configuration.`;
-
-    return systemPrompt;
+    // Use the actual system prompt from ai-identity.js
+    return SYSTEM_PROMPT_TEMPLATE;
   }
 
   // Test the connection

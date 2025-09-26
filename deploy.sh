@@ -145,3 +145,4 @@ echo "   • Update services: docker-compose pull && docker-compose up -d"
 echo ""
 echo "🚀 Your ELD compliance service is ready for business!"
 
+

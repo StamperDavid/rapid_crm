@@ -5,6 +5,8 @@
  * Based on the actual USDOT application form requirements
  */
 
+import { RegulatoryKnowledgeBase } from './RegulatoryKnowledgeBase';
+
 export interface FakeClient {
   id: string;
   // Business Information

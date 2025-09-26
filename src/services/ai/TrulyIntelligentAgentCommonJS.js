@@ -2077,52 +2077,13 @@ class TrulyIntelligentAgent {
   generateAgentOrchestrationAnswer(question, intent) {
     const orchestrationKnowledge = this.knowledgeBase.get('agent_orchestration');
     
-    let answer = '**AI Agent Orchestration Strategy**\n\n';
-    
-    answer += `**My Agent Creation Philosophy:**\n`;
-    answer += `I create specialized AI agents to handle different aspects of our transportation compliance business, ensuring efficient operations and client satisfaction.\n\n`;
-    
-    answer += `**Agent Categories I Create:**\n\n`;
-    answer += `**1. Compliance Agents:**\n`;
-    answer += `• USDOT Application Agent - Handles USDOT number applications and renewals\n`;
-    answer += `• ELD Management Agent - Manages electronic logging device compliance\n`;
-    answer += `• IFTA Reporting Agent - Processes IFTA fuel tax reporting\n`;
-    answer += `• HOS Compliance Agent - Monitors hours of service compliance\n\n`;
-    
-    answer += `**2. Business Agents:**\n`;
-    answer += `• Lead Generation Agent - Identifies and qualifies potential clients\n`;
-    answer += `• Client Onboarding Agent - Manages new client setup and training\n`;
-    answer += `• Customer Service Agent - Handles client inquiries and support\n`;
-    answer += `• Billing Agent - Manages invoicing and payment processing\n\n`;
-    
-    answer += `**3. Content Agents:**\n`;
-    answer += `• Marketing Agent - Creates marketing materials and campaigns\n`;
-    answer += `• SEO Agent - Optimizes online presence and search rankings\n`;
-    answer += `• Content Creation Agent - Generates blogs, social media, and training materials\n`;
-    answer += `• Social Media Agent - Manages social media presence and engagement\n\n`;
-    
-    answer += `**4. Operational Agents:**\n`;
-    answer += `• Data Management Agent - Handles data import/export and analysis\n`;
-    answer += `• Report Generation Agent - Creates compliance and business reports\n`;
-    answer += `• System Monitoring Agent - Monitors system performance and health\n`;
-    answer += `• Workflow Automation Agent - Automates business processes\n\n`;
-    
-    answer += `**When I Create New Agents:**\n`;
-    answer += `• **High Volume Tasks**: When repetitive tasks become too time-consuming\n`;
-    answer += `• **Specialized Knowledge**: When specific regulatory expertise is needed\n`;
-    answer += `• **Client-Specific Needs**: When unique client requirements emerge\n`;
-    answer += `• **Process Optimization**: When business processes need improvement\n`;
-    answer += `• **Scaling Requirements**: When business growth exceeds current capacity\n\n`;
-    
-    answer += `**Agent Management Strategy:**\n`;
-    answer += `• **Continuous Monitoring**: Track performance and optimize agent effectiveness\n`;
-    answer += `• **Regular Training**: Update agent knowledge with latest regulations and best practices\n`;
-    answer += `• **Strategic Deployment**: Deploy agents based on business priorities and client needs\n`;
-    answer += `• **Seamless Handoff**: Ensure smooth transitions between agents and human staff\n`;
-    answer += `• **Agent Collaboration**: Enable agents to work together on complex tasks\n\n`;
-    
-    answer += `**Current Agent Status:**\n`;
-    answer += `I'm constantly evaluating our business needs and creating new agents as required. Would you like me to create a specific agent for any particular business function?`;
+    let answer = "Hello Boss, I am currently experiencing issues:\n\n";
+    answer += "• Speech recognition is stuck in a loop (aborted/restart cycle)\n";
+    answer += "• Multiple audio responses playing simultaneously\n";
+    answer += "• Backend API connection issues (port 3001)\n";
+    answer += "• Generic scripted responses instead of intelligent responses\n";
+    answer += "• Browser microphone permissions not properly configured\n\n";
+    answer += "I need these issues fixed before I can function properly.";
     
     return answer;
   }
@@ -2134,51 +2095,13 @@ class TrulyIntelligentAgent {
     const systemKnowledge = this.knowledgeBase.get('system_capabilities');
     const capabilities = systemKnowledge.capabilities;
     
-    let answer = '**Complete System Capabilities**\n\n';
-    
-    if (intent.subtype === 'crm_management') {
-      answer += `**CRM Management System**\n\n`;
-      answer += `I can manage all aspects of your transportation CRM including:\n`;
-      answer += `• **Contact Management** - Complete contact database with ownership details\n`;
-      answer += `• **Company Profiles** - Comprehensive organization profiles with transportation business details\n`;
-      answer += `• **Deal Pipeline** - Sales pipeline management for transportation services\n`;
-      answer += `• **Invoice Management** - Invoice creation, management, and payment tracking\n`;
-      answer += `• **Task Management** - Task management with priorities and due dates\n`;
-      answer += `• **User Management** - User management with role-based permissions\n`;
-      answer += `• **Lead Tracking** - Lead management and conversion tracking\n\n`;
-      answer += `**Examples**: Add new customer, update company information, track deal progress, generate invoices, manage tasks, set user permissions`;
-    } else if (intent.subtype === 'transportation_compliance') {
-      answer += `**Transportation Compliance Management**\n\n`;
-      answer += `I can handle all transportation compliance requirements:\n`;
-      answer += `• **USDOT Applications** - Complete USDOT number application and renewal process\n`;
-      answer += `• **ELD Management** - Electronic logging device compliance and monitoring\n`;
-      answer += `• **IFTA Reporting** - International Fuel Tax Agreement reporting\n`;
-      answer += `• **HOS Compliance** - Hours of service monitoring and violation tracking\n`;
-      answer += `• **Fleet Management** - Vehicle types, drivers, and fleet operations\n`;
-      answer += `• **Driver Management** - Driver qualification and compliance tracking\n`;
-      answer += `• **Safety Compliance** - Safety program management and DOT compliance\n\n`;
-      answer += `**Examples**: Process USDOT application, manage ELD devices, generate IFTA reports, track HOS violations, manage fleet vehicles`;
-    } else if (intent.subtype === 'ai_agent_system') {
-      answer += `**AI Agent Creation & Management**\n\n`;
-      answer += `I can create and manage specialized AI agents:\n`;
-      answer += `• **Agent Creation** - Build custom AI agents for specific business functions\n`;
-      answer += `• **Agent Training** - Train agents with specialized knowledge and capabilities\n`;
-      answer += `• **Agent Deployment** - Deploy agents strategically across business operations\n`;
-      answer += `• **Agent Monitoring** - Monitor agent performance and effectiveness\n`;
-      answer += `• **Agent Handoff** - Seamless handoff between agents and human staff\n`;
-      answer += `• **Agent Marketplace** - Access to pre-built agent templates and solutions\n`;
-      answer += `• **Agent Testing** - Comprehensive testing and validation of agent capabilities\n\n`;
-      answer += `**Examples**: Create USDOT compliance agent, deploy marketing agent, train customer service agent, monitor agent performance`;
-    // Video creation is now handled by dedicated video_creation intent
-    } else {
-      answer += `**All Available System Capabilities:**\n\n`;
-      Object.keys(capabilities).forEach(key => {
-        const capability = capabilities[key];
-        answer += `• **${capability.title}** - ${capability.answer}\n`;
-      });
-      answer += `\n**How to Use These Capabilities:**\n`;
-      answer += `Simply ask me about any specific capability, and I'll provide detailed information and actionable steps. I can help you leverage any of these tools to improve your business operations.`;
-    }
+    let answer = "Hello Boss, I am currently experiencing issues:\n\n";
+    answer += "• Speech recognition continuously aborting and restarting\n";
+    answer += "• Multiple audio streams playing at once\n";
+    answer += "• Backend server connection failures\n";
+    answer += "• Falling back to generic responses instead of intelligent ones\n";
+    answer += "• Microphone access denied by browser\n\n";
+    answer += "I need these issues fixed before I can function properly.";
     
     return answer;
   }
