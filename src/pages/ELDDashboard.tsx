@@ -69,12 +69,38 @@ interface ComplianceAlert {
 const ELDDashboard: React.FC = () => {
   const [servicePackages, setServicePackages] = useState<ELDServicePackage[]>([]);
   const [clients, setClients] = useState<ELDClient[]>([]);
-  const [revenue, setRevenue] = useState<ELDRevenue[]>([]);
+  const [revenue, setRevenue] = useState<any>(null);
   const [alerts, setAlerts] = useState<ComplianceAlert[]>([]);
+  const [hosLogs, setHosLogs] = useState<any[]>([]);
+  const [dvirReports, setDvirReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [showCreatePackageModal, setShowCreatePackageModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'clients' | 'packages' | 'revenue' | 'analytics' | 'alerts' | 'hos_logs' | 'dvir_reports' | 'drivers' | 'vehicles'>('overview');
+
+  // Helper function for log type colors
+  const getLogTypeColor = (logType: string) => {
+    switch (logType) {
+      case 'driving': return 'text-blue-600 bg-blue-100';
+      case 'on_duty': return 'text-purple-600 bg-purple-100';
+      case 'off_duty': return 'text-gray-600 bg-gray-100';
+      case 'sleeper_berth': return 'text-indigo-600 bg-indigo-100';
+      case 'violation': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  // Helper function for inspection type colors
+  const getInspectionTypeColor = (inspectionType: string) => {
+    switch (inspectionType) {
+      case 'pre_trip': return 'text-green-600 bg-green-100';
+      case 'post_trip': return 'text-blue-600 bg-blue-100';
+      case 'en_route': return 'text-yellow-600 bg-yellow-100';
+      case 'annual': return 'text-purple-600 bg-purple-100';
+      case 'random': return 'text-orange-600 bg-orange-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
   
   // ELD Service integration
   const [eldService] = useState(() => new ELDService());
@@ -132,6 +158,76 @@ const ELDDashboard: React.FC = () => {
         const alertsData = await alertsResponse.json();
         setAlerts(alertsData);
       }
+
+      // Mock HOS logs data for now
+      const mockHosLogs = [
+        {
+          id: '1',
+          driver_id: 'DRV001',
+          date: '2024-01-15',
+          log_type: 'on_duty',
+          start_time: '2024-01-15T08:00:00Z',
+          end_time: '2024-01-15T16:30:00Z',
+          hours_worked: 8.5,
+          violations: 0
+        },
+        {
+          id: '2',
+          driver_id: 'DRV002',
+          date: '2024-01-15',
+          log_type: 'driving',
+          start_time: '2024-01-15T09:00:00Z',
+          end_time: '2024-01-15T15:12:00Z',
+          hours_worked: 6.2,
+          violations: 1
+        },
+        {
+          id: '3',
+          driver_id: 'DRV003',
+          date: '2024-01-15',
+          log_type: 'off_duty',
+          start_time: '2024-01-15T18:00:00Z',
+          end_time: '2024-01-16T04:00:00Z',
+          hours_worked: 10.0,
+          violations: 0
+        }
+      ];
+      setHosLogs(mockHosLogs);
+
+      // Mock DVIR reports data
+      const mockDvirReports = [
+        {
+          id: '1',
+          driver_id: 'DRV001',
+          vehicle_id: 'VH001',
+          inspection_type: 'pre_trip',
+          inspection_date: '2024-01-15T08:00:00Z',
+          defects: '{}',
+          is_safe_to_drive: true,
+          status: 'Passed'
+        },
+        {
+          id: '2',
+          driver_id: 'DRV002',
+          vehicle_id: 'VH002',
+          inspection_type: 'post_trip',
+          inspection_date: '2024-01-15T09:30:00Z',
+          defects: '{"brake_light": "out", "tire_pressure": "low"}',
+          is_safe_to_drive: false,
+          status: 'Failed'
+        },
+        {
+          id: '3',
+          driver_id: 'DRV003',
+          vehicle_id: 'VH003',
+          inspection_type: 'en_route',
+          inspection_date: '2024-01-15T10:15:00Z',
+          defects: '{}',
+          is_safe_to_drive: true,
+          status: 'Passed'
+        }
+      ];
+      setDvirReports(mockDvirReports);
 
       // Fetch real compliance data for clients
       await updateClientComplianceData();
@@ -584,25 +680,31 @@ const ELDDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {revenue.map((month) => (
+                    {revenue?.monthlyTrend?.map((month: any) => (
                       <tr key={month.month}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {month.month}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(month.recurring)}
+                          {formatCurrency(month.recurring || 0)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(month.setup)}
+                          {formatCurrency(month.setup || 0)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(month.consulting)}
+                          {formatCurrency(month.consulting || 0)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {formatCurrency(month.total)}
+                          {formatCurrency(month.revenue || month.total || 0)}
                         </td>
                       </tr>
-                    ))}
+                    )) || (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                          No revenue data available
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -613,7 +715,7 @@ const ELDDashboard: React.FC = () => {
           {activeTab === 'analytics' && (
             <ReportingDashboard
               clients={clients}
-              revenue={revenue}
+              revenue={revenue?.monthlyTrend || []}
               complianceData={clients.map(client => ({
                 companyId: client.id,
                 companyName: client.companyName,
@@ -631,8 +733,64 @@ const ELDDashboard: React.FC = () => {
             />
           )}
 
+          {/* Service Packages Tab */}
+          {activeTab === 'packages' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Service Packages</h3>
+                  <p className="text-sm text-gray-600">Manage ELD service packages and pricing</p>
+                </div>
+                <button 
+                  onClick={handleCreateServicePackage}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Create Package
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {servicePackages.map((pkg) => (
+                  <div key={pkg.id} className="bg-white border rounded-lg p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-gray-900">{pkg.name}</h4>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        pkg.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {pkg.status}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mb-4">{pkg.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Base Price:</span>
+                        <span className="font-medium">${pkg.basePrice}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Setup Fee:</span>
+                        <span className="font-medium">${pkg.setupFee}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Monthly Fee:</span>
+                        <span className="font-medium">${pkg.monthlyFee}</span>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex space-x-2">
+                      <button className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700">
+                        Edit
+                      </button>
+                      <button className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-200">
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* HOS Logs Tab */}
-          {activeTab === 'hos' && (
+          {activeTab === 'hos_logs' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">Hours of Service Logs</h3>
@@ -704,7 +862,7 @@ const ELDDashboard: React.FC = () => {
           )}
 
           {/* DVIR Reports Tab */}
-          {activeTab === 'dvir' && (
+          {activeTab === 'dvir_reports' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">Driver Vehicle Inspection Reports</h3>
@@ -762,7 +920,14 @@ const ELDDashboard: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {report.defects ? Object.keys(JSON.parse(report.defects)).length : 0}
+                          {report.defects ? (() => {
+                            try {
+                              const parsed = JSON.parse(report.defects);
+                              return Object.keys(parsed).length;
+                            } catch (e) {
+                              return 0;
+                            }
+                          })() : 0}
                         </td>
                       </tr>
                     ))}
@@ -815,16 +980,6 @@ const ELDDashboard: React.FC = () => {
                 ))}
               </div>
             </div>
-          )}
-
-          {/* HOS Logs Tab */}
-          {activeTab === 'hos_logs' && (
-            <HOSLogManagement />
-          )}
-
-          {/* DVIR Reports Tab */}
-          {activeTab === 'dvir_reports' && (
-            <DVIRManagement />
           )}
 
           {/* Drivers Tab */}

@@ -751,6 +751,18 @@ CREATE TABLE IF NOT EXISTS dvir_reports (
 -- Index for API keys table
 CREATE INDEX IF NOT EXISTS idx_api_keys_provider ON api_keys(provider);
 
+-- Theme Settings Table
+CREATE TABLE IF NOT EXISTS theme_settings (
+    id TEXT PRIMARY KEY,
+    theme TEXT NOT NULL DEFAULT 'dark', -- 'light', 'dark', 'auto'
+    custom_theme TEXT, -- JSON object with custom theme settings
+    logo_url TEXT,
+    company_name TEXT,
+    company_info TEXT, -- JSON object with company details
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 -- AI Collaboration Messages (NEW CUSTOM TABLE)
 CREATE TABLE IF NOT EXISTS ai_collaboration_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -954,3 +966,65 @@ CREATE INDEX IF NOT EXISTS idx_client_messages_type ON client_messages(message_t
 CREATE INDEX IF NOT EXISTS idx_client_handoffs_session_id ON client_handoffs(session_id);
 CREATE INDEX IF NOT EXISTS idx_client_handoffs_type ON client_handoffs(handoff_type);
 CREATE INDEX IF NOT EXISTS idx_client_handoffs_created_at ON client_handoffs(created_at);
+
+-- Integrations Table
+CREATE TABLE IF NOT EXISTS integrations (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL, -- 'accounting', 'payment', 'communication', 'crm', 'marketing', 'compliance', 'custom'
+    provider TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending', -- 'connected', 'disconnected', 'error', 'pending'
+    configuration TEXT, -- JSON object
+    credentials TEXT, -- JSON object with apiKeyId, oauthToken, etc.
+    capabilities TEXT, -- JSON array
+    last_sync TEXT,
+    sync_status TEXT DEFAULT 'never', -- 'success', 'error', 'pending', 'never'
+    error_message TEXT,
+    metadata TEXT, -- JSON object with version, endpoints, rateLimits, etc.
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- Integration Sync Results Table
+CREATE TABLE IF NOT EXISTS integration_sync_results (
+    id TEXT PRIMARY KEY,
+    integration_id TEXT NOT NULL,
+    sync_type TEXT NOT NULL, -- 'full', 'incremental', 'manual'
+    status TEXT NOT NULL, -- 'success', 'error', 'partial'
+    records_processed INTEGER DEFAULT 0,
+    records_created INTEGER DEFAULT 0,
+    records_updated INTEGER DEFAULT 0,
+    records_failed INTEGER DEFAULT 0,
+    error_details TEXT,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (integration_id) REFERENCES integrations(id)
+);
+
+-- Integration Health Checks Table
+CREATE TABLE IF NOT EXISTS integration_health_checks (
+    id TEXT PRIMARY KEY,
+    integration_id TEXT NOT NULL,
+    check_type TEXT NOT NULL, -- 'connectivity', 'authentication', 'rate_limit', 'data_sync'
+    status TEXT NOT NULL, -- 'healthy', 'warning', 'error'
+    response_time_ms INTEGER,
+    error_message TEXT,
+    checked_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (integration_id) REFERENCES integrations(id)
+);
+
+-- Indexes for integrations
+CREATE INDEX IF NOT EXISTS idx_integrations_type ON integrations(type);
+CREATE INDEX IF NOT EXISTS idx_integrations_provider ON integrations(provider);
+CREATE INDEX IF NOT EXISTS idx_integrations_status ON integrations(status);
+CREATE INDEX IF NOT EXISTS idx_integrations_created_at ON integrations(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_integration_sync_results_integration_id ON integration_sync_results(integration_id);
+CREATE INDEX IF NOT EXISTS idx_integration_sync_results_status ON integration_sync_results(status);
+CREATE INDEX IF NOT EXISTS idx_integration_sync_results_started_at ON integration_sync_results(started_at);
+
+CREATE INDEX IF NOT EXISTS idx_integration_health_checks_integration_id ON integration_health_checks(integration_id);
+CREATE INDEX IF NOT EXISTS idx_integration_health_checks_status ON integration_health_checks(status);
+CREATE INDEX IF NOT EXISTS idx_integration_health_checks_checked_at ON integration_health_checks(checked_at);

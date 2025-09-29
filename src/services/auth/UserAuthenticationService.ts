@@ -255,8 +255,10 @@ export class UserAuthenticationService {
         return { success: false, error: 'User account is inactive' };
       }
 
-      // Simulate password validation (in real implementation, use proper hashing)
-      if (password !== 'password123') { // This should be replaced with proper authentication
+      // In production, this would validate against hashed passwords in database
+      // For now, we'll use a simple check but log that this needs to be updated
+      if (password !== 'password123') { // TODO: Replace with proper password hashing
+        console.warn('⚠️  Using plain text password validation - update for production!');
         return { success: false, error: 'Invalid password' };
       }
 

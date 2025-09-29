@@ -5,6 +5,12 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 // Import AI Persona Manager
 const aiPersonaManager = require('./src/services/ai/AIPersonaManager.js');
@@ -27,9 +33,94 @@ const VideoCreationService = require('./src/services/video/VideoCreationService.
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Security Middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"]
+    }
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// Rate limiting - More permissive for development
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute instead of 15
+  max: 1000, // 1000 requests per minute instead of 100 per 15 minutes
+  message: {
+    error: 'Too many requests, please try again later.',
+    retryAfter: '1 minute'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Only apply rate limiting in production
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/', limiter);
+} else {
+  // In development, use a very permissive rate limit
+  const devLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 10000, // Very high limit for development
+  });
+  app.use('/api/', devLimiter);
+}
+
+// CORS configuration - More permissive for development
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost on any port for development
+    if (origin.match(/^http:\/\/localhost:\d+$/)) {
+      return callback(null, true);
+    }
+    
+    // Allow your production domain
+    if (origin === 'https://yourdomain.com') {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
+
+// Input validation middleware
+const validateInput = (req, res, next) => {
+  // Basic input sanitization
+  if (req.body) {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        // Remove potentially dangerous characters
+        req.body[key] = req.body[key]
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+          .replace(/javascript:/gi, '')
+          .trim();
+      }
+    }
+  }
+  next();
+};
+
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(validateInput);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('public/uploads'));
@@ -1772,49 +1863,89 @@ const checkAndInitializeDatabase = async () => {
   }
 };
 
-// Theme API endpoints
+// Legacy theme endpoint removed - using database version below
+
+// Theme endpoints
 app.get('/api/theme', async (req, res) => {
   try {
-    // Return default dark theme with logo
-    const defaultTheme = {
-      primaryColor: '#3b82f6',
-      secondaryColor: '#8b5cf6',
-      accentColor: '#10b981',
-      backgroundColor: '#111827',
-      surfaceColor: '#1f2937',
-      textColor: '#f9fafb',
-      borderColor: '#374151',
-      successColor: '#10b981',
-      warningColor: '#f59e0b',
-      errorColor: '#ef4444',
-      infoColor: '#3b82f6',
-      logoUrl: '/uploads/logo_1757827373384.png',
-      logoHeight: 48,
-      borderRadius: 8,
-      fontFamily: 'inherit',
-      fontWeight: '400'
-    };
+    console.log('🎨 Theme API called');
+    const themeSettings = await runQueryOne('SELECT * FROM theme_settings ORDER BY updated_at DESC LIMIT 1');
     
-    res.json({
-      success: true,
-      theme: 'dark',
-      customTheme: defaultTheme
-    });
+    if (themeSettings) {
+      const themeData = {
+        theme: themeSettings.theme,
+        customTheme: themeSettings.custom_theme ? JSON.parse(themeSettings.custom_theme) : null,
+        logoUrl: themeSettings.logo_url,
+        companyName: themeSettings.company_name,
+        companyInfo: themeSettings.company_info ? JSON.parse(themeSettings.company_info) : null
+      };
+      console.log('🎨 Theme data loaded:', themeData);
+      res.json(themeData);
+    } else {
+      // Return default theme if none exists
+      const defaultTheme = {
+        theme: 'dark',
+        customTheme: null,
+        logoUrl: null,
+        companyName: null,
+        companyInfo: null
+      };
+      console.log('🎨 Using default theme:', defaultTheme);
+      res.json(defaultTheme);
+    }
   } catch (error) {
     console.error('❌ Error loading theme:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to load theme' 
+      error: 'Failed to load theme',
+      details: error.message 
     });
   }
 });
 
 app.post('/api/theme', async (req, res) => {
   try {
-    const theme = req.body;
-    console.log('🎨 Theme saved:', theme);
+    const { theme, customTheme, logoUrl, companyName, companyInfo } = req.body;
+    console.log('🎨 Saving theme:', { theme, customTheme, logoUrl, companyName });
     
-    // For now, just return success - this can be expanded to save to database later
+    const id = 'default_theme';
+    const now = new Date().toISOString();
+    
+    // Check if theme settings already exist
+    const existingTheme = await runQueryOne('SELECT id FROM theme_settings WHERE id = ?', [id]);
+    
+    if (existingTheme) {
+      // Update existing theme
+      await runExecute(
+        'UPDATE theme_settings SET theme = ?, custom_theme = ?, logo_url = ?, company_name = ?, company_info = ?, updated_at = ? WHERE id = ?',
+        [
+          theme,
+          customTheme ? JSON.stringify(customTheme) : null,
+          logoUrl,
+          companyName,
+          companyInfo ? JSON.stringify(companyInfo) : null,
+          now,
+          id
+        ]
+      );
+    } else {
+      // Insert new theme
+      await runExecute(
+        'INSERT INTO theme_settings (id, theme, custom_theme, logo_url, company_name, company_info, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          id,
+          theme,
+          customTheme ? JSON.stringify(customTheme) : null,
+          logoUrl,
+          companyName,
+          companyInfo ? JSON.stringify(companyInfo) : null,
+          now,
+          now
+        ]
+      );
+    }
+    
     res.json({
       success: true,
       message: 'Theme saved successfully'
@@ -1825,6 +1956,510 @@ app.post('/api/theme', async (req, res) => {
       success: false, 
       error: 'Failed to save theme' 
     });
+  }
+});
+
+// Error handling endpoint
+app.get('/api/errors/stats', (req, res) => {
+  try {
+    // Return mock error stats for now since the service might not be fully initialized
+    const errorStats = {
+      totalErrors: 0,
+      errorsByCategory: {
+        database: 0,
+        api: 0,
+        authentication: 0,
+        validation: 0,
+        external_service: 0,
+        system: 0,
+        unknown: 0
+      },
+      errorsBySeverity: {
+        low: 0,
+        medium: 0,
+        high: 0,
+        critical: 0
+      },
+      recentErrors: [],
+      averageResolutionTime: 0
+    };
+    
+    res.json({
+      success: true,
+      errors: errorStats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error getting error stats:', error);
+    res.status(500).json({ error: 'Failed to get error stats' });
+  }
+});
+
+// Performance monitoring endpoint
+app.get('/api/performance/stats', (req, res) => {
+  try {
+    const { getDatabaseCacheService } = require('./src/services/enterprise/DatabaseCacheService');
+    const { getResponseCache } = require('./src/services/enterprise/ResponseCache');
+    
+    const dbCache = getDatabaseCacheService();
+    const responseCache = getResponseCache();
+    
+    const performanceReport = dbCache.getPerformanceReport();
+    const cacheStats = responseCache.getStats();
+    
+    res.json({
+      success: true,
+      performance: performanceReport,
+      cache: cacheStats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error getting performance stats:', error);
+    res.status(500).json({ error: 'Failed to get performance stats' });
+  }
+});
+
+// RPA Agent API endpoints
+app.post('/api/rpa/start-workflow', async (req, res) => {
+  try {
+    console.log('🤖 RPA workflow start request:', req.body);
+    const { agentId, triggerData } = req.body;
+    
+    // Mock RPA workflow response for testing
+    const mockResponse = {
+      success: true,
+      agentId: agentId,
+      workflowId: `workflow_${Date.now()}`,
+      status: 'started',
+      currentStep: 1,
+      totalSteps: 9,
+      message: 'USDOT RPA workflow initiated successfully',
+      estimatedCompletion: new Date(Date.now() + 45 * 60 * 1000).toISOString() // 45 minutes
+    };
+    
+    res.json(mockResponse);
+  } catch (error) {
+    console.error('❌ Error starting RPA workflow:', error);
+    res.status(500).json({ error: 'Failed to start RPA workflow' });
+  }
+});
+
+app.get('/api/rpa/workflow-status/:workflowId', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    console.log('🤖 RPA workflow status request:', workflowId);
+    
+    // Mock workflow status response
+    const mockStatus = {
+      workflowId: workflowId,
+      status: 'in_progress',
+      currentStep: 3,
+      totalSteps: 9,
+      progress: 33,
+      currentAction: 'Filling company information',
+      nextAction: 'Access USDOT application portal',
+      estimatedTimeRemaining: 30, // minutes
+      lastUpdated: new Date().toISOString()
+    };
+    
+    res.json(mockStatus);
+  } catch (error) {
+    console.error('❌ Error getting RPA workflow status:', error);
+    res.status(500).json({ error: 'Failed to get workflow status' });
+  }
+});
+
+// Onboarding Agent API endpoints
+app.post('/api/onboarding/chat', async (req, res) => {
+  try {
+    console.log('👋 Onboarding chat request:', req.body);
+    const { message, userId } = req.body;
+    
+    // Mock onboarding agent response
+    const mockResponse = {
+      success: true,
+      message: `Thank you for your interest in USDOT registration! I'm here to help you complete your USDOT application. Let's start by collecting some basic information about your business. What is your legal business name?`,
+      nextQuestion: 'legal_business_name',
+      currentStep: 1,
+      totalSteps: 10,
+      dataCollected: {},
+      estimatedTime: 15 // minutes
+    };
+    
+    res.json(mockResponse);
+  } catch (error) {
+    console.error('❌ Error in onboarding chat:', error);
+    res.status(500).json({ error: 'Failed to process onboarding request' });
+  }
+});
+
+app.post('/api/onboarding/submit-data', async (req, res) => {
+  try {
+    console.log('📝 Onboarding data submission:', req.body);
+    const { userId, applicationData } = req.body;
+    
+    // Mock data processing response
+    const mockResponse = {
+      success: true,
+      applicationId: `app_${Date.now()}`,
+      totalCost: 299,
+      breakdown: {
+        usdot: 200,
+        compliance: 75,
+        processing: 24
+      },
+      nextStep: 'payment',
+      message: 'Your USDOT application data has been processed. Please proceed to payment to continue.'
+    };
+    
+    res.json(mockResponse);
+  } catch (error) {
+    console.error('❌ Error submitting onboarding data:', error);
+    res.status(500).json({ error: 'Failed to submit application data' });
+  }
+});
+
+// Customer Service Agent API endpoints
+app.post('/api/customer-service/chat', async (req, res) => {
+  try {
+    console.log('🎧 Customer service chat request:', req.body);
+    const { message, userId, clientId } = req.body;
+    
+    // Mock customer service response
+    const mockResponse = {
+      success: true,
+      message: `Hello! I'm here to help with your transportation compliance needs. How can I assist you today?`,
+      agentId: 'customer_service_001',
+      sessionId: `session_${Date.now()}`,
+      capabilities: [
+        'Account support',
+        'Service renewals',
+        'Compliance questions',
+        'Technical assistance',
+        'Billing inquiries'
+      ]
+    };
+    
+    res.json(mockResponse);
+  } catch (error) {
+    console.error('❌ Error in customer service chat:', error);
+    res.status(500).json({ error: 'Failed to process customer service request' });
+  }
+});
+
+// ELD Dashboard API endpoints
+app.get('/api/eld/service-packages', async (req, res) => {
+  try {
+    console.log('📦 ELD Service Packages endpoint called');
+    const packages = [
+      {
+        id: '1',
+        name: 'Basic ELD Package',
+        description: 'Essential ELD compliance features',
+        price: 299,
+        features: ['HOS Logs', 'DVIR Reports', 'Basic Analytics'],
+        isPopular: false,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: '2',
+        name: 'Professional ELD Package',
+        description: 'Advanced ELD compliance with analytics',
+        price: 499,
+        features: ['HOS Logs', 'DVIR Reports', 'Advanced Analytics', 'Driver Management'],
+        isPopular: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: '3',
+        name: 'Enterprise ELD Package',
+        description: 'Complete ELD solution for large fleets',
+        price: 799,
+        features: ['HOS Logs', 'DVIR Reports', 'Advanced Analytics', 'Driver Management', 'Vehicle Tracking', 'Custom Reports'],
+        isPopular: false,
+        createdAt: new Date().toISOString()
+      }
+    ];
+    res.json(packages);
+  } catch (error) {
+    console.error('❌ Error getting ELD service packages:', error);
+    res.status(500).json({ success: false, error: 'Failed to get service packages' });
+  }
+});
+
+app.get('/api/eld/clients', async (req, res) => {
+  try {
+    console.log('👥 ELD Clients endpoint called');
+    const clients = [
+      {
+        id: '1',
+        companyName: 'ABC Trucking',
+        contactName: 'John Smith',
+        email: 'john@abctrucking.com',
+        phone: '(555) 123-4567',
+        status: 'active',
+        packageType: 'Professional',
+        startDate: '2024-01-15',
+        lastLogin: '2024-01-20',
+        totalRevenue: 2495
+      },
+      {
+        id: '2',
+        companyName: 'XYZ Logistics',
+        contactName: 'Sarah Johnson',
+        email: 'sarah@xyzlogistics.com',
+        phone: '(555) 987-6543',
+        status: 'active',
+        packageType: 'Enterprise',
+        startDate: '2024-01-10',
+        lastLogin: '2024-01-19',
+        totalRevenue: 4796
+      },
+      {
+        id: '3',
+        companyName: 'Quick Haul Inc',
+        contactName: 'Mike Davis',
+        email: 'mike@quickhaul.com',
+        phone: '(555) 456-7890',
+        status: 'inactive',
+        packageType: 'Basic',
+        startDate: '2024-01-05',
+        lastLogin: '2024-01-15',
+        totalRevenue: 897
+      }
+    ];
+    res.json(clients);
+  } catch (error) {
+    console.error('❌ Error getting ELD clients:', error);
+    res.status(500).json({ success: false, error: 'Failed to get clients' });
+  }
+});
+
+app.get('/api/eld/revenue', async (req, res) => {
+  try {
+    console.log('💰 ELD Revenue endpoint called');
+    const revenue = {
+      totalRevenue: 8190,
+      monthlyRevenue: 2495,
+      activeClients: 3,
+      averageRevenuePerClient: 2730,
+      revenueByPackage: {
+        basic: 897,
+        professional: 2495,
+        enterprise: 4796
+      },
+      monthlyTrend: [
+        { month: 'Oct', revenue: 2100 },
+        { month: 'Nov', revenue: 2300 },
+        { month: 'Dec', revenue: 2500 },
+        { month: 'Jan', revenue: 2495 }
+      ]
+    };
+    res.json(revenue);
+  } catch (error) {
+    console.error('❌ Error getting ELD revenue:', error);
+    res.status(500).json({ success: false, error: 'Failed to get revenue data' });
+  }
+});
+
+// Google OAuth Configuration
+async function setupGoogleOAuth() {
+  try {
+    const apiKeys = await runQuery('SELECT * FROM api_keys WHERE name LIKE "%Google OAuth%"');
+    const clientIdKey = apiKeys.find(key => key.name.includes('Client ID'));
+    const clientSecretKey = apiKeys.find(key => key.name.includes('Client Secret'));
+    
+    if (clientIdKey && clientSecretKey) {
+      passport.use(new GoogleStrategy({
+        clientID: clientIdKey.key_value,
+        clientSecret: clientSecretKey.key_value,
+        callbackURL: "/api/auth/google/callback"
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          // Check if client exists
+          let client = await runQueryOne('SELECT * FROM clients WHERE google_id = ?', [profile.id]);
+          
+          if (!client) {
+            // Create new client account
+            const clientId = Date.now().toString();
+            const now = new Date().toISOString();
+            
+            await runExecute(`
+              INSERT INTO clients (
+                id, google_id, email, first_name, last_name, company_name, 
+                role, is_active, created_at, last_login
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+              clientId,
+              profile.id,
+              profile.emails[0].value,
+              profile.name.givenName,
+              profile.name.familyName,
+              profile.emails[0].value.split('@')[1].split('.')[0],
+              'client',
+              1,
+              now,
+              now
+            ]);
+            
+            client = await runQueryOne('SELECT * FROM clients WHERE google_id = ?', [profile.id]);
+          } else {
+            // Update last login
+            await runExecute(
+              'UPDATE clients SET last_login = ? WHERE google_id = ?',
+              [new Date().toISOString(), profile.id]
+            );
+          }
+          
+          return done(null, client);
+        } catch (error) {
+          console.error('OAuth error:', error);
+          return done(error, null);
+        }
+      }));
+      
+      console.log('✅ Google OAuth configured successfully');
+    } else {
+      console.log('⚠️ Google OAuth credentials not found in API keys');
+    }
+  } catch (error) {
+    console.error('❌ Failed to setup Google OAuth:', error);
+  }
+}
+
+// Initialize OAuth
+setupGoogleOAuth();
+
+// Session configuration
+app.use(session({
+  secret: 'rapid-crm-oauth-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await runQueryOne('SELECT * FROM clients WHERE id = ?', [id]);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+// Google OAuth routes
+app.get('/api/auth/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+app.get('/api/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login?error=oauth_failed' }),
+  (req, res) => {
+    // Successful authentication, redirect to client dashboard
+    res.redirect('/client-dashboard');
+  }
+);
+
+// Client OAuth API endpoint
+app.post('/api/clients/oauth', async (req, res) => {
+  try {
+    const { googleId, email, firstName, lastName, companyName, role, isActive, createdAt, lastLogin } = req.body;
+    
+    // Check if client already exists
+    const existingClient = await runQueryOne('SELECT * FROM clients WHERE google_id = ?', [googleId]);
+    
+    if (existingClient) {
+      // Update existing client
+      await runExecute(`
+        UPDATE clients SET 
+          email = ?, first_name = ?, last_name = ?, company_name = ?, 
+          last_login = ?, updated_at = ?
+        WHERE google_id = ?
+      `, [email, firstName, lastName, companyName, lastLogin, new Date().toISOString(), googleId]);
+      
+      const updatedClient = await runQueryOne('SELECT * FROM clients WHERE google_id = ?', [googleId]);
+      res.json(updatedClient);
+    } else {
+      // Create new client
+      const clientId = Date.now().toString();
+      const now = new Date().toISOString();
+      
+      await runExecute(`
+        INSERT INTO clients (
+          id, google_id, email, first_name, last_name, company_name, 
+          role, is_active, created_at, last_login
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [clientId, googleId, email, firstName, lastName, companyName, role, isActive, now, lastLogin]);
+      
+      const newClient = await runQueryOne('SELECT * FROM clients WHERE id = ?', [clientId]);
+      res.status(201).json(newClient);
+    }
+  } catch (error) {
+    console.error('Error in client OAuth endpoint:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get client by Google ID
+app.get('/api/clients/google/:googleId', async (req, res) => {
+  try {
+    const { googleId } = req.params;
+    const client = await runQueryOne('SELECT * FROM clients WHERE google_id = ?', [googleId]);
+    
+    if (client) {
+      res.json(client);
+    } else {
+      res.status(404).json({ error: 'Client not found' });
+    }
+  } catch (error) {
+    console.error('Error getting client by Google ID:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update client last login
+app.put('/api/clients/:id/login', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await runExecute(
+      'UPDATE clients SET last_login = ? WHERE id = ?',
+      [new Date().toISOString(), id]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating client login:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Security logging endpoint
+app.post('/api/security/log', (req, res) => {
+  try {
+    const { type, userId, ipAddress, userAgent, details } = req.body;
+    
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      type,
+      userId,
+      ipAddress: ipAddress || req.ip,
+      userAgent: userAgent || req.get('User-Agent'),
+      details
+    };
+    
+    console.log('🔒 Security Event:', logEntry);
+    
+    res.json({ success: true, message: 'Security event logged' });
+  } catch (error) {
+    console.error('❌ Error logging security event:', error);
+    res.status(500).json({ error: 'Failed to log security event' });
   }
 });
 
@@ -4443,6 +5078,409 @@ app.post('/api/client-portal/login-config', (req, res) => {
   } catch (error) {
     console.error('Error in login config save endpoint:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Integration API endpoints
+app.get('/api/integrations', async (req, res) => {
+  try {
+    const integrations = await runQuery('SELECT * FROM integrations ORDER BY created_at DESC');
+    const transformedIntegrations = integrations.map(integration => ({
+      ...integration,
+      configuration: integration.configuration ? JSON.parse(integration.configuration) : {},
+      credentials: integration.credentials ? JSON.parse(integration.credentials) : {},
+      capabilities: integration.capabilities ? JSON.parse(integration.capabilities) : [],
+      metadata: integration.metadata ? JSON.parse(integration.metadata) : {}
+    }));
+    res.json(transformedIntegrations);
+  } catch (error) {
+    console.error('Error fetching integrations:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/integrations/:id', async (req, res) => {
+  try {
+    const integration = await runQueryOne('SELECT * FROM integrations WHERE id = ?', [req.params.id]);
+    if (!integration) {
+      return res.status(404).json({ error: 'Integration not found' });
+    }
+    
+    const transformedIntegration = {
+      ...integration,
+      configuration: integration.configuration ? JSON.parse(integration.configuration) : {},
+      credentials: integration.credentials ? JSON.parse(integration.credentials) : {},
+      capabilities: integration.capabilities ? JSON.parse(integration.capabilities) : [],
+      metadata: integration.metadata ? JSON.parse(integration.metadata) : {}
+    };
+    res.json(transformedIntegration);
+  } catch (error) {
+    console.error('Error fetching integration:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/integrations', async (req, res) => {
+  try {
+    const {
+      name,
+      type,
+      provider,
+      status = 'pending',
+      configuration = {},
+      credentials = {},
+      capabilities = [],
+      metadata = {}
+    } = req.body;
+
+    const id = `integration_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    await runExecute(
+      `INSERT INTO integrations (
+        id, name, type, provider, status, configuration, credentials, 
+        capabilities, metadata, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        name,
+        type,
+        provider,
+        status,
+        JSON.stringify(configuration),
+        JSON.stringify(credentials),
+        JSON.stringify(capabilities),
+        JSON.stringify(metadata),
+        now,
+        now
+      ]
+    );
+
+    res.status(201).json({ id, message: 'Integration created successfully' });
+  } catch (error) {
+    console.error('Error creating integration:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/integrations/:id', async (req, res) => {
+  try {
+    const {
+      name,
+      type,
+      provider,
+      status,
+      configuration,
+      credentials,
+      capabilities,
+      metadata,
+      lastSync,
+      syncStatus,
+      errorMessage
+    } = req.body;
+
+    const now = new Date().toISOString();
+    const updateFields = [];
+    const updateValues = [];
+
+    if (name !== undefined) { updateFields.push('name = ?'); updateValues.push(name); }
+    if (type !== undefined) { updateFields.push('type = ?'); updateValues.push(type); }
+    if (provider !== undefined) { updateFields.push('provider = ?'); updateValues.push(provider); }
+    if (status !== undefined) { updateFields.push('status = ?'); updateValues.push(status); }
+    if (configuration !== undefined) { updateFields.push('configuration = ?'); updateValues.push(JSON.stringify(configuration)); }
+    if (credentials !== undefined) { updateFields.push('credentials = ?'); updateValues.push(JSON.stringify(credentials)); }
+    if (capabilities !== undefined) { updateFields.push('capabilities = ?'); updateValues.push(JSON.stringify(capabilities)); }
+    if (metadata !== undefined) { updateFields.push('metadata = ?'); updateValues.push(JSON.stringify(metadata)); }
+    if (lastSync !== undefined) { updateFields.push('last_sync = ?'); updateValues.push(lastSync); }
+    if (syncStatus !== undefined) { updateFields.push('sync_status = ?'); updateValues.push(syncStatus); }
+    if (errorMessage !== undefined) { updateFields.push('error_message = ?'); updateValues.push(errorMessage); }
+
+    updateFields.push('updated_at = ?');
+    updateValues.push(now);
+    updateValues.push(req.params.id);
+
+    if (updateFields.length === 1) { // Only updated_at
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    await runExecute(
+      `UPDATE integrations SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateValues
+    );
+
+    res.json({ message: 'Integration updated successfully' });
+  } catch (error) {
+    console.error('Error updating integration:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/integrations/:id', async (req, res) => {
+  try {
+    await runExecute('DELETE FROM integrations WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Integration deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting integration:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/integrations/sync-results', async (req, res) => {
+  try {
+    const syncResults = await runQuery('SELECT * FROM integration_sync_results ORDER BY started_at DESC');
+    res.json(syncResults);
+  } catch (error) {
+    console.error('Error fetching sync results:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/integrations/health-checks', async (req, res) => {
+  try {
+    const healthChecks = await runQuery('SELECT * FROM integration_health_checks ORDER BY checked_at DESC');
+    res.json(healthChecks);
+  } catch (error) {
+    console.error('Error fetching health checks:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Knowledge Bases API endpoints
+app.get('/api/knowledge-bases', async (req, res) => {
+  try {
+    const knowledgeBases = await runQuery('SELECT * FROM knowledge_bases ORDER BY created_at DESC');
+    const transformedKnowledgeBases = knowledgeBases.map(kb => ({
+      ...kb,
+      tags: kb.tags ? JSON.parse(kb.tags) : []
+    }));
+    res.json(transformedKnowledgeBases);
+  } catch (error) {
+    console.error('Error fetching knowledge bases:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/knowledge-bases/:id', async (req, res) => {
+  try {
+    const knowledgeBase = await runQueryOne('SELECT * FROM knowledge_bases WHERE id = ?', [req.params.id]);
+    if (!knowledgeBase) {
+      return res.status(404).json({ error: 'Knowledge base not found' });
+    }
+    
+    const transformedKnowledgeBase = {
+      ...knowledgeBase,
+      tags: knowledgeBase.tags ? JSON.parse(knowledgeBase.tags) : []
+    };
+    res.json(transformedKnowledgeBase);
+  } catch (error) {
+    console.error('Error fetching knowledge base:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/knowledge-bases', async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      type,
+      content,
+      tags = []
+    } = req.body;
+
+    const id = `kb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    await runExecute(
+      `INSERT INTO knowledge_bases (
+        id, name, description, type, content, tags, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        name,
+        description,
+        type,
+        content,
+        JSON.stringify(tags),
+        now,
+        now
+      ]
+    );
+
+    res.status(201).json({ id, message: 'Knowledge base created successfully' });
+  } catch (error) {
+    console.error('Error creating knowledge base:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/knowledge-bases/:id', async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      type,
+      content,
+      tags
+    } = req.body;
+
+    const now = new Date().toISOString();
+    const updateFields = [];
+    const updateValues = [];
+
+    if (name !== undefined) { updateFields.push('name = ?'); updateValues.push(name); }
+    if (description !== undefined) { updateFields.push('description = ?'); updateValues.push(description); }
+    if (type !== undefined) { updateFields.push('type = ?'); updateValues.push(type); }
+    if (content !== undefined) { updateFields.push('content = ?'); updateValues.push(content); }
+    if (tags !== undefined) { updateFields.push('tags = ?'); updateValues.push(JSON.stringify(tags)); }
+
+    updateFields.push('updated_at = ?');
+    updateValues.push(now);
+    updateValues.push(req.params.id);
+
+    if (updateFields.length === 1) { // Only updated_at
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    await runExecute(
+      `UPDATE knowledge_bases SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateValues
+    );
+
+    res.json({ message: 'Knowledge base updated successfully' });
+  } catch (error) {
+    console.error('Error updating knowledge base:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/knowledge-bases/:id', async (req, res) => {
+  try {
+    await runExecute('DELETE FROM knowledge_bases WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Knowledge base deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting knowledge base:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Conversation API endpoints
+app.get('/api/conversations/contexts', async (req, res) => {
+  try {
+    const contexts = await runQuery('SELECT * FROM persistent_conversation_contexts ORDER BY created_at DESC');
+    const transformedContexts = contexts.map(ctx => ({
+      ...ctx,
+      clientProfile: ctx.client_profile ? JSON.parse(ctx.client_profile) : {},
+      agentInsights: ctx.agent_insights ? JSON.parse(ctx.agent_insights) : {},
+      conversationHistory: ctx.conversation_history ? JSON.parse(ctx.conversation_history) : []
+    }));
+    res.json(transformedContexts);
+  } catch (error) {
+    console.error('Error fetching conversation contexts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/conversations/memory-banks', async (req, res) => {
+  try {
+    const memoryBanks = await runQuery('SELECT * FROM agent_memory_banks ORDER BY created_at DESC');
+    const transformedMemoryBanks = memoryBanks.map(memory => ({
+      ...memory,
+      memoryData: memory.memory_data ? JSON.parse(memory.memory_data) : {},
+      contextData: memory.context_data ? JSON.parse(memory.context_data) : {}
+    }));
+    res.json(transformedMemoryBanks);
+  } catch (error) {
+    console.error('Error fetching agent memory banks:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/conversations', async (req, res) => {
+  try {
+    const conversations = await runQuery('SELECT * FROM conversations ORDER BY created_at DESC');
+    res.json(conversations);
+  } catch (error) {
+    console.error('Error fetching conversations:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/conversations/:id', async (req, res) => {
+  try {
+    const conversation = await runQueryOne('SELECT * FROM conversations WHERE id = ?', [req.params.id]);
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+    res.json(conversation);
+  } catch (error) {
+    console.error('Error fetching conversation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/conversations/:id/messages', async (req, res) => {
+  try {
+    const messages = await runQuery('SELECT * FROM messages WHERE conversation_id = ? ORDER BY timestamp ASC', [req.params.id]);
+    const transformedMessages = messages.map(msg => ({
+      ...msg,
+      metadata: msg.metadata ? JSON.parse(msg.metadata) : {}
+    }));
+    res.json(transformedMessages);
+  } catch (error) {
+    console.error('Error fetching conversation messages:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/conversations', async (req, res) => {
+  try {
+    const {
+      agentId,
+      clientId,
+      title,
+      status = 'Active'
+    } = req.body;
+
+    const id = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    await runExecute(
+      `INSERT INTO conversations (
+        id, agent_id, client_id, title, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, agentId, clientId, title, status, now, now]
+    );
+
+    res.status(201).json({ id, message: 'Conversation created successfully' });
+  } catch (error) {
+    console.error('Error creating conversation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/conversations/:id/messages', async (req, res) => {
+  try {
+    const {
+      sender,
+      content,
+      metadata = {}
+    } = req.body;
+
+    const id = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    await runExecute(
+      `INSERT INTO messages (
+        id, conversation_id, sender, content, timestamp, metadata
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, req.params.id, sender, content, now, JSON.stringify(metadata)]
+    );
+
+    res.status(201).json({ id, message: 'Message created successfully' });
+  } catch (error) {
+    console.error('Error creating message:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

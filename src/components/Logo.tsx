@@ -6,7 +6,7 @@ interface LogoProps {
   className?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ className = '' }) => {
+const Logo: React.FC<LogoProps> = ({ variant, className = '' }) => {
   const { customTheme } = useTheme();
   const [isThemeLoaded, setIsThemeLoaded] = React.useState(false);
 

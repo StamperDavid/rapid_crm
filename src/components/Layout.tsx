@@ -54,7 +54,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
+  
+  // Safely access theme context with fallback
+  let theme: 'light' | 'dark' = 'dark';
+  let toggleTheme = () => {};
+  try {
+    const themeContext = useTheme();
+    theme = themeContext.theme;
+    toggleTheme = themeContext.toggleTheme;
+  } catch (error) {
+    console.warn('Theme context not available, using fallback:', error);
+  }
+  
   const { user, hasPermission } = useUser();
   const { tooltipsEnabled, toggleTooltips } = useTooltips();
   const { alertCount, clearAllAlerts } = useConversationAlerts();

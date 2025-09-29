@@ -63,7 +63,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         
         // Try to load from database first
         try {
-          const response = await fetch('http://localhost:3001/api/theme');
+          const API_BASE = import.meta.env.DEV ? '' : 'http://localhost:3001';
+          const response = await fetch(`${API_BASE}/api/theme`);
           if (response.ok) {
             const themeData = await response.json();
             setTheme(themeData.theme || 'light');
@@ -150,7 +151,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         
         // Save to database
         try {
-          const response = await fetch('http://localhost:3001/api/theme', {
+          const API_BASE = import.meta.env.DEV ? '' : 'http://localhost:3001';
+          const response = await fetch(`${API_BASE}/api/theme`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

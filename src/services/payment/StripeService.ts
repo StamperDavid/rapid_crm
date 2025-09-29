@@ -35,15 +35,56 @@ interface PaymentIntent {
 }
 
 class StripeService {
-  private config: StripeConfig;
+  private config: StripeConfig | null = null;
   private isInitialized = false;
+  private API_BASE = import.meta.env.DEV ? '/api' : 'http://localhost:3001/api';
 
   constructor() {
-    this.config = {
-      publishableKey: process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_test_demo_key',
-      secretKey: process.env.REACT_APP_STRIPE_SECRET_KEY || 'sk_test_demo_key',
-      webhookSecret: process.env.REACT_APP_STRIPE_WEBHOOK_SECRET || 'whsec_demo_secret'
-    };
+    // Configuration will be loaded from database during initialization
+  }
+
+  /**
+   * Load Stripe API keys from database
+   */
+  private async loadApiKeys(): Promise<void> {
+    try {
+      const response = await fetch(`${this.API_BASE}/api-keys`);
+      if (!response.ok) {
+        throw new Error(`Failed to load API keys: ${response.status}`);
+      }
+      
+      const apiKeys = await response.json();
+      
+      // Find Stripe API keys
+      const publishableKey = apiKeys.find((key: any) => 
+        key.name.toLowerCase().includes('stripe') && 
+        key.name.toLowerCase().includes('publishable')
+      );
+      const secretKey = apiKeys.find((key: any) => 
+        key.name.toLowerCase().includes('stripe') && 
+        key.name.toLowerCase().includes('secret')
+      );
+      const webhookSecret = apiKeys.find((key: any) => 
+        key.name.toLowerCase().includes('stripe') && 
+        key.name.toLowerCase().includes('webhook')
+      );
+
+      this.config = {
+        publishableKey: publishableKey?.key || 'pk_test_demo_key',
+        secretKey: secretKey?.key || 'sk_test_demo_key',
+        webhookSecret: webhookSecret?.key || 'whsec_demo_secret'
+      };
+
+      console.log('Stripe API keys loaded from database');
+    } catch (error) {
+      console.error('Failed to load Stripe API keys from database:', error);
+      // Fallback to demo keys if database loading fails
+      this.config = {
+        publishableKey: 'pk_test_demo_key',
+        secretKey: 'sk_test_demo_key',
+        webhookSecret: 'whsec_demo_secret'
+      };
+    }
   }
 
   /**
@@ -51,6 +92,9 @@ class StripeService {
    */
   async initialize(): Promise<boolean> {
     try {
+      // Load API keys from database first
+      await this.loadApiKeys();
+      
       // In a real implementation, this would load Stripe.js
       // For MVP, we'll simulate the initialization
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -71,7 +115,7 @@ class StripeService {
     companyId: string;
     address?: any;
   }): Promise<Customer> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.config) {
       throw new Error('Stripe service not initialized');
     }
 
@@ -104,7 +148,7 @@ class StripeService {
     clientSecret: string;
     status: string;
   }> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.config) {
       throw new Error('Stripe service not initialized');
     }
 
@@ -132,7 +176,7 @@ class StripeService {
    * Create a payment intent for setup fees
    */
   async createPaymentIntent(amount: number, customerId: string): Promise<PaymentIntent> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.config) {
       throw new Error('Stripe service not initialized');
     }
 
@@ -163,7 +207,7 @@ class StripeService {
     currentPeriodEnd: string;
     plan: SubscriptionPlan;
   }> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.config) {
       throw new Error('Stripe service not initialized');
     }
 
@@ -201,7 +245,7 @@ class StripeService {
     status: string;
     canceledAt: string;
   }> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.config) {
       throw new Error('Stripe service not initialized');
     }
 
@@ -225,7 +269,7 @@ class StripeService {
    * Get payment methods for a customer
    */
   async getPaymentMethods(customerId: string): Promise<any[]> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.config) {
       throw new Error('Stripe service not initialized');
     }
 
@@ -327,5 +371,6 @@ class StripeService {
 }
 
 export default StripeService;
+
 
 

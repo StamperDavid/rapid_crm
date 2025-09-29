@@ -73,12 +73,20 @@ export class KnowledgeBaseManager {
   private async loadData(): Promise<void> {
     try {
       console.log('Loading knowledge base data from real database...');
-      // TODO: Implement real database loading
-      // For now, initialize empty
-      this.knowledgeBases = new Map();
+      
+      // Load knowledge bases
+      const knowledgeBases = await this.loadKnowledgeBases();
+      this.knowledgeBases = new Map(knowledgeBases.map(kb => [kb.id, kb]));
+      
+      // Load documents (for now, initialize empty as documents are stored within knowledge bases)
       this.documents = new Map();
+      
+      console.log(`✅ Loaded ${this.knowledgeBases.size} knowledge bases`);
     } catch (error) {
       console.error('Error loading knowledge base data:', error);
+      // Initialize empty maps as fallback
+      this.knowledgeBases = new Map();
+      this.documents = new Map();
     }
   }
 
@@ -88,10 +96,26 @@ export class KnowledgeBaseManager {
   private async saveData(): Promise<void> {
     try {
       console.log('Saving knowledge base data to real database...');
-      // TODO: Implement real database saving
       // Data is saved individually when created/updated
+      // This method is kept for future batch operations
     } catch (error) {
       console.error('Error saving knowledge base data:', error);
+    }
+  }
+
+  /**
+   * Load knowledge bases from database
+   */
+  private async loadKnowledgeBases(): Promise<KnowledgeBase[]> {
+    try {
+      const response = await fetch('/api/knowledge-bases');
+      if (!response.ok) {
+        throw new Error(`Failed to load knowledge bases: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading knowledge bases:', error);
+      return [];
     }
   }
 

@@ -92,15 +92,62 @@ export interface AgentResponse {
 }
 
 class GoogleCloudService {
-  private config: GoogleCloudConfig;
+  private config: GoogleCloudConfig | null = null;
   private vertexAI: any;
   private documentAI: any;
   private discoveryEngine: any;
   private naturalLanguage: any;
+  private API_BASE = import.meta.env.DEV ? '/api' : 'http://localhost:3001/api';
 
-  constructor(config: GoogleCloudConfig) {
-    this.config = config;
-    this.initializeServices();
+  constructor(config?: GoogleCloudConfig) {
+    if (config) {
+      this.config = config;
+      this.initializeServices();
+    } else {
+      // Load configuration from database
+      this.loadConfiguration();
+    }
+  }
+
+  /**
+   * Load Google Cloud configuration from database
+   */
+  private async loadConfiguration(): Promise<void> {
+    try {
+      const response = await fetch(`${this.API_BASE}/api-keys`);
+      if (!response.ok) {
+        throw new Error(`Failed to load API keys: ${response.status}`);
+      }
+      
+      const apiKeys = await response.json();
+      
+      // Find Google Cloud API keys
+      const projectIdKey = apiKeys.find((key: any) => 
+        key.name.toLowerCase().includes('google') && 
+        key.name.toLowerCase().includes('project')
+      );
+      const serviceAccountKey = apiKeys.find((key: any) => 
+        key.name.toLowerCase().includes('google') && 
+        key.name.toLowerCase().includes('service account')
+      );
+
+      this.config = {
+        projectId: projectIdKey?.key || 'your-project-id',
+        region: 'us-central1',
+        credentials: serviceAccountKey?.key
+      };
+
+      console.log('Google Cloud configuration loaded from database');
+      await this.initializeServices();
+    } catch (error) {
+      console.error('Failed to load Google Cloud configuration from database:', error);
+      // Fallback to default configuration
+      this.config = {
+        projectId: 'your-project-id',
+        region: 'us-central1'
+      };
+      await this.initializeServices();
+    }
   }
 
   private async initializeServices() {
@@ -887,10 +934,7 @@ class GoogleCloudService {
   }
 }
 
-// Export singleton instance
-export const googleCloudService = new GoogleCloudService({
-  projectId: process.env.REACT_APP_GCP_PROJECT_ID || 'your-project-id',
-  region: process.env.REACT_APP_GCP_REGION || 'us-central1'
-});
+// Export singleton instance - configuration will be loaded from database
+export const googleCloudService = new GoogleCloudService();
 
 export default GoogleCloudService;

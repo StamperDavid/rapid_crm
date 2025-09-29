@@ -51,6 +51,9 @@ export class AIMonitoringService {
   private conversationMetrics: Map<string, AIConversationMetrics>;
   private alerts: AIAlert[];
   private isMonitoring: boolean = false;
+  private intervals: NodeJS.Timeout[] = [];
+  private lastHealthCheck: number = 0;
+  private healthCheckCooldown: number = 300000; // 5 minutes
 
   private constructor() {
     this.metrics = {
@@ -66,7 +69,7 @@ export class AIMonitoringService {
     this.providerMetrics = new Map();
     this.conversationMetrics = new Map();
     this.alerts = [];
-    this.startMonitoring();
+    // Don't auto-start monitoring - let it be started explicitly
   }
 
   public static getInstance(): AIMonitoringService {
@@ -76,50 +79,75 @@ export class AIMonitoringService {
     return AIMonitoringService.instance;
   }
 
-  private startMonitoring(): void {
+  /**
+   * Start monitoring with proper lifecycle management
+   */
+  public startMonitoring(): void {
+    if (this.isMonitoring) {
+      console.log('🔍 AI Monitoring Service already started, skipping...');
+      return;
+    }
+    
     this.isMonitoring = true;
     console.log('🔍 AI Monitoring Service started');
     
-    // Monitor AI integration service
-    this.monitorAIIntegration();
+    // Single comprehensive monitoring interval instead of multiple intervals
+    const monitoringInterval = setInterval(() => {
+      this.performComprehensiveCheck();
+    }, 600000); // Every 10 minutes - much more reasonable
     
-    // Monitor Claude collaboration
-    this.monitorClaudeCollaboration();
-    
-    // Set up periodic health checks
-    setInterval(() => {
-      this.performHealthCheck();
-    }, 30000); // Every 30 seconds
+    this.intervals.push(monitoringInterval);
   }
 
-  private monitorAIIntegration(): void {
-    // Monitor AI integration service health
-    setInterval(async () => {
-      try {
-        const providers = await aiIntegrationService.getProviders();
-        if (providers.length === 0) {
-          this.addAlert({
-            type: 'warning',
-            title: 'No AI Providers Available',
-            message: 'No AI providers are currently available. Check API key configuration.',
-            severity: 'high'
-          });
-        }
-      } catch (error) {
+  /**
+   * Stop all monitoring intervals
+   */
+  public stopMonitoring(): void {
+    if (!this.isMonitoring) {
+      return;
+    }
+    
+    console.log('🔍 AI Monitoring Service stopping...');
+    this.isMonitoring = false;
+    
+    // Clear all intervals
+    this.intervals.forEach(interval => clearInterval(interval));
+    this.intervals = [];
+    
+    console.log('🔍 AI Monitoring Service stopped');
+  }
+
+  /**
+   * Perform comprehensive monitoring check with cooldown
+   */
+  private async performComprehensiveCheck(): Promise<void> {
+    const now = Date.now();
+    
+    // Implement cooldown to prevent excessive health checks
+    if (now - this.lastHealthCheck < this.healthCheckCooldown) {
+      return;
+    }
+    
+    this.lastHealthCheck = now;
+    
+    try {
+      // Check AI integration health
+      const providers = await aiIntegrationService.getProviders();
+      this.updateProviderMetrics(providers);
+      
+      if (providers.length === 0) {
         this.addAlert({
-          type: 'error',
-          title: 'AI Integration Service Error',
-          message: `Failed to check AI providers: ${error}`,
-          severity: 'critical'
+          type: 'warning',
+          title: 'No AI Providers Available',
+          message: 'No AI providers are currently available. Check API key configuration.',
+          severity: 'high'
         });
       }
-    }, 60000); // Every minute
-  }
-
-  private monitorClaudeCollaboration(): void {
-    // Monitor Claude collaboration status
-    setInterval(() => {
+      
+      // Check Claude collaboration health
       const status = claudeCollaborationService.getCollaborationStatus();
+      this.updateCollaborationMetrics(status);
+      
       if (!status.isConnected) {
         this.addAlert({
           type: 'warning',
@@ -128,19 +156,30 @@ export class AIMonitoringService {
           severity: 'medium'
         });
       }
-    }, 60000); // Every minute
-  }
+      
+      // Perform health assessment
+      const healthStatus = {
+        aiIntegration: this.checkAIIntegrationHealth(),
+        claudeCollaboration: this.checkClaudeCollaborationHealth(),
+        metrics: this.checkMetricsHealth(),
+        timestamp: new Date().toISOString()
+      };
 
-  private performHealthCheck(): void {
-    // Perform comprehensive health check
-    const healthStatus = {
-      aiIntegration: this.checkAIIntegrationHealth(),
-      claudeCollaboration: this.checkClaudeCollaborationHealth(),
-      metrics: this.checkMetricsHealth()
-    };
-
-    // Log health status
-    console.log('🏥 AI Health Check:', healthStatus);
+      // Only log if there are issues or it's been a while since last check
+      const hasIssues = !healthStatus.aiIntegration || !healthStatus.claudeCollaboration || !healthStatus.metrics;
+      if (hasIssues) {
+        console.log('🏥 AI Health Check - Issues detected:', healthStatus);
+      }
+      
+    } catch (error) {
+      console.error('❌ AI Monitoring comprehensive check error:', error);
+      this.addAlert({
+        type: 'error',
+        title: 'AI Monitoring Error',
+        message: `Failed to perform comprehensive check: ${error}`,
+        severity: 'critical'
+      });
+    }
   }
 
   private checkAIIntegrationHealth(): boolean {
@@ -369,5 +408,8 @@ export class AIMonitoringService {
   }
 }
 
-// Export singleton instance
+// Export singleton instance - monitoring must be started explicitly
 export const aiMonitoringService = AIMonitoringService.getInstance();
+
+// Optionally start monitoring (can be controlled externally)
+// aiMonitoringService.startMonitoring();

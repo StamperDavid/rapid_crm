@@ -173,7 +173,7 @@ class ComprehensiveIFTAService {
 
   async getServicePackages() {
     return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM ifta_service_packages WHERE is_active = 1 ORDER BY monthly_price ASC';
+      const sql = 'SELECT * FROM ifta_service_packages ORDER BY price ASC';
 
       this.db.all(sql, [], (err, rows) => {
         if (err) {
@@ -341,18 +341,19 @@ class ComprehensiveIFTAService {
   transformIFTAServicePackage(row) {
     return {
       id: row.id,
-      packageName: row.package_name,
-      packageType: row.package_type,
+      packageName: row.name,
+      packageType: 'ifta',
       description: row.description,
-      monthlyPrice: row.monthly_price,
-      setupFee: row.setup_fee,
+      monthlyPrice: row.price,
+      setupFee: 0,
       features: JSON.parse(row.features || '[]'),
-      maxVehicles: row.max_vehicles,
-      maxQuarterlyFilings: row.max_quarterly_filings,
-      includesAuditSupport: row.includes_audit_support,
-      includesComplianceMonitoring: row.includes_compliance_monitoring,
-      includesDedicatedSupport: row.includes_dedicated_support,
-      isActive: row.is_active,
+      maxVehicles: 999,
+      maxQuarterlyFilings: 4,
+      includesAuditSupport: row.features ? row.features.includes('Audit assistance') : false,
+      includesComplianceMonitoring: row.features ? row.features.includes('Advanced reporting') : false,
+      includesDedicatedSupport: row.features ? row.features.includes('Dedicated account manager') : false,
+      isActive: true,
+      isPopular: row.is_popular === 1,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };

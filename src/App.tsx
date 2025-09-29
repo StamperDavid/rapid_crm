@@ -9,12 +9,14 @@ import { UIStateProvider } from './contexts/UIStateContext';
 import { TooltipProvider } from './contexts/TooltipContext';
 import Layout from './components/Layout';
 import ClientLayout from './components/ClientLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Import modules directly (not lazy loaded for now)
 import DashboardModule from './modules/Dashboard/index';
 import Companies from './modules/CRM/pages/Companies';
 import CompanyDetail from './modules/CRM/pages/CompanyDetail';
 import Services from './modules/CRM/pages/Services';
+import EditService from './modules/CRM/pages/EditService';
 import Leads from './modules/CRM/pages/Leads';
 import Deals from './modules/CRM/pages/Deals';
 import UserManagement from './modules/CRM/pages/UserManagement';
@@ -88,8 +90,9 @@ function App() {
                   
                   {/* Admin Routes - Use Layout (Full Admin Interface) */}
                   <Route path="/*" element={
-                    <Layout>
-                      <Routes>
+                    <ErrorBoundary>
+                      <Layout>
+                        <Routes>
                         {/* Core Dashboard - Always loaded */}
                         <Route path="/" element={<DashboardModule />} />
                         
@@ -99,6 +102,7 @@ function App() {
                         <Route path="/leads" element={<Leads />} />
                         <Route path="/deals" element={<Deals />} />
                         <Route path="/services" element={<Services />} />
+                        <Route path="/services/edit/:id" element={<EditService />} />
                         <Route path="/compliance" element={<ComplianceModule />} />
                         <Route path="/eld" element={<ELDDashboard />} />
                         <Route path="/ifta" element={<IFTADashboard />} />
@@ -132,8 +136,9 @@ function App() {
                         <Route path="/monitoring/*" element={<SystemMonitoringModule />} />
                         <Route path="/compliance/*" element={<ComplianceModule />} />
                         <Route path="/analytics/*" element={<AnalyticsModule />} />
-                      </Routes>
-                    </Layout>
+                        </Routes>
+                      </Layout>
+                    </ErrorBoundary>
                   } />
                 </Routes>
                 <Toaster

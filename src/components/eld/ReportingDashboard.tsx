@@ -7,7 +7,8 @@ import {
   ExclamationIcon,
   TrendingUpIcon,
   TrendingDownIcon,
-  CalendarIcon
+  CalendarIcon,
+  CheckCircleIcon
 } from '@heroicons/react/outline';
 
 interface RevenueData {

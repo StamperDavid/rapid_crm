@@ -91,24 +91,88 @@ export class PersistentConversationService {
   private async loadPersistentData(): Promise<void> {
     try {
       console.log('Loading persistent conversation data from real database...');
-      // TODO: Implement real database loading
-      // For now, initialize empty
+      
+      // Load conversation contexts
+      const conversationContexts = await this.loadConversationContexts();
+      this.conversationContexts = new Map(conversationContexts.map(ctx => [ctx.conversationId, ctx]));
+      
+      // Load agent memory banks
+      const agentMemoryBanks = await this.loadAgentMemoryBanks();
+      this.agentMemoryBanks = new Map(agentMemoryBanks.map(memory => [memory.agentId, memory]));
+      
+      // Build indexes
+      this.buildIndexes();
+      
+      console.log(`✅ Loaded ${this.conversationContexts.size} conversation contexts, ${this.agentMemoryBanks.size} agent memory banks`);
+    } catch (error) {
+      console.error('Error loading persistent conversation data:', error);
+      // Initialize empty maps as fallback
       this.conversationContexts = new Map();
       this.agentMemoryBanks = new Map();
       this.conversationIndex = new Map();
       this.agentIndex = new Map();
-    } catch (error) {
-      console.error('Error loading persistent conversation data:', error);
     }
   }
 
   private async savePersistentData(): Promise<void> {
     try {
       console.log('Saving persistent conversation data to real database...');
-      // TODO: Implement real database saving
       // Data is saved individually when created/updated
+      // This method is kept for future batch operations
     } catch (error) {
       console.error('Error saving persistent conversation data:', error);
+    }
+  }
+
+  /**
+   * Load conversation contexts from database
+   */
+  private async loadConversationContexts(): Promise<PersistentConversationContext[]> {
+    try {
+      const response = await fetch('/api/conversations/contexts');
+      if (!response.ok) {
+        throw new Error(`Failed to load conversation contexts: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading conversation contexts:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Load agent memory banks from database
+   */
+  private async loadAgentMemoryBanks(): Promise<AgentMemoryBank[]> {
+    try {
+      const response = await fetch('/api/conversations/memory-banks');
+      if (!response.ok) {
+        throw new Error(`Failed to load agent memory banks: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading agent memory banks:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Build indexes for efficient lookups
+   */
+  private buildIndexes(): void {
+    // Build conversation index by client
+    this.conversationIndex.clear();
+    for (const [conversationId, context] of this.conversationContexts) {
+      if (!this.conversationIndex.has(context.clientId)) {
+        this.conversationIndex.set(context.clientId, []);
+      }
+      this.conversationIndex.get(context.clientId)!.push(conversationId);
+    }
+
+    // Build agent index
+    this.agentIndex.clear();
+    for (const [agentId, memory] of this.agentMemoryBanks) {
+      this.agentIndex.set(agentId, memory);
     }
   }
 

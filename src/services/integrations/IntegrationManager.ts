@@ -120,13 +120,26 @@ export class IntegrationManager {
   private async loadData(): Promise<void> {
     try {
       console.log('Loading integration data from real database...');
-      // TODO: Implement real database loading
-      // For now, initialize empty
+      
+      // Load integrations
+      const integrations = await this.loadIntegrations();
+      this.integrations = new Map(integrations.map(integration => [integration.id, integration]));
+      
+      // Load sync results
+      const syncResults = await this.loadSyncResults();
+      this.syncResults = new Map(syncResults.map(result => [result.id, result]));
+      
+      // Load health checks
+      const healthChecks = await this.loadHealthChecks();
+      this.healthChecks = new Map(healthChecks.map(check => [check.id, check]));
+      
+      console.log(`✅ Loaded ${this.integrations.size} integrations, ${this.syncResults.size} sync results, ${this.healthChecks.size} health checks`);
+    } catch (error) {
+      console.error('Error loading integration data:', error);
+      // Initialize empty maps as fallback
       this.integrations = new Map();
       this.syncResults = new Map();
       this.healthChecks = new Map();
-    } catch (error) {
-      console.error('Error loading integration data:', error);
     }
   }
 
@@ -136,10 +149,58 @@ export class IntegrationManager {
   private async saveData(): Promise<void> {
     try {
       console.log('Saving integration data to real database...');
-      // TODO: Implement real database saving
       // Data is saved individually when created/updated
+      // This method is kept for future batch operations
     } catch (error) {
       console.error('Error saving integration data:', error);
+    }
+  }
+
+  /**
+   * Load integrations from database
+   */
+  private async loadIntegrations(): Promise<Integration[]> {
+    try {
+      const response = await fetch('/api/integrations');
+      if (!response.ok) {
+        throw new Error(`Failed to load integrations: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading integrations:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Load sync results from database
+   */
+  private async loadSyncResults(): Promise<SyncResult[]> {
+    try {
+      const response = await fetch('/api/integrations/sync-results');
+      if (!response.ok) {
+        throw new Error(`Failed to load sync results: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading sync results:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Load health checks from database
+   */
+  private async loadHealthChecks(): Promise<HealthCheck[]> {
+    try {
+      const response = await fetch('/api/integrations/health-checks');
+      if (!response.ok) {
+        throw new Error(`Failed to load health checks: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading health checks:', error);
+      return [];
     }
   }
 

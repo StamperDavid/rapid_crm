@@ -1,4 +1,5 @@
 import { RPAWorkflow, WorkflowStep, HumanCheckpoint, WorkflowAction, WorkflowCondition } from '../../types/rpa';
+import { usdotCredentialService } from './USDOTCredentialService';
 
 export const USDOT_APPLICATION_WORKFLOW: RPAWorkflow = {
   id: 'usdot_application_workflow',
@@ -440,8 +441,8 @@ export const USDOT_RPA_CONFIGURATION = {
   },
   credentials: {
     loginGov: {
-      username: process.env.LOGIN_GOV_USERNAME || '',
-      password: process.env.LOGIN_GOV_PASSWORD || '',
+      username: usdotCredentialService.getCredentials()?.loginGov.username || '',
+      password: usdotCredentialService.getCredentials()?.loginGov.password || '',
       mfaEnabled: true
     }
   },
