@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Theme Editor - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            background: #1e3a8a;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .btn-primary:hover {
+            background: #047857;
+        }
+
+        .preview-frame {
+            flex: 1;
+            background: white;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: #1e3a8a;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-input {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3a8a;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3a8a;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .font-preview {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            margin-top: 5px;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .layout-option {
+            aspect-ratio: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .layout-option:hover {
+            border-color: #1e3a8a;
+        }
+
+        .layout-option.active {
+            border-color: #1e3a8a;
+            background: #dbeafe;
+        }
+
+        .layout-preview {
+            width: 80%;
+            height: 80%;
+            display: grid;
+            gap: 2px;
+        }
+
+        .layout-preview.header {
+            grid-template-rows: 1fr 2fr 1fr;
+        }
+
+        .layout-preview.sidebar {
+            grid-template-columns: 1fr 2fr;
+        }
+
+        .layout-preview.grid {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .layout-block {
+            background: #1e3a8a;
+            border-radius: 2px;
+        }
+
+        .component-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .component-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .component-item:hover {
+            border-color: #1e3a8a;
+            background: #f8fafc;
+        }
+
+        .component-item.active {
+            border-color: #1e3a8a;
+            background: #dbeafe;
+        }
+
+        .component-icon {
+            width: 30px;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .component-name {
+            flex: 1;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #1e3a8a;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(26px);
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .preset-card {
+            aspect-ratio: 1.5;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preset-card:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .preset-card.active {
+            border-color: #1e3a8a;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+        }
+
+        .preset-preview {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            gap: 2px;
+            padding: 8px;
+        }
+
+        .preset-header {
+            background: #1e3a8a;
+            border-radius: 4px;
+        }
+
+        .preset-content {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .preset-footer {
+            background: #64748b;
+            border-radius: 4px;
+        }
+
+        .preset-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .code-editor {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 2px solid #334155;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .responsive-preview {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .device-btn {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .device-btn:hover {
+            border-color: #1e3a8a;
+        }
+
+        .device-btn.active {
+            border-color: #1e3a8a;
+            background: #dbeafe;
+        }
+
+        .animation-preview {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(45deg, #1e3a8a, #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .gradient-picker {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .gradient-option {
+            aspect-ratio: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gradient-option:hover {
+            border-color: #1e3a8a;
+            transform: scale(1.05);
+        }
+
+        .gradient-option.active {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.3);
+        }
+
+        .gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .gradient-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .gradient-6 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .gradient-7 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .gradient-8 { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+
+        @media (max-width: 1200px) {
+            .editor-container {
+                grid-template-columns: 250px 1fr 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .preview-panel {
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Left Sidebar - Design Controls -->
+        <div class="sidebar">
+            <div class="section">
+                <div class="section-title">🎨 Color Scheme</div>
+                
+                <div class="form-group">
+                    <label>Primary Color</label>
+                    <div class="color-picker">
+                        <input type="color" class="color-input" id="primaryColor" value="#1e3a8a">
+                        <input type="text" id="primaryColorText" value="#1e3a8a" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Secondary Color</label>
+                    <div class="color-picker">
+                        <input type="color" class="color-input" id="secondaryColor" value="#059669">
+                        <input type="text" id="secondaryColorText" value="#059669" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Accent Color</label>
+                    <div class="color-picker">
+                        <input type="color" class="color-input" id="accentColor" value="#f59e0b">
+                        <input type="text" id="accentColorText" value="#f59e0b" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Background Gradient</label>
+                    <div class="gradient-picker">
+                        <div class="gradient-option gradient-1 active" data-gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></div>
+                        <div class="gradient-option gradient-2" data-gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"></div>
+                        <div class="gradient-option gradient-3" data-gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"></div>
+                        <div class="gradient-option gradient-4" data-gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"></div>
+                        <div class="gradient-option gradient-5" data-gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"></div>
+                        <div class="gradient-option gradient-6" data-gradient="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"></div>
+                        <div class="gradient-option gradient-7" data-gradient="linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)"></div>
+                        <div class="gradient-option gradient-8" data-gradient="linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📝 Typography</div>
+                
+                <div class="form-group">
+                    <label>Font Family</label>
+                    <select id="fontFamily">
+                        <option value="Inter">Inter</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Open Sans">Open Sans</option>
+                        <option value="Lato">Lato</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Poppins">Poppins</option>
+                        <option value="Nunito">Nunito</option>
+                        <option value="Source Sans Pro">Source Sans Pro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Base Font Size</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="fontSize" min="12" max="20" value="16">
+                        <span class="slider-value" id="fontSizeValue">16px</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Font Weight</label>
+                    <select id="fontWeight">
+                        <option value="300">Light (300)</option>
+                        <option value="400">Regular (400)</option>
+                        <option value="500">Medium (500)</option>
+                        <option value="600">Semi Bold (600)</option>
+                        <option value="700">Bold (700)</option>
+                        <option value="800">Extra Bold (800)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Line Height</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="lineHeight" min="1" max="2" step="0.1" value="1.6">
+                        <span class="slider-value" id="lineHeightValue">1.6</span>
+                    </div>
+                </div>
+
+                <div class="font-preview" id="fontPreview">
+                    The quick brown fox jumps over the lazy dog
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📐 Layout</div>
+                
+                <div class="form-group">
+                    <label>Layout Style</label>
+                    <div class="layout-grid">
+                        <div class="layout-option active" data-layout="header">
+                            <div class="layout-preview header">
+                                <div class="layout-block"></div>
+                                <div class="layout-block"></div>
+                                <div class="layout-block"></div>
+                            </div>
+                        </div>
+                        <div class="layout-option" data-layout="sidebar">
+                            <div class="layout-preview sidebar">
+                                <div class="layout-block"></div>
+                                <div class="layout-block"></div>
+                            </div>
+                        </div>
+                        <div class="layout-option" data-layout="grid">
+                            <div class="layout-preview grid">
+                                <div class="layout-block"></div>
+                                <div class="layout-block"></div>
+                                <div class="layout-block"></div>
+                                <div class="layout-block"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Container Width</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="containerWidth" min="800" max="1400" value="1200">
+                        <span class="slider-value" id="containerWidthValue">1200px</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Border Radius</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="borderRadius" min="0" max="20" value="8">
+                        <span class="slider-value" id="borderRadiusValue">8px</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🎭 Animations</div>
+                
+                <div class="form-group">
+                    <label>Hover Effects</label>
+                    <div class="toggle-switch active" id="hoverEffects"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Page Transitions</label>
+                    <div class="toggle-switch" id="pageTransitions"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Loading Animations</label>
+                    <div class="toggle-switch active" id="loadingAnimations"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Animation Speed</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="animationSpeed" min="0.1" max="1" step="0.1" value="0.3">
+                        <span class="slider-value" id="animationSpeedValue">0.3s</span>
+                    </div>
+                </div>
+
+                <div class="animation-preview" id="animationPreview">
+                    Hover me!
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content - Preview -->
+        <div class="main-content">
+            <div class="header">
+                <h1>🎨 Advanced Theme Editor</h1>
+                <div class="header-actions">
+                    <button class="btn" onclick="resetTheme()">Reset</button>
+                    <button class="btn" onclick="saveTheme()">Save Draft</button>
+                    <button class="btn btn-primary" onclick="publishTheme()">Publish</button>
+                </div>
+            </div>
+
+            <div class="preview-frame">
+                <div class="responsive-preview">
+                    <button class="device-btn active" data-device="desktop">🖥️ Desktop</button>
+                    <button class="device-btn" data-device="tablet">📱 Tablet</button>
+                    <button class="device-btn" data-device="mobile">📱 Mobile</button>
+                </div>
+                <iframe class="preview-iframe" id="previewFrame" src="/theme-preview"></iframe>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Components & Code -->
+        <div class="preview-panel">
+            <div class="section">
+                <div class="section-title">🧩 Components</div>
+                <div class="component-list">
+                    <div class="component-item active" data-component="header">
+                        <div class="component-icon">📋</div>
+                        <div class="component-name">Header</div>
+                    </div>
+                    <div class="component-item" data-component="navigation">
+                        <div class="component-icon">🧭</div>
+                        <div class="component-name">Navigation</div>
+                    </div>
+                    <div class="component-item" data-component="hero">
+                        <div class="component-icon">🎯</div>
+                        <div class="component-name">Hero Section</div>
+                    </div>
+                    <div class="component-item" data-component="products">
+                        <div class="component-icon">🛍️</div>
+                        <div class="component-name">Product Grid</div>
+                    </div>
+                    <div class="component-item" data-component="footer">
+                        <div class="component-icon">📄</div>
+                        <div class="component-name">Footer</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🎨 Theme Presets</div>
+                <div class="preset-grid">
+                    <div class="preset-card active" data-preset="modern">
+                        <div class="preset-preview">
+                            <div class="preset-header"></div>
+                            <div class="preset-content"></div>
+                            <div class="preset-footer"></div>
+                        </div>
+                        <div class="preset-name">Modern</div>
+                    </div>
+                    <div class="preset-card" data-preset="classic">
+                        <div class="preset-preview">
+                            <div class="preset-header"></div>
+                            <div class="preset-content"></div>
+                            <div class="preset-footer"></div>
+                        </div>
+                        <div class="preset-name">Classic</div>
+                    </div>
+                    <div class="preset-card" data-preset="minimal">
+                        <div class="preset-preview">
+                            <div class="preset-header"></div>
+                            <div class="preset-content"></div>
+                            <div class="preset-footer"></div>
+                        </div>
+                        <div class="preset-name">Minimal</div>
+                    </div>
+                    <div class="preset-card" data-preset="sports">
+                        <div class="preset-preview">
+                            <div class="preset-header"></div>
+                            <div class="preset-content"></div>
+                            <div class="preset-footer"></div>
+                        </div>
+                        <div class="preset-name">Sports</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">💻 Custom CSS</div>
+                <textarea class="code-editor" id="customCSS" placeholder="/* Add your custom CSS here */">
+/* Custom styles for your theme */
+.custom-button {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+}
+                </textarea>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📱 Responsive Settings</div>
+                
+                <div class="form-group">
+                    <label>Mobile Navigation</label>
+                    <select id="mobileNav">
+                        <option value="hamburger">Hamburger Menu</option>
+                        <option value="tabs">Tab Navigation</option>
+                        <option value="sidebar">Sidebar Menu</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Touch Interactions</label>
+                    <div class="toggle-switch active" id="touchInteractions"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Font Scale</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="mobileFontScale" min="0.8" max="1.2" step="0.1" value="1">
+                        <span class="slider-value" id="mobileFontScaleValue">1.0x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTheme = {
+            colors: {
+                primary: '#1e3a8a',
+                secondary: '#059669',
+                accent: '#f59e0b',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            },
+            typography: {
+                fontFamily: 'Inter',
+                fontSize: 16,
+                fontWeight: 400,
+                lineHeight: 1.6
+            },
+            layout: {
+                style: 'header',
+                containerWidth: 1200,
+                borderRadius: 8
+            },
+            animations: {
+                hoverEffects: true,
+                pageTransitions: false,
+                loadingAnimations: true,
+                speed: 0.3
+            },
+            responsive: {
+                mobileNav: 'hamburger',
+                touchInteractions: true,
+                mobileFontScale: 1.0
+            },
+            customCSS: ''
+        };
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeColorPickers();
+            initializeSliders();
+            initializeToggles();
+            initializeLayoutOptions();
+            initializeComponentSelection();
+            initializePresetSelection();
+            initializeDevicePreview();
+            updatePreview();
+        });
+
+        function initializeColorPickers() {
+            const colorInputs = document.querySelectorAll('.color-input');
+            colorInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const textInput = document.getElementById(this.id + 'Text');
+                    textInput.value = this.value;
+                    updateColorScheme();
+                });
+            });
+        }
+
+        function initializeSliders() {
+            const sliders = document.querySelectorAll('.slider');
+            sliders.forEach(slider => {
+                slider.addEventListener('input', function() {
+                    const valueDisplay = document.getElementById(this.id + 'Value');
+                    if (this.id === 'fontSize') {
+                        valueDisplay.textContent = this.value + 'px';
+                    } else if (this.id === 'lineHeight') {
+                        valueDisplay.textContent = this.value;
+                    } else if (this.id === 'containerWidth') {
+                        valueDisplay.textContent = this.value + 'px';
+                    } else if (this.id === 'borderRadius') {
+                        valueDisplay.textContent = this.value + 'px';
+                    } else if (this.id === 'animationSpeed') {
+                        valueDisplay.textContent = this.value + 's';
+                    } else if (this.id === 'mobileFontScale') {
+                        valueDisplay.textContent = this.value + 'x';
+                    }
+                    updateTheme();
+                });
+            });
+        }
+
+        function initializeToggles() {
+            const toggles = document.querySelectorAll('.toggle-switch');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    updateTheme();
+                });
+            });
+        }
+
+        function initializeLayoutOptions() {
+            const layoutOptions = document.querySelectorAll('.layout-option');
+            layoutOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    layoutOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTheme.layout.style = this.dataset.layout;
+                    updatePreview();
+                });
+            });
+        }
+
+        function initializeComponentSelection() {
+            const components = document.querySelectorAll('.component-item');
+            components.forEach(component => {
+                component.addEventListener('click', function() {
+                    components.forEach(comp => comp.classList.remove('active'));
+                    this.classList.add('active');
+                    // Update preview to highlight selected component
+                });
+            });
+        }
+
+        function initializePresetSelection() {
+            const presets = document.querySelectorAll('.preset-card');
+            presets.forEach(preset => {
+                preset.addEventListener('click', function() {
+                    presets.forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    applyPreset(this.dataset.preset);
+                });
+            });
+        }
+
+        function initializeDevicePreview() {
+            const deviceBtns = document.querySelectorAll('.device-btn');
+            deviceBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    deviceBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateDevicePreview(this.dataset.device);
+                });
+            });
+        }
+
+        function updateColorScheme() {
+            currentTheme.colors.primary = document.getElementById('primaryColor').value;
+            currentTheme.colors.secondary = document.getElementById('secondaryColor').value;
+            currentTheme.colors.accent = document.getElementById('accentColor').value;
+            updatePreview();
+        }
+
+        function updateTheme() {
+            currentTheme.typography.fontFamily = document.getElementById('fontFamily').value;
+            currentTheme.typography.fontSize = document.getElementById('fontSize').value;
+            currentTheme.typography.fontWeight = document.getElementById('fontWeight').value;
+            currentTheme.typography.lineHeight = document.getElementById('lineHeight').value;
+            currentTheme.layout.containerWidth = document.getElementById('containerWidth').value;
+            currentTheme.layout.borderRadius = document.getElementById('borderRadius').value;
+            currentTheme.animations.hoverEffects = document.getElementById('hoverEffects').classList.contains('active');
+            currentTheme.animations.pageTransitions = document.getElementById('pageTransitions').classList.contains('active');
+            currentTheme.animations.loadingAnimations = document.getElementById('loadingAnimations').classList.contains('active');
+            currentTheme.animations.speed = document.getElementById('animationSpeed').value;
+            currentTheme.responsive.mobileNav = document.getElementById('mobileNav').value;
+            currentTheme.responsive.touchInteractions = document.getElementById('touchInteractions').classList.contains('active');
+            currentTheme.responsive.mobileFontScale = document.getElementById('mobileFontScale').value;
+            currentTheme.customCSS = document.getElementById('customCSS').value;
+            
+            updateFontPreview();
+            updatePreview();
+        }
+
+        function updateFontPreview() {
+            const preview = document.getElementById('fontPreview');
+            preview.style.fontFamily = currentTheme.typography.fontFamily;
+            preview.style.fontSize = currentTheme.typography.fontSize + 'px';
+            preview.style.fontWeight = currentTheme.typography.fontWeight;
+            preview.style.lineHeight = currentTheme.typography.lineHeight;
+        }
+
+        function updatePreview() {
+            // Update the preview iframe with current theme
+            const iframe = document.getElementById('previewFrame');
+            if (iframe.contentWindow) {
+                iframe.contentWindow.postMessage({
+                    type: 'updateTheme',
+                    theme: currentTheme
+                }, '*');
+            }
+        }
+
+        function updateDevicePreview(device) {
+            const iframe = document.getElementById('previewFrame');
+            iframe.style.width = device === 'mobile' ? '375px' : 
+                                 device === 'tablet' ? '768px' : '100%';
+            iframe.style.height = device === 'mobile' ? '667px' : 
+                                 device === 'tablet' ? '1024px' : '100%';
+        }
+
+        function applyPreset(presetName) {
+            const presets = {
+                modern: {
+                    colors: { primary: '#1e3a8a', secondary: '#059669', accent: '#f59e0b' },
+                    typography: { fontFamily: 'Inter', fontSize: 16, fontWeight: 500 },
+                    layout: { borderRadius: 12, containerWidth: 1200 }
+                },
+                classic: {
+                    colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#d97706' },
+                    typography: { fontFamily: 'Roboto', fontSize: 16, fontWeight: 400 },
+                    layout: { borderRadius: 4, containerWidth: 1200 }
+                },
+                minimal: {
+                    colors: { primary: '#000000', secondary: '#6b7280', accent: '#000000' },
+                    typography: { fontFamily: 'Inter', fontSize: 14, fontWeight: 300 },
+                    layout: { borderRadius: 0, containerWidth: 1000 }
+                },
+                sports: {
+                    colors: { primary: '#dc2626', secondary: '#059669', accent: '#f59e0b' },
+                    typography: { fontFamily: 'Montserrat', fontSize: 16, fontWeight: 600 },
+                    layout: { borderRadius: 8, containerWidth: 1400 }
+                }
+            };
+
+            const preset = presets[presetName];
+            if (preset) {
+                Object.assign(currentTheme, preset);
+                updateFormValues();
+                updatePreview();
+            }
+        }
+
+        function updateFormValues() {
+            document.getElementById('primaryColor').value = currentTheme.colors.primary;
+            document.getElementById('secondaryColor').value = currentTheme.colors.secondary;
+            document.getElementById('accentColor').value = currentTheme.colors.accent;
+            document.getElementById('fontFamily').value = currentTheme.typography.fontFamily;
+            document.getElementById('fontSize').value = currentTheme.typography.fontSize;
+            document.getElementById('fontWeight').value = currentTheme.typography.fontWeight;
+            document.getElementById('lineHeight').value = currentTheme.typography.lineHeight;
+            document.getElementById('containerWidth').value = currentTheme.layout.containerWidth;
+            document.getElementById('borderRadius').value = currentTheme.layout.borderRadius;
+            document.getElementById('customCSS').value = currentTheme.customCSS;
+        }
+
+        function resetTheme() {
+            if (confirm('Are you sure you want to reset the theme to default?')) {
+                currentTheme = {
+                    colors: { primary: '#1e3a8a', secondary: '#059669', accent: '#f59e0b' },
+                    typography: { fontFamily: 'Inter', fontSize: 16, fontWeight: 400, lineHeight: 1.6 },
+                    layout: { style: 'header', containerWidth: 1200, borderRadius: 8 },
+                    animations: { hoverEffects: true, pageTransitions: false, loadingAnimations: true, speed: 0.3 },
+                    responsive: { mobileNav: 'hamburger', touchInteractions: true, mobileFontScale: 1.0 },
+                    customCSS: ''
+                };
+                updateFormValues();
+                updatePreview();
+            }
+        }
+
+        function saveTheme() {
+            // Save theme to backend
+            fetch('/api/v1/themes/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentTheme)
+            }).then(response => {
+                if (response.ok) {
+                    alert('Theme saved successfully!');
+                } else {
+                    alert('Failed to save theme');
+                }
+            });
+        }
+
+        function publishTheme() {
+            if (confirm('Are you sure you want to publish this theme? This will make it live for all users.')) {
+                fetch('/api/v1/themes/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentTheme)
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Theme published successfully!');
+                    } else {
+                        alert('Failed to publish theme');
+                    }
+                });
+            }
+        }
+
+        // Gradient picker
+        document.querySelectorAll('.gradient-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.gradient-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                currentTheme.colors.background = this.dataset.gradient;
+                updatePreview();
+            });
+        });
+
+        // Custom CSS editor
+        document.getElementById('customCSS').addEventListener('input', function() {
+            currentTheme.customCSS = this.value;
+            updatePreview();
+        });
+    </script>
+</body>
+</html>

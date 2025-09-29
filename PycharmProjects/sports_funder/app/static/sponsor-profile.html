@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Profile - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .profile-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .profile-header h1 {
+            color: #1e3a8a;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .profile-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-card h3 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .sponsorships-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .sponsorship-card {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .sponsorship-card:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .sponsorship-school {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .sponsorship-type {
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .sponsorship-details {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/local-sponsors" class="back-btn">← Back to Local Sponsors</a>
+        
+        <div class="profile-header">
+            <h1>🏪 Sponsor Profile</h1>
+            <p>View and manage local business sponsor details, sponsorships, and performance metrics</p>
+        </div>
+
+        <!-- Sponsor Overview -->
+        <div class="profile-card">
+            <h3>Sponsor Overview</h3>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSponsorships">-</div>
+                    <div class="stat-label">Active Sponsorships</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSchools">-</div>
+                    <div class="stat-label">Partner Schools</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalInvestment">-</div>
+                    <div class="stat-label">Total Investment</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="sponsorRating">-</div>
+                    <div class="stat-label">Sponsor Rating</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sponsor Details & Management -->
+        <div class="profile-card">
+            <h3>Sponsor Details & Management</h3>
+            <form id="sponsorForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="businessName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Type</label>
+                        <select id="businessType">
+                            <option value="Restaurant">Restaurant</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Service">Service</option>
+                            <option value="Automotive">Automotive</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Fitness">Fitness</option>
+                            <option value="Entertainment">Entertainment</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contact Person</label>
+                        <input type="text" id="contactPerson">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="sponsorPhone">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="sponsorEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url" id="sponsorWebsite">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="sponsorAddress" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="sponsorStatus">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Sponsorship Level</label>
+                        <select id="sponsorshipLevel">
+                            <option value="Bronze">Bronze ($500-999)</option>
+                            <option value="Silver">Silver ($1,000-2,499)</option>
+                            <option value="Gold">Gold ($2,500-4,999)</option>
+                            <option value="Platinum">Platinum ($5,000+)</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Sponsorships Management -->
+        <div class="profile-card">
+            <h3>Active Sponsorships</h3>
+            <div class="sponsorships-list" id="sponsorshipsList">
+                <div class="loading">Loading sponsorships...</div>
+            </div>
+            <button class="btn btn-success" onclick="createNewSponsorship()">Create New Sponsorship</button>
+        </div>
+
+        <!-- Management Actions -->
+        <div class="profile-card">
+            <h3>Management Actions</h3>
+            <div class="actions-grid">
+                <button class="btn" onclick="viewPerformanceReport()">Performance Report</button>
+                <button class="btn" onclick="viewInvestmentHistory()">Investment History</button>
+                <button class="btn" onclick="sendMessage()">Send Message</button>
+                <button class="btn" onclick="scheduleMeeting()">Schedule Meeting</button>
+                <button class="btn" onclick="viewContract()">View Contract</button>
+                <button class="btn btn-danger" onclick="terminateSponsorship()">Terminate Sponsorship</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSponsor = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSponsorData();
+            setupFormHandlers();
+        });
+
+        function loadSponsorData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sponsorId = urlParams.get('sponsor_id');
+            
+            if (!sponsorId) {
+                document.querySelector('.container').innerHTML = '<div class="error">No sponsor ID provided</div>';
+                return;
+            }
+
+            // Mock sponsor data - in real app, this would come from API
+            const sponsorsData = {
+                '1': {
+                    id: '1',
+                    name: 'Mario\'s Italian Restaurant',
+                    type: 'Restaurant',
+                    contact_person: 'Mario Rossi',
+                    phone: '(555) 234-5678',
+                    email: 'mario@mariositalian.com',
+                    website: 'https://mariositalian.com',
+                    address: '789 Main Street, Austin, TX 78702',
+                    status: 'Active',
+                    sponsorship_level: 'Gold',
+                    total_sponsorships: 6,
+                    total_schools: 4,
+                    total_investment: '$8,500',
+                    rating: '4.9'
+                },
+                '2': {
+                    id: '2',
+                    name: 'Tech Solutions Inc',
+                    type: 'Service',
+                    contact_person: 'Jennifer Lee',
+                    phone: '(555) 345-6789',
+                    email: 'jennifer@techsolutions.com',
+                    website: 'https://techsolutions.com',
+                    address: '456 Tech Drive, Dallas, TX 75202',
+                    status: 'Active',
+                    sponsorship_level: 'Platinum',
+                    total_sponsorships: 12,
+                    total_schools: 8,
+                    total_investment: '$15,200',
+                    rating: '4.7'
+                }
+            };
+
+            currentSponsor = sponsorsData[sponsorId] || sponsorsData['1'];
+            displaySponsorData(currentSponsor);
+            loadSponsorships(currentSponsor.id);
+        }
+
+        function displaySponsorData(sponsor) {
+            document.getElementById('businessName').value = sponsor.name;
+            document.getElementById('businessType').value = sponsor.type;
+            document.getElementById('contactPerson').value = sponsor.contact_person;
+            document.getElementById('sponsorPhone').value = sponsor.phone;
+            document.getElementById('sponsorEmail').value = sponsor.email;
+            document.getElementById('sponsorWebsite').value = sponsor.website;
+            document.getElementById('sponsorAddress').value = sponsor.address;
+            document.getElementById('sponsorStatus').value = sponsor.status;
+            document.getElementById('sponsorshipLevel').value = sponsor.sponsorship_level;
+
+            document.getElementById('totalSponsorships').textContent = sponsor.total_sponsorships;
+            document.getElementById('totalSchools').textContent = sponsor.total_schools;
+            document.getElementById('totalInvestment').textContent = sponsor.total_investment;
+            document.getElementById('sponsorRating').textContent = sponsor.rating;
+        }
+
+        function loadSponsorships(sponsorId) {
+            // Mock sponsorships data
+            const sponsorshipsData = {
+                '1': [
+                    { school: 'Lincoln High School', type: 'Football Team', amount: '$2,000', start_date: '2024-01-01', end_date: '2024-12-31', status: 'Active' },
+                    { school: 'Roosevelt Middle School', type: 'Basketball Team', amount: '$1,500', start_date: '2024-02-01', end_date: '2024-11-30', status: 'Active' },
+                    { school: 'Washington Elementary', type: 'Soccer Team', amount: '$1,000', start_date: '2024-03-01', end_date: '2024-10-31', status: 'Active' }
+                ],
+                '2': [
+                    { school: 'Lincoln High School', type: 'Technology Program', amount: '$5,000', start_date: '2024-01-01', end_date: '2024-12-31', status: 'Active' },
+                    { school: 'Roosevelt Middle School', type: 'STEM Program', amount: '$3,000', start_date: '2024-02-01', end_date: '2024-11-30', status: 'Active' },
+                    { school: 'Jefferson High School', type: 'Computer Lab', amount: '$4,200', start_date: '2024-03-01', end_date: '2024-10-31', status: 'Active' }
+                ]
+            };
+
+            const sponsorships = sponsorshipsData[sponsorId] || sponsorshipsData['1'];
+            displaySponsorships(sponsorships);
+        }
+
+        function displaySponsorships(sponsorships) {
+            const sponsorshipsList = document.getElementById('sponsorshipsList');
+            sponsorshipsList.innerHTML = sponsorships.map(sponsorship => `
+                <div class="sponsorship-card">
+                    <div class="sponsorship-school">${sponsorship.school}</div>
+                    <div class="sponsorship-type">${sponsorship.type}</div>
+                    <div class="sponsorship-details">💰 Amount: ${sponsorship.amount}</div>
+                    <div class="sponsorship-details">📅 ${sponsorship.start_date} - ${sponsorship.end_date}</div>
+                    <div class="sponsorship-details">📊 Status: ${sponsorship.status}</div>
+                </div>
+            `).join('');
+        }
+
+        function setupFormHandlers() {
+            document.getElementById('sponsorForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveSponsorProfile();
+            });
+        }
+
+        function saveSponsorProfile() {
+            const formData = {
+                name: document.getElementById('businessName').value,
+                type: document.getElementById('businessType').value,
+                contact_person: document.getElementById('contactPerson').value,
+                phone: document.getElementById('sponsorPhone').value,
+                email: document.getElementById('sponsorEmail').value,
+                website: document.getElementById('sponsorWebsite').value,
+                address: document.getElementById('sponsorAddress').value,
+                status: document.getElementById('sponsorStatus').value,
+                sponsorship_level: document.getElementById('sponsorshipLevel').value
+            };
+
+            console.log('Saving sponsor profile:', formData);
+            alert('Sponsor profile saved successfully!');
+        }
+
+        function createNewSponsorship() {
+            alert('Create New Sponsorship functionality would open a sponsorship creation form');
+        }
+
+        function viewPerformanceReport() {
+            alert('Performance Report for ' + currentSponsor.name + ' would be generated');
+        }
+
+        function viewInvestmentHistory() {
+            alert('Investment History for ' + currentSponsor.name + ' would be displayed');
+        }
+
+        function sendMessage() {
+            alert('Send Message to ' + currentSponsor.name + ' would open messaging interface');
+        }
+
+        function scheduleMeeting() {
+            alert('Schedule Meeting with ' + currentSponsor.name + ' would open calendar');
+        }
+
+        function viewContract() {
+            alert('Contract for ' + currentSponsor.name + ' would be displayed');
+        }
+
+        function terminateSponsorship() {
+            if (confirm('Are you sure you want to terminate sponsorship with ' + currentSponsor.name + '?')) {
+                alert('Sponsorship terminated successfully');
+            }
+        }
+    </script>
+</body>
+</html>

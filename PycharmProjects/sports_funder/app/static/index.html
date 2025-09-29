@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Funder - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            margin-bottom: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #3b82f6, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .nav-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #ef4444);
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #475569;
+        }
+
+        .nav-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .nav-card h3 {
+            color: #f8fafc;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-card p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .nav-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.9;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 4px 12px 0 rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 4px 12px 0 rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 4px 12px 0 rgba(239, 68, 68, 0.4);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .theme-toggle-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .theme-toggle-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .theme-option {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .theme-option:hover {
+            border-color: #475569;
+            transform: translateY(-2px);
+        }
+
+        .theme-option.active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .theme-preview {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-preview .preview-header {
+            height: 40px;
+            width: 100%;
+        }
+
+        .theme-preview .preview-content {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: #0f172a;
+        }
+
+        .theme-preview .preview-card {
+            flex: 1;
+            height: 40px;
+            border-radius: 4px;
+        }
+
+        .theme-option h4 {
+            color: #f8fafc;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .theme-option p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .btn-theme {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-theme:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-1px);
+        }
+
+        .btn-theme.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-theme.active:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏈 Sports Funder</h1>
+            <p>Empowering schools, teams, and communities through innovative fundraising solutions</p>
+        </div>
+
+        <div class="nav-grid">
+            <a href="/dashboard" class="nav-card">
+                <span class="icon">📊</span>
+                <h3>Main Dashboard</h3>
+                <p>Access your personalized dashboard with real-time data and analytics</p>
+                <button class="btn">Go to Dashboard</button>
+            </a>
+
+            <a href="/dashboard/company" class="nav-card">
+                <span class="icon">👨‍💼</span>
+                <h3>Sales Agent Management</h3>
+                <p>View and manage all sales agents, their performance, and territories</p>
+                <button class="btn btn-success">Manage Sales Agents</button>
+            </a>
+
+
+            <a href="/schools" class="nav-card">
+                <span class="icon">🏫</span>
+                <h3>Schools Management</h3>
+                <p>View and manage all schools in your territory with detailed analytics</p>
+                <button class="btn">Manage Schools</button>
+            </a>
+
+
+            <a href="/api-keys" class="nav-card">
+                <span class="icon">🔑</span>
+                <h3>API Keys</h3>
+                <p>Manage API keys and access tokens for system integration</p>
+                <button class="btn btn-danger">API Management</button>
+            </a>
+
+                <a href="/admin" class="nav-card">
+                    <span class="icon">⚙️</span>
+                    <h3>Schema Management</h3>
+                    <p>Customize data schemas for sales agents, schools, coaches, players, supporters, businesses, and products</p>
+                    <button class="btn btn-danger">Admin Access</button>
+                </a>
+
+                <a href="/product-import" class="nav-card">
+                    <span class="icon">📦</span>
+                    <h3>Product Import</h3>
+                    <p>Import products from external APIs and manage product templates for school stores</p>
+                    <button class="btn btn-success">Import Products</button>
+                </a>
+
+                <a href="/promotional-companies" class="nav-card">
+                    <span class="icon">🏭</span>
+                    <h3>Promotional Companies</h3>
+                    <p>Manage promotional companies that supply products and update school store images</p>
+                    <button class="btn btn-success">Manage Companies</button>
+                </a>
+
+                <a href="/local-sponsors" class="nav-card">
+                    <span class="icon">🏪</span>
+                    <h3>Local Business Sponsors</h3>
+                    <p>Manage local businesses that advertise on school pages and generate leads</p>
+                    <button class="btn btn-success">Manage Sponsors</button>
+                </a>
+
+                <a href="/admin-theme-editor" class="nav-card">
+                    <span class="icon">🎨</span>
+                    <h3>Admin Theme Editor</h3>
+                    <p>Customize the Old Glory theme for all backend/admin pages</p>
+                    <button class="btn btn-warning">Edit Admin Theme</button>
+                </a>
+
+                <!-- Development School Dashboard Links -->
+                <a href="/dashboard/school/1" class="nav-card" style="border: 2px dashed #3b82f6;">
+                    <span class="icon">🏫</span>
+                    <h3>School Dashboard (ID: 1)</h3>
+                    <p>Development link to school dashboard for school ID 1</p>
+                    <button class="btn btn-info">School Admin</button>
+                </a>
+
+                <a href="/school/1" class="nav-card" style="border: 2px dashed #ef4444;">
+                    <span class="icon">🏫</span>
+                    <h3>School Page (ID: 1)</h3>
+                    <p>Development link to school page for school ID 1</p>
+                    <button class="btn btn-info">School Page</button>
+                </a>
+
+                <a href="/dashboard/school/2" class="nav-card" style="border: 2px dashed #10b981;">
+                    <span class="icon">🏫</span>
+                    <h3>School Dashboard (ID: 2)</h3>
+                    <p>Development link to school dashboard for school ID 2</p>
+                    <button class="btn btn-info">School Admin</button>
+                </a>
+
+                <a href="/school/2" class="nav-card" style="border: 2px dashed #f59e0b;">
+                    <span class="icon">🏫</span>
+                    <h3>School Page (ID: 2)</h3>
+                    <p>Development link to school page for school ID 2</p>
+                    <button class="btn btn-info">School Page</button>
+                </a>
+        </div>
+
+        <!-- Theme Toggle Section -->
+        <div class="theme-toggle-section">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #f8fafc; font-weight: 600;">Admin Theme Settings</h3>
+            <div class="theme-toggle-container">
+                <div class="theme-option" data-theme="old-glory">
+                    <div class="theme-preview">
+                        <div class="preview-header" style="background: linear-gradient(135deg, #1e3a8a, #dc2626);"></div>
+                        <div class="preview-content">
+                            <div class="preview-card" style="background: #f8fafc; border: 2px solid #dc2626;"></div>
+                            <div class="preview-card" style="background: #f8fafc; border: 2px solid #dc2626;"></div>
+                        </div>
+                    </div>
+                    <h4>Old Glory</h4>
+                    <p>Classic patriotic theme with blue, white, and red</p>
+                    <button class="btn btn-theme" onclick="applyTheme('old-glory')">Apply Theme</button>
+                </div>
+                
+                <div class="theme-option active" data-theme="old-glory-dark">
+                    <div class="theme-preview">
+                        <div class="preview-header" style="background: linear-gradient(135deg, #1e293b, #334155);"></div>
+                        <div class="preview-content">
+                            <div class="preview-card" style="background: #1e293b; border: 2px solid #475569;"></div>
+                            <div class="preview-card" style="background: #1e293b; border: 2px solid #475569;"></div>
+                        </div>
+                    </div>
+                    <h4>Old Glory Dark</h4>
+                    <p>Modern dark theme with patriotic accents</p>
+                    <button class="btn btn-theme active" onclick="applyTheme('old-glory-dark')">Current Theme</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #f8fafc; font-weight: 600;">System Overview</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalAgents">4</div>
+                    <div class="stat-label">Sales Agents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSchools">17</div>
+                    <div class="stat-label">Schools</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalProducts">10</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalBusinesses">7</div>
+                    <div class="stat-label">Local Businesses</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Sports Funder v1.0.0 - Self-Contained Application</p>
+            <p>All data stored locally in isolated SQLite database</p>
+        </div>
+    </div>
+
+        <script>
+            // Theme management
+            const themes = {
+                'old-glory': {
+                    name: 'Old Glory',
+                    bodyBg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #fef2f2 75%, #fef2f2 100%)',
+                    headerBg: 'linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%)',
+                    cardBg: 'rgba(255, 255, 255, 0.95)',
+                    textColor: '#333',
+                    borderColor: '#e0e0e0'
+                },
+                'old-glory-dark': {
+                    name: 'Old Glory Dark',
+                    bodyBg: '#0f172a',
+                    headerBg: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                    cardBg: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                    textColor: '#f8fafc',
+                    borderColor: '#334155'
+                }
+            };
+
+            function applyTheme(themeName) {
+                const theme = themes[themeName];
+                if (!theme) return;
+
+                // Update current theme indicator
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+
+                // Update button states
+                document.querySelectorAll('.btn-theme').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.textContent = 'Apply Theme';
+                });
+                document.querySelector(`[data-theme="${themeName}"] .btn-theme`).classList.add('active');
+                document.querySelector(`[data-theme="${themeName}"] .btn-theme`).textContent = 'Current Theme';
+
+                // Apply theme to current page
+                document.body.style.background = theme.bodyBg;
+                document.body.style.color = theme.textColor;
+
+                // Update header
+                const header = document.querySelector('.header');
+                if (header) {
+                    header.style.background = theme.headerBg;
+                }
+
+                // Update nav cards
+                document.querySelectorAll('.nav-card').forEach(card => {
+                    card.style.background = theme.cardBg;
+                    card.style.borderColor = theme.borderColor;
+                });
+
+                // Update stats section
+                const statsSection = document.querySelector('.stats-section');
+                if (statsSection) {
+                    statsSection.style.background = theme.cardBg;
+                    statsSection.style.borderColor = theme.borderColor;
+                }
+
+                // Update theme toggle section
+                const themeSection = document.querySelector('.theme-toggle-section');
+                if (themeSection) {
+                    themeSection.style.background = theme.cardBg;
+                    themeSection.style.borderColor = theme.borderColor;
+                }
+
+                // Save theme preference
+                localStorage.setItem('adminTheme', themeName);
+
+                // Show success message
+                showThemeMessage(`Applied ${theme.name} theme successfully!`);
+            }
+
+            function showThemeMessage(message) {
+                // Create temporary message
+                const messageDiv = document.createElement('div');
+                messageDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 1000;
+                    font-weight: 600;
+                `;
+                messageDiv.textContent = message;
+                document.body.appendChild(messageDiv);
+
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+
+            // Load saved theme on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                const savedTheme = localStorage.getItem('adminTheme') || 'old-glory-dark';
+                applyTheme(savedTheme);
+                loadStats();
+            });
+
+            // Load stats (using mock data for now)
+            async function loadStats() {
+                try {
+                    // Use mock data instead of API call
+                    const mockData = {
+                        total_schools: 17,
+                        active_schools: 15,
+                        total_revenue: 125000,
+                        monthly_revenue: 45000
+                    };
+                    
+                    document.getElementById('totalSchools').textContent = mockData.total_schools;
+                    document.getElementById('activeSchools').textContent = mockData.active_schools;
+                    document.getElementById('totalRevenue').textContent = `$${mockData.total_revenue.toLocaleString()}`;
+                    document.getElementById('monthlyRevenue').textContent = `$${mockData.monthly_revenue.toLocaleString()}`;
+                } catch (error) {
+                    console.log('Using default stats');
+                }
+            }
+        </script>
+</body>
+</html>

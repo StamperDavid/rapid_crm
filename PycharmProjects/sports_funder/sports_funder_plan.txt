@@ -1,0 +1,327 @@
+Sports Funding Application in Python and PyCharm
+The proposed sports funding application can be developed using Python in PyCharm by leveraging a number of different technologies and frameworks to ensure it is lightweight, fast, and scalable on Google Cloud Platform (GCP).
+
+Key Components and Technologies
+Here are the primary components and the suggested technologies for each:
+
+Backend Framework:
+
+Flask or FastAPI: These are excellent choices for building a lightweight and fast API. Flask is a micro-framework that gives you a lot of control and is easy to get started with. FastAPI is even faster due to its asynchronous nature and built-in support for data validation and documentation, which is ideal for a high-performance application.
+
+Database:
+
+PostgreSQL with SQLAlchemy: A relational database like PostgreSQL is reliable for handling structured data, such as users, teams, products, and sales. SQLAlchemy is a Python library that acts as an Object-Relational Mapper (ORM), simplifying database interactions by allowing you to use Python objects instead of raw SQL queries.
+
+Google Cloud SQL: This service provides a fully managed PostgreSQL database, which integrates seamlessly with other GCP services.
+
+Authentication and User Management:
+
+OAuth2.0/JWT (JSON Web Tokens): This is a standard and secure way to handle user authentication. When a user logs in, the server generates a JWT, which the client can use to access protected routes.
+
+QR Code Generation: The qrcode Python library can be used to generate QR codes for schools, coaches, and players.
+
+Front-end (Web) Development:
+
+HTML, CSS, and JavaScript: A Single-Page Application (SPA) framework like React, Vue.js, or Svelte would be a great choice for the front-end. These frameworks provide a dynamic user experience, allowing for fast page transitions and a smooth interface without full page reloads.
+
+Mobile App Functionality (Sharing):
+
+React Native: This framework allows you to build native mobile apps for iOS and Android using JavaScript and React. It would be ideal for implementing the "share" button functionality, which needs access to the user's phone contacts and SMS capabilities.
+
+Text Notifications:
+
+Twilio: This is a robust and widely used platform for sending SMS messages. The Twilio API can be integrated into the Python backend to send notifications for game updates, order information, and other alerts.
+
+Image and File Storage:
+
+Google Cloud Storage: This service is a scalable and cost-effective way to store team photos, logos, and product images.
+
+Deployment and Hosting:
+
+Google App Engine or Cloud Run: For a lightweight application, these are excellent choices. Cloud Run is a serverless platform that automatically scales up and down based on traffic, so you only pay for what you use. Google App Engine is a Platform-as-a-Service (PaaS) that manages the underlying infrastructure for you.
+
+Application Flow and Logic
+Here is how the application flow would work, with a focus on tracking sales:
+
+Sales Agent Onboarding: The sales agent signs up a school. This creates a new School record in the database. A unique QR code is generated for the school and stored.
+
+Coach Onboarding: When a coach scans the school's QR code, they are directed to a sign-up page. After they sign up, a new Coach record is created and linked to the School. A unique QR code is generated for the coach.
+
+Player Onboarding: A player scans the coach's QR code, signs up, and is linked to the Coach and School. This process is designed to create a hierarchical relationship between the sales agent, school, coach, and players, which is critical for tracking sales.
+
+Sales Tracking: When a user makes a purchase or donation, the transaction is recorded in the database. The system can then trace the sale back through the player, coach, and school to the original sales agent using the established relationships. The Order or Donation record will have a foreign key linking it to the Player, who is in turn linked to a Coach, and so on.
+
+Sales Tracking Logic
+To track sales back to the sales agent, you'll need to establish and maintain relationships in your database.
+
+Tables:
+
+SalesAgent: Stores information about the sales agents.
+
+School: Stores school data and has a foreign key sales_agent_id.
+
+Coach: Stores coach data and has a foreign key school_id.
+
+Player: Stores player data and has a foreign key coach_id.
+
+Order / Donation: Stores transaction data and has a foreign key player_id.
+
+Logic:
+
+When an order is placed, a record is created in the Order table.
+
+This record is linked to the Player who made the purchase.
+
+The system can then use this link to look up the Player's coach_id, then the Coach's school_id, and finally the School's sales_agent_id. This allows for a direct, traceable path from the sale back to the responsible agent.
+
+
+
+
+
+
+
+
+
+Core Technology Stack
+Backend Framework: FastAPI for a fast, asynchronous, and scalable API.
+
+Database: PostgreSQL on Google Cloud SQL, with SQLAlchemy as the Object-Relational Mapper (ORM) for efficient data management.
+
+AI Assistant: Google's Gemini API for a conversational AI that provides real-time answers.
+
+Text Notifications: Twilio for sending game updates, order information, and other alerts via SMS.
+
+Front-end: A lightweight, performant framework like Svelte or Vue.js for the user interface.
+
+Mobile Functionality: React Native to enable native features like sharing to phone contacts.
+
+Image Storage: Google Cloud Storage for storing team logos, product images, and QR codes.
+
+Deployment: Google Cloud Run for a serverless, scalable, and cost-effective hosting solution.
+
+2. Database Models (SQLAlchemy)
+The application's core logic relies on a set of interconnected database tables. This is the complete schema including all the features we've discussed.
+
+Python
+
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from datetime import datetime
+
+Base = declarative_base()
+
+# Sales Agent Table
+class SalesAgent(Base):
+    __tablename__ = 'sales_agents'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+
+# School Table
+class School(Base):
+    __tablename__ = 'schools'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), unique=True, nullable=False)
+    qr_code_data = Column(String(255), unique=True, nullable=False)
+    sales_agent_id = Column(Integer, ForeignKey('sales_agents.id'), nullable=False)
+    sales_agent = relationship('SalesAgent', backref=db.backref('schools', lazy=True))
+
+# Coach Table
+class Coach(Base):
+    __tablename__ = 'coaches'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+    qr_code_data = Column(String(255), unique=True, nullable=False)
+    school_id = Column(Integer, ForeignKey('schools.id'), nullable=False)
+    school = relationship('School', backref=db.backref('coaches', lazy=True))
+
+# Player Table
+class Player(Base):
+    __tablename__ = 'players'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+    coach_id = Column(Integer, ForeignKey('coaches.id'), nullable=False)
+    coach = relationship('Coach', backref=db.backref('players', lazy=True))
+
+# Supporter Table (New)
+class Supporter(Base):
+    __tablename__ = 'supporters'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80))
+    email = Column(String(120), unique=True)
+    orders = relationship('Order', back_populates='supporter')
+
+# Order Table (Expanded)
+class Order(Base):
+    __tablename__ = 'orders'
+    id = Column(Integer, primary_key=True)
+    amount = Column(Integer, nullable=False)
+    product_name = Column(String(255), nullable=False)
+    order_date = Column(DateTime, default=datetime.utcnow)
+    shipping_status = Column(String(50), default="Pending")
+    tracking_number = Column(String(255))
+    supporter_id = Column(Integer, ForeignKey('supporters.id'))
+    player_id = Column(Integer, ForeignKey('players.id')) # Traces back to player who shared link
+    supporter = relationship('Supporter', back_populates='orders')
+
+# Local Business Table (Expanded)
+class LocalBusiness(Base):
+    __tablename__ = 'local_businesses'
+    id = Column(Integer, primary_key=True)
+    company_name = Column(String(120), nullable=False)
+    website_url = Column(String(255), nullable=False)
+    google_place_id = Column(String(255))
+    contact_name = Column(String(80))
+    email = Column(String(120))
+    phone = Column(String(20))
+    is_sponsored = Column(Boolean, default=False)
+    has_custom_page = Column(Boolean, default=False)
+3. Key Code Snippets
+Here are the critical Python code snippets using FastAPI and SQLAlchemy to bring the core features to life.
+
+QR Code Generation and Onboarding
+Python
+
+import qrcode
+from io import BytesIO
+from fastapi import APIRouter, status, HTTPException
+from fastapi.responses import Response, JSONResponse
+from sqlalchemy.orm import Session
+from your_models import SalesAgent, School, Coach, Player # Assuming your models are in a file named 'your_models.py'
+from passlib.hash import pbkdf2_sha256
+from urllib.parse import urljoin
+
+router = APIRouter()
+
+def generate_qr_code(data: str):
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    return buffer
+
+@router.post("/onboard/school", status_code=status.HTTP_201_CREATED)
+async def onboard_school(school_name: str, agent_id: int, db: Session):
+    # This is a simplified example. In a real app, you would use Pydantic models.
+    sales_agent = db.query(SalesAgent).filter(SalesAgent.id == agent_id).first()
+    if not sales_agent:
+        raise HTTPException(status_code=404, detail="Sales agent not found")
+
+    new_school = School(name=school_name, sales_agent_id=agent_id, qr_code_data="pending")
+    db.add(new_school)
+    db.commit()
+    db.refresh(new_school)
+
+    # Generate QR code data as a URL
+    qr_data = urljoin("https://your-app-domain.com", f"/onboard/coach?school_id={new_school.id}")
+    new_school.qr_code_data = qr_data
+    db.commit()
+
+    return JSONResponse(content={
+        "message": "School onboarded successfully",
+        "school_id": new_school.id,
+        "qr_code_url": qr_data
+    })
+
+@router.get("/qr/school/{school_id}")
+async def get_school_qr_code(school_id: int, db: Session):
+    school = db.query(School).filter(School.id == school_id).first()
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    qr_image = generate_qr_code(school.qr_code_data)
+    return Response(content=qr_image.read(), media_type="image/png")
+Sales Tracking Logic
+Python
+
+@router.post("/record_sale", status_code=status.HTTP_201_CREATED)
+async def record_sale(player_id: int, supporter_email: str, amount: int, db: Session):
+    # Find the player and create/find the supporter
+    player = db.query(Player).filter(Player.id == player_id).first()
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    supporter = db.query(Supporter).filter(Supporter.email == supporter_email).first()
+    if not supporter:
+        supporter = Supporter(email=supporter_email)
+        db.add(supporter)
+        db.commit()
+        db.refresh(supporter)
+    
+    # Create the new order record
+    new_order = Order(
+        amount=amount, 
+        product_name="Sample Product", # This would be from the request data
+        supporter_id=supporter.id, 
+        player_id=player.id
+    )
+    db.add(new_order)
+    db.commit()
+
+    # The sales attribution is now automatically handled by the database relationships
+    return {"message": "Sale recorded and attributed."}
+AI Assistant Endpoint
+Python
+
+import google.generativeai as genai
+import os
+from pydantic import BaseModel
+
+class Question(BaseModel):
+    user_question: str
+
+@router.post("/ai-assistant")
+async def ask_ai_assistant(question: Question):
+    try:
+        # Get your API key from environment variables
+        genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+        model = genai.GenerativeModel('gemini-pro')
+
+        prompt = f"""You are an AI assistant for a sports team funding app.
+        You can answer questions about the team, players, products, orders, and local businesses.
+        User Question: {question.user_question}
+        """
+        response = model.generate_content(prompt)
+        return {"answer": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+Local Businesses Endpoint with Google Reviews
+Python
+
+import requests
+import os
+from your_models import LocalBusiness
+
+GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
+
+@router.get("/local-businesses")
+async def get_local_businesses(db: Session):
+    businesses = db.query(LocalBusiness).filter(LocalBusiness.is_sponsored == True).all()
+    business_list = []
+
+    for business in businesses:
+        business_data = {
+            "name": business.company_name,
+            "website_url": business.website_url,
+            "has_custom_page": business.has_custom_page,
+            "rating": None,
+            "review_count": None
+        }
+
+        if business.google_place_id and GOOGLE_PLACES_API_KEY:
+            try:
+                place_details_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={business.google_place_id}&fields=rating,user_ratings_total&key={GOOGLE_PLACES_API_KEY}"
+                response = requests.get(place_details_url)
+                response.raise_for_status()
+                place_data = response.json()
+                result = place_data.get('result', {})
+                business_data['rating'] = result.get('rating')
+                business_data['review_count'] = result.get('user_ratings_total')
+            except requests.exceptions.RequestException as e:
+                print(f"Error fetching Google reviews for {business.company_name}: {e}")
+
+        business_list.append(business_data)
+
+    return {"businesses": business_list}

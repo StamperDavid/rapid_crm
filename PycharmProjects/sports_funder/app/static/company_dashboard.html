@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Dashboard - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 32px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            color: #f8fafc;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .stat-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .stat-card.danger {
+            border-left: 4px solid #ef4444;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .main-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h3 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .agent-card {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            color: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            background: #475569;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .agent-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .agent-details {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .agent-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .agent-stat {
+            text-align: center;
+            padding: 8px;
+            background: #475569;
+            border-radius: 6px;
+        }
+
+        .agent-stat-value {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .agent-stat-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 4px 12px 0 rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 4px 12px 0 rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .error {
+            background: #ef4444;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Company Dashboard</h1>
+            <p>Manage sales agents, territories, and company performance</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <div class="stat-number" id="totalAgents">4</div>
+                <div class="stat-label">Total Sales Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalSchools">17</div>
+                <div class="stat-label">Total Schools</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-number" id="totalRevenue">$125,000</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-number" id="monthlyRevenue">$25,000</div>
+                <div class="stat-label">Monthly Revenue</div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="main-panel">
+                <h3>Sales Agents</h3>
+                <div id="agentsList">
+                    <div class="loading">Loading sales agents...</div>
+                </div>
+            </div>
+
+            <div class="sidebar-panel">
+                <div class="panel">
+                    <h3>Quick Actions</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-success" onclick="addNewAgent()">Add New Agent</button>
+                        <button class="btn" onclick="assignTerritories()">Assign Territories</button>
+                        <button class="btn btn-warning" onclick="viewReports()">View Reports</button>
+                        <button class="btn" onclick="manageSettings()">Manage Settings</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Top Performers</h3>
+                    <div id="topPerformers">
+                        <div class="loading">Loading top performers...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCompanyDashboard();
+        });
+
+        function loadCompanyDashboard() {
+            // Mock data for now
+            const mockData = {
+                total_agents: 4,
+                total_schools: 17,
+                total_revenue: 125000,
+                monthly_revenue: 25000,
+                agents: [
+                    {
+                        id: 1,
+                        name: 'Sarah Johnson',
+                        email: 'sarah.johnson@sportsfunder.com',
+                        schools: 12,
+                        revenue: 45000,
+                        quota_progress: 90,
+                        territory: 'Austin Metro'
+                    },
+                    {
+                        id: 2,
+                        name: 'Mike Rodriguez',
+                        email: 'mike.rodriguez@sportsfunder.com',
+                        schools: 8,
+                        revenue: 32000,
+                        quota_progress: 75,
+                        territory: 'San Antonio Metro'
+                    },
+                    {
+                        id: 3,
+                        name: 'Lisa Chen',
+                        email: 'lisa.chen@sportsfunder.com',
+                        schools: 6,
+                        revenue: 28000,
+                        quota_progress: 65,
+                        territory: 'Houston Metro'
+                    },
+                    {
+                        id: 4,
+                        name: 'David Wilson',
+                        email: 'david.wilson@sportsfunder.com',
+                        schools: 4,
+                        revenue: 20000,
+                        quota_progress: 50,
+                        territory: 'Dallas Metro'
+                    }
+                ],
+                top_performers: [
+                    { name: 'Sarah Johnson', schools: 12, revenue: 45000 },
+                    { name: 'Mike Rodriguez', schools: 8, revenue: 32000 },
+                    { name: 'Lisa Chen', schools: 6, revenue: 28000 }
+                ]
+            };
+
+            populateCompanyDashboard(mockData);
+        }
+
+        function populateCompanyDashboard(data) {
+            // Update stats
+            document.getElementById('totalAgents').textContent = data.total_agents;
+            document.getElementById('totalSchools').textContent = data.total_schools;
+            document.getElementById('totalRevenue').textContent = `$${data.total_revenue.toLocaleString()}`;
+            document.getElementById('monthlyRevenue').textContent = `$${data.monthly_revenue.toLocaleString()}`;
+
+            // Populate agents list
+            populateAgentsList(data.agents);
+
+            // Populate top performers
+            populateTopPerformers(data.top_performers);
+        }
+
+        function populateAgentsList(agents) {
+            const agentsList = document.getElementById('agentsList');
+
+            if (agents && agents.length > 0) {
+                const agentsHtml = agents.map(agent => `
+                    <div class="agent-card" onclick="viewAgentProfile(${agent.id})" data-agent-id="${agent.id}">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-details">
+                            ${agent.email} • Territory: ${agent.territory}
+                        </div>
+                        <div class="agent-stats">
+                            <div class="agent-stat">
+                                <div class="agent-stat-value">${agent.schools}</div>
+                                <div class="agent-stat-label">Schools</div>
+                            </div>
+                            <div class="agent-stat">
+                                <div class="agent-stat-value">$${agent.revenue.toLocaleString()}</div>
+                                <div class="agent-stat-label">Revenue</div>
+                            </div>
+                            <div class="agent-stat">
+                                <div class="agent-stat-value">${agent.quota_progress}%</div>
+                                <div class="agent-stat-label">Quota</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                agentsList.innerHTML = agentsHtml;
+            } else {
+                agentsList.innerHTML = '<div class="loading">No agents found</div>';
+            }
+        }
+
+        function populateTopPerformers(performers) {
+            const topPerformers = document.getElementById('topPerformers');
+
+            if (performers && performers.length > 0) {
+                const performersHtml = performers.map(performer => `
+                    <div style="padding: 12px; border-bottom: 1px solid #475569; color: #f8fafc; cursor: pointer; transition: background 0.2s;" 
+                         onclick="viewAgentProfileByName('${performer.name}')" 
+                         onmouseover="this.style.background='#475569'" 
+                         onmouseout="this.style.background='transparent'">
+                        <strong>${performer.name}</strong>
+                        <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 4px;">
+                            ${performer.schools} schools • $${performer.revenue.toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+
+                topPerformers.innerHTML = performersHtml;
+            } else {
+                topPerformers.innerHTML = '<div class="loading">No data available</div>';
+            }
+        }
+
+        function viewAgentProfile(agentId) {
+            // Navigate to the agent profile page with the agent ID
+            window.location.href = `/profile?agent_id=${agentId}`;
+        }
+
+        function viewAgentProfileByName(agentName) {
+            // Find agent ID by name and navigate to profile
+            const mockData = {
+                agents: [
+                    { id: 1, name: 'Sarah Johnson' },
+                    { id: 2, name: 'Mike Rodriguez' },
+                    { id: 3, name: 'Lisa Chen' },
+                    { id: 4, name: 'David Wilson' }
+                ]
+            };
+            
+            const agent = mockData.agents.find(a => a.name === agentName);
+            if (agent) {
+                window.location.href = `/profile?agent_id=${agent.id}`;
+            }
+        }
+
+        function addNewAgent() {
+            alert('Add New Agent functionality would open here');
+        }
+
+        function assignTerritories() {
+            alert('Territory Assignment functionality would open here');
+        }
+
+        function viewReports() {
+            alert('Reports functionality would open here');
+        }
+
+        function manageSettings() {
+            alert('Settings functionality would open here');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Theme Editor - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .mobile-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mobile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .mobile-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .color-input {
+            width: 100%;
+            height: 50px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .range-container {
+            position: relative;
+        }
+        
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        
+        .range-value {
+            position: absolute;
+            right: 0;
+            top: -25px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #3b82f6;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #3b82f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .component-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .component-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .component-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+        
+        .component-item.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .component-name {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .component-type {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .template-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .template-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .template-preview {
+            height: 80px;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        .template-info {
+            padding: 10px;
+        }
+        
+        .template-name {
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .template-category {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .preview-section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .preview-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .preview-frame {
+            width: 100%;
+            height: 400px;
+            border: none;
+            background: white;
+        }
+        
+        .device-toggle {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 6px;
+            padding: 2px;
+        }
+        
+        .device-btn {
+            padding: 6px 12px;
+            background: transparent;
+            color: #64748b;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .device-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .floating-actions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .fab {
+            flex: 1;
+            height: 50px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .fab-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .fab-secondary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .upload-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-text {
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="header-title">🎨 Theme Editor</div>
+            <div class="header-subtitle">Customize your school's look & feel</div>
+        </div>
+        
+        <!-- Mobile Content -->
+        <div class="mobile-content">
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>📱 Live Preview</span>
+                    <div class="device-toggle">
+                        <button class="device-btn active" onclick="setDevice('mobile')">📱</button>
+                        <button class="device-btn" onclick="setDevice('tablet')">📱</button>
+                        <button class="device-btn" onclick="setDevice('desktop')">🖥️</button>
+                    </div>
+                </div>
+                <iframe id="previewFrame" class="preview-frame" src="about:blank"></iframe>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('components')">Components</button>
+                <button class="tab" onclick="showTab('settings')">Settings</button>
+                <button class="tab" onclick="showTab('templates')">Templates</button>
+            </div>
+            
+            <!-- Components Tab -->
+            <div id="components" class="tab-content active">
+                <div class="section">
+                    <div class="section-header">
+                        <span>📦 Page Components</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="component-list" id="componentList">
+                            <!-- Components will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <!-- Colors Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>🎨 Colors & Branding</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-label">Primary Color</div>
+                            <input type="color" class="color-input" id="primaryColor" value="#3b82f6">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Secondary Color</div>
+                            <input type="color" class="color-input" id="secondaryColor" value="#6b7280">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Accent Color</div>
+                            <input type="color" class="color-input" id="accentColor" value="#f59e0b">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Background Color</div>
+                            <input type="color" class="color-input" id="backgroundColor" value="#ffffff">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Typography Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>📝 Typography</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-label">Font Family</div>
+                            <select class="form-input" id="fontFamily">
+                                <option value="Inter, sans-serif">Inter</option>
+                                <option value="Roboto, sans-serif">Roboto</option>
+                                <option value="Open Sans, sans-serif">Open Sans</option>
+                                <option value="Lato, sans-serif">Lato</option>
+                                <option value="Poppins, sans-serif">Poppins</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Base Font Size</div>
+                            <div class="range-container">
+                                <span class="range-value" id="fontSizeValue">16px</span>
+                                <input type="range" class="range-slider" id="fontSize" min="12" max="20" value="16">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Images Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>🖼️ Images & Media</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-label">School Logo</div>
+                            <div class="upload-area" onclick="document.getElementById('logoUpload').click()">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">Tap to upload logo</div>
+                            </div>
+                            <input type="file" class="hidden" id="logoUpload" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">Hero Banner</div>
+                            <div class="upload-area" onclick="document.getElementById('bannerUpload').click()">
+                                <div class="upload-icon">🖼️</div>
+                                <div class="upload-text">Tap to upload banner</div>
+                            </div>
+                            <input type="file" class="hidden" id="bannerUpload" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Templates Tab -->
+            <div id="templates" class="tab-content">
+                <div class="section">
+                    <div class="section-header">
+                        <span>🎭 Theme Templates</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="template-grid" id="templateGrid">
+                            <!-- Templates will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating Action Buttons -->
+        <div class="floating-actions">
+            <button class="fab fab-secondary" onclick="previewTheme()">
+                👁️ Preview
+            </button>
+            <button class="fab fab-primary" onclick="saveTheme()">
+                💾 Save
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentTheme = null;
+        let currentDevice = 'mobile';
+        let selectedComponent = null;
+        
+        // Initialize editor
+        document.addEventListener('DOMContentLoaded', function() {
+            loadComponents();
+            loadTemplates();
+            setupEventListeners();
+            generatePreview();
+        });
+        
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        // Device management
+        function setDevice(device) {
+            currentDevice = device;
+            
+            // Update device buttons
+            document.querySelectorAll('.device-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update preview
+            generatePreview();
+        }
+        
+        // Load components
+        function loadComponents() {
+            const components = [
+                { id: 'header', name: 'Header', type: 'navigation', icon: '🏠' },
+                { id: 'hero', name: 'Hero Section', type: 'banner', icon: '🎯' },
+                { id: 'products', name: 'Product Grid', type: 'content', icon: '🛍️' },
+                { id: 'about', name: 'About Section', type: 'content', icon: '📖' },
+                { id: 'testimonials', name: 'Testimonials', type: 'content', icon: '💬' },
+                { id: 'footer', name: 'Footer', type: 'navigation', icon: '🔗' }
+            ];
+            
+            const componentList = document.getElementById('componentList');
+            componentList.innerHTML = components.map(comp => `
+                <div class="component-item" onclick="selectComponent('${comp.id}')">
+                    <div class="component-name">${comp.icon} ${comp.name}</div>
+                    <div class="component-type">${comp.type}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Load templates
+        function loadTemplates() {
+            const templates = [
+                { id: 'modern', name: 'Modern Sports', category: 'Sports', colors: ['#3b82f6', '#1e40af'] },
+                { id: 'classic', name: 'Classic School', category: 'Traditional', colors: ['#dc2626', '#7c2d12'] },
+                { id: 'minimal', name: 'Minimal Clean', category: 'Modern', colors: ['#374151', '#6b7280'] },
+                { id: 'vibrant', name: 'Vibrant Energy', category: 'Bold', colors: ['#f59e0b', '#d97706'] }
+            ];
+            
+            const templateGrid = document.getElementById('templateGrid');
+            templateGrid.innerHTML = templates.map(template => `
+                <div class="template-card" onclick="applyTemplate('${template.id}')">
+                    <div class="template-preview" style="background: linear-gradient(45deg, ${template.colors[0]}, ${template.colors[1]})"></div>
+                    <div class="template-info">
+                        <div class="template-name">${template.name}</div>
+                        <div class="template-category">${template.category}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Color pickers
+            document.querySelectorAll('.color-input').forEach(picker => {
+                picker.addEventListener('change', updateTheme);
+            });
+            
+            // Font selector
+            document.getElementById('fontFamily').addEventListener('change', updateTheme);
+            
+            // Font size slider
+            const fontSizeSlider = document.getElementById('fontSize');
+            fontSizeSlider.addEventListener('input', function() {
+                document.getElementById('fontSizeValue').textContent = this.value + 'px';
+                updateTheme();
+            });
+            
+            // File uploads
+            document.getElementById('logoUpload').addEventListener('change', handleImageUpload);
+            document.getElementById('bannerUpload').addEventListener('change', handleImageUpload);
+        }
+        
+        // Select component
+        function selectComponent(componentId) {
+            selectedComponent = componentId;
+            
+            // Update component selection
+            document.querySelectorAll('.component-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.component-item').classList.add('active');
+            
+            // Load component settings
+            loadComponentSettings(componentId);
+        }
+        
+        // Load component settings
+        function loadComponentSettings(componentId) {
+            // This would load specific settings for the selected component
+            console.log('Loading settings for component:', componentId);
+        }
+        
+        // Apply template
+        function applyTemplate(templateId) {
+            console.log('Applying template:', templateId);
+            // This would apply the selected template
+            updateTheme();
+        }
+        
+        // Update theme
+        function updateTheme() {
+            const theme = {
+                primaryColor: document.getElementById('primaryColor').value,
+                secondaryColor: document.getElementById('secondaryColor').value,
+                accentColor: document.getElementById('accentColor').value,
+                backgroundColor: document.getElementById('backgroundColor').value,
+                fontFamily: document.getElementById('fontFamily').value,
+                fontSize: document.getElementById('fontSize').value + 'px'
+            };
+            
+            currentTheme = theme;
+            generatePreview();
+        }
+        
+        // Generate preview
+        function generatePreview() {
+            const previewFrame = document.getElementById('previewFrame');
+            const previewHTML = generatePreviewHTML();
+            
+            previewFrame.srcdoc = previewHTML;
+        }
+        
+        // Generate preview HTML
+        function generatePreviewHTML() {
+            const theme = currentTheme || {
+                primaryColor: '#3b82f6',
+                secondaryColor: '#6b7280',
+                accentColor: '#f59e0b',
+                backgroundColor: '#ffffff',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '16px'
+            };
+            
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { 
+                            font-family: ${theme.fontFamily}; 
+                            font-size: ${theme.fontSize};
+                            background: ${theme.backgroundColor};
+                            color: #333;
+                        }
+                        .header { 
+                            background: ${theme.primaryColor}; 
+                            color: white; 
+                            padding: 15px; 
+                            text-align: center; 
+                        }
+                        .hero { 
+                            background: linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor}); 
+                            color: white; 
+                            padding: 40px 15px; 
+                            text-align: center; 
+                        }
+                        .products { 
+                            padding: 20px 15px; 
+                            display: grid; 
+                            grid-template-columns: 1fr 1fr; 
+                            gap: 15px; 
+                        }
+                        .product-card { 
+                            background: white; 
+                            border: 1px solid #e2e8f0; 
+                            border-radius: 8px; 
+                            padding: 15px; 
+                            text-align: center; 
+                        }
+                        .btn { 
+                            background: ${theme.accentColor}; 
+                            color: white; 
+                            padding: 10px 20px; 
+                            border: none; 
+                            border-radius: 6px; 
+                            cursor: pointer; 
+                            font-size: 14px;
+                        }
+                        .footer { 
+                            background: ${theme.secondaryColor}; 
+                            color: white; 
+                            padding: 20px 15px; 
+                            text-align: center; 
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🏫 Lincoln High School</h1>
+                        <p>Support Your Team</p>
+                    </div>
+                    <div class="hero">
+                        <h2>Welcome to Our Team Store</h2>
+                        <p>Show your school spirit</p>
+                        <button class="btn">Shop Now</button>
+                    </div>
+                    <div class="products">
+                        <div class="product-card">
+                            <h3>Team Jersey</h3>
+                            <p>$25.99</p>
+                            <button class="btn">Add to Cart</button>
+                        </div>
+                        <div class="product-card">
+                            <h3>Team Hat</h3>
+                            <p>$15.99</p>
+                            <button class="btn">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p>&copy; 2024 Lincoln High School</p>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+        
+        // Handle image upload
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Handle uploaded image
+                    console.log('Image uploaded:', file.name);
+                    updateTheme();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Save theme
+        function saveTheme() {
+            console.log('Saving theme:', currentTheme);
+            // This would save the theme to the database
+            alert('Theme saved successfully!');
+        }
+        
+        // Preview theme
+        function previewTheme() {
+            window.open('about:blank').document.write(generatePreviewHTML());
+        }
+    </script>
+</body>
+</html>

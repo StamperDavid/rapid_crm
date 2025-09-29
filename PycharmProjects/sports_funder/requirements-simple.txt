@@ -1,0 +1,33 @@
+# Core Framework
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# Database
+sqlalchemy
+alembic
+
+# Authentication & Security
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# QR Code Generation
+qrcode[pil]
+
+# Image Processing
+Pillow
+
+# Development & Testing
+pytest
+pytest-asyncio
+httpx
+
+# Monitoring & Logging
+structlog
+
+# Environment Management
+python-dotenv
+
+

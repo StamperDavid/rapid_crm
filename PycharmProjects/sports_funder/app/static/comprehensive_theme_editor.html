@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Theme Editor - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .editor-container {
+            display: flex;
+            height: 100vh;
+            background: white;
+            border-radius: 12px;
+            margin: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-area {
+            flex: 1;
+            background: #ffffff;
+            position: relative;
+            overflow: auto;
+        }
+        
+        .toolbar {
+            height: 60px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .device-toggle {
+            display: flex;
+            background: #374151;
+            border-radius: 6px;
+            padding: 2px;
+        }
+        
+        .device-btn {
+            padding: 6px 12px;
+            background: transparent;
+            color: #9ca3af;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .device-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+        }
+        
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-subtitle {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .sidebar-content {
+            padding: 20px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .component-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .component-item {
+            padding: 12px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .component-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+        
+        .component-item.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .component-name {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .component-type {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .setting-item {
+            background: white;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .setting-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .range-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .font-selector {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .template-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .template-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .template-preview {
+            height: 120px;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        .template-info {
+            padding: 12px;
+        }
+        
+        .template-name {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .template-category {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .mobile-editor {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .editor-container {
+                flex-direction: column;
+                margin: 10px;
+                height: calc(100vh - 20px);
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 50%;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .desktop-editor {
+                display: none;
+            }
+            
+            .mobile-editor {
+                display: block;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Desktop Editor -->
+        <div class="desktop-editor" style="display: flex; width: 100%; height: 100%;">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">🎨 Theme Editor</div>
+                    <div class="sidebar-subtitle">Customize your school's look & feel</div>
+                </div>
+                
+                <div class="sidebar-content">
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab active" onclick="showTab('components')">Components</button>
+                        <button class="tab" onclick="showTab('settings')">Settings</button>
+                        <button class="tab" onclick="showTab('templates')">Templates</button>
+                    </div>
+                    
+                    <!-- Components Tab -->
+                    <div id="components" class="tab-content active">
+                        <div class="section">
+                            <div class="section-title">📦 Page Components</div>
+                            <div class="component-list" id="componentList">
+                                <!-- Components will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tab -->
+                    <div id="settings" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">🎨 Colors & Branding</div>
+                            <div class="settings-grid">
+                                <div class="setting-item">
+                                    <div class="form-label">Primary Color</div>
+                                    <input type="color" class="color-picker" id="primaryColor" value="#3b82f6">
+                                </div>
+                                <div class="setting-item">
+                                    <div class="form-label">Secondary Color</div>
+                                    <input type="color" class="color-picker" id="secondaryColor" value="#6b7280">
+                                </div>
+                                <div class="setting-item">
+                                    <div class="form-label">Accent Color</div>
+                                    <input type="color" class="color-picker" id="accentColor" value="#f59e0b">
+                                </div>
+                                <div class="setting-item">
+                                    <div class="form-label">Background Color</div>
+                                    <input type="color" class="color-picker" id="backgroundColor" value="#ffffff">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">📝 Typography</div>
+                            <div class="form-group">
+                                <div class="form-label">Font Family</div>
+                                <select class="font-selector" id="fontFamily">
+                                    <option value="Inter, sans-serif">Inter</option>
+                                    <option value="Roboto, sans-serif">Roboto</option>
+                                    <option value="Open Sans, sans-serif">Open Sans</option>
+                                    <option value="Lato, sans-serif">Lato</option>
+                                    <option value="Poppins, sans-serif">Poppins</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">Base Font Size</div>
+                                <input type="range" class="range-slider" id="fontSize" min="12" max="20" value="16">
+                                <span id="fontSizeValue">16px</span>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">🖼️ Images & Media</div>
+                            <div class="form-group">
+                                <div class="form-label">School Logo</div>
+                                <input type="file" class="form-input" id="logoUpload" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">Hero Banner</div>
+                                <input type="file" class="form-input" id="bannerUpload" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Templates Tab -->
+                    <div id="templates" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">🎭 Theme Templates</div>
+                            <div class="template-grid" id="templateGrid">
+                                <!-- Templates will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="saveTheme()">💾 Save Theme</button>
+                    <button class="btn btn-secondary" onclick="previewTheme()">👁️ Preview</button>
+                    <button class="btn btn-success" onclick="publishTheme()">🚀 Publish</button>
+                    
+                    <div style="margin-left: auto;">
+                        <div class="device-toggle">
+                            <button class="device-btn active" onclick="setDevice('desktop')">🖥️ Desktop</button>
+                            <button class="device-btn" onclick="setDevice('tablet')">📱 Tablet</button>
+                            <button class="device-btn" onclick="setDevice('mobile')">📱 Mobile</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="preview-area">
+                    <iframe id="previewFrame" class="preview-frame" src="about:blank"></iframe>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Editor -->
+        <div class="mobile-editor">
+            <div style="padding: 20px; text-align: center;">
+                <h2>📱 Mobile Theme Editor</h2>
+                <p>Mobile-optimized theme editor coming soon!</p>
+                <button class="btn btn-primary" onclick="switchToDesktop()">Use Desktop Version</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentTheme = null;
+        let currentDevice = 'desktop';
+        let selectedComponent = null;
+        
+        // Initialize editor
+        document.addEventListener('DOMContentLoaded', function() {
+            loadComponents();
+            loadTemplates();
+            setupEventListeners();
+            generatePreview();
+        });
+        
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        // Device management
+        function setDevice(device) {
+            currentDevice = device;
+            
+            // Update device buttons
+            document.querySelectorAll('.device-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update preview
+            generatePreview();
+        }
+        
+        // Load components
+        function loadComponents() {
+            const components = [
+                { id: 'header', name: 'Header', type: 'navigation', icon: '🏠' },
+                { id: 'hero', name: 'Hero Section', type: 'banner', icon: '🎯' },
+                { id: 'products', name: 'Product Grid', type: 'content', icon: '🛍️' },
+                { id: 'about', name: 'About Section', type: 'content', icon: '📖' },
+                { id: 'testimonials', name: 'Testimonials', type: 'content', icon: '💬' },
+                { id: 'footer', name: 'Footer', type: 'navigation', icon: '🔗' }
+            ];
+            
+            const componentList = document.getElementById('componentList');
+            componentList.innerHTML = components.map(comp => `
+                <div class="component-item" onclick="selectComponent('${comp.id}')">
+                    <div class="component-name">${comp.icon} ${comp.name}</div>
+                    <div class="component-type">${comp.type}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Load templates
+        function loadTemplates() {
+            const templates = [
+                { id: 'modern', name: 'Modern Sports', category: 'Sports', colors: ['#3b82f6', '#1e40af'] },
+                { id: 'classic', name: 'Classic School', category: 'Traditional', colors: ['#dc2626', '#7c2d12'] },
+                { id: 'minimal', name: 'Minimal Clean', category: 'Modern', colors: ['#374151', '#6b7280'] },
+                { id: 'vibrant', name: 'Vibrant Energy', category: 'Bold', colors: ['#f59e0b', '#d97706'] }
+            ];
+            
+            const templateGrid = document.getElementById('templateGrid');
+            templateGrid.innerHTML = templates.map(template => `
+                <div class="template-card" onclick="applyTemplate('${template.id}')">
+                    <div class="template-preview" style="background: linear-gradient(45deg, ${template.colors[0]}, ${template.colors[1]})"></div>
+                    <div class="template-info">
+                        <div class="template-name">${template.name}</div>
+                        <div class="template-category">${template.category}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Color pickers
+            document.querySelectorAll('.color-picker').forEach(picker => {
+                picker.addEventListener('change', updateTheme);
+            });
+            
+            // Font selector
+            document.getElementById('fontFamily').addEventListener('change', updateTheme);
+            
+            // Font size slider
+            const fontSizeSlider = document.getElementById('fontSize');
+            fontSizeSlider.addEventListener('input', function() {
+                document.getElementById('fontSizeValue').textContent = this.value + 'px';
+                updateTheme();
+            });
+            
+            // File uploads
+            document.getElementById('logoUpload').addEventListener('change', handleImageUpload);
+            document.getElementById('bannerUpload').addEventListener('change', handleImageUpload);
+        }
+        
+        // Select component
+        function selectComponent(componentId) {
+            selectedComponent = componentId;
+            
+            // Update component selection
+            document.querySelectorAll('.component-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.component-item').classList.add('active');
+            
+            // Load component settings
+            loadComponentSettings(componentId);
+        }
+        
+        // Load component settings
+        function loadComponentSettings(componentId) {
+            // This would load specific settings for the selected component
+            console.log('Loading settings for component:', componentId);
+        }
+        
+        // Apply template
+        function applyTemplate(templateId) {
+            console.log('Applying template:', templateId);
+            // This would apply the selected template
+            updateTheme();
+        }
+        
+        // Update theme
+        function updateTheme() {
+            const theme = {
+                primaryColor: document.getElementById('primaryColor').value,
+                secondaryColor: document.getElementById('secondaryColor').value,
+                accentColor: document.getElementById('accentColor').value,
+                backgroundColor: document.getElementById('backgroundColor').value,
+                fontFamily: document.getElementById('fontFamily').value,
+                fontSize: document.getElementById('fontSize').value + 'px'
+            };
+            
+            currentTheme = theme;
+            generatePreview();
+        }
+        
+        // Generate preview
+        function generatePreview() {
+            const previewFrame = document.getElementById('previewFrame');
+            const previewHTML = generatePreviewHTML();
+            
+            previewFrame.srcdoc = previewHTML;
+        }
+        
+        // Generate preview HTML
+        function generatePreviewHTML() {
+            const theme = currentTheme || {
+                primaryColor: '#3b82f6',
+                secondaryColor: '#6b7280',
+                accentColor: '#f59e0b',
+                backgroundColor: '#ffffff',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '16px'
+            };
+            
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { 
+                            font-family: ${theme.fontFamily}; 
+                            font-size: ${theme.fontSize};
+                            background: ${theme.backgroundColor};
+                            color: #333;
+                        }
+                        .header { 
+                            background: ${theme.primaryColor}; 
+                            color: white; 
+                            padding: 20px; 
+                            text-align: center; 
+                        }
+                        .hero { 
+                            background: linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor}); 
+                            color: white; 
+                            padding: 60px 20px; 
+                            text-align: center; 
+                        }
+                        .products { 
+                            padding: 40px 20px; 
+                            display: grid; 
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+                            gap: 20px; 
+                        }
+                        .product-card { 
+                            background: white; 
+                            border: 1px solid #e2e8f0; 
+                            border-radius: 8px; 
+                            padding: 20px; 
+                            text-align: center; 
+                        }
+                        .btn { 
+                            background: ${theme.accentColor}; 
+                            color: white; 
+                            padding: 12px 24px; 
+                            border: none; 
+                            border-radius: 6px; 
+                            cursor: pointer; 
+                        }
+                        .footer { 
+                            background: ${theme.secondaryColor}; 
+                            color: white; 
+                            padding: 40px 20px; 
+                            text-align: center; 
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🏫 Lincoln High School Eagles</h1>
+                        <p>Support Your Team</p>
+                    </div>
+                    <div class="hero">
+                        <h2>Welcome to Our Team Store</h2>
+                        <p>Show your school spirit with official merchandise</p>
+                        <button class="btn">Shop Now</button>
+                    </div>
+                    <div class="products">
+                        <div class="product-card">
+                            <h3>Team Jersey</h3>
+                            <p>$25.99</p>
+                            <button class="btn">Add to Cart</button>
+                        </div>
+                        <div class="product-card">
+                            <h3>Team Hat</h3>
+                            <p>$15.99</p>
+                            <button class="btn">Add to Cart</button>
+                        </div>
+                        <div class="product-card">
+                            <h3>Team Mug</h3>
+                            <p>$12.99</p>
+                            <button class="btn">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p>&copy; 2024 Lincoln High School. All rights reserved.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+        
+        // Handle image upload
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Handle uploaded image
+                    console.log('Image uploaded:', file.name);
+                    updateTheme();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Save theme
+        function saveTheme() {
+            console.log('Saving theme:', currentTheme);
+            // This would save the theme to the database
+            alert('Theme saved successfully!');
+        }
+        
+        // Preview theme
+        function previewTheme() {
+            window.open('about:blank').document.write(generatePreviewHTML());
+        }
+        
+        // Publish theme
+        function publishTheme() {
+            if (confirm('Are you sure you want to publish this theme? This will make it live on your school\'s website.')) {
+                console.log('Publishing theme:', currentTheme);
+                alert('Theme published successfully!');
+            }
+        }
+        
+        // Switch to desktop
+        function switchToDesktop() {
+            document.querySelector('.desktop-editor').style.display = 'flex';
+            document.querySelector('.mobile-editor').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

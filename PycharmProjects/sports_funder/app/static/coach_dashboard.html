@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 32px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+        
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #94a3b8;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        
+        .panel h3 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #334155;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+        
+        .player-card {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #f8fafc;
+        }
+        
+        .player-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-bottom: 5px;
+        }
+        
+        .player-details {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .event-card {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #f8fafc;
+        }
+        
+        .event-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-bottom: 5px;
+        }
+        
+        .event-details {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .qr-code-section {
+            text-align: center;
+            padding: 20px;
+            background: #334155;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+        
+        .qr-code-image {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            margin: 10px auto;
+            display: block;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 4px 12px 0 rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            
+            .qr-code-image {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <h1>Coach Dashboard</h1>
+        <p id="coachInfo">Loading coach information...</p>
+    </div>
+    
+    <div class="container">
+        <div class="content-grid">
+            <!-- Team Overview -->
+            <div class="panel">
+                <h3>📊 Team Overview</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPlayers">25</div>
+                        <div class="stat-label">Total Players</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="teamStoreSales">$2,500</div>
+                        <div class="stat-label">Store Sales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="upcomingEvents">3</div>
+                        <div class="stat-label">Upcoming Events</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSupporters">45</div>
+                        <div class="stat-label">Total Supporters</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Players -->
+            <div class="panel">
+                <h3>👥 Players</h3>
+                <div id="playersList">
+                    <div class="loading">Loading players...</div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Events -->
+            <div class="panel">
+                <h3>📅 Upcoming Events</h3>
+                <div id="eventsList">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </div>
+            
+            <!-- QR Code -->
+            <div class="panel">
+                <h3>📱 Team QR Code</h3>
+                <div class="qr-code-section">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2ZmZiIvPgogIDx0ZXh0IHg9Ijc1IiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UVMgQ29kZTwvdGV4dD4KPC9zdmc+" alt="QR Code" class="qr-code-image">
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 10px;">
+                        Share this QR code to help supporters find your team
+                    </p>
+                    <button class="btn btn-success" onclick="downloadQR()">Download QR Code</button>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="panel">
+                <h3>⚡ Quick Actions</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn" onclick="addPlayer()">Add New Player</button>
+                    <button class="btn btn-success" onclick="manageStore()">Manage Team Store</button>
+                    <button class="btn" onclick="scheduleEvent()">Schedule Event</button>
+                    <button class="btn" onclick="viewAnalytics()">View Analytics</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCoachDashboard();
+        });
+        
+        function loadCoachDashboard() {
+            const mockData = {
+                coach_name: 'Coach Johnson',
+                team_name: 'Varsity Football',
+                school_name: 'Austin High School',
+                stats: {
+                    total_players: 25,
+                    team_store_sales: 2500,
+                    upcoming_events: 3,
+                    total_supporters: 45
+                },
+                players: [
+                    { id: 1, name: 'John Doe', position: 'QB', supporters: 12, revenue: 500, jersey_number: 7 },
+                    { id: 2, name: 'Jane Smith', position: 'RB', supporters: 8, revenue: 300, jersey_number: 24 },
+                    { id: 3, name: 'Mike Wilson', position: 'WR', supporters: 15, revenue: 750, jersey_number: 88 },
+                    { id: 4, name: 'Alex Johnson', position: 'LB', supporters: 6, revenue: 250, jersey_number: 52 }
+                ],
+                events: [
+                    { title: 'Game vs Westlake High', date: '2025-09-20', time: '7:00 PM', location: 'Home Stadium' },
+                    { title: 'Practice Session', date: '2025-09-18', time: '4:00 PM', location: 'Practice Field' },
+                    { title: 'Team Meeting', date: '2025-09-16', time: '3:00 PM', location: 'Locker Room' }
+                ]
+            };
+            
+            populateCoachDashboard(mockData);
+        }
+        
+        function populateCoachDashboard(data) {
+            document.getElementById('coachInfo').textContent = `${data.coach_name} - ${data.team_name} at ${data.school_name}`;
+            
+            // Update stats
+            document.getElementById('totalPlayers').textContent = data.stats.total_players;
+            document.getElementById('teamStoreSales').textContent = `$${data.stats.team_store_sales.toLocaleString()}`;
+            document.getElementById('upcomingEvents').textContent = data.stats.upcoming_events;
+            document.getElementById('totalSupporters').textContent = data.stats.total_supporters;
+            
+            // Populate players
+            populatePlayers(data.players);
+            
+            // Populate events
+            populateEvents(data.events);
+        }
+        
+        function populatePlayers(players) {
+            const playersList = document.getElementById('playersList');
+            
+            if (players && players.length > 0) {
+                const playersHtml = players.map(player => `
+                    <div class="player-card" onclick="viewPlayerProfile(${player.id})" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='#475569'" onmouseout="this.style.background='#1e293b'">
+                        <div class="player-name">#${player.jersey_number} ${player.name}</div>
+                        <div class="player-details">
+                            ${player.position} • ${player.supporters} supporters • $${player.revenue} raised
+                        </div>
+                    </div>
+                `).join('');
+                
+                playersList.innerHTML = playersHtml;
+            } else {
+                playersList.innerHTML = '<div class="loading">No players found</div>';
+            }
+        }
+        
+        function populateEvents(events) {
+            const eventsList = document.getElementById('eventsList');
+            
+            if (events && events.length > 0) {
+                const eventsHtml = events.map(event => `
+                    <div class="event-card">
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-details">
+                            ${event.date} at ${event.time}<br>
+                            Location: ${event.location}
+                        </div>
+                    </div>
+                `).join('');
+                
+                eventsList.innerHTML = eventsHtml;
+            } else {
+                eventsList.innerHTML = '<div class="loading">No upcoming events</div>';
+            }
+        }
+        
+        function downloadQR() {
+            alert('QR Code download functionality would open here');
+        }
+        
+        function addPlayer() {
+            alert('Add Player functionality would open here');
+        }
+        
+        function manageStore() {
+            alert('Team Store management would open here');
+        }
+        
+        function scheduleEvent() {
+            alert('Schedule Event functionality would open here');
+        }
+        
+        function viewAnalytics() {
+            alert('Analytics functionality would open here');
+        }
+
+        function viewPlayerProfile(playerId) {
+            // Navigate to the player profile page with the player ID
+            window.location.href = `/player-profile?player_id=${playerId}`;
+        }
+    </script>
+</body>
+</html>

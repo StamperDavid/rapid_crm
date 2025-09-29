@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Profile - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .profile-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .profile-header h1 {
+            color: #1e3a8a;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .profile-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-card h3 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .coaches-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .coach-card {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .coach-card:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .coach-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .coach-sport {
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .coach-contact {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/schools" class="back-btn">← Back to Schools Management</a>
+        
+        <div class="profile-header">
+            <h1>🏫 School Profile</h1>
+            <p>View and manage school details, coaches, and performance metrics</p>
+        </div>
+
+        <!-- School Overview -->
+        <div class="profile-card">
+            <h3>School Overview</h3>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCoaches">-</div>
+                    <div class="stat-label">Total Coaches</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTeams">-</div>
+                    <div class="stat-label">Active Teams</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPlayers">-</div>
+                    <div class="stat-label">Total Players</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="revenueGenerated">-</div>
+                    <div class="stat-label">Revenue Generated</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- School Details & Management -->
+        <div class="profile-card">
+            <h3>School Details & Management</h3>
+            <form id="schoolForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>School Name</label>
+                        <input type="text" id="schoolName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="schoolCity">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" id="schoolState">
+                    </div>
+                    <div class="form-group">
+                        <label>ZIP Code</label>
+                        <input type="text" id="schoolZip">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="schoolPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="schoolEmail">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="schoolAddress" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mascot</label>
+                        <input type="text" id="schoolMascot">
+                    </div>
+                    <div class="form-group">
+                        <label>School Colors</label>
+                        <input type="text" id="schoolColors">
+                    </div>
+                </div>
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Coaches Management -->
+        <div class="profile-card">
+            <h3>Coaches & Teams</h3>
+            <div class="coaches-list" id="coachesList">
+                <div class="loading">Loading coaches...</div>
+            </div>
+            <button class="btn btn-success" onclick="addNewCoach()">Add New Coach</button>
+        </div>
+
+        <!-- Management Actions -->
+        <div class="profile-card">
+            <h3>Management Actions</h3>
+            <div class="actions-grid">
+                <button class="btn" onclick="viewPerformanceReport()">Performance Report</button>
+                <button class="btn" onclick="viewRevenueHistory()">Revenue History</button>
+                <button class="btn" onclick="sendMessage()">Send Message</button>
+                <button class="btn" onclick="scheduleMeeting()">Schedule Meeting</button>
+                <button class="btn" onclick="viewQrCode()">View QR Code</button>
+                <button class="btn btn-danger" onclick="deactivateSchool()">Deactivate School</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSchool = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSchoolData();
+            setupFormHandlers();
+        });
+
+        function loadSchoolData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const schoolId = urlParams.get('school_id');
+            
+            if (!schoolId) {
+                document.querySelector('.container').innerHTML = '<div class="error">No school ID provided</div>';
+                return;
+            }
+
+            // Mock school data - in real app, this would come from API
+            const schoolsData = {
+                '1': {
+                    id: '1',
+                    name: 'Lincoln High School',
+                    city: 'Austin',
+                    state: 'TX',
+                    zip_code: '78701',
+                    phone: '(512) 555-0123',
+                    email: 'info@lincolnhigh.edu',
+                    address: '1234 Main Street',
+                    mascot: 'Eagles',
+                    school_colors: 'Blue & Gold',
+                    total_coaches: 8,
+                    total_teams: 12,
+                    total_players: 245,
+                    revenue_generated: '$12,450'
+                },
+                '2': {
+                    id: '2',
+                    name: 'Roosevelt Middle School',
+                    city: 'Dallas',
+                    state: 'TX',
+                    zip_code: '75201',
+                    phone: '(214) 555-0456',
+                    email: 'contact@rooseveltms.edu',
+                    address: '5678 Oak Avenue',
+                    mascot: 'Rockets',
+                    school_colors: 'Red & White',
+                    total_coaches: 5,
+                    total_teams: 8,
+                    total_players: 180,
+                    revenue_generated: '$8,920'
+                }
+            };
+
+            currentSchool = schoolsData[schoolId] || schoolsData['1'];
+            displaySchoolData(currentSchool);
+            loadCoaches(currentSchool.id);
+        }
+
+        function displaySchoolData(school) {
+            document.getElementById('schoolName').value = school.name;
+            document.getElementById('schoolCity').value = school.city;
+            document.getElementById('schoolState').value = school.state;
+            document.getElementById('schoolZip').value = school.zip_code;
+            document.getElementById('schoolPhone').value = school.phone;
+            document.getElementById('schoolEmail').value = school.email;
+            document.getElementById('schoolAddress').value = school.address;
+            document.getElementById('schoolMascot').value = school.mascot;
+            document.getElementById('schoolColors').value = school.school_colors;
+
+            document.getElementById('totalCoaches').textContent = school.total_coaches;
+            document.getElementById('totalTeams').textContent = school.total_teams;
+            document.getElementById('totalPlayers').textContent = school.total_players;
+            document.getElementById('revenueGenerated').textContent = school.revenue_generated;
+        }
+
+        function loadCoaches(schoolId) {
+            // Mock coaches data
+            const coachesData = {
+                '1': [
+                    { name: 'Coach Johnson', sport: 'Football', position: 'Head Coach', email: 'johnson@lincolnhigh.edu', phone: '(512) 555-0124' },
+                    { name: 'Coach Smith', sport: 'Basketball', position: 'Head Coach', email: 'smith@lincolnhigh.edu', phone: '(512) 555-0125' },
+                    { name: 'Coach Davis', sport: 'Baseball', position: 'Head Coach', email: 'davis@lincolnhigh.edu', phone: '(512) 555-0126' },
+                    { name: 'Coach Wilson', sport: 'Soccer', position: 'Head Coach', email: 'wilson@lincolnhigh.edu', phone: '(512) 555-0127' }
+                ],
+                '2': [
+                    { name: 'Coach Brown', sport: 'Football', position: 'Head Coach', email: 'brown@rooseveltms.edu', phone: '(214) 555-0457' },
+                    { name: 'Coach Taylor', sport: 'Basketball', position: 'Head Coach', email: 'taylor@rooseveltms.edu', phone: '(214) 555-0458' },
+                    { name: 'Coach Anderson', sport: 'Volleyball', position: 'Head Coach', email: 'anderson@rooseveltms.edu', phone: '(214) 555-0459' }
+                ]
+            };
+
+            const coaches = coachesData[schoolId] || coachesData['1'];
+            displayCoaches(coaches);
+        }
+
+        function displayCoaches(coaches) {
+            const coachesList = document.getElementById('coachesList');
+            coachesList.innerHTML = coaches.map(coach => `
+                <div class="coach-card">
+                    <div class="coach-name">${coach.name}</div>
+                    <div class="coach-sport">${coach.sport} - ${coach.position}</div>
+                    <div class="coach-contact">📧 ${coach.email}</div>
+                    <div class="coach-contact">📞 ${coach.phone}</div>
+                </div>
+            `).join('');
+        }
+
+        function setupFormHandlers() {
+            document.getElementById('schoolForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveSchoolProfile();
+            });
+        }
+
+        function saveSchoolProfile() {
+            const formData = {
+                name: document.getElementById('schoolName').value,
+                city: document.getElementById('schoolCity').value,
+                state: document.getElementById('schoolState').value,
+                zip_code: document.getElementById('schoolZip').value,
+                phone: document.getElementById('schoolPhone').value,
+                email: document.getElementById('schoolEmail').value,
+                address: document.getElementById('schoolAddress').value,
+                mascot: document.getElementById('schoolMascot').value,
+                school_colors: document.getElementById('schoolColors').value
+            };
+
+            console.log('Saving school profile:', formData);
+            alert('School profile saved successfully!');
+        }
+
+        function addNewCoach() {
+            alert('Add New Coach functionality would open a coach creation form');
+        }
+
+        function viewPerformanceReport() {
+            alert('Performance Report for ' + currentSchool.name + ' would be generated');
+        }
+
+        function viewRevenueHistory() {
+            alert('Revenue History for ' + currentSchool.name + ' would be displayed');
+        }
+
+        function sendMessage() {
+            alert('Send Message to ' + currentSchool.name + ' would open messaging interface');
+        }
+
+        function scheduleMeeting() {
+            alert('Schedule Meeting with ' + currentSchool.name + ' would open calendar');
+        }
+
+        function viewQrCode() {
+            alert('QR Code for ' + currentSchool.name + ' would be displayed');
+        }
+
+        function deactivateSchool() {
+            if (confirm('Are you sure you want to deactivate ' + currentSchool.name + '?')) {
+                alert('School deactivated successfully');
+            }
+        }
+    </script>
+</body>
+</html>

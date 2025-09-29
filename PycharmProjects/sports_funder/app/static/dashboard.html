@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-right: 1px solid #334155;
+            color: #f8fafc;
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid #475569;
+            margin-bottom: 24px;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #f8fafc;
+        }
+        
+        .sidebar-header p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: #475569;
+            color: #f8fafc;
+        }
+        
+        .nav-link .icon {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 24px;
+            background: #0f172a;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) translateY(-1px);
+        }
+        
+        .header h1 {
+            color: #f8fafc;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #94a3b8;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card.success {
+            border-left: 4px solid #10b981;
+        }
+        
+        .stat-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .stat-card.danger {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .main-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        
+        .sidebar-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        
+        .panel h3 {
+            color: #f8fafc;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .action-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .action-card:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .action-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .action-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #475569;
+            color: #f8fafc;
+        }
+        
+        .data-table th {
+            background: #334155;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        
+        .data-table tr:hover {
+            background: #334155;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .status-inactive {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        
+        .error {
+            background: #ef4444;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Sports Funder</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <!-- Navigation will be populated by JavaScript -->
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <a href="/" class="back-button">
+                    ← Back to Home
+                </a>
+                <h1 id="dashboardTitle">Admin Dashboard</h1>
+                <p id="dashboardSubtitle">Welcome to your business overview</p>
+            </div>
+            
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+            
+            <div class="content-grid">
+                <div class="main-panel">
+                    <h3>Recent Activity</h3>
+                    <div id="mainPanelContent">
+                        <div class="loading">Loading dashboard data...</div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-panel">
+                    <div class="panel">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions" id="quickActions">
+                            <!-- Quick actions will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="panel">
+                        <h3>Top Performers</h3>
+                        <div id="recentItems">
+                            <div class="loading">Loading recent items...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load admin dashboard data
+            loadDashboard('admin', 1);
+        });
+        
+        async function loadDashboard(role, userId) {
+            try {
+                const data = getMockDashboardData(role);
+                populateDashboard(role, data);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showError('Failed to load dashboard data');
+            }
+        }
+        
+        function getMockDashboardData(role) {
+            // Main dashboard is only for admin/owner/supervisor roles
+            return {
+                stats: {
+                    total_sales_agents: 4,
+                    total_schools: 17,
+                    total_revenue: 125000,
+                    monthly_revenue: 25000,
+                    active_promotional_companies: 3,
+                    active_local_sponsors: 12
+                },
+                recent_activity: [
+                    { type: 'school_signed', message: 'Austin High School signed by Sarah Johnson', date: '2025-09-15', revenue: 5000 },
+                    { type: 'new_sponsor', message: 'Round Rock Auto Repair joined as sponsor', date: '2025-09-14', budget: 500 },
+                    { type: 'product_import', message: 'CustomInk updated 15 product images', date: '2025-09-13', products: 15 }
+                ],
+                top_performers: [
+                    { name: 'Sarah Johnson', schools: 12, revenue: 45000, quota_progress: 90 },
+                    { name: 'Mike Rodriguez', schools: 8, revenue: 32000, quota_progress: 75 },
+                    { name: 'Lisa Chen', schools: 6, revenue: 28000, quota_progress: 65 }
+                ]
+            };
+        }
+        
+        function populateDashboard(role, data) {
+            // Update title and subtitle
+            document.getElementById('dashboardTitle').textContent = 'Admin Dashboard';
+            document.getElementById('dashboardSubtitle').textContent = 'Business Overview & Analytics';
+            
+            // Populate stats
+            populateStats(data.stats);
+            
+            // Populate navigation
+            populateNavigation(role);
+            
+            // Populate main content
+            populateMainContent(role, data);
+            
+            // Populate quick actions
+            populateQuickActions([
+                { title: 'Manage Sales Agents', url: '/dashboard/company', icon: '👨‍💼' },
+                { title: 'View Schools', url: '/schools', icon: '🏫' },
+                { title: 'Product Import', url: '/product-import', icon: '📦' },
+                { title: 'Promotional Companies', url: '/promotional-companies', icon: '🏢' }
+            ]);
+            
+            // Populate recent items
+            populateRecentItems(role, data);
+        }
+        
+        function populateStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            
+            const statCards = [
+                createStatCard('Sales Agents', stats.total_sales_agents, 'success'),
+                createStatCard('Total Schools', stats.total_schools, 'primary'),
+                createStatCard('Total Revenue', `$${stats.total_revenue.toLocaleString()}`, 'success'),
+                createStatCard('Monthly Revenue', `$${stats.monthly_revenue.toLocaleString()}`, 'warning'),
+                createStatCard('Promotional Companies', stats.active_promotional_companies, 'primary'),
+                createStatCard('Local Sponsors', stats.active_local_sponsors, 'success')
+            ];
+            
+            statsGrid.innerHTML = statCards.join('');
+        }
+        
+        function createStatCard(label, value, type = 'primary') {
+            return `
+                <div class="stat-card ${type}">
+                    <div class="stat-number">${value}</div>
+                    <div class="stat-label">${label}</div>
+                </div>
+            `;
+        }
+        
+        function populateNavigation(role) {
+            const navMenu = document.getElementById('navMenu');
+            const items = [
+                { name: 'Dashboard', url: '/dashboard', icon: '📊' },
+                { name: 'Sales Agents', url: '/dashboard/company', icon: '👨‍💼' },
+                { name: 'Schools', url: '/schools', icon: '🏫' },
+                { name: 'Product Import', url: '/product-import', icon: '📦' },
+                { name: 'Promotional Companies', url: '/promotional-companies', icon: '🏢' },
+                { name: 'Local Sponsors', url: '/local-sponsors', icon: '🏪' },
+                { name: 'Schema Manager', url: '/admin', icon: '⚙️' },
+                { name: 'Theme Editor', url: '/admin-theme-editor', icon: '🎨' }
+            ];
+            
+            navMenu.innerHTML = items.map(item => `
+                <li class="nav-item">
+                    <a href="${item.url}" class="nav-link">
+                        <span class="icon">${item.icon}</span>
+                        ${item.name}
+                    </a>
+                </li>
+            `).join('');
+        }
+        
+        function populateMainContent(role, data) {
+            const mainPanelContent = document.getElementById('mainPanelContent');
+            
+            if (data.recent_activity && data.recent_activity.length > 0) {
+                const activityHtml = data.recent_activity.map(activity => `
+                    <div style="padding: 12px; border-bottom: 1px solid #475569; color: #f8fafc;">
+                        <strong>${activity.message}</strong>
+                        <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 4px;">
+                            ${activity.date} ${activity.revenue ? `- $${activity.revenue}` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                
+                mainPanelContent.innerHTML = activityHtml;
+            } else {
+                mainPanelContent.innerHTML = '<div class="loading">No recent activity</div>';
+            }
+        }
+        
+        function populateQuickActions(actions) {
+            const quickActions = document.getElementById('quickActions');
+            
+            quickActions.innerHTML = actions.map(action => `
+                <a href="${action.url}" class="action-card">
+                    <span class="action-icon">${action.icon}</span>
+                    <p class="action-title">${action.title}</p>
+                </a>
+            `).join('');
+        }
+        
+        function populateRecentItems(role, data) {
+            const recentItems = document.getElementById('recentItems');
+            
+            if (data.top_performers && data.top_performers.length > 0) {
+                const performersHtml = data.top_performers.map(performer => `
+                    <div style="padding: 12px; border-bottom: 1px solid #475569; color: #f8fafc;">
+                        <strong>${performer.name}</strong>
+                        <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 4px;">
+                            ${performer.schools} schools • $${performer.revenue.toLocaleString()} • ${performer.quota_progress}% quota
+                        </div>
+                    </div>
+                `).join('');
+                
+                recentItems.innerHTML = performersHtml;
+            } else {
+                recentItems.innerHTML = '<div class="loading">No data available</div>';
+            }
+        }
+        
+        function showError(message) {
+            const mainContent = document.getElementById('mainPanelContent');
+            mainContent.innerHTML = `<div class="error">${message}</div>`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Agent Dashboard - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 32px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+        
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #94a3b8;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        
+        .panel h3 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .school-card {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #f8fafc;
+        }
+        
+        .school-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-bottom: 5px;
+        }
+        
+        .school-details {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 15px;
+            background: #334155;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+        
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .action-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .action-card:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .action-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .action-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 4px 12px 0 rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        
+        .error {
+            background: #ef4444;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <h1>Sales Agent Dashboard</h1>
+        <p id="agentName">Loading agent information...</p>
+    </div>
+    
+    <div class="container">
+        <div class="content-grid">
+            <!-- Performance Overview -->
+            <div class="panel">
+                <h3>📊 Performance Overview</h3>
+                <div id="performanceStats">
+                    <div class="loading">Loading performance data...</div>
+                </div>
+            </div>
+            
+            <!-- Recent Schools -->
+            <div class="panel">
+                <h3>🏫 Recent Schools</h3>
+                <div id="recentSchools">
+                    <div class="loading">Loading recent schools...</div>
+                </div>
+            </div>
+            
+            <!-- Performance Metrics -->
+            <div class="panel">
+                <h3>📈 Performance Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value" id="quotaProgress">75%</div>
+                        <div class="metric-label">Quota Progress</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="avgRevenue">$3,200</div>
+                        <div class="metric-label">Avg Revenue/School</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="conversionRate">68%</div>
+                        <div class="metric-label">Conversion Rate</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="panel">
+                <h3>⚡ Quick Actions</h3>
+                <div class="quick-actions" id="quickActions">
+                    <!-- Quick actions will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSalesAgentDashboard();
+        });
+        
+        async function loadSalesAgentDashboard() {
+            try {
+                // Try to get real data from API
+                const response = await fetch('/api/v1/dashboard-data/sales-agent/1');
+                if (response.ok) {
+                    const data = await response.json();
+                    populateSalesAgentDashboard(data);
+                } else {
+                    // Fallback to mock data
+                    const mockData = getMockSalesAgentData();
+                    populateSalesAgentDashboard(mockData);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                // Use mock data as fallback
+                const mockData = getMockSalesAgentData();
+                populateSalesAgentDashboard(mockData);
+            }
+        }
+        
+        function getMockSalesAgentData() {
+            return {
+                agent_name: 'Sarah Johnson',
+                stats: {
+                    total_schools: 12,
+                    total_revenue: 45000,
+                    monthly_quota: 50000,
+                    schools_this_month: 3,
+                    revenue_this_month: 18700
+                },
+                recent_schools: [
+                    { id: 1, name: 'Austin High School', signed_date: '2025-09-15', revenue: 5000 },
+                    { id: 2, name: 'Westlake High School', signed_date: '2025-09-10', revenue: 7500 },
+                    { id: 3, name: 'Lake Travis High School', signed_date: '2025-09-05', revenue: 6200 }
+                ],
+                performance_metrics: {
+                    schools_this_month: 3,
+                    revenue_this_month: 18700,
+                    quota_progress: 37.4
+                }
+            };
+        }
+        
+        function populateSalesAgentDashboard(data) {
+            // Update agent name
+            document.getElementById('agentName').textContent = data.agent_name || 'Sales Agent';
+            
+            // Populate performance stats
+            populatePerformanceStats(data.stats);
+            
+            // Populate recent schools
+            populateRecentSchools(data.recent_schools);
+            
+            // Populate performance metrics
+            populatePerformanceMetrics(data.performance_metrics);
+            
+            // Populate quick actions
+            populateQuickActions(data.quick_actions || []);
+        }
+        
+        function populatePerformanceStats(stats) {
+            const performanceStats = document.getElementById('performanceStats');
+            
+            if (stats) {
+                performanceStats.innerHTML = `
+                    <div class="metric-item">
+                        <div class="metric-value">${stats.total_schools}</div>
+                        <div class="metric-label">Total Schools</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">$${stats.total_revenue?.toLocaleString() || '0'}</div>
+                        <div class="metric-label">Total Revenue</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">$${stats.monthly_quota?.toLocaleString() || '0'}</div>
+                        <div class="metric-label">Monthly Quota</div>
+                    </div>
+                `;
+            } else {
+                performanceStats.innerHTML = '<div class="loading">No performance data available</div>';
+            }
+        }
+        
+        function populateRecentSchools(schools) {
+            const recentSchools = document.getElementById('recentSchools');
+            
+            if (schools && schools.length > 0) {
+                const schoolsHtml = schools.map(school => `
+                    <div class="school-card" onclick="viewSchoolProfile(${school.id})" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='#475569'" onmouseout="this.style.background='#1e293b'">
+                        <div class="school-name">${school.name}</div>
+                        <div class="school-details">
+                            Signed: ${school.signed_date} • Revenue: $${school.revenue?.toLocaleString() || '0'}
+                        </div>
+                    </div>
+                `).join('');
+                
+                recentSchools.innerHTML = schoolsHtml;
+            } else {
+                recentSchools.innerHTML = '<div class="loading">No recent schools</div>';
+            }
+        }
+        
+        function populatePerformanceMetrics(metrics) {
+            if (metrics) {
+                document.getElementById('quotaProgress').textContent = `${metrics.quota_progress || 0}%`;
+                document.getElementById('avgRevenue').textContent = `$${Math.round((metrics.revenue_this_month || 0) / (metrics.schools_this_month || 1)).toLocaleString()}`;
+                document.getElementById('conversionRate').textContent = `${Math.round((metrics.schools_this_month || 0) * 10)}%`;
+            }
+        }
+        
+        function populateQuickActions(actions) {
+            const quickActions = document.getElementById('quickActions');
+            
+            const defaultActions = [
+                { title: 'Add New School', url: '#', icon: '🏫' },
+                { title: 'View Territory Map', url: '#', icon: '🗺️' },
+                { title: 'Performance Report', url: '#', icon: '📊' },
+                { title: 'View Analytics', url: '#', icon: '📈' }
+            ];
+            
+            const actionsToShow = actions.length > 0 ? actions : defaultActions;
+            
+            quickActions.innerHTML = actionsToShow.map(action => `
+                <a href="${action.url}" class="action-card">
+                    <span class="action-icon">${action.icon}</span>
+                    <p>${action.title}</p>
+                </a>
+            `).join('');
+        }
+
+        function viewSchoolProfile(schoolId) {
+            // Navigate to the school profile page with the school ID
+            window.location.href = `/school-profile?school_id=${schoolId}`;
+        }
+    </script>
+</body>
+</html>

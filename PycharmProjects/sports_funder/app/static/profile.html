@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Agent Profile - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .profile-avatar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin: 0 auto 15px;
+        }
+
+        .profile-info {
+            text-align: center;
+        }
+
+        .profile-info h2 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .profile-info p {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard/company" class="back-btn">← Back to Sales Agent Management</a>
+        
+        <div class="header">
+            <h1>Sales Agent Profile</h1>
+            <p>View and manage sales agent details, performance, and assigned schools</p>
+        </div>
+
+        <div class="profile-grid">
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <div class="avatar" id="userAvatar">SJ</div>
+                </div>
+                <div class="profile-info">
+                    <h2 id="userName">Sarah Johnson</h2>
+                    <p id="userRole">Sales Agent</p>
+                    <p id="userTerritory">Austin Metro Territory</p>
+                    <p id="agentStatus" style="color: #10b981; font-weight: 600;">● Active</p>
+                    <p id="hireDate" style="color: #94a3b8; font-size: 0.9rem;">Hired: March 15, 2024</p>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSchools">12</div>
+                        <div class="stat-label">Schools</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalRevenue">$45K</div>
+                        <div class="stat-label">Revenue</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="quotaProgress">90%</div>
+                        <div class="stat-label">Quota</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="conversionRate">75%</div>
+                        <div class="stat-label">Conversion</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <h3>Agent Details & Management</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" value="Sarah" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" value="Johnson" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" value="sarah.johnson@sportsfunder.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" value="(555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="territory">Territory</label>
+                        <select id="territory">
+                            <option value="austin">Austin Metro</option>
+                            <option value="houston">Houston Metro</option>
+                            <option value="dallas">Dallas Metro</option>
+                            <option value="san-antonio">San Antonio Metro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="commissionRate">Commission Rate (%)</label>
+                        <input type="number" id="commissionRate" value="5.5" step="0.1" min="0" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="monthlyQuota">Monthly Quota ($)</label>
+                        <input type="number" id="monthlyQuota" value="5000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="on-leave">On Leave</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <h3>Performance & Schools</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4>Recent Activity</h4>
+                    <div id="recentActivity" style="max-height: 300px; overflow-y: auto;">
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>School Signed</strong><br>
+                            <small style="color: #6b7280;">Austin High School - $5,000 revenue</small><br>
+                            <small style="color: #9ca3af;">2 days ago</small>
+                        </div>
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>Follow-up Call</strong><br>
+                            <small style="color: #6b7280;">Westlake High School - Positive response</small><br>
+                            <small style="color: #9ca3af;">5 days ago</small>
+                        </div>
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>New Lead</strong><br>
+                            <small style="color: #6b7280;">Lake Travis High School - Initial contact</small><br>
+                            <small style="color: #9ca3af;">1 week ago</small>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4>Assigned Schools</h4>
+                    <div id="assignedSchools" style="max-height: 300px; overflow-y: auto;">
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>Austin High School</strong><br>
+                            <small style="color: #6b7280;">Active • $8,500 revenue</small>
+                        </div>
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>Westlake High School</strong><br>
+                            <small style="color: #6b7280;">Active • $7,200 revenue</small>
+                        </div>
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>Lake Travis High School</strong><br>
+                            <small style="color: #6b7280;">Pending • $0 revenue</small>
+                        </div>
+                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; margin-bottom: 10px;">
+                            <strong>Anderson High School</strong><br>
+                            <small style="color: #6b7280;">Active • $5,500 revenue</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" style="margin-top: 15px; width: 100%;" onclick="viewAllSchools()">View All Schools</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <h3>Management Actions</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <button class="btn btn-success" onclick="viewPerformanceReport()">📊 Performance Report</button>
+                <button class="btn" onclick="viewCommissionHistory()">💰 Commission History</button>
+                <button class="btn btn-warning" onclick="sendMessage()">💬 Send Message</button>
+                <button class="btn btn-secondary" onclick="scheduleMeeting()">📅 Schedule Meeting</button>
+                <button class="btn" onclick="viewTerritoryMap()">🗺️ Territory Map</button>
+                <button class="btn btn-danger" onclick="deactivateAgent()">⚠️ Deactivate Agent</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Profile page JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfileData();
+            setupFormHandlers();
+        });
+
+        function loadProfileData() {
+            // Get agent ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const agentId = urlParams.get('agent_id') || '1';
+            
+            // Mock agent data - in real app, this would come from API based on agentId
+            const agentsData = {
+                1: {
+                    firstName: 'Sarah',
+                    lastName: 'Johnson',
+                    email: 'sarah.johnson@sportsfunder.com',
+                    phone: '(555) 123-4567',
+                    territory: 'austin',
+                    commissionRate: 5.5,
+                    monthlyQuota: 5000,
+                    status: 'active',
+                    hireDate: 'March 15, 2024',
+                    totalSchools: 12,
+                    totalRevenue: 45000,
+                    quotaProgress: 90,
+                    conversionRate: 75,
+                    role: 'Sales Agent'
+                },
+                2: {
+                    firstName: 'Mike',
+                    lastName: 'Rodriguez',
+                    email: 'mike.rodriguez@sportsfunder.com',
+                    phone: '(555) 234-5678',
+                    territory: 'san-antonio',
+                    commissionRate: 5.0,
+                    monthlyQuota: 4000,
+                    status: 'active',
+                    hireDate: 'April 10, 2024',
+                    totalSchools: 8,
+                    totalRevenue: 32000,
+                    quotaProgress: 75,
+                    conversionRate: 68,
+                    role: 'Sales Agent'
+                },
+                3: {
+                    firstName: 'Lisa',
+                    lastName: 'Chen',
+                    email: 'lisa.chen@sportsfunder.com',
+                    phone: '(555) 345-6789',
+                    territory: 'houston',
+                    commissionRate: 5.2,
+                    monthlyQuota: 4500,
+                    status: 'active',
+                    hireDate: 'May 5, 2024',
+                    totalSchools: 6,
+                    totalRevenue: 28000,
+                    quotaProgress: 65,
+                    conversionRate: 72,
+                    role: 'Sales Agent'
+                },
+                4: {
+                    firstName: 'David',
+                    lastName: 'Wilson',
+                    email: 'david.wilson@sportsfunder.com',
+                    phone: '(555) 456-7890',
+                    territory: 'dallas',
+                    commissionRate: 4.8,
+                    monthlyQuota: 3500,
+                    status: 'active',
+                    hireDate: 'June 20, 2024',
+                    totalSchools: 4,
+                    totalRevenue: 20000,
+                    quotaProgress: 50,
+                    conversionRate: 60,
+                    role: 'Sales Agent'
+                }
+            };
+            
+            const agentData = agentsData[agentId] || agentsData[1];
+
+            // Update profile display
+            document.getElementById('userName').textContent = `${agentData.firstName} ${agentData.lastName}`;
+            document.getElementById('userRole').textContent = agentData.role;
+            document.getElementById('userTerritory').textContent = getTerritoryDisplayName(agentData.territory);
+            document.getElementById('userAvatar').textContent = agentData.firstName[0] + agentData.lastName[0];
+            document.getElementById('totalSchools').textContent = agentData.totalSchools;
+            document.getElementById('totalRevenue').textContent = formatCurrency(agentData.totalRevenue);
+            document.getElementById('quotaProgress').textContent = agentData.quotaProgress + '%';
+            document.getElementById('conversionRate').textContent = agentData.conversionRate + '%';
+
+            // Update form fields
+            document.getElementById('firstName').value = agentData.firstName;
+            document.getElementById('lastName').value = agentData.lastName;
+            document.getElementById('email').value = agentData.email;
+            document.getElementById('phone').value = agentData.phone;
+            document.getElementById('territory').value = agentData.territory;
+            document.getElementById('commissionRate').value = agentData.commissionRate;
+            document.getElementById('monthlyQuota').value = agentData.monthlyQuota;
+            document.getElementById('status').value = agentData.status;
+        }
+
+        function setupFormHandlers() {
+            // Profile form handler
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveAgentProfile();
+            });
+        }
+
+        function saveAgentProfile() {
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                territory: document.getElementById('territory').value,
+                commissionRate: document.getElementById('commissionRate').value,
+                monthlyQuota: document.getElementById('monthlyQuota').value,
+                status: document.getElementById('status').value
+            };
+
+            // In a real app, this would make an API call
+            console.log('Saving agent profile:', formData);
+            
+            // Update display
+            document.getElementById('userName').textContent = `${formData.firstName} ${formData.lastName}`;
+            document.getElementById('userAvatar').textContent = formData.firstName[0] + formData.lastName[0];
+            
+            showSuccessMessage('Agent profile updated successfully!');
+        }
+
+        // Management action functions
+        function viewPerformanceReport() {
+            alert('Performance Report: This would open a detailed performance report for Sarah Johnson showing revenue trends, school performance, and quota progress.');
+        }
+
+        function viewCommissionHistory() {
+            alert('Commission History: This would show Sarah Johnson\'s commission payments, calculations, and payment history.');
+        }
+
+        function sendMessage() {
+            alert('Send Message: This would open a messaging interface to send a message to Sarah Johnson.');
+        }
+
+        function scheduleMeeting() {
+            alert('Schedule Meeting: This would open a calendar interface to schedule a meeting with Sarah Johnson.');
+        }
+
+        function viewTerritoryMap() {
+            alert('Territory Map: This would show a map of Sarah Johnson\'s Austin Metro Territory with school locations and coverage areas.');
+        }
+
+        function deactivateAgent() {
+            if (confirm('Are you sure you want to deactivate this sales agent? This action can be reversed later.')) {
+                alert('Agent deactivated successfully. Sarah Johnson will no longer have access to the system.');
+            }
+        }
+
+        function viewAllSchools() {
+            alert('View All Schools: This would navigate to the schools management page filtered to show only Sarah Johnson\'s assigned schools.');
+        }
+
+        function resetForm() {
+            loadProfileData();
+        }
+
+        function getTerritoryDisplayName(territory) {
+            const territoryMap = {
+                'austin': 'Austin Metro Territory',
+                'san-antonio': 'San Antonio Metro Territory',
+                'houston': 'Houston Metro Territory',
+                'dallas': 'Dallas Metro Territory'
+            };
+            return territoryMap[territory] || 'Unknown Territory';
+        }
+
+        function formatCurrency(amount) {
+            if (amount >= 1000000) {
+                return '$' + (amount / 1000000).toFixed(1) + 'M';
+            } else if (amount >= 1000) {
+                return '$' + (amount / 1000).toFixed(0) + 'K';
+            } else {
+                return '$' + amount.toFixed(0);
+            }
+        }
+
+        function showSuccessMessage(message) {
+            // Create a temporary success message
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-weight: 600;
+            `;
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(successDiv);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

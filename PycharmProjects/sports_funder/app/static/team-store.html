@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lincoln Eagles Team Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .header-content {
+            flex: 1;
+            text-align: center;
+        }
+
+        .store-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .store-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Cart Icon */
+        .cart-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1e3a8a;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc2626;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            overflow-x: auto;
+            padding: 15px 20px;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Search Bar */
+        .search-section {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #64748b;
+            position: relative;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #059669;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .product-badge.sale {
+            background: #dc2626;
+        }
+
+        .product-badge.new {
+            background: #7c3aed;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .product-description {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .current-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .original-price {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-add-cart {
+            flex: 1;
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-cart:hover {
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
+        }
+
+        .btn-add-cart:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .btn-wishlist {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-wishlist:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-wishlist.active {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* Quick View Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1e293b;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .close {
+            color: #94a3b8;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: white;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .modal-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 15px;
+        }
+
+        .modal-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .size-options {
+            margin-bottom: 20px;
+        }
+
+        .size-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .size-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .size-btn {
+            padding: 8px 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .size-btn:hover,
+        .size-btn.selected {
+            border-color: #1e3a8a;
+            background: #1e3a8a;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px;
+                padding: 0 20px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+
+            .product-image {
+                height: 180px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="/team-landing" class="back-button">
+                ← Back to Team
+            </a>
+            <div class="header-content">
+                <h1 class="store-title">🦅 Lincoln Eagles Store</h1>
+                <p class="store-subtitle">Official Team Merchandise</p>
+            </div>
+            <div style="width: 100px;"></div> <!-- Spacer for centering -->
+        </div>
+
+        <!-- Cart Icon -->
+        <div class="cart-icon" onclick="viewCart()">
+            🛒
+            <div class="cart-count" id="cartCount">0</div>
+        </div>
+
+        <!-- Categories -->
+        <div class="categories">
+            <button class="category-btn active" onclick="filterCategory('all')">All</button>
+            <button class="category-btn" onclick="filterCategory('jerseys')">Jerseys</button>
+            <button class="category-btn" onclick="filterCategory('apparel')">Apparel</button>
+            <button class="category-btn" onclick="filterCategory('accessories')">Accessories</button>
+            <button class="category-btn" onclick="filterCategory('equipment')">Equipment</button>
+            <button class="category-btn" onclick="filterCategory('sale')">Sale</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search products..." onkeyup="handleSearch()">
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="productsGrid">
+            <div class="loading">Loading products...</div>
+        </div>
+    </div>
+
+    <!-- Quick View Modal -->
+    <div id="quickViewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Product Name</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-image" id="modalImage">📦</div>
+            <div class="modal-price" id="modalPrice">$0.00</div>
+            <div class="modal-description" id="modalDescription">Product description</div>
+            
+            <div class="size-options">
+                <div class="size-label">Size:</div>
+                <div class="size-buttons" id="sizeButtons">
+                    <!-- Size buttons will be populated here -->
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-modal btn-secondary" onclick="addToWishlist()">❤️ Wishlist</button>
+                <button class="btn-modal btn-primary" onclick="addToCartFromModal()">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock product data
+        const mockProducts = [
+            {
+                id: 1,
+                name: "Eagles Home Jersey",
+                description: "Official team jersey with player number and team colors",
+                price: 45.00,
+                originalPrice: 55.00,
+                category: "jerseys",
+                image: "🏈",
+                badge: "sale",
+                sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+                stock: 25
+            },
+            {
+                id: 2,
+                name: "Eagles T-Shirt",
+                description: "Comfortable cotton t-shirt with team logo",
+                price: 25.00,
+                category: "apparel",
+                image: "👕",
+                badge: "new",
+                sizes: ["S", "M", "L", "XL"],
+                stock: 50
+            },
+            {
+                id: 3,
+                name: "Eagles Baseball Cap",
+                description: "Adjustable cap with embroidered team logo",
+                price: 20.00,
+                category: "accessories",
+                image: "🧢",
+                sizes: ["One Size"],
+                stock: 8
+            },
+            {
+                id: 4,
+            name: "Eagles Hoodie",
+                description: "Warm hoodie perfect for game day",
+                price: 40.00,
+                category: "apparel",
+                image: "👔",
+                sizes: ["S", "M", "L", "XL", "XXL"],
+                stock: 20
+            },
+            {
+                id: 5,
+                name: "Eagles Backpack",
+                description: "Durable backpack for school and sports",
+                price: 35.00,
+                category: "accessories",
+                image: "🎒",
+                sizes: ["One Size"],
+                stock: 15
+            },
+            {
+                id: 6,
+                name: "Eagles Water Bottle",
+                description: "Insulated water bottle with team logo",
+                price: 15.00,
+                category: "accessories",
+                image: "🥤",
+                sizes: ["20oz", "32oz"],
+                stock: 0
+            },
+            {
+                id: 7,
+                name: "Eagles Shorts",
+                description: "Athletic shorts with team colors",
+                price: 22.00,
+                category: "apparel",
+                image: "🩳",
+                sizes: ["S", "M", "L", "XL"],
+                stock: 30
+            },
+            {
+                id: 8,
+                name: "Eagles Championship Trophy",
+                description: "Custom championship trophy replica",
+                price: 75.00,
+                originalPrice: 100.00,
+                category: "equipment",
+                image: "🏆",
+                badge: "sale",
+                sizes: ["8 inch", "12 inch", "16 inch"],
+                stock: 5
+            }
+        ];
+
+        let currentProducts = [...mockProducts];
+        let currentCategory = 'all';
+        let cart = [];
+        let currentProduct = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderProducts();
+            loadCart();
+        });
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            
+            if (currentProducts.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h3>No products found</h3>
+                        <p>Try adjusting your search or filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = currentProducts.map(product => `
+                <div class="product-card">
+                    <div class="product-image">
+                        ${product.image}
+                        ${product.badge ? `<div class="product-badge ${product.badge}">${product.badge.toUpperCase()}</div>` : ''}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="product-price">
+                            <span class="current-price">$${product.price.toFixed(2)}</span>
+                            ${product.originalPrice ? `<span class="original-price">$${product.originalPrice.toFixed(2)}</span>` : ''}
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-add-cart" onclick="addToCart(${product.id})" ${product.stock === 0 ? 'disabled' : ''}>
+                                ${product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                            </button>
+                            <button class="btn-wishlist" onclick="toggleWishlist(${product.id})">❤️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            
+            // Update category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter products
+            if (category === 'all') {
+                currentProducts = [...mockProducts];
+            } else {
+                currentProducts = mockProducts.filter(product => product.category === category);
+            }
+            
+            renderProducts();
+        }
+
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filteredProducts = [...mockProducts];
+            
+            if (currentCategory !== 'all') {
+                filteredProducts = filteredProducts.filter(product => product.category === currentCategory);
+            }
+            
+            if (searchTerm) {
+                filteredProducts = filteredProducts.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    product.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            currentProducts = filteredProducts;
+            renderProducts();
+        }
+
+        function addToCart(productId) {
+            const product = mockProducts.find(p => p.id === productId);
+            if (!product || product.stock === 0) return;
+            
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    image: product.image
+                });
+            }
+            
+            updateCartCount();
+            showSuccess('Added to cart!');
+        }
+
+        function addToCartFromModal() {
+            if (!currentProduct) return;
+            addToCart(currentProduct.id);
+            closeModal();
+        }
+
+        function toggleWishlist(productId) {
+            const btn = event.target;
+            btn.classList.toggle('active');
+            
+            if (btn.classList.contains('active')) {
+                showSuccess('Added to wishlist!');
+            } else {
+                showSuccess('Removed from wishlist!');
+            }
+        }
+
+        function quickView(productId) {
+            currentProduct = mockProducts.find(p => p.id === productId);
+            if (!currentProduct) return;
+            
+            document.getElementById('modalTitle').textContent = currentProduct.name;
+            document.getElementById('modalImage').textContent = currentProduct.image;
+            document.getElementById('modalPrice').textContent = `$${currentProduct.price.toFixed(2)}`;
+            document.getElementById('modalDescription').textContent = currentProduct.description;
+            
+            // Populate size buttons
+            const sizeButtons = document.getElementById('sizeButtons');
+            sizeButtons.innerHTML = currentProduct.sizes.map(size => 
+                `<button class="size-btn" onclick="selectSize('${size}')">${size}</button>`
+            ).join('');
+            
+            document.getElementById('quickViewModal').style.display = 'block';
+        }
+
+        function selectSize(size) {
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function closeModal() {
+            document.getElementById('quickViewModal').style.display = 'none';
+            currentProduct = null;
+        }
+
+        function viewCart() {
+            // In a real app, this would navigate to the cart page
+            alert(`Cart has ${cart.length} items`);
+        }
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = totalItems;
+        }
+
+        function loadCart() {
+            // In a real app, this would load from localStorage or API
+            updateCartCount();
+        }
+
+        function showSuccess(message) {
+            // Simple success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #10b981;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-weight: 600;
+                z-index: 3000;
+                animation: slideDown 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('quickViewModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from {
+                    transform: translateX(-50%) translateY(-100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #fef2f2 75%, #fef2f2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .player-profile {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .player-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+        
+        .player-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .player-details {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h3 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .donation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .donation-amount {
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .donation-amount:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .donation-amount.selected {
+            border-color: #3b82f6;
+            background: #dbeafe;
+        }
+        
+        .donation-amount .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .donation-amount .label {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .custom-amount {
+            margin-top: 15px;
+        }
+        
+        .custom-amount input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 4px 12px 0 rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .store-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .store-item-image {
+            width: 60px;
+            height: 60px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .store-item-details {
+            flex: 1;
+        }
+        
+        .store-item-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .store-item-price {
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .social-share {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .social-btn.facebook { background: #1877f2; }
+        .social-btn.twitter { background: #1da1f2; }
+        .social-btn.instagram { background: #e4405f; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .donation-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Support Your Player</h1>
+        <p>Help make their season unforgettable</p>
+    </div>
+    
+    <div class="container">
+        <div class="player-profile">
+            <div class="player-avatar">🏈</div>
+            <h2 class="player-name" id="playerName">John Doe</h2>
+            <div class="player-details" id="playerDetails">
+                #7 • Quarterback • Austin High School Varsity Football
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSupporters">12</div>
+                    <div class="stat-label">Supporters</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalRaised">$500</div>
+                    <div class="stat-label">Raised</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="gamesPlayed">8</div>
+                    <div class="stat-label">Games</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-grid">
+            <!-- Donation Options -->
+            <div class="card">
+                <h3>💝 Make a Donation</h3>
+                <div class="donation-options">
+                    <div class="donation-amount" data-amount="25">
+                        <div class="amount">$25</div>
+                        <div class="label">Support</div>
+                    </div>
+                    <div class="donation-amount" data-amount="50">
+                        <div class="amount">$50</div>
+                        <div class="label">Boost</div>
+                    </div>
+                    <div class="donation-amount" data-amount="100">
+                        <div class="amount">$100</div>
+                        <div class="label">Champion</div>
+                    </div>
+                    <div class="donation-amount" data-amount="250">
+                        <div class="amount">$250</div>
+                        <div class="label">MVP</div>
+                    </div>
+                </div>
+                <div class="custom-amount">
+                    <input type="number" placeholder="Enter custom amount" id="customAmount">
+                </div>
+                <button class="btn" onclick="processDonation()">Donate Now</button>
+            </div>
+            
+            <!-- Team Store -->
+            <div class="card">
+                <h3>🛍️ Team Store</h3>
+                <div id="storeItems">
+                    <div class="store-item">
+                        <div class="store-item-image">👕</div>
+                        <div class="store-item-details">
+                            <div class="store-item-name">Team Jersey</div>
+                            <div class="store-item-price">$45.00</div>
+                        </div>
+                        <button class="btn btn-outline" style="width: auto; margin: 0;">Add to Cart</button>
+                    </div>
+                    <div class="store-item">
+                        <div class="store-item-image">🧢</div>
+                        <div class="store-item-details">
+                            <div class="store-item-name">Team Cap</div>
+                            <div class="store-item-price">$25.00</div>
+                        </div>
+                        <button class="btn btn-outline" style="width: auto; margin: 0;">Add to Cart</button>
+                    </div>
+                    <div class="store-item">
+                        <div class="store-item-image">🏈</div>
+                        <div class="store-item-details">
+                            <div class="store-item-name">Team Football</div>
+                            <div class="store-item-price">$35.00</div>
+                        </div>
+                        <button class="btn btn-outline" style="width: auto; margin: 0;">Add to Cart</button>
+                    </div>
+                </div>
+                <button class="btn btn-success">View Full Store</button>
+            </div>
+            
+            <!-- Local Businesses -->
+            <div class="card">
+                <h3>🏪 Local Supporters</h3>
+                <div id="localBusinesses">
+                    <div class="store-item">
+                        <div class="store-item-image">🍕</div>
+                        <div class="store-item-details">
+                            <div class="store-item-name">Austin Pizza Palace</div>
+                            <div class="store-item-price">10% off for team families</div>
+                        </div>
+                        <button class="btn btn-outline" style="width: auto; margin: 0;">Visit</button>
+                    </div>
+                    <div class="store-item">
+                        <div class="store-item-image">🚗</div>
+                        <div class="store-item-details">
+                            <div class="store-item-name">Round Rock Auto Repair</div>
+                            <div class="store-item-price">Free oil change for players</div>
+                        </div>
+                        <button class="btn btn-outline" style="width: auto; margin: 0;">Visit</button>
+                    </div>
+                </div>
+                <button class="btn">View All Local Businesses</button>
+            </div>
+        </div>
+        
+        <div class="social-share">
+            <a href="#" class="social-btn facebook">📘</a>
+            <a href="#" class="social-btn twitter">🐦</a>
+            <a href="#" class="social-btn instagram">📷</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPlayerData();
+            setupDonationHandlers();
+        });
+        
+        function loadPlayerData() {
+            // Mock data - in real app, this would come from URL params or API
+            const playerData = {
+                name: 'John Doe',
+                jersey_number: 7,
+                position: 'Quarterback',
+                school: 'Austin High School',
+                team: 'Varsity Football',
+                total_supporters: 12,
+                total_raised: 500,
+                games_played: 8
+            };
+            
+            document.getElementById('playerName').textContent = playerData.name;
+            document.getElementById('playerDetails').textContent = 
+                `#${playerData.jersey_number} • ${playerData.position} • ${playerData.school} ${playerData.team}`;
+            document.getElementById('totalSupporters').textContent = playerData.total_supporters;
+            document.getElementById('totalRaised').textContent = `$${playerData.total_raised}`;
+            document.getElementById('gamesPlayed').textContent = playerData.games_played;
+        }
+        
+        function setupDonationHandlers() {
+            const donationAmounts = document.querySelectorAll('.donation-amount');
+            const customAmount = document.getElementById('customAmount');
+            
+            donationAmounts.forEach(amount => {
+                amount.addEventListener('click', function() {
+                    // Remove selected class from all
+                    donationAmounts.forEach(a => a.classList.remove('selected'));
+                    // Add selected class to clicked
+                    this.classList.add('selected');
+                    // Clear custom amount
+                    customAmount.value = '';
+                });
+            });
+            
+            customAmount.addEventListener('input', function() {
+                // Remove selected class from all preset amounts
+                donationAmounts.forEach(a => a.classList.remove('selected'));
+            });
+        }
+        
+        function processDonation() {
+            const selectedAmount = document.querySelector('.donation-amount.selected');
+            const customAmount = document.getElementById('customAmount').value;
+            
+            let amount = 0;
+            if (selectedAmount) {
+                amount = selectedAmount.dataset.amount;
+            } else if (customAmount) {
+                amount = customAmount;
+            }
+            
+            if (amount > 0) {
+                alert(`Processing donation of $${amount}. Payment form would open here.`);
+            } else {
+                alert('Please select or enter a donation amount.');
+            }
+        }
+    </script>
+</body>
+</html>

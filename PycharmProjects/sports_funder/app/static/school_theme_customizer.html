@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Theme Customizer - Sports Funder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #fef2f2 75%, #fef2f2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1e3a8a;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            color: #dc2626;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #1e3a8a;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #1e40af;
+        }
+
+        .theme-customizer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .color-palette {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .color-palette h3 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .color-group {
+            margin-bottom: 25px;
+        }
+
+        .color-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .color-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .color-picker {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-hex {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            width: 100px;
+        }
+
+        .preview-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-section h3 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .preview-page {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            min-height: 300px;
+        }
+
+        .preview-header {
+            background: var(--primary-color, #1e3a8a);
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .preview-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .preview-card {
+            background: var(--secondary-color, #f8f9fa);
+            border: 2px solid var(--accent-color, #dc2626);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .preview-card h4 {
+            color: var(--primary-color, #1e3a8a);
+            margin-bottom: 8px;
+        }
+
+        .preview-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .theme-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .preset-themes {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f0f8ff;
+            border-radius: 12px;
+            border: 1px solid #cce0ff;
+        }
+
+        .preset-themes h3 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .preset-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-card:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .preset-card.selected {
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .preset-colors {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .preset-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .preset-name {
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .theme-customizer {
+                grid-template-columns: 1fr;
+            }
+            
+            .theme-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 School Theme Customizer</h1>
+            <p>Customize your school's colors and branding for all public pages</p>
+        </div>
+
+        <a href="/dashboard/school/1" class="back-btn">⬅️ Back to School Dashboard</a>
+
+        <div class="theme-customizer">
+            <div class="color-palette">
+                <h3>🎨 Color Palette</h3>
+                
+                <div class="color-group">
+                    <label>Primary Color (Headers, Buttons)</label>
+                    <div class="color-input-group">
+                        <input type="color" id="primaryColor" class="color-picker" value="#1e3a8a">
+                        <input type="text" id="primaryHex" class="color-hex" value="#1e3a8a">
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>Secondary Color (Backgrounds, Cards)</label>
+                    <div class="color-input-group">
+                        <input type="color" id="secondaryColor" class="color-picker" value="#f8f9fa">
+                        <input type="text" id="secondaryHex" class="color-hex" value="#f8f9fa">
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>Accent Color (Borders, Highlights)</label>
+                    <div class="color-input-group">
+                        <input type="color" id="accentColor" class="color-picker" value="#dc2626">
+                        <input type="text" id="accentHex" class="color-hex" value="#dc2626">
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>Text Color</label>
+                    <div class="color-input-group">
+                        <input type="color" id="textColor" class="color-picker" value="#333333">
+                        <input type="text" id="textHex" class="color-hex" value="#333333">
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h3>👁️ Live Preview</h3>
+                <div class="preview-page" id="previewPage">
+                    <div class="preview-header">
+                        <h2>Your School Name</h2>
+                        <p>School Mascot & Motto</p>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-card">
+                            <h4>Donate</h4>
+                            <p>Support our teams</p>
+                        </div>
+                        <div class="preview-card">
+                            <h4>Local Business</h4>
+                            <p>Find sponsors</p>
+                        </div>
+                        <div class="preview-card">
+                            <h4>Team Store</h4>
+                            <p>Buy merchandise</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preset-themes">
+            <h3>🎭 Preset Themes</h3>
+            <div class="preset-grid">
+                <div class="preset-card" data-theme="patriotic">
+                    <div class="preset-colors">
+                        <div class="preset-color" style="background: #1e3a8a;"></div>
+                        <div class="preset-color" style="background: #ffffff;"></div>
+                        <div class="preset-color" style="background: #dc2626;"></div>
+                    </div>
+                    <div class="preset-name">Patriotic</div>
+                </div>
+
+                <div class="preset-card" data-theme="forest">
+                    <div class="preset-colors">
+                        <div class="preset-color" style="background: #065f46;"></div>
+                        <div class="preset-color" style="background: #f0fdf4;"></div>
+                        <div class="preset-color" style="background: #16a34a;"></div>
+                    </div>
+                    <div class="preset-name">Forest Green</div>
+                </div>
+
+                <div class="preset-card" data-theme="royal">
+                    <div class="preset-colors">
+                        <div class="preset-color" style="background: #581c87;"></div>
+                        <div class="preset-color" style="background: #faf5ff;"></div>
+                        <div class="preset-color" style="background: #a855f7;"></div>
+                    </div>
+                    <div class="preset-name">Royal Purple</div>
+                </div>
+
+                <div class="preset-card" data-theme="sunset">
+                    <div class="preset-colors">
+                        <div class="preset-color" style="background: #ea580c;"></div>
+                        <div class="preset-color" style="background: #fff7ed;"></div>
+                        <div class="preset-color" style="background: #f97316;"></div>
+                    </div>
+                    <div class="preset-name">Sunset Orange</div>
+                </div>
+
+                <div class="preset-card" data-theme="ocean">
+                    <div class="preset-colors">
+                        <div class="preset-color" style="background: #0c4a6e;"></div>
+                        <div class="preset-color" style="background: #f0f9ff;"></div>
+                        <div class="preset-color" style="background: #0284c7;"></div>
+                    </div>
+                    <div class="preset-name">Ocean Blue</div>
+                </div>
+
+                <div class="preset-card" data-theme="classic">
+                    <div class="preset-colors">
+                        <div class="preset-color" style="background: #374151;"></div>
+                        <div class="preset-color" style="background: #f9fafb;"></div>
+                        <div class="preset-color" style="background: #6b7280;"></div>
+                    </div>
+                    <div class="preset-name">Classic Gray</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="theme-actions">
+            <button class="btn btn-secondary" onclick="resetToDefault()">Reset to Default</button>
+            <button class="btn btn-primary" onclick="saveTheme()">Save Theme</button>
+            <button class="btn btn-success" onclick="previewFullPage()">Preview Full Page</button>
+        </div>
+    </div>
+
+    <script>
+        // Theme presets
+        const themes = {
+            patriotic: {
+                primary: '#1e3a8a',
+                secondary: '#f8f9fa',
+                accent: '#dc2626',
+                text: '#333333'
+            },
+            forest: {
+                primary: '#065f46',
+                secondary: '#f0fdf4',
+                accent: '#16a34a',
+                text: '#333333'
+            },
+            royal: {
+                primary: '#581c87',
+                secondary: '#faf5ff',
+                accent: '#a855f7',
+                text: '#333333'
+            },
+            sunset: {
+                primary: '#ea580c',
+                secondary: '#fff7ed',
+                accent: '#f97316',
+                text: '#333333'
+            },
+            ocean: {
+                primary: '#0c4a6e',
+                secondary: '#f0f9ff',
+                accent: '#0284c7',
+                text: '#333333'
+            },
+            classic: {
+                primary: '#374151',
+                secondary: '#f9fafb',
+                accent: '#6b7280',
+                text: '#333333'
+            }
+        };
+
+        // Color picker elements
+        const primaryColor = document.getElementById('primaryColor');
+        const secondaryColor = document.getElementById('secondaryColor');
+        const accentColor = document.getElementById('accentColor');
+        const textColor = document.getElementById('textColor');
+
+        const primaryHex = document.getElementById('primaryHex');
+        const secondaryHex = document.getElementById('secondaryHex');
+        const accentHex = document.getElementById('accentHex');
+        const textHex = document.getElementById('textHex');
+
+        // Update preview when colors change
+        function updatePreview() {
+            const previewPage = document.getElementById('previewPage');
+            previewPage.style.setProperty('--primary-color', primaryColor.value);
+            previewPage.style.setProperty('--secondary-color', secondaryColor.value);
+            previewPage.style.setProperty('--accent-color', accentColor.value);
+            previewPage.style.setProperty('--text-color', textColor.value);
+        }
+
+        // Sync color picker with hex input
+        function syncColorInputs() {
+            primaryHex.value = primaryColor.value;
+            secondaryHex.value = secondaryColor.value;
+            accentHex.value = accentColor.value;
+            textHex.value = textColor.value;
+            updatePreview();
+        }
+
+        // Sync hex input with color picker
+        function syncHexInputs() {
+            primaryColor.value = primaryHex.value;
+            secondaryColor.value = secondaryHex.value;
+            accentColor.value = accentHex.value;
+            textColor.value = textHex.value;
+            updatePreview();
+        }
+
+        // Apply preset theme
+        function applyPreset(themeName) {
+            const theme = themes[themeName];
+            if (theme) {
+                primaryColor.value = theme.primary;
+                secondaryColor.value = theme.secondary;
+                accentColor.value = theme.accent;
+                textColor.value = theme.text;
+                syncColorInputs();
+            }
+        }
+
+        // Reset to default
+        function resetToDefault() {
+            applyPreset('patriotic');
+        }
+
+        // Save theme
+        function saveTheme() {
+            const themeData = {
+                primary: primaryColor.value,
+                secondary: secondaryColor.value,
+                accent: accentColor.value,
+                text: textColor.value,
+                school_id: 1 // This would come from the actual school context
+            };
+
+            // Here you would save to the database via API
+            console.log('Saving theme:', themeData);
+            alert('Theme saved successfully!');
+        }
+
+        // Preview full page
+        function previewFullPage() {
+            // This would open a new window/tab with the school's public page
+            window.open('/school/1', '_blank');
+        }
+
+        // Event listeners
+        primaryColor.addEventListener('input', syncColorInputs);
+        secondaryColor.addEventListener('input', syncColorInputs);
+        accentColor.addEventListener('input', syncColorInputs);
+        textColor.addEventListener('input', syncColorInputs);
+
+        primaryHex.addEventListener('input', syncHexInputs);
+        secondaryHex.addEventListener('input', syncHexInputs);
+        accentHex.addEventListener('input', syncHexInputs);
+        textHex.addEventListener('input', syncHexInputs);
+
+        // Preset theme selection
+        document.querySelectorAll('.preset-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected class from all cards
+                document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+                // Add selected class to clicked card
+                this.classList.add('selected');
+                // Apply the theme
+                const themeName = this.dataset.theme;
+                applyPreset(themeName);
+            });
+        });
+
+        // Initialize with default theme
+        document.addEventListener('DOMContentLoaded', function() {
+            applyPreset('patriotic');
+            document.querySelector('[data-theme="patriotic"]').classList.add('selected');
+        });
+    </script>
+</body>
+</html>

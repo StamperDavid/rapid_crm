@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Import Management - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #1e3a8a;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #1e3a8a;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border-color: #1e3a8a;
+        }
+
+        .tab-btn:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .content-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .content-panel h3 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #dc2626;
+            padding-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .sources-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .source-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #1e3a8a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .source-info {
+            flex: 1;
+        }
+
+        .source-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .source-details {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .source-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .template-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .template-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .template-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+
+        .template-description {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .school-products {
+            display: grid;
+            gap: 15px;
+        }
+
+        .school-product-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .product-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #dc2626;
+        }
+
+        .product-details {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .import-history {
+            display: grid;
+            gap: 15px;
+        }
+
+        .import-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #1e3a8a;
+        }
+
+        .import-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .import-source {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .import-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-running {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .import-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .source-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        
+        <div class="header">
+            <h1>📦 Product Import Management</h1>
+            <p>Import products from external APIs and manage product templates for schools</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('sources')">Import Sources</button>
+            <button class="tab-btn" onclick="showTab('templates')">Product Templates</button>
+            <button class="tab-btn" onclick="showTab('school-products')">School Products</button>
+            <button class="tab-btn" onclick="showTab('import-history')">Import History</button>
+        </div>
+
+        <!-- Import Sources Tab -->
+        <div id="sources" class="tab-content">
+            <div class="content-panel">
+                <h3>Import Sources</h3>
+                <div class="sources-list" id="sourcesList">
+                    <div class="loading">Loading import sources...</div>
+                </div>
+                
+                <button class="btn btn-success" onclick="showAddSourceForm()" style="margin-top: 20px;">
+                    Add New Import Source
+                </button>
+                
+                <div id="addSourceForm" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <h4>Add Import Source</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                            <input type="text" id="sourceName" placeholder="e.g., CustomInk API">
+                        </div>
+                        <div class="form-group">
+                            <label>Source Type</label>
+                            <select id="sourceType">
+                                <option value="api">API</option>
+                                <option value="csv">CSV File</option>
+                                <option value="manual">Manual Entry</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>API Endpoint</label>
+                        <input type="url" id="apiEndpoint" placeholder="https://api.example.com/products">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>API Key</label>
+                            <input type="text" id="apiKey" placeholder="Your API key">
+                        </div>
+                        <div class="form-group">
+                            <label>API Secret</label>
+                            <input type="password" id="apiSecret" placeholder="Your API secret">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" onclick="addImportSource()">Add Source</button>
+                        <button class="btn btn-secondary" onclick="hideAddSourceForm()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Templates Tab -->
+        <div id="templates" class="tab-content" style="display: none;">
+            <div class="content-panel">
+                <h3>Product Templates</h3>
+                <p style="margin-bottom: 20px; color: #7f8c8d;">
+                    These are the master product templates that schools can select from for their stores.
+                </p>
+                <div class="templates-grid" id="templatesGrid">
+                    <div class="loading">Loading product templates...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- School Products Tab -->
+        <div id="school-products" class="tab-content" style="display: none;">
+            <div class="content-panel">
+                <h3>School Products</h3>
+                <div class="form-group">
+                    <label>Select School</label>
+                    <select id="schoolSelect" onchange="loadSchoolProducts()">
+                        <option value="">Select a school...</option>
+                    </select>
+                </div>
+                <div class="school-products" id="schoolProductsList">
+                    <div class="loading">Select a school to view their products</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import History Tab -->
+        <div id="import-history" class="tab-content" style="display: none;">
+            <div class="content-panel">
+                <h3>Import History</h3>
+                <div class="import-history" id="importHistoryList">
+                    <div class="loading">Loading import history...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'sources';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadImportSources();
+            loadProductTemplates();
+            loadSchools();
+            loadImportHistory();
+        });
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).style.display = 'block';
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        async function loadImportSources() {
+            try {
+                const response = await fetch('/api/v1/product-import/sources');
+                if (response.ok) {
+                    const sources = await response.json();
+                    displayImportSources(sources);
+                } else {
+                    throw new Error('Failed to load import sources');
+                }
+            } catch (error) {
+                console.error('Error loading import sources:', error);
+                document.getElementById('sourcesList').innerHTML = '<div class="error">Error loading import sources</div>';
+            }
+        }
+
+        function displayImportSources(sources) {
+            const list = document.getElementById('sourcesList');
+            if (sources.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">No import sources configured yet</div>';
+                return;
+            }
+
+            list.innerHTML = sources.map(source => `
+                <div class="source-item">
+                    <div class="source-info">
+                        <div class="source-name">${source.name}</div>
+                        <div class="source-details">
+                            ${source.source_type.toUpperCase()} • 
+                            ${source.is_active ? 'Active' : 'Inactive'} • 
+                            Last import: ${source.last_import_at ? new Date(source.last_import_at).toLocaleDateString() : 'Never'}
+                        </div>
+                    </div>
+                    <div class="source-actions">
+                        <button class="btn btn-secondary" onclick="editSource(${source.id})">Edit</button>
+                        <button class="btn" onclick="startImport(${source.id})">Import</button>
+                        <button class="btn btn-danger" onclick="deleteSource(${source.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadProductTemplates() {
+            try {
+                const response = await fetch('/api/v1/product-import/templates');
+                if (response.ok) {
+                    const templates = await response.json();
+                    displayProductTemplates(templates);
+                } else {
+                    throw new Error('Failed to load product templates');
+                }
+            } catch (error) {
+                console.error('Error loading product templates:', error);
+                document.getElementById('templatesGrid').innerHTML = '<div class="error">Error loading product templates</div>';
+            }
+        }
+
+        function displayProductTemplates(templates) {
+            const grid = document.getElementById('templatesGrid');
+            if (templates.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">No product templates available</div>';
+                return;
+            }
+
+            grid.innerHTML = templates.map(template => `
+                <div class="template-card">
+                    <div class="template-name">${template.name}</div>
+                    <div class="template-price">$${template.base_price || '0.00'}</div>
+                    <div class="template-description">${template.description || 'No description available'}</div>
+                    <div class="template-actions">
+                        <button class="btn btn-secondary" onclick="editTemplate(${template.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteTemplate(${template.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadSchools() {
+            try {
+                const response = await fetch('/api/v1/schools');
+                if (response.ok) {
+                    const schools = await response.json();
+                    const select = document.getElementById('schoolSelect');
+                    select.innerHTML = '<option value="">Select a school...</option>' +
+                        schools.map(school => `<option value="${school.id}">${school.name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading schools:', error);
+            }
+        }
+
+        async function loadSchoolProducts() {
+            const schoolId = document.getElementById('schoolSelect').value;
+            if (!schoolId) {
+                document.getElementById('schoolProductsList').innerHTML = '<div class="loading">Select a school to view their products</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/product-import/schools/${schoolId}/products`);
+                if (response.ok) {
+                    const products = await response.json();
+                    displaySchoolProducts(products);
+                } else {
+                    throw new Error('Failed to load school products');
+                }
+            } catch (error) {
+                console.error('Error loading school products:', error);
+                document.getElementById('schoolProductsList').innerHTML = '<div class="error">Error loading school products</div>';
+            }
+        }
+
+        function displaySchoolProducts(products) {
+            const list = document.getElementById('schoolProductsList');
+            if (products.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">This school has no products selected yet</div>';
+                return;
+            }
+
+            list.innerHTML = products.map(product => `
+                <div class="school-product-item">
+                    <div class="product-header">
+                        <div class="product-name">${product.custom_name || product.template.name}</div>
+                        <div class="product-price">$${product.selling_price}</div>
+                    </div>
+                    <div class="product-details">
+                        ${product.custom_description || product.template.description}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadImportHistory() {
+            try {
+                const response = await fetch('/api/v1/product-import/imports');
+                if (response.ok) {
+                    const imports = await response.json();
+                    displayImportHistory(imports);
+                } else {
+                    throw new Error('Failed to load import history');
+                }
+            } catch (error) {
+                console.error('Error loading import history:', error);
+                document.getElementById('importHistoryList').innerHTML = '<div class="error">Error loading import history</div>';
+            }
+        }
+
+        function displayImportHistory(imports) {
+            const list = document.getElementById('importHistoryList');
+            if (imports.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">No import history available</div>';
+                return;
+            }
+
+            list.innerHTML = imports.map(imp => `
+                <div class="import-item">
+                    <div class="import-header">
+                        <div class="import-source">${imp.source_name}</div>
+                        <div class="import-status status-${imp.status}">${imp.status.toUpperCase()}</div>
+                    </div>
+                    <div class="import-stats">
+                        <div class="stat">
+                            <div class="stat-value">${imp.total_products}</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${imp.imported_products}</div>
+                            <div class="stat-label">Imported</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${imp.failed_products}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddSourceForm() {
+            document.getElementById('addSourceForm').style.display = 'block';
+        }
+
+        function hideAddSourceForm() {
+            document.getElementById('addSourceForm').style.display = 'none';
+        }
+
+        async function addImportSource() {
+            const name = document.getElementById('sourceName').value;
+            const sourceType = document.getElementById('sourceType').value;
+            const apiEndpoint = document.getElementById('apiEndpoint').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const apiSecret = document.getElementById('apiSecret').value;
+
+            if (!name || !sourceType) {
+                alert('Please fill in required fields');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('source_type', sourceType);
+                formData.append('api_endpoint', apiEndpoint);
+                formData.append('api_key', apiKey);
+                formData.append('api_secret', apiSecret);
+
+                const response = await fetch('/api/v1/product-import/sources', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Import source added successfully!');
+                    hideAddSourceForm();
+                    loadImportSources();
+                } else {
+                    throw new Error('Failed to add import source');
+                }
+            } catch (error) {
+                console.error('Error adding import source:', error);
+                alert('Error adding import source: ' + error.message);
+            }
+        }
+
+        async function startImport(sourceId) {
+            if (!confirm('Start importing products from this source?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/product-import/sources/${sourceId}/import`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Import started! ${result.imported_products} products imported successfully.`);
+                    loadImportHistory();
+                    loadProductTemplates();
+                } else {
+                    throw new Error('Failed to start import');
+                }
+            } catch (error) {
+                console.error('Error starting import:', error);
+                alert('Error starting import: ' + error.message);
+            }
+        }
+
+        function editSource(sourceId) {
+            alert(`Edit source ${sourceId}. This would open an edit form.`);
+        }
+
+        function deleteSource(sourceId) {
+            if (confirm('Are you sure you want to delete this import source?')) {
+                alert(`Delete source ${sourceId}. This would delete the source.`);
+            }
+        }
+
+        function editTemplate(templateId) {
+            alert(`Edit template ${templateId}. This would open an edit form.`);
+        }
+
+        function deleteTemplate(templateId) {
+            if (confirm('Are you sure you want to delete this product template?')) {
+                alert(`Delete template ${templateId}. This would delete the template.`);
+            }
+        }
+    </script>
+</body>
+</html>

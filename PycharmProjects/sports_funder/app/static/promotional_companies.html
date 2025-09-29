@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotional Companies - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 32px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            color: #f8fafc;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #334155;
+        }
+
+        .tab-btn {
+            background: #334155;
+            color: #f8fafc;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: #475569;
+        }
+
+        .tab-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-panel h3 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        .companies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .company-card {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            color: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .company-card:hover {
+            background: #475569;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .company-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .company-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #10b981;
+            color: white;
+        }
+
+        .company-details {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .company-permissions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #f8fafc;
+        }
+
+        .permission-icon {
+            font-size: 1rem;
+        }
+
+        .company-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #f8fafc;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            background: #334155;
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .form-group label input[type="checkbox"] {
+            display: flex;
+            align-items: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #475569;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: #f8fafc;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close {
+            color: #94a3b8;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #f8fafc;
+        }
+
+        #modalBody {
+            padding: 20px;
+            color: #f8fafc;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .error {
+            background: #ef4444;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .companies-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        
+        <div class="header">
+            <h1>🏢 Promotional Companies Management</h1>
+            <p>Manage promotional companies that provide products for school stores</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Total Companies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Active Companies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">With API Access</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">All Schools Access</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('companies')">All Companies</button>
+            <button class="tab-btn" onclick="showTab('add-company')">Add Company</button>
+            <button class="tab-btn" onclick="showTab('permissions')">Permissions</button>
+        </div>
+
+        <!-- Companies Tab -->
+        <div id="companies" class="tab-content">
+            <div class="content-panel">
+                <h3>Promotional Companies</h3>
+                <div class="companies-grid" id="companiesGrid">
+                    <div class="loading">Loading companies...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Company Tab -->
+        <div id="add-company" class="tab-content" style="display: none;">
+            <div class="content-panel">
+                <h3>Add New Promotional Company</h3>
+                <form id="addCompanyForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Company Name *</label>
+                            <input type="text" id="companyName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Name</label>
+                            <input type="text" id="contactName">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Email</label>
+                            <input type="email" id="contactEmail">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone</label>
+                            <input type="tel" id="contactPhone">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Website</label>
+                            <input type="url" id="website">
+                        </div>
+                        <div class="form-group">
+                            <label>API Endpoint</label>
+                            <input type="url" id="apiEndpoint">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="text" id="apiKey">
+                    </div>
+                    
+                    <h4 style="color: #3b82f6; margin: 20px 0 15px 0;">Permissions</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="canUpdateImages" checked> Can Update Images
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="canUpdatePrices"> Can Update Prices
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="canUpdateDescriptions" checked> Can Update Descriptions
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="canAddProducts" checked> Can Add Products
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <h4 style="color: #3b82f6; margin: 20px 0 15px 0;">School Access</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="accessAllSchools"> Access All Schools
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Allowed Schools (JSON array of school IDs)</label>
+                        <textarea id="allowedSchools" rows="3" placeholder="[1, 2, 3]"></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-success">Add Company</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Permissions Tab -->
+        <div id="permissions" class="tab-content" style="display: none;">
+            <div class="content-panel">
+                <h3>Company Permissions Overview</h3>
+                <p style="margin-bottom: 20px; color: #94a3b8;">
+                    Manage what each promotional company can do in the system.
+                </p>
+                <div id="permissionsList">
+                    <div class="loading">Loading permissions...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Details Modal -->
+    <div id="companyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Company Details</h3>
+                <span class="close" onclick="closeModal()">×</span>
+            </div>
+            <div id="modalBody">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'companies';
+        let companiesData = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCompanies();
+            loadStats();
+            setupForm();
+        });
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).style.display = 'block';
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Load tab-specific data
+            if (tabName === 'permissions') {
+                loadPermissions();
+            }
+        }
+
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/v1/promotional-companies/companies');
+                if (response.ok) {
+                    companiesData = await response.json();
+                    displayCompanies(companiesData);
+                } else {
+                    throw new Error('Failed to load companies');
+                }
+            } catch (error) {
+                console.error('Error loading companies:', error);
+                document.getElementById('companiesGrid').innerHTML = '<div class="error">Error loading companies</div>';
+            }
+        }
+
+        function displayCompanies(companies) {
+            const grid = document.getElementById('companiesGrid');
+            if (companies.length === 0) {
+                grid.innerHTML = '<div class="loading">No promotional companies configured yet</div>';
+                return;
+            }
+
+            grid.innerHTML = companies.map(company => `
+                <div class="company-card" onclick="viewCompanyProfile(${company.id})">
+                    <div class="company-header">
+                        <div class="company-name">${company.name}</div>
+                        <div class="company-status status-active">Active</div>
+                    </div>
+                    <div class="company-details">
+                        <div><strong>Contact:</strong> ${company.contact_name || 'N/A'}</div>
+                        <div><strong>Email:</strong> ${company.contact_email || 'N/A'}</div>
+                        <div><strong>Phone:</strong> ${company.contact_phone || 'N/A'}</div>
+                        <div><strong>Website:</strong> ${company.website ? `<a href="${company.website}" target="_blank" style="color: #3b82f6;">${company.website}</a>` : 'N/A'}</div>
+                    </div>
+                    <div class="company-permissions">
+                        <div class="permission-item">
+                            <span class="permission-icon">${company.can_update_images ? '✅' : '❌'}</span>
+                            Update Images
+                        </div>
+                        <div class="permission-item">
+                            <span class="permission-icon">${company.can_update_prices ? '✅' : '❌'}</span>
+                            Update Prices
+                        </div>
+                        <div class="permission-item">
+                            <span class="permission-icon">${company.can_update_descriptions ? '✅' : '❌'}</span>
+                            Update Descriptions
+                        </div>
+                        <div class="permission-item">
+                            <span class="permission-icon">${company.can_add_products ? '✅' : '❌'}</span>
+                            Add Products
+                        </div>
+                    </div>
+                    <div class="company-actions">
+                        <button class="btn" onclick="viewCompany(${company.id})">View Details</button>
+                        <button class="btn btn-secondary" onclick="editCompany(${company.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteCompany(${company.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadStats() {
+            try {
+                // Calculate stats from companies data
+                const totalCompanies = companiesData.length;
+                const activeCompanies = companiesData.filter(c => c.is_active).length;
+                const companiesWithApi = companiesData.filter(c => c.api_endpoint).length;
+                const companiesWithAllAccess = companiesData.filter(c => c.access_all_schools).length;
+
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${totalCompanies}</div>
+                        <div class="stat-label">Total Companies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${activeCompanies}</div>
+                        <div class="stat-label">Active Companies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${companiesWithApi}</div>
+                        <div class="stat-label">With API Access</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${companiesWithAllAccess}</div>
+                        <div class="stat-label">All Schools Access</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function setupForm() {
+            document.getElementById('addCompanyForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await addCompany();
+            });
+        }
+
+        async function addCompany() {
+            const formData = new FormData();
+            formData.append('name', document.getElementById('companyName').value);
+            formData.append('contact_name', document.getElementById('contactName').value);
+            formData.append('contact_email', document.getElementById('contactEmail').value);
+            formData.append('contact_phone', document.getElementById('contactPhone').value);
+            formData.append('website', document.getElementById('website').value);
+            formData.append('api_endpoint', document.getElementById('apiEndpoint').value);
+            formData.append('api_key', document.getElementById('apiKey').value);
+            formData.append('can_update_images', document.getElementById('canUpdateImages').checked);
+            formData.append('can_update_prices', document.getElementById('canUpdatePrices').checked);
+            formData.append('can_update_descriptions', document.getElementById('canUpdateDescriptions').checked);
+            formData.append('can_add_products', document.getElementById('canAddProducts').checked);
+            formData.append('access_all_schools', document.getElementById('accessAllSchools').checked);
+            formData.append('allowed_schools', document.getElementById('allowedSchools').value);
+
+            try {
+                const response = await fetch('/api/v1/promotional-companies/companies', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Company added successfully!');
+                    resetForm();
+                    loadCompanies();
+                    loadStats();
+                    showTab('companies');
+                } else {
+                    throw new Error('Failed to add company');
+                }
+            } catch (error) {
+                console.error('Error adding company:', error);
+                alert('Error adding company: ' + error.message);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('addCompanyForm').reset();
+            document.getElementById('canUpdateImages').checked = true;
+            document.getElementById('canUpdateDescriptions').checked = true;
+            document.getElementById('canAddProducts').checked = true;
+        }
+
+        async function viewCompany(companyId) {
+            try {
+                const response = await fetch(`/api/v1/promotional-companies/companies/${companyId}`);
+                if (response.ok) {
+                    const company = await response.json();
+                    showCompanyModal(company);
+                } else {
+                    throw new Error('Failed to load company details');
+                }
+            } catch (error) {
+                console.error('Error loading company:', error);
+                alert('Error loading company details');
+            }
+        }
+
+        function showCompanyModal(company) {
+            document.getElementById('modalTitle').textContent = company.name;
+            document.getElementById('modalBody').innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">Contact Information</h4>
+                    <p><strong>Name:</strong> ${company.contact_name || 'N/A'}</p>
+                    <p><strong>Email:</strong> ${company.contact_email || 'N/A'}</p>
+                    <p><strong>Phone:</strong> ${company.contact_phone || 'N/A'}</p>
+                    <p><strong>Website:</strong> ${company.website ? `<a href="${company.website}" target="_blank" style="color: #3b82f6;">${company.website}</a>` : 'N/A'}</p>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">API Configuration</h4>
+                    <p><strong>Endpoint:</strong> ${company.api_endpoint || 'N/A'}</p>
+                    <p><strong>API Key:</strong> ${company.api_key ? '***configured***' : 'Not set'}</p>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">Permissions</h4>
+                    <p>✅ Update Images: ${company.can_update_images ? 'Yes' : 'No'}</p>
+                    <p>✅ Update Prices: ${company.can_update_prices ? 'Yes' : 'No'}</p>
+                    <p>✅ Update Descriptions: ${company.can_update_descriptions ? 'Yes' : 'No'}</p>
+                    <p>✅ Add Products: ${company.can_add_products ? 'Yes' : 'No'}</p>
+                </div>
+                <div>
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">School Access</h4>
+                    <p><strong>Access All Schools:</strong> ${company.access_all_schools ? 'Yes' : 'No'}</p>
+                    <p><strong>Allowed Schools:</strong> ${company.allowed_schools ? company.allowed_schools.join(', ') : 'None specified'}</p>
+                </div>
+            `;
+            document.getElementById('companyModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('companyModal').style.display = 'none';
+        }
+
+        function editCompany(companyId) {
+            alert(`Edit company ${companyId}. This would open an edit form.`);
+        }
+
+        function deleteCompany(companyId) {
+            if (confirm('Are you sure you want to delete this promotional company?')) {
+                alert(`Delete company ${companyId}. This would delete the company.`);
+            }
+        }
+
+        function viewCompanyProfile(companyId) {
+            // Navigate to the company profile page with the company ID
+            window.location.href = `/company-profile?company_id=${companyId}`;
+        }
+
+        async function loadPermissions() {
+            try {
+                const response = await fetch('/api/v1/promotional-companies/companies');
+                if (response.ok) {
+                    const companies = await response.json();
+                    displayPermissions(companies);
+                } else {
+                    throw new Error('Failed to load permissions');
+                }
+            } catch (error) {
+                console.error('Error loading permissions:', error);
+                document.getElementById('permissionsList').innerHTML = '<div class="error">Error loading permissions</div>';
+            }
+        }
+
+        function displayPermissions(companies) {
+            const list = document.getElementById('permissionsList');
+            list.innerHTML = companies.map(company => `
+                <div style="background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">${company.name}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <div>Images: ${company.can_update_images ? '✅' : '❌'}</div>
+                        <div>Prices: ${company.can_update_prices ? '✅' : '❌'}</div>
+                        <div>Descriptions: ${company.can_update_descriptions ? '✅' : '❌'}</div>
+                        <div>Add Products: ${company.can_add_products ? '✅' : '❌'}</div>
+                    </div>
+                    <div style="margin-top: 10px; color: #94a3b8; font-size: 0.9rem;">
+                        School Access: ${company.access_all_schools ? 'All Schools' : `${company.allowed_schools ? company.allowed_schools.length : 0} Schools`}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('companyModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

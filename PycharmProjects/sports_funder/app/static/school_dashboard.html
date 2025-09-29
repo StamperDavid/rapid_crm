@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Athletic Dashboard - Sports Funder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 32px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+        
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #94a3b8;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .panel {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .panel h3 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        
+        .programs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .program-card {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .program-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .program-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .program-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        
+        .program-level {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .program-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .program-stat {
+            text-align: center;
+        }
+        
+        .program-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        .program-stat-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .program-revenue {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .program-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .recent-activity {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #475569;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .activity-icon.order {
+            background: #10b981;
+            color: white;
+        }
+        
+        .activity-icon.donation {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .activity-icon.player {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+        
+        .activity-description {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .quick-actions {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .quick-actions h3 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .action-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .action-btn:hover {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+        
+        .action-btn .icon {
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .programs-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>🏫 Lincoln High School Athletic Dashboard</h1>
+            <p>Comprehensive view of all athletic programs, revenue, and student participation</p>
+        </div>
+
+        <!-- Key Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">$24,580</div>
+                <div class="stat-label">Total Revenue This Month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">12</div>
+                <div class="stat-label">Active Programs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">247</div>
+                <div class="stat-label">Student Athletes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">89</div>
+                <div class="stat-label">New Orders This Week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$3,420</div>
+                <div class="stat-label">Average Order Value</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">156</div>
+                <div class="stat-label">Active Supporters</div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Athletic Programs -->
+                <div class="panel">
+                    <h3>🏀 Athletic Programs</h3>
+                    <div class="programs-grid" id="programsGrid">
+                        <!-- Programs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <h3>📈 Recent Activity</h3>
+                    <div id="recentActivity">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>⚡ Quick Actions</h3>
+                    <div class="action-buttons">
+                        <a href="/theme-editor/1" class="action-btn">
+                            <span class="icon">🎨</span>
+                            Comprehensive Theme Editor
+                        </a>
+                        <a href="/theme-editor/1/mobile" class="action-btn">
+                            <span class="icon">📱</span>
+                            Mobile Theme Editor
+                        </a>
+                        <a href="/school-theme-customizer/1" class="action-btn">
+                            <span class="icon">⚙️</span>
+                            Basic Theme Settings
+                        </a>
+                        <a href="/dashboard/coach/1" class="action-btn">
+                            <span class="icon">👨‍🏫</span>
+                            Coach Dashboard
+                        </a>
+                        <a href="/team/1" class="action-btn">
+                            <span class="icon">💬</span>
+                            Team Chat
+                        </a>
+                        <a href="/local-sponsors" class="action-btn">
+                            <span class="icon">🏪</span>
+                            Manage Local Sponsors
+                        </a>
+                        <a href="/promotional-companies" class="action-btn">
+                            <span class="icon">🏢</span>
+                            Promotional Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample athletic programs data
+        const programsData = [
+            {
+                id: 1,
+                name: "Varsity Boys Basketball",
+                level: "Varsity",
+                players: 15,
+                coaches: 2,
+                revenue: 4850,
+                orders: 23,
+                supporters: 45
+            },
+            {
+                id: 2,
+                name: "JV Girls Basketball",
+                level: "JV",
+                players: 12,
+                coaches: 1,
+                revenue: 3200,
+                orders: 18,
+                supporters: 32
+            },
+            {
+                id: 3,
+                name: "Varsity Football",
+                level: "Varsity",
+                players: 35,
+                coaches: 4,
+                revenue: 7200,
+                orders: 45,
+                supporters: 78
+            },
+            {
+                id: 4,
+                name: "Varsity Girls Soccer",
+                level: "Varsity",
+                players: 18,
+                coaches: 2,
+                revenue: 2800,
+                orders: 15,
+                supporters: 28
+            },
+            {
+                id: 5,
+                name: "JV Boys Soccer",
+                level: "JV",
+                players: 16,
+                coaches: 1,
+                revenue: 2100,
+                orders: 12,
+                supporters: 22
+            },
+            {
+                id: 6,
+                name: "Varsity Track & Field",
+                level: "Varsity",
+                players: 42,
+                coaches: 3,
+                revenue: 1800,
+                orders: 8,
+                supporters: 15
+            }
+        ];
+
+        // Sample recent activity data
+        const activityData = [
+            {
+                type: "order",
+                icon: "🛒",
+                title: "New Order - Varsity Football",
+                description: "John D. ordered team jersey and hat - $85.99",
+                time: "2 minutes ago"
+            },
+            {
+                type: "donation",
+                icon: "💰",
+                title: "Donation Received",
+                description: "Anonymous supporter donated $200 to JV Girls Basketball",
+                time: "15 minutes ago"
+            },
+            {
+                type: "player",
+                icon: "👤",
+                title: "New Player Registration",
+                description: "Sarah M. joined Varsity Girls Soccer",
+                time: "1 hour ago"
+            },
+            {
+                type: "order",
+                icon: "🛒",
+                title: "Bulk Order - Varsity Boys Basketball",
+                description: "Team ordered 15 practice jerseys - $450.00",
+                time: "2 hours ago"
+            },
+            {
+                type: "donation",
+                icon: "💰",
+                title: "Sponsorship Renewal",
+                description: "Local Auto Shop renewed $500 sponsorship",
+                time: "3 hours ago"
+            }
+        ];
+
+        // Load programs
+        function loadPrograms() {
+            const grid = document.getElementById('programsGrid');
+            grid.innerHTML = programsData.map(program => `
+                <div class="program-card">
+                    <div class="program-header">
+                        <div class="program-name">${program.name}</div>
+                        <div class="program-level">${program.level}</div>
+                    </div>
+                    <div class="program-stats">
+                        <div class="program-stat">
+                            <div class="program-stat-value">${program.players}</div>
+                            <div class="program-stat-label">Players</div>
+                        </div>
+                        <div class="program-stat">
+                            <div class="program-stat-value">${program.coaches}</div>
+                            <div class="program-stat-label">Coaches</div>
+                        </div>
+                        <div class="program-stat">
+                            <div class="program-stat-value">${program.orders}</div>
+                            <div class="program-stat-label">Orders</div>
+                        </div>
+                    </div>
+                    <div class="program-revenue">
+                        Revenue: $${program.revenue.toLocaleString()}
+                    </div>
+                    <div class="program-actions">
+                        <button class="btn" onclick="viewProgram(${program.id})">View Details</button>
+                        <button class="btn btn-success" onclick="manageProgram(${program.id})">Manage</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load recent activity
+        function loadRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = activityData.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon ${activity.type}">${activity.icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-description">${activity.description}</div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Program actions
+        function viewProgram(programId) {
+            alert(`View program ${programId} details`);
+        }
+
+        function manageProgram(programId) {
+            alert(`Manage program ${programId}`);
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPrograms();
+            loadRecentActivity();
+        });
+    </script>
+</body>
+</html>
