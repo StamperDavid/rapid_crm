@@ -193,6 +193,16 @@ export interface Service {
   deliverables: string[]; // What we provide
   isActive: boolean;
   
+  // Renewal Management Fields
+  hasRenewal: boolean; // Whether this service requires renewal
+  renewalFrequency: 'Annual' | 'Biennial' | 'Quarterly' | 'Monthly' | 'One-time' | 'As-needed'; // How often it renews
+  renewalPrice: number; // Cost for renewal (may be different from initial price)
+  renewalDescription: string; // Description of what renewal includes
+  renewalRequirements: string[]; // What's needed for renewal
+  renewalDeadline: string; // When renewal is due (e.g., "30 days before expiration")
+  autoRenewal: boolean; // Whether we can auto-renew this service
+  renewalReminders: string[]; // When to send reminders (e.g., ["90 days", "30 days", "7 days"])
+  
   // System Fields
   createdAt: string;
   updatedAt: string;

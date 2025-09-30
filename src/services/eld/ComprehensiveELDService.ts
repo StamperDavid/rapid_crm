@@ -429,7 +429,9 @@ class ComprehensiveELDService {
           'Basic HOS logging',
           'DVIR reports',
           'Driver alerts',
-          'Basic compliance monitoring'
+          'Basic compliance monitoring',
+          'Annual renewal management',
+          'Renewal reminders'
         ],
         compliance_requirements: ['FMCSA ELD mandate'],
         created_at: '',
@@ -451,7 +453,10 @@ class ComprehensiveELDService {
           'Real-time alerts',
           'Compliance monitoring',
           'Driver qualification file management',
-          'Basic reporting'
+          'Basic reporting',
+          'Annual renewal management',
+          'Auto-renewal setup',
+          'Renewal reminders'
         ],
         compliance_requirements: ['FMCSA ELD mandate', 'DOT driver qualification'],
         created_at: '',
@@ -476,7 +481,11 @@ class ComprehensiveELDService {
           'DOT physical management',
           'Drug testing coordination',
           'IFTA filing assistance',
-          'Audit preparation support'
+          'Audit preparation support',
+          'Comprehensive renewal management',
+          'Auto-renewal setup',
+          'Multi-service renewal tracking',
+          'Renewal reminders'
         ],
         compliance_requirements: ['FMCSA ELD mandate', 'DOT driver qualification', 'DOT physicals', 'Drug testing', 'IFTA filing'],
         created_at: '',
@@ -506,7 +515,12 @@ class ComprehensiveELDService {
           '24/7 compliance support',
           'Custom reporting and analytics',
           'Audit preparation and support',
-          'Regulatory updates and training'
+          'Regulatory updates and training',
+          'Enterprise renewal management',
+          'Auto-renewal setup',
+          'Multi-service renewal tracking',
+          'Priority renewal reminders',
+          'Renewal optimization'
         ],
         compliance_requirements: ['FMCSA ELD mandate', 'DOT driver qualification', 'DOT physicals', 'Drug testing', 'IFTA filing', 'IRP renewal', 'Clearinghouse management'],
         created_at: '',

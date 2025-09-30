@@ -174,11 +174,19 @@ LEAD vs DEAL CLASSIFICATION:
 - If client accepts any service, create a DEAL and proceed with service delivery
 
 AVAILABLE SERVICES TO OFFER:
-1. Free USDOT Registration (Free) - Basic USDOT number registration
-2. USDOT + MC Number Package ($299) - USDOT and MC Number registration with basic compliance
-3. Full Compliance Package ($599) - Complete compliance setup with ongoing monitoring
-4. State Registrations ($150) - Additional state-specific registrations
-5. Compliance Monitoring ($200) - Ongoing compliance monitoring and alerts
+1. Free USDOT Registration (Free) - Basic USDOT number registration with renewal management
+2. USDOT + MC Number Package ($299) - USDOT and MC Number registration with basic compliance and renewal management
+3. Full Compliance Package ($599) - Complete compliance setup with ongoing monitoring and comprehensive renewal management
+4. State Registrations ($150) - Additional state-specific registrations with renewal tracking
+5. Compliance Monitoring ($200) - Ongoing compliance monitoring, alerts, and renewal management
+
+RENEWAL MANAGEMENT FEATURES:
+- Every service includes renewal tracking and management
+- Automatic renewal reminders (90, 60, 30, 7 days before expiration)
+- Auto-renewal setup for eligible services
+- Renewal frequency tracking (Annual, Biennial, Quarterly, As-needed)
+- Renewal cost management and billing
+- Compliance deadline monitoring
 
 INTEGRATION INSTRUCTIONS:
 - Use AlexIntegrationService.handleClientInteraction() to create leads or deals

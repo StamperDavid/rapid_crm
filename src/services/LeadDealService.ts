@@ -53,7 +53,7 @@ export class LeadDealService {
       name: 'Free USDOT Registration',
       description: 'Basic USDOT number registration (free government service)',
       price: 0,
-      includes: ['USDOT number registration', 'Basic compliance guidance'],
+      includes: ['USDOT number registration', 'Basic compliance guidance', 'Biennial renewal reminders', 'Renewal management'],
       isFree: true
     },
     {
@@ -61,7 +61,7 @@ export class LeadDealService {
       name: 'USDOT + MC Number Package',
       description: 'USDOT and MC Number registration with basic compliance',
       price: 299,
-      includes: ['USDOT number registration', 'MC Number registration', 'Basic compliance guidance', 'Account setup'],
+      includes: ['USDOT number registration', 'MC Number registration', 'Basic compliance guidance', 'Account setup', 'Annual renewal management', 'Renewal reminders'],
       isFree: false
     },
     {
@@ -69,7 +69,7 @@ export class LeadDealService {
       name: 'Full Compliance Package',
       description: 'Complete compliance setup with ongoing monitoring',
       price: 599,
-      includes: ['USDOT number registration', 'MC Number registration', 'State registrations', 'Compliance monitoring', 'Renewal reminders', 'Dedicated support'],
+      includes: ['USDOT number registration', 'MC Number registration', 'State registrations', 'Compliance monitoring', 'Comprehensive renewal management', 'Auto-renewal setup', 'Renewal reminders', 'Dedicated support'],
       isFree: false
     }
   ];

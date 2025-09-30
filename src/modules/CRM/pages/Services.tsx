@@ -46,6 +46,19 @@ const Services: React.FC = () => {
         'Compliance documentation'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Biennial',
+      renewalPrice: 199,
+      renewalDescription: 'Biennial MCS-150 update required every 2 years to maintain USDOT number',
+      renewalRequirements: [
+        'Updated company information',
+        'Current fleet size and composition',
+        'Operation type changes',
+        'Contact information updates'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -68,6 +81,19 @@ const Services: React.FC = () => {
         'Compliance documentation'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 299,
+      renewalDescription: 'Annual operating authority renewal required to maintain MC number and for-hire authority',
+      renewalRequirements: [
+        'Current insurance documentation',
+        'Updated BOC-3 if operations changed',
+        'Business authority verification',
+        'Compliance status confirmation'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -90,6 +116,19 @@ const Services: React.FC = () => {
         'Compliance certificate'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Biennial',
+      renewalPrice: 199,
+      renewalDescription: 'Biennial MCS-150 update required every 2 years to maintain USDOT number compliance',
+      renewalRequirements: [
+        'Updated company information',
+        'Current fleet size and composition',
+        'Operation type changes',
+        'Contact information updates'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -112,6 +151,19 @@ const Services: React.FC = () => {
         'Compliance documentation'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 149,
+      renewalDescription: 'Annual UCR registration required for interstate carriers and brokers',
+      renewalRequirements: [
+        'Current USDOT number',
+        'Updated fleet size information',
+        'State operations list',
+        'Payment information'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -133,6 +185,18 @@ const Services: React.FC = () => {
         'State coverage documentation'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'As-needed',
+      renewalPrice: 199,
+      renewalDescription: 'BOC-3 updates required when adding new states or changing operations',
+      renewalRequirements: [
+        'Updated state operations list',
+        'New state coverage requirements',
+        'Business address changes'
+      ],
+      renewalDeadline: 'Before operating in new state',
+      autoRenewal: false,
+      renewalReminders: ['30 days before new operations'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -155,6 +219,19 @@ const Services: React.FC = () => {
         'Ongoing maintenance guidance'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 99,
+      renewalDescription: 'Annual DQF review and update to maintain compliance',
+      renewalRequirements: [
+        'Updated driver information',
+        'Current medical certificates',
+        'Employment history updates',
+        'CDL status verification'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -177,6 +254,19 @@ const Services: React.FC = () => {
         'Compliance documentation'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 199,
+      renewalDescription: 'Annual consortium membership renewal and program review',
+      renewalRequirements: [
+        'Updated driver list',
+        'Testing program review',
+        'Consortium membership renewal',
+        'Compliance status verification'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -199,6 +289,19 @@ const Services: React.FC = () => {
         'Fuel tax reporting setup'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 299,
+      renewalDescription: 'Annual IFTA and IRP renewal required for interstate fuel tax compliance',
+      renewalRequirements: [
+        'Updated fleet information',
+        'Fuel purchase records',
+        'Route changes',
+        'State operations updates'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -220,6 +323,18 @@ const Services: React.FC = () => {
         'Usage guidelines'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 99,
+      renewalDescription: 'Annual SCAC code renewal to maintain port and railway access',
+      renewalRequirements: [
+        'Updated company information',
+        'Business type verification',
+        'Operation details review'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -242,6 +357,19 @@ const Services: React.FC = () => {
         'Training requirements'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 249,
+      renewalDescription: 'Annual hazmat permit renewal and compliance review',
+      renewalRequirements: [
+        'Updated hazmat classification',
+        'Current transportation routes',
+        'Driver certification verification',
+        'Security plan updates'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -265,6 +393,14 @@ const Services: React.FC = () => {
         'Ongoing support'
       ],
       isActive: true,
+      hasRenewal: false,
+      renewalFrequency: 'One-time',
+      renewalPrice: 0,
+      renewalDescription: 'One-time service for new entrant safety audit preparation',
+      renewalRequirements: [],
+      renewalDeadline: 'N/A',
+      autoRenewal: false,
+      renewalReminders: [],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     },
@@ -286,6 +422,18 @@ const Services: React.FC = () => {
         'Compliance documentation'
       ],
       isActive: true,
+      hasRenewal: true,
+      renewalFrequency: 'Annual',
+      renewalPrice: 149,
+      renewalDescription: 'Annual supervisor training renewal to maintain compliance',
+      renewalRequirements: [
+        'Updated supervisor information',
+        'Company policy changes',
+        'Training preference updates'
+      ],
+      renewalDeadline: '30 days before expiration',
+      autoRenewal: true,
+      renewalReminders: ['90 days', '60 days', '30 days', '7 days'],
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     }

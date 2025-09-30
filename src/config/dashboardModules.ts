@@ -28,17 +28,15 @@ const DealsModule = React.lazy(() => import('../modules/CRM/pages/Deals'));
 const ServicesModule = React.lazy(() => import('../modules/CRM/pages/Services'));
 const ELDModule = React.lazy(() => import('../pages/ELDDashboard'));
 const IFTAModule = React.lazy(() => import('../pages/IFTADashboard'));
+const RegulationTrainingModule = React.lazy(() => import('../components/training/RegulationTrainingDashboard'));
+const RenewalManagementModule = React.lazy(() => import('../modules/RenewalManagement'));
 const TasksModule = React.lazy(() => import('../modules/CRM/pages/Tasks'));
 const ConversationsModule = React.lazy(() => import('../modules/CRM/pages/Conversations'));
 const AnalyticsModule = React.lazy(() => import('../modules/Analytics'));
 const ComplianceModule = React.lazy(() => import('../modules/Compliance'));
 const SystemMonitoringModule = React.lazy(() => import('../modules/SystemMonitoring'));
 
-// Training modules (will be created)
-const AgentTrainingModule = React.lazy(() => import('../modules/Training/AgentTraining'));
-const ScenarioGeneratorModule = React.lazy(() => import('../modules/Training/ScenarioGenerator'));
-const MasterTemplateModule = React.lazy(() => import('../modules/Training/MasterTemplates'));
-const AgentMonitoringModule = React.lazy(() => import('../modules/Training/AgentMonitoring'));
+// Training modules - consolidated into RegulationTrainingDashboard
 
 export interface DashboardModule {
   id: string;
@@ -198,66 +196,38 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     order: 9
   },
 
-  // TRAINING MODULES (Admin/Trainer only, can be toggled)
-  agentTraining: {
-    id: 'agentTraining',
-    name: 'AI Training',
-    component: AgentTrainingModule,
+  // TRAINING MODULE (Single comprehensive training environment)
+  regulationTraining: {
+    id: 'regulationTraining',
+    name: 'AI Training Environment',
+    component: RegulationTrainingModule,
     category: 'training',
     required: false,
     adminOnly: true,
     trainerOnly: true,
     icon: AcademicCapIcon,
-    description: 'Train AI agents for specific roles and tasks',
-    tooltip: 'Train your AI agents to accurately determine DOT compliance requirements and handle client interactions.',
-    href: '/training/agents',
+    description: 'Comprehensive AI agent training for all registration types',
+    tooltip: 'Intelligent training environment that creates scenarios, tests agents, and trains them to 100% accuracy for USDOT, IFTA, State registrations, and renewals.',
+    href: '/training',
     enabled: false,
     order: 10
   },
-  scenarioGenerator: {
-    id: 'scenarioGenerator',
-    name: 'Scenario Generator',
-    component: ScenarioGeneratorModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: DocumentTextIcon,
-    description: 'Generate training scenarios for AI agents',
-    tooltip: 'Create mock client scenarios and regulatory situations to test and train your AI agents.',
-    href: '/training/scenarios',
-    enabled: false,
-    order: 11
-  },
-  masterTemplates: {
-    id: 'masterTemplates',
-    name: 'Master Templates',
-    component: MasterTemplateModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: CheckCircleIcon,
-    description: 'Manage perfect agent templates for deployment',
-    tooltip: 'Manage your perfect agent templates - the validated, optimized versions used to create operational agents.',
-    href: '/training/templates',
-    enabled: false,
-    order: 12
-  },
-  agentMonitoring: {
-    id: 'agentMonitoring',
-    name: 'Agent Monitoring',
-    component: AgentMonitoringModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: ShieldCheckIcon,
-    description: 'Monitor AI agent performance and health',
-    tooltip: 'Monitor your AI agents\' performance, detect issues, and automatically replace degraded agents.',
-    href: '/training/monitoring',
-    enabled: false,
-    order: 13
+
+  // RENEWAL MANAGEMENT (Core business function)
+  renewalManagement: {
+    id: 'renewalManagement',
+    name: 'Renewal Management',
+    component: RenewalManagementModule,
+    category: 'core',
+    required: true,
+    adminOnly: false,
+    trainerOnly: false,
+    icon: ClockIcon,
+    description: 'Track and manage all client renewals and compliance deadlines',
+    tooltip: 'Monitor USDOT (biennial), UCR (annual), IFTA (annual), State registrations, and quarterly reporting requirements. This is where 70% of our revenue comes from.',
+    href: '/renewals',
+    enabled: true,
+    order: 4
   },
 
   // ADMIN MODULES (Admin only, can be toggled)

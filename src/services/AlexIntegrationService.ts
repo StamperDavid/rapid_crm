@@ -112,35 +112,35 @@ export class AlexIntegrationService {
         id: 'free_usdot',
         name: 'Free USDOT Registration',
         price: 0,
-        description: 'Basic USDOT number registration (free government service)',
+        description: 'Basic USDOT number registration with renewal management (free government service)',
         isFree: true
       },
       {
         id: 'usdot_mc_basic',
         name: 'USDOT + MC Number Package',
         price: 299,
-        description: 'USDOT and MC Number registration with basic compliance',
+        description: 'USDOT and MC Number registration with basic compliance and renewal management',
         isFree: false
       },
       {
         id: 'full_compliance',
         name: 'Full Compliance Package',
         price: 599,
-        description: 'Complete compliance setup with ongoing monitoring',
+        description: 'Complete compliance setup with ongoing monitoring and comprehensive renewal management',
         isFree: false
       },
       {
         id: 'state_registrations',
         name: 'State Registrations',
         price: 150,
-        description: 'Additional state-specific registrations',
+        description: 'Additional state-specific registrations with renewal tracking',
         isFree: false
       },
       {
         id: 'compliance_monitoring',
         name: 'Compliance Monitoring',
         price: 200,
-        description: 'Ongoing compliance monitoring and alerts',
+        description: 'Ongoing compliance monitoring, alerts, and renewal management',
         isFree: false
       }
     ];
