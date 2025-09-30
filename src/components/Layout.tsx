@@ -34,6 +34,7 @@ import GlobalSearch from './GlobalSearch';
 import AdvancedUIAssistantFixed from './AdvancedUIAssistantFixed';
 import IntegratedAIChat from './IntegratedAIChat';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
+import DynamicNavigation from './DynamicNavigation';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -154,45 +155,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
               
               {/* Mobile navigation */}
-              <nav className="flex-1 px-4 py-6 space-y-2">
-                {navigation.map((item) => {
-                  const isActive = location.pathname === item.href;
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      onClick={() => setSidebarOpen(false)}
-                      className={clsx(
-                        'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200',
-                        isActive
-                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
-                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
-                      )}
-                    >
-                      <div className="relative">
-                        <item.icon
-                          className={clsx(
-                            'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
-                            isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
-                          )}
-                        />
-                        {item.name === 'Conversations' && alertCount > 0 && (
-                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                            {alertCount}
-                          </span>
-                        )}
-                      </div>
-                      <span className="flex-1">{item.name}</span>
-                      <HelpIcon 
-                        content={item.tooltip} 
-                        size="sm" 
-                        position="left"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      />
-                    </Link>
-                  );
-                })}
-              </nav>
+              <div className="flex-1 px-4 py-6">
+                <DynamicNavigation />
+              </div>
               
               {/* Mobile user section */}
               <div className="border-t border-slate-200 dark:border-slate-700 p-4">
@@ -220,49 +185,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Logo key="desktop-logo" variant={theme} className="h-8" />
           </div>
           
-          {/* Navigation */}
-          <nav className="flex flex-1 flex-col px-4 py-6">
-            <ul role="list" className="flex flex-1 flex-col gap-y-2">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <li key={item.name}>
-                    <Link
-                      to={item.href}
-                      className={clsx(
-                        'group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition-all duration-200',
-                        isActive
-                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
-                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
-                      )}
-                    >
-                      <div className="relative">
-                        <item.icon
-                          className={clsx(
-                            'h-6 w-6 shrink-0 transition-colors',
-                            isActive ? item.color : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
-                          )}
-                          aria-hidden="true"
-                        />
-                        {item.name === 'Conversations' && alertCount > 0 && (
-                          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                            {alertCount}
-                          </span>
-                        )}
-                      </div>
-                      {item.name}
-                    </Link>
-                    <HelpIcon 
-                      content={item.tooltip} 
-                      size="sm" 
-                      position="right"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          {/* Dynamic Navigation */}
+          <DynamicNavigation />
           
           {/* User section */}
           <div className="border-t border-slate-200 dark:border-slate-700 p-4">

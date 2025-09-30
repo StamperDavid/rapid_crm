@@ -7,6 +7,7 @@ import { CRMProvider } from './contexts/CRMContext';
 import { ClientProvider } from './contexts/ClientContext';
 import { UIStateProvider } from './contexts/UIStateContext';
 import { TooltipProvider } from './contexts/TooltipContext';
+import { ModuleProvider } from './contexts/ModuleContext';
 import Layout from './components/Layout';
 import ClientLayout from './components/ClientLayout';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -65,6 +66,7 @@ function App() {
           <CRMProvider>
             <ClientProvider>
               <UIStateProvider>
+                <ModuleProvider>
               <QueryClientProvider client={queryClient}>
               <Router>
               <div className="min-h-screen">
@@ -154,11 +156,12 @@ function App() {
                 />
               </div>
             </Router>
-          </QueryClientProvider>
-            </UIStateProvider>
-          </ClientProvider>
-        </CRMProvider>
-      </UserProvider>
+                </QueryClientProvider>
+                </ModuleProvider>
+              </UIStateProvider>
+            </ClientProvider>
+          </CRMProvider>
+        </UserProvider>
       </TooltipProvider>
     </ThemeProvider>
   );
