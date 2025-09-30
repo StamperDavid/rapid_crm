@@ -1,108 +1,72 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 
 interface TooltipProps {
-  content: string;
+  content: string | React.ReactNode;
   children: React.ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
-  delay?: number;
-  disabled?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  maxWidth?: string;
+  delay?: number;
 }
 
 const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
   position = 'top',
-  delay = 500,
-  disabled = false,
+  size = 'md',
   className = '',
-  maxWidth = '300px'
+  delay = 200
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
 
   const showTooltip = () => {
-    if (disabled) return;
-    
-    const id = setTimeout(() => {
-      setIsVisible(true);
-    }, delay);
+    if (timeoutId) clearTimeout(timeoutId);
+    const id = setTimeout(() => setIsVisible(true), delay);
     setTimeoutId(id);
   };
 
   const hideTooltip = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      setTimeoutId(null);
-    }
+    if (timeoutId) clearTimeout(timeoutId);
     setIsVisible(false);
   };
 
-  const getPositionClasses = () => {
-    switch (position) {
-      case 'top':
-        return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
-      case 'bottom':
-        return 'top-full left-1/2 transform -translate-x-1/2 mt-2';
-      case 'left':
-        return 'right-full top-1/2 transform -translate-y-1/2 mr-2';
-      case 'right':
-        return 'left-full top-1/2 transform -translate-y-1/2 ml-2';
-      default:
-        return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
-    }
+  const sizeClasses = {
+    sm: 'w-48 text-xs',
+    md: 'w-64 text-sm',
+    lg: 'w-80 text-sm',
+    xl: 'w-96 text-sm'
   };
 
-  const getArrowClasses = () => {
-    switch (position) {
-      case 'top':
-        return 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-900 dark:border-t-gray-100';
-      case 'bottom':
-        return 'bottom-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-gray-900 dark:border-b-gray-100';
-      case 'left':
-        return 'left-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-gray-900 dark:border-l-gray-100';
-      case 'right':
-        return 'right-full top-1/2 transform -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-gray-900 dark:border-r-gray-100';
-      default:
-        return 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-900 dark:border-t-gray-100';
-    }
+  const positionClasses = {
+    top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
+    bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
+    left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
+    right: 'left-full top-1/2 transform -translate-y-1/2 ml-2'
   };
 
-  useEffect(() => {
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [timeoutId]);
+  const arrowClasses = {
+    top: 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900',
+    bottom: 'absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900',
+    left: 'absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900',
+    right: 'absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900'
+  };
 
   return (
-    <div
-      ref={triggerRef}
+    <div 
       className={`relative inline-block ${className}`}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
-      onFocus={showTooltip}
-      onBlur={hideTooltip}
     >
       {children}
-      
-      {isVisible && content && (
-        <div
-          ref={tooltipRef}
-          className={`absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 rounded-lg shadow-lg whitespace-normal ${getPositionClasses()}`}
-          style={{ maxWidth }}
-        >
-          <div className="relative">
-            {content}
-            {/* Arrow */}
-            <div
-              className={`absolute w-0 h-0 border-4 ${getArrowClasses()}`}
-            />
-          </div>
+      {isVisible && (
+        <div className={`absolute z-50 bg-gray-900 text-white rounded-lg p-3 opacity-100 transition-opacity duration-200 ${sizeClasses[size]} ${positionClasses[position]}`}>
+          {typeof content === 'string' ? (
+            <div className="whitespace-pre-wrap">{content}</div>
+          ) : (
+            content
+          )}
+          <div className={arrowClasses[position]}></div>
         </div>
       )}
     </div>

@@ -28,6 +28,7 @@ import { useTooltips } from '../contexts/TooltipContext';
 import EditorToolbar from './EditorToolbar';
 import AdminToolbar from './AdminToolbar';
 import Logo from './Logo';
+import HelpIcon from './HelpIcon';
 import AdminRecovery from './AdminRecovery';
 import GlobalSearch from './GlobalSearch';
 import AdvancedUIAssistantFixed from './AdvancedUIAssistantFixed';
@@ -39,15 +40,69 @@ interface LayoutProps {
 }
 
 const getNavigation = () => [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, color: 'text-blue-600' },
-  { name: 'Companies', href: '/companies', icon: OfficeBuildingIcon, color: 'text-purple-600' },
-  { name: 'Leads', href: '/leads', icon: UserGroupIcon, color: 'text-green-600' },
-  { name: 'Deals', href: '/deals', icon: DocumentIcon, color: 'text-indigo-600' },
-  { name: 'Services', href: '/services', icon: CurrencyDollarIcon, color: 'text-orange-600' },
-  { name: 'ELD', href: '/eld', icon: TruckIcon, color: 'text-red-600' },
-  { name: 'IFTA', href: '/ifta', icon: LightningBoltIcon, color: 'text-blue-600' },
-  { name: 'Tasks', href: '/tasks', icon: ClockIcon, color: 'text-emerald-600' },
-  { name: 'Conversations', href: '/conversations', icon: ChatIcon, color: 'text-cyan-600' },
+  { 
+    name: 'Dashboard', 
+    href: '/', 
+    icon: HomeIcon, 
+    color: 'text-blue-600',
+    tooltip: 'Main dashboard with overview of all business operations, metrics, and quick access to key features'
+  },
+  { 
+    name: 'Companies', 
+    href: '/companies', 
+    icon: OfficeBuildingIcon, 
+    color: 'text-purple-600',
+    tooltip: 'Manage client companies, view company details, and track business relationships'
+  },
+  { 
+    name: 'Leads', 
+    href: '/leads', 
+    icon: UserGroupIcon, 
+    color: 'text-green-600',
+    tooltip: 'Track potential clients, manage lead pipeline, and convert leads to customers'
+  },
+  { 
+    name: 'Deals', 
+    href: '/deals', 
+    icon: DocumentIcon, 
+    color: 'text-indigo-600',
+    tooltip: 'Manage sales opportunities, track deal progress, and monitor revenue pipeline'
+  },
+  { 
+    name: 'Services', 
+    href: '/services', 
+    icon: CurrencyDollarIcon, 
+    color: 'text-orange-600',
+    tooltip: 'Configure and manage service packages, pricing, and service delivery options'
+  },
+  { 
+    name: 'ELD', 
+    href: '/eld', 
+    icon: TruckIcon, 
+    color: 'text-red-600',
+    tooltip: 'Electronic Logging Device management, HOS compliance, and driver monitoring'
+  },
+  { 
+    name: 'IFTA', 
+    href: '/ifta', 
+    icon: LightningBoltIcon, 
+    color: 'text-blue-600',
+    tooltip: 'International Fuel Tax Agreement reporting, fuel tax calculations, and compliance tracking'
+  },
+  { 
+    name: 'Tasks', 
+    href: '/tasks', 
+    icon: ClockIcon, 
+    color: 'text-emerald-600',
+    tooltip: 'Task management, workflow tracking, and team collaboration tools'
+  },
+  { 
+    name: 'Conversations', 
+    href: '/conversations', 
+    icon: ChatIcon, 
+    color: 'text-cyan-600',
+    tooltip: 'AI chat conversations, customer support tickets, and communication history'
+  },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -127,7 +182,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           </span>
                         )}
                       </div>
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      <HelpIcon 
+                        content={item.tooltip} 
+                        size="sm" 
+                        position="left"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      />
                     </Link>
                   );
                 })}
@@ -191,6 +252,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       </div>
                       {item.name}
                     </Link>
+                    <HelpIcon 
+                      content={item.tooltip} 
+                      size="sm" 
+                      position="right"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    />
                   </li>
                 );
               })}

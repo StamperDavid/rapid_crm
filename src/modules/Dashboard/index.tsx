@@ -9,6 +9,7 @@ import {
   ArrowDownIcon,
 } from '@heroicons/react/outline';
 import { useCRM } from '../../contexts/CRMContext';
+import HelpIcon from '../../components/HelpIcon';
 
 const DashboardModule: React.FC = () => {
   const { companies, contacts, vehicles, drivers, leads, deals, isLoading } = useCRM();
@@ -55,7 +56,8 @@ const DashboardModule: React.FC = () => {
       href: '/companies',
       color: 'blue',
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      iconColor: 'text-blue-600 dark:text-blue-400'
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      tooltip: 'Total number of client companies in your CRM system. Click to view and manage all companies.'
     },
     {
       name: 'Total Leads',
@@ -66,7 +68,8 @@ const DashboardModule: React.FC = () => {
       href: '/leads',
       color: 'green',
       bgColor: 'bg-green-50 dark:bg-green-900/20',
-      iconColor: 'text-green-600 dark:text-green-400'
+      iconColor: 'text-green-600 dark:text-green-400',
+      tooltip: 'Potential clients in your sales pipeline. Track lead progression and conversion rates.'
     },
     {
       name: 'Total Vehicles',
@@ -77,7 +80,8 @@ const DashboardModule: React.FC = () => {
       href: '/vehicles',
       color: 'purple',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-      iconColor: 'text-purple-600 dark:text-purple-400'
+      iconColor: 'text-purple-600 dark:text-purple-400',
+      tooltip: 'Commercial vehicles registered in your system. Includes trucks, trailers, and other commercial equipment.'
     },
     {
       name: 'Total Drivers',
@@ -88,7 +92,8 @@ const DashboardModule: React.FC = () => {
       href: '/drivers',
       color: 'emerald',
       bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
-      iconColor: 'text-emerald-600 dark:text-emerald-400'
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      tooltip: 'Commercial drivers in your system. Track CDL status, training, and compliance requirements.'
     },
     {
       name: 'Enterprise AI',
@@ -99,7 +104,8 @@ const DashboardModule: React.FC = () => {
       href: '/admin/ai-control',
       color: 'pink',
       bgColor: 'bg-pink-50 dark:bg-pink-900/20',
-      iconColor: 'text-pink-600 dark:text-pink-400'
+      iconColor: 'text-pink-600 dark:text-pink-400',
+      tooltip: 'AI system status and performance. Access AI agent management, training, and monitoring tools.'
     }
   ];
 
@@ -150,16 +156,16 @@ const DashboardModule: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
-          <Link
-            key={stat.name}
-            to={stat.href}
-            className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:shadow-md hover:ring-slate-300 dark:hover:ring-slate-600 transition-all duration-200"
-          >
-            <div>
-              <div className="flex items-center">
-                <div className={`flex-shrink-0 rounded-xl p-3 ${stat.bgColor}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
-                </div>
+          <div key={stat.name} className="relative group">
+            <Link
+              to={stat.href}
+              className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:shadow-md hover:ring-slate-300 dark:hover:ring-slate-600 transition-all duration-200 block"
+            >
+              <div>
+                <div className="flex items-center">
+                  <div className={`flex-shrink-0 rounded-xl p-3 ${stat.bgColor}`}>
+                    <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
+                  </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
@@ -188,7 +194,14 @@ const DashboardModule: React.FC = () => {
               </div>
             </div>
             <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-          </Link>
+            </Link>
+            <HelpIcon 
+              content={stat.tooltip} 
+              size="sm" 
+              position="top"
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            />
+          </div>
         ))}
       </div>
 

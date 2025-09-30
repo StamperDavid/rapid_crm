@@ -11,6 +11,7 @@ import {
 import { Organization, Person, Vehicle, Driver } from '../../types/schema';
 import { useCRM } from '../../contexts/CRMContext';
 import { USDOTApplicationService } from '../../services/usdot/USDOTApplicationService';
+import TooltipWrapper from '../TooltipWrapper';
 
 interface ComprehensiveCompanyFormProps {
   onSave: (data: any) => void;
@@ -306,9 +307,16 @@ const ComprehensiveCompanyForm: React.FC<ComprehensiveCompanyFormProps> = ({
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Street Address *
-                </label>
+                <TooltipWrapper
+                  tooltip="The physical street address where the company operates from. This is required for DOT registration and must be a real business address."
+                  position="top"
+                  showIcon={true}
+                  iconPosition="after"
+                >
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Street Address *
+                  </label>
+                </TooltipWrapper>
                 <input
                   type="text"
                   value={companyData.physicalStreetAddress}
@@ -318,9 +326,16 @@ const ComprehensiveCompanyForm: React.FC<ComprehensiveCompanyFormProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Suite/Apt
-                </label>
+                <TooltipWrapper
+                  tooltip="Suite, apartment, or unit number if applicable. This is optional but helps with precise address identification."
+                  position="top"
+                  showIcon={true}
+                  iconPosition="after"
+                >
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Suite/Apt
+                  </label>
+                </TooltipWrapper>
                 <input
                   type="text"
                   value={companyData.physicalSuiteApt}

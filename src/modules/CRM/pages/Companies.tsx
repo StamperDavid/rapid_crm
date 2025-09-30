@@ -14,6 +14,7 @@ import {
 import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
 import ComprehensiveCompanyForm from '../../../components/forms/ComprehensiveCompanyForm';
+import HelpIcon from '../../../components/HelpIcon';
 
 const Companies: React.FC = () => {
   const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
@@ -104,20 +105,33 @@ const Companies: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
                 Companies
+                <HelpIcon 
+                  content="Companies are your clients - transportation businesses that need DOT compliance services. Each company can have multiple contacts, vehicles, drivers, and deals."
+                  size="md"
+                  position="right"
+                  className="ml-3"
+                />
               </h1>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
                 Manage your transportation companies and their related entities
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Company
-            </button>
+            <div className="flex items-center gap-3">
+              <HelpIcon 
+                content="Create a new company record. You'll be able to add contacts, vehicles, drivers, and deals after creating the company."
+                size="sm"
+                position="left"
+              />
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Add Company
+              </button>
+            </div>
           </div>
         </div>
 

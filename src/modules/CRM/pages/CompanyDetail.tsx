@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/outline';
 import { useCRM } from '../../../contexts/CRMContext';
 import { USDOTApplicationService } from '../../../services/usdot/USDOTApplicationService';
+import HelpIcon from '../../../components/HelpIcon';
 // import USDOTApplicationViewer from '../../../components/USDOTApplicationViewer';
 // import { USDOTApplication } from '../../../types/schema';
 
@@ -721,19 +722,59 @@ const CompanyDetail: React.FC = () => {
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Deal
+                          <div className="flex items-center">
+                            Deal
+                            <HelpIcon 
+                              content="The name or description of the sales opportunity or deal with this company."
+                              size="sm"
+                              position="top"
+                              className="ml-1"
+                            />
+                          </div>
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Value
+                          <div className="flex items-center">
+                            Value
+                            <HelpIcon 
+                              content="The monetary value or potential revenue from this deal."
+                              size="sm"
+                              position="top"
+                              className="ml-1"
+                            />
+                          </div>
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Status
+                          <div className="flex items-center">
+                            Status
+                            <HelpIcon 
+                              content="Current status of the deal (Active, Won, Lost, On Hold, etc.)."
+                              size="sm"
+                              position="top"
+                              className="ml-1"
+                            />
+                          </div>
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Stage
+                          <div className="flex items-center">
+                            Stage
+                            <HelpIcon 
+                              content="Current stage in the sales process (Prospecting, Qualification, Proposal, Negotiation, Closed)."
+                              size="sm"
+                              position="top"
+                              className="ml-1"
+                            />
+                          </div>
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Actions
+                          <div className="flex items-center">
+                            Actions
+                            <HelpIcon 
+                              content="Available actions for this deal (View, Edit, Delete, etc.)."
+                              size="sm"
+                              position="top"
+                              className="ml-1"
+                            />
+                          </div>
                         </th>
                       </tr>
                     </thead>
