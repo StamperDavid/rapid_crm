@@ -19,37 +19,102 @@ const AgentTraining: React.FC = () => {
   const [trainingSessions, setTrainingSessions] = useState([
     {
       id: 1,
-      name: 'USDOT Application Agent',
+      name: 'USDOT/MC Registration Agent',
+      type: 'registration',
       status: 'training',
       progress: 75,
       accuracy: 92,
       lastTrained: '2 hours ago',
       totalSessions: 45,
-      successRate: 94
+      successRate: 94,
+      isGoldenMaster: false,
+      goldenMasterVersion: null,
+      description: 'Handles USDOT and MC Number registration forms with pixel-perfect accuracy'
     },
     {
       id: 2,
-      name: 'Customer Service Agent',
+      name: 'State Registration Agent',
+      type: 'registration',
       status: 'ready',
       progress: 100,
       accuracy: 98,
       lastTrained: '1 day ago',
       totalSessions: 32,
-      successRate: 97
+      successRate: 97,
+      isGoldenMaster: true,
+      goldenMasterVersion: 'v1.0',
+      description: 'Manages state-specific registration requirements and compliance'
     },
     {
       id: 3,
-      name: 'Compliance Checker Agent',
+      name: 'Compliance Monitoring Agent',
+      type: 'monitoring',
       status: 'training',
       progress: 60,
       accuracy: 85,
       lastTrained: '3 hours ago',
       totalSessions: 28,
-      successRate: 89
+      successRate: 89,
+      isGoldenMaster: false,
+      goldenMasterVersion: null,
+      description: 'Monitors ongoing compliance and sends renewal reminders'
+    },
+    {
+      id: 4,
+      name: 'IFTA Registration Agent',
+      type: 'registration',
+      status: 'ready',
+      progress: 100,
+      accuracy: 96,
+      lastTrained: '2 days ago',
+      totalSessions: 38,
+      successRate: 95,
+      isGoldenMaster: true,
+      goldenMasterVersion: 'v1.2',
+      description: 'Handles IFTA registration and quarterly reporting requirements'
     }
   ]);
 
   const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
+  const [showGoldenMasterModal, setShowGoldenMasterModal] = useState(false);
+  const [showAgentReplacementModal, setShowAgentReplacementModal] = useState(false);
+
+  // Golden Master functions
+  const createGoldenMaster = (agentId: number) => {
+    setTrainingSessions(prev => prev.map(agent => 
+      agent.id === agentId 
+        ? { 
+            ...agent, 
+            isGoldenMaster: true, 
+            goldenMasterVersion: `v${Date.now()}`,
+            status: 'ready'
+          }
+        : agent
+    ));
+    setShowGoldenMasterModal(false);
+    console.log(`✅ Created Golden Master for agent ${agentId}`);
+  };
+
+  const replaceAgentWithGoldenMaster = (agentId: number, goldenMasterId: number) => {
+    const goldenMaster = trainingSessions.find(a => a.id === goldenMasterId);
+    if (goldenMaster) {
+      setTrainingSessions(prev => prev.map(agent => 
+        agent.id === agentId 
+          ? { 
+              ...agent, 
+              accuracy: goldenMaster.accuracy,
+              successRate: goldenMaster.successRate,
+              progress: 100,
+              status: 'ready',
+              lastTrained: 'Just now (replaced)',
+              totalSessions: agent.totalSessions + 1
+            }
+          : agent
+      ));
+      setShowAgentReplacementModal(false);
+      console.log(`✅ Replaced agent ${agentId} with Golden Master ${goldenMasterId}`);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -207,6 +272,11 @@ const AgentTraining: React.FC = () => {
                         <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
                           {agent.status}
                         </span>
+                        {agent.isGoldenMaster && (
+                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                            🏆 Golden Master {agent.goldenMasterVersion}
+                          </span>
+                        )}
                       </div>
                       <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
                         <span>Accuracy: {agent.accuracy}%</span>
@@ -214,6 +284,9 @@ const AgentTraining: React.FC = () => {
                         <span>Success Rate: {agent.successRate}%</span>
                         <span className="mx-2">•</span>
                         <span>Last trained: {agent.lastTrained}</span>
+                      </div>
+                      <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        {agent.description}
                       </div>
                     </div>
                   </div>
@@ -248,6 +321,34 @@ const AgentTraining: React.FC = () => {
                           <PlayIcon className="h-4 w-4" />
                         </button>
                       )}
+                      
+                      {/* Golden Master Actions */}
+                      {agent.accuracy >= 95 && !agent.isGoldenMaster && (
+                        <button 
+                          onClick={() => {
+                            setSelectedAgent(agent.id);
+                            setShowGoldenMasterModal(true);
+                          }}
+                          className="p-2 text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-200"
+                          title="Create Golden Master"
+                        >
+                          🏆
+                        </button>
+                      )}
+                      
+                      {agent.accuracy < 90 && trainingSessions.some(a => a.isGoldenMaster && a.type === agent.type) && (
+                        <button 
+                          onClick={() => {
+                            setSelectedAgent(agent.id);
+                            setShowAgentReplacementModal(true);
+                          }}
+                          className="p-2 text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-200"
+                          title="Replace with Golden Master"
+                        >
+                          🔄
+                        </button>
+                      )}
+                      
                       <button className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
                         <CogIcon className="h-4 w-4" />
                       </button>
@@ -259,6 +360,94 @@ const AgentTraining: React.FC = () => {
           })}
         </ul>
       </div>
+
+      {/* Golden Master Creation Modal */}
+      {showGoldenMasterModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20">
+                🏆
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
+                Create Golden Master
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This agent has achieved 95%+ accuracy. Create a Golden Master template for future deployments?
+                </p>
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  onClick={() => selectedAgent && createGoldenMaster(selectedAgent)}
+                  className="px-4 py-2 bg-yellow-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                >
+                  Create Golden Master
+                </button>
+                <button
+                  onClick={() => setShowGoldenMasterModal(false)}
+                  className="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Agent Replacement Modal */}
+      {showAgentReplacementModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/20">
+                🔄
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">
+                Replace with Golden Master
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This agent's performance has degraded. Replace with a Golden Master template?
+                </p>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select Golden Master:
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    {trainingSessions
+                      .filter(a => a.isGoldenMaster && a.type === trainingSessions.find(ag => ag.id === selectedAgent)?.type)
+                      .map(gm => (
+                        <option key={gm.id} value={gm.id}>
+                          {gm.name} ({gm.goldenMasterVersion}) - {gm.accuracy}% accuracy
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  onClick={() => {
+                    const select = document.querySelector('select') as HTMLSelectElement;
+                    const goldenMasterId = parseInt(select.value);
+                    selectedAgent && replaceAgentWithGoldenMaster(selectedAgent, goldenMasterId);
+                  }}
+                  className="px-4 py-2 bg-orange-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                >
+                  Replace Agent
+                </button>
+                <button
+                  onClick={() => setShowAgentReplacementModal(false)}
+                  className="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

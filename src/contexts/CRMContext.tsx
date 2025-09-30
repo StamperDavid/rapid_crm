@@ -34,6 +34,11 @@ interface CRMContextType {
   createContact: (contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Person>;
   createLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Lead>;
   createDeal: (deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Deal>;
+  
+  // Lead/Deal classification logic
+  createLeadFromClient: (clientData: { name: string; email: string; phone: string; needs: string; source?: 'inbound' | 'outbound' | 'referral' }) => Promise<Lead>;
+  createDealFromService: (clientData: { name: string; email: string; phone: string; services: string[]; company?: string }) => Promise<Deal>;
+  convertLeadToDeal: (leadId: string, services: string[]) => Promise<Deal>;
   createService: (service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Service>;
   createVehicle: (vehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Vehicle>;
   createDriver: (driver: Omit<Driver, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Driver>;
@@ -300,6 +305,111 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     }
   };
 
+  // Lead/Deal classification logic for Alex agent
+  const createLeadFromClient = async (clientData: { name: string; email: string; phone: string; needs: string; source?: 'inbound' | 'outbound' | 'referral' }) => {
+    try {
+      const leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'> = {
+        firstName: clientData.name.split(' ')[0] || '',
+        lastName: clientData.name.split(' ').slice(1).join(' ') || '',
+        email: clientData.email,
+        phone: clientData.phone,
+        company: '',
+        jobTitle: '',
+        leadSource: clientData.source === 'inbound' ? 'Website' : clientData.source === 'outbound' ? 'Cold Call' : 'Referral',
+        businessType: 'Transportation',
+        fleetSize: 0,
+        operatingStates: [],
+        cargoTypes: [],
+        hasUSDOT: false,
+        usdotNumber: '',
+        budget: 0,
+        timeline: '',
+        decisionMaker: false,
+        painPoints: [],
+        interests: [clientData.needs],
+        preferredContactMethod: 'Phone',
+        notes: `Client needs: ${clientData.needs}. Created from Alex onboarding interaction.`,
+        status: 'New',
+        score: 50,
+        lastContactDate: new Date().toISOString(),
+        nextFollowUpDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+      };
+      
+      return await createLead(leadData);
+    } catch (error) {
+      console.error('Failed to create lead from client:', error);
+      throw error;
+    }
+  };
+
+  const createDealFromService = async (clientData: { name: string; email: string; phone: string; services: string[]; company?: string }) => {
+    try {
+      // Calculate deal value based on services
+      const serviceValues: { [key: string]: number } = {
+        'free_usdot': 0,
+        'usdot_mc_basic': 299,
+        'full_compliance': 599,
+        'state_registrations': 150,
+        'compliance_monitoring': 200
+      };
+      
+      const totalValue = clientData.services.reduce((total, service) => {
+        return total + (serviceValues[service] || 0);
+      }, 0);
+
+      const dealData: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: `${clientData.name} - ${clientData.services.join(', ')}`,
+        description: `Service package for ${clientData.name}: ${clientData.services.join(', ')}`,
+        value: totalValue,
+        stage: 'Proposal',
+        probability: 100, // Since they accepted services
+        expectedCloseDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+        software: 'USDOT Registration',
+        serviceId: clientData.services[0] || 'free_usdot',
+        serviceName: clientData.services.join(', '),
+        customPrice: totalValue,
+        contactId: '', // Will be created if needed
+        companyId: '', // Will be created if needed
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      return await createDeal(dealData);
+    } catch (error) {
+      console.error('Failed to create deal from service:', error);
+      throw error;
+    }
+  };
+
+  const convertLeadToDeal = async (leadId: string, services: string[]) => {
+    try {
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) {
+        throw new Error('Lead not found');
+      }
+
+      // Create deal from lead
+      const deal = await createDealFromService({
+        name: `${lead.firstName} ${lead.lastName}`,
+        email: lead.email,
+        phone: lead.phone,
+        services: services,
+        company: lead.company
+      });
+
+      // Update lead status to converted
+      await updateLead(leadId, { 
+        status: 'Converted',
+        notes: `${lead.notes}\n\nConverted to deal: ${deal.id} on ${new Date().toISOString()}`
+      });
+
+      return deal;
+    } catch (error) {
+      console.error('Failed to convert lead to deal:', error);
+      throw error;
+    }
+  };
+
   const createService = async (service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       const response = await fetch(`${API_BASE}/services`, {
@@ -557,6 +667,9 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     createContact,
     createLead,
     createDeal,
+    createLeadFromClient,
+    createDealFromService,
+    convertLeadToDeal,
     createService,
     createVehicle,
     createDriver,
