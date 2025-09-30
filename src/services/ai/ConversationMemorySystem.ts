@@ -74,7 +74,7 @@ export class ConversationMemorySystem {
     // Onboarding Agent
     this.agentPersonalities.set('onboarding-agent', {
       agentId: 'onboarding-agent',
-      name: 'Sarah',
+      name: 'Alex',
       role: 'Onboarding Specialist',
       personality: {
         tone: 'friendly',
@@ -89,7 +89,7 @@ export class ConversationMemorySystem {
     // Customer Service Agent
     this.agentPersonalities.set('customer-service', {
       agentId: 'customer-service',
-      name: 'Mike',
+      name: 'Alex',
       role: 'Customer Service Representative',
       personality: {
         tone: 'professional',
