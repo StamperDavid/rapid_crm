@@ -11,6 +11,7 @@ import { ModuleProvider } from './contexts/ModuleContext';
 import Layout from './components/Layout';
 import ClientLayout from './components/ClientLayout';
 import ErrorBoundary from './components/ErrorBoundary';
+import TooltipTest from './components/TooltipTest';
 
 // Import modules directly (not lazy loaded for now)
 import DashboardModule from './modules/Dashboard/index';
@@ -97,6 +98,7 @@ function App() {
                         <Routes>
                         {/* Core Dashboard - Always loaded */}
                         <Route path="/" element={<DashboardModule />} />
+                        <Route path="/tooltip-test" element={<TooltipTest />} />
                         
                         {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
                         <Route path="/companies" element={<Companies />} />

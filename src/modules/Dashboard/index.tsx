@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/outline';
 import { useCRM } from '../../contexts/CRMContext';
 import HelpIcon from '../../components/HelpIcon';
+import VisibleHelpIcon from '../../components/VisibleHelpIcon';
 
 const DashboardModule: React.FC = () => {
   const { companies, contacts, vehicles, drivers, leads, deals, isLoading } = useCRM();
@@ -195,11 +196,11 @@ const DashboardModule: React.FC = () => {
             </div>
             <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             </Link>
-            <HelpIcon 
+            <VisibleHelpIcon 
               content={stat.tooltip} 
               size="sm" 
               position="top"
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute top-2 right-2"
             />
           </div>
         ))}

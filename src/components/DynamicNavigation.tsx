@@ -6,6 +6,7 @@ import { useUser } from '../contexts/UserContext';
 import { useModules } from '../contexts/ModuleContext';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
 import HelpIcon from './HelpIcon';
+import VisibleHelpIcon from './VisibleHelpIcon';
 import DashboardModuleToggle from './DashboardModuleToggle';
 
 const DynamicNavigation: React.FC = () => {
@@ -69,11 +70,11 @@ const DynamicNavigation: React.FC = () => {
                     )}
                   </div>
                   <span className="flex-1">{module.name}</span>
-                  <HelpIcon 
+                  <VisibleHelpIcon 
                     content={module.tooltip} 
                     size="sm" 
                     position="right"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    className="ml-2"
                   />
                 </Link>
               </li>
@@ -90,11 +91,11 @@ const DynamicNavigation: React.FC = () => {
             >
               <CogIcon className="h-6 w-6 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
               <span className="flex-1">Module Settings</span>
-              <HelpIcon 
+              <VisibleHelpIcon 
                 content="Configure which dashboard modules are visible. You can enable/disable advanced features, training tools, and admin functions."
                 size="sm" 
                 position="right"
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="ml-2"
               />
             </button>
           </div>
