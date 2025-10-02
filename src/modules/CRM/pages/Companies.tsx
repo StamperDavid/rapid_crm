@@ -15,6 +15,7 @@ import { Organization, Person, Vehicle, Driver, Deal, Invoice } from '../../../t
 import { useCRM } from '../../../contexts/CRMContext';
 import ComprehensiveCompanyForm from '../../../components/forms/ComprehensiveCompanyForm';
 import HelpIcon from '../../../components/HelpIcon';
+import Tooltip from '../../../components/Tooltip';
 
 const Companies: React.FC = () => {
   const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
@@ -124,13 +125,15 @@ const Companies: React.FC = () => {
                 size="sm"
                 position="left"
               />
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Add Company
-              </button>
+              <Tooltip content="Create a new company record. This will open a comprehensive form to add all company details including business information, addresses, USDOT numbers, and compliance data.">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Add Company
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -138,27 +141,31 @@ const Companies: React.FC = () => {
         {/* Search and Filter */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search companies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              />
-            </div>
+            <Tooltip content="Search companies by business name, USDOT number, or city. The search is case-insensitive and will filter results in real-time.">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search companies..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+            </Tooltip>
           </div>
           <div className="flex gap-2">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            >
-              <option value="all">All Companies</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <Tooltip content="Filter companies by status. Active companies have complete address information, while inactive companies may be missing required data.">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Companies</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </Tooltip>
           </div>
         </div>
 
@@ -207,43 +214,53 @@ const Companies: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <UserGroupIcon className="h-4 w-4 mr-1" />
-                          {companyContacts.length}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <TruckIcon className="h-4 w-4 mr-1" />
-                          {companyVehicles.length}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <IdentificationIcon className="h-4 w-4 mr-1" />
-                          {companyDrivers.length}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-                          {companyDeals.length}
-                        </div>
+                        <Tooltip content={`${companyContacts.length} contacts associated with this company. Click to view contact details.`}>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <UserGroupIcon className="h-4 w-4 mr-1" />
+                            {companyContacts.length}
+                          </div>
+                        </Tooltip>
+                        <Tooltip content={`${companyVehicles.length} vehicles registered to this company. Includes trucks, trailers, and commercial equipment.`}>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <TruckIcon className="h-4 w-4 mr-1" />
+                            {companyVehicles.length}
+                          </div>
+                        </Tooltip>
+                        <Tooltip content={`${companyDrivers.length} drivers employed by this company. Track CDL status and compliance requirements.`}>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <IdentificationIcon className="h-4 w-4 mr-1" />
+                            {companyDrivers.length}
+                          </div>
+                        </Tooltip>
+                        <Tooltip content={`${companyDeals.length} active deals with this company. Track sales opportunities and revenue potential.`}>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+                            {companyDeals.length}
+                          </div>
+                        </Tooltip>
                         <div className="flex items-center space-x-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditCompany(company);
-                            }}
-                            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                            title="Edit company"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCompany(company.id);
-                            }}
-                            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                            title="Delete company"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
+                          <Tooltip content="Edit company information. This will open the company form with all current data pre-filled for modification.">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditCompany(company);
+                              }}
+                              className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                          </Tooltip>
+                          <Tooltip content="Delete this company permanently. This action cannot be undone and will remove all associated contacts, vehicles, and deals.">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCompany(company.id);
+                              }}
+                              className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </Tooltip>
                         </div>
                         <div className="text-gray-400">
                           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

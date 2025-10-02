@@ -36,6 +36,11 @@ import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIAdminPage from './pages/AIAdminPage';
 import ELDDashboard from './pages/ELDDashboard';
 import IFTADashboard from './pages/IFTADashboard';
+import RegulationTrainingDashboard from './components/training/RegulationTrainingDashboard';
+import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
+import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
+import CriticalPathTestCenter from './components/training/CriticalPathTestCenter';
+import AlexOnboardingTrainingCenter from './components/training/AlexOnboardingTrainingCenter';
 import SEODashboard from './pages/SEODashboard';
 import ClientPortal from './pages/ClientPortal';
 import ClientLogin from './pages/ClientLogin';
@@ -68,7 +73,7 @@ function App() {
             <ClientProvider>
               <UIStateProvider>
                 <ModuleProvider>
-              <QueryClientProvider client={queryClient}>
+                  <QueryClientProvider client={queryClient}>
               <Router>
               <div className="min-h-screen">
                 <ClaudeEventListener />
@@ -130,6 +135,13 @@ function App() {
                         {/* AI Administration - Admin access only */}
                         <Route path="/admin/ai-control" element={<AIAdminPage />} />
                         
+                        {/* Training Environment Routes - Admin/Trainer access only */}
+                        <Route path="/training" element={<RegulationTrainingDashboard />} />
+                        <Route path="/training/alex" element={<AlexOnboardingTrainingCenter />} />
+                        <Route path="/training/usdot" element={<USDOTRegistrationTrainingCenter />} />
+                        <Route path="/training/monitoring" element={<AgentPerformanceMonitoringDashboard />} />
+                        <Route path="/training/critical-path" element={<CriticalPathTestCenter />} />
+                        
                         {/* AI Collaboration - True AI-to-AI communication */}
                         {/* <Route path="/ai-collaboration" element={<CursorAICollaborationPanel />} /> */}
                         <Route path="/workflow-optimization" element={<WorkflowOptimizationDemo />} />
@@ -158,7 +170,7 @@ function App() {
                 />
               </div>
             </Router>
-                </QueryClientProvider>
+                  </QueryClientProvider>
                 </ModuleProvider>
               </UIStateProvider>
             </ClientProvider>

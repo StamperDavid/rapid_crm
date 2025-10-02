@@ -1093,7 +1093,20 @@ app.delete('/api/drivers/:id', async (req, res) => {
 app.get('/api/deals', async (req, res) => {
   try {
     const deals = await runQuery('SELECT * FROM deals');
-    res.json(deals);
+    
+    // For each deal, get its associated services
+    const dealsWithServices = await Promise.all(deals.map(async (deal) => {
+      const services = await runQuery(
+        'SELECT * FROM deal_services WHERE deal_id = ?',
+        [deal.id]
+      );
+      return {
+        ...deal,
+        services: services
+      };
+    }));
+    
+    res.json(dealsWithServices);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1105,7 +1118,17 @@ app.get('/api/deals/:id', async (req, res) => {
     if (!deal) {
       return res.status(404).json({ error: 'Deal not found' });
     }
-    res.json(deal);
+    
+    // Get associated services
+    const services = await runQuery(
+      'SELECT * FROM deal_services WHERE deal_id = ?',
+      [deal.id]
+    );
+    
+    res.json({
+      ...deal,
+      services: services
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1113,17 +1136,36 @@ app.get('/api/deals/:id', async (req, res) => {
 
 app.post('/api/deals', async (req, res) => {
   try {
-    const { title, amount, status, companyId } = req.body;
+    const { title, description, value, stage, probability, expectedCloseDate, companyId, contactId, services } = req.body;
     const id = Date.now().toString();
     const now = new Date().toISOString();
     
+    // Calculate total value from services
+    const totalValue = services ? services.reduce((sum, service) => sum + (service.customPrice || 0), 0) : value || 0;
+    
     await runExecute(
-      'INSERT INTO deals (id, title, amount, status, company_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, title, amount, status, companyId, now, now]
+      'INSERT INTO deals (id, title, description, value, stage, probability, expected_close_date, company_id, contact_id, total_value, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, title, description, value, stage, probability, expectedCloseDate, companyId, contactId, totalValue, now, now]
     );
     
+    // Add services to deal_services table
+    if (services && services.length > 0) {
+      for (const service of services) {
+        const serviceId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        await runExecute(
+          'INSERT INTO deal_services (id, deal_id, service_id, service_name, custom_price, start_date, end_date, next_renewal_date, renewal_status, auto_renewal, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [serviceId, id, service.serviceId, service.serviceName, service.customPrice, service.startDate, service.endDate, service.nextRenewalDate, 'active', service.autoRenewal || 0, now, now]
+        );
+      }
+    }
+    
     const deal = await runQueryOne('SELECT * FROM deals WHERE id = ?', [id]);
-    res.status(201).json(transformDeal(deal));
+    const dealServices = await runQuery('SELECT * FROM deal_services WHERE deal_id = ?', [id]);
+    
+    res.status(201).json({
+      ...deal,
+      services: dealServices
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1131,19 +1173,43 @@ app.post('/api/deals', async (req, res) => {
 
 app.put('/api/deals/:id', async (req, res) => {
   try {
-    const { title, amount, status, companyId } = req.body;
+    const { title, description, value, stage, probability, expectedCloseDate, companyId, contactId, services } = req.body;
     const now = new Date().toISOString();
     
+    // Calculate total value from services
+    const totalValue = services ? services.reduce((sum, service) => sum + (service.customPrice || 0), 0) : value || 0;
+    
     await runExecute(
-      'UPDATE deals SET title = ?, amount = ?, status = ?, company_id = ?, updated_at = ? WHERE id = ?',
-      [title, amount, status, companyId, now, req.params.id]
+      'UPDATE deals SET title = ?, description = ?, value = ?, stage = ?, probability = ?, expected_close_date = ?, company_id = ?, contact_id = ?, total_value = ?, updated_at = ? WHERE id = ?',
+      [title, description, value, stage, probability, expectedCloseDate, companyId, contactId, totalValue, now, req.params.id]
     );
+    
+    // Update services if provided
+    if (services) {
+      // Delete existing services
+      await runExecute('DELETE FROM deal_services WHERE deal_id = ?', [req.params.id]);
+      
+      // Add updated services
+      for (const service of services) {
+        const serviceId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        await runExecute(
+          'INSERT INTO deal_services (id, deal_id, service_id, service_name, custom_price, start_date, end_date, next_renewal_date, renewal_status, auto_renewal, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [serviceId, req.params.id, service.serviceId, service.serviceName, service.customPrice, service.startDate, service.endDate, service.nextRenewalDate, service.renewalStatus || 'active', service.autoRenewal || 0, now, now]
+        );
+      }
+    }
     
     const deal = await runQueryOne('SELECT * FROM deals WHERE id = ?', [req.params.id]);
     if (!deal) {
       return res.status(404).json({ error: 'Deal not found' });
     }
-    res.json(deal);
+    
+    const dealServices = await runQuery('SELECT * FROM deal_services WHERE deal_id = ?', [req.params.id]);
+    
+    res.json({
+      ...deal,
+      services: dealServices
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1151,8 +1217,135 @@ app.put('/api/deals/:id', async (req, res) => {
 
 app.delete('/api/deals/:id', async (req, res) => {
   try {
+    // Delete associated services first
+    await runExecute('DELETE FROM deal_services WHERE deal_id = ?', [req.params.id]);
+    
+    // Delete the deal
     const result = await runExecute('DELETE FROM deals WHERE id = ?', [req.params.id]);
     res.json({ deleted: result.changes > 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Deal Services Management
+app.get('/api/deals/:dealId/services', async (req, res) => {
+  try {
+    const services = await runQuery(
+      'SELECT * FROM deal_services WHERE deal_id = ?',
+      [req.params.dealId]
+    );
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/deals/:dealId/services', async (req, res) => {
+  try {
+    const { serviceId, serviceName, customPrice, startDate, endDate, nextRenewalDate, autoRenewal } = req.body;
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const now = new Date().toISOString();
+    
+    await runExecute(
+      'INSERT INTO deal_services (id, deal_id, service_id, service_name, custom_price, start_date, end_date, next_renewal_date, renewal_status, auto_renewal, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, req.params.dealId, serviceId, serviceName, customPrice, startDate, endDate, nextRenewalDate, 'active', autoRenewal || 0, now, now]
+    );
+    
+    const service = await runQueryOne('SELECT * FROM deal_services WHERE id = ?', [id]);
+    res.status(201).json(service);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/deals/:dealId/services/:serviceId', async (req, res) => {
+  try {
+    const { serviceName, customPrice, startDate, endDate, nextRenewalDate, renewalStatus, autoRenewal } = req.body;
+    const now = new Date().toISOString();
+    
+    await runExecute(
+      'UPDATE deal_services SET service_name = ?, custom_price = ?, start_date = ?, end_date = ?, next_renewal_date = ?, renewal_status = ?, auto_renewal = ?, updated_at = ? WHERE id = ?',
+      [serviceName, customPrice, startDate, endDate, nextRenewalDate, renewalStatus, autoRenewal, now, req.params.serviceId]
+    );
+    
+    const service = await runQueryOne('SELECT * FROM deal_services WHERE id = ?', [req.params.serviceId]);
+    if (!service) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+    
+    res.json(service);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/deals/:dealId/services/:serviceId', async (req, res) => {
+  try {
+    const result = await runExecute('DELETE FROM deal_services WHERE id = ?', [req.params.serviceId]);
+    res.json({ deleted: result.changes > 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Renewal Management
+app.get('/api/renewals/pending', async (req, res) => {
+  try {
+    // First check if deal_services table has any data
+    const dealServicesCount = await runQuery('SELECT COUNT(*) as count FROM deal_services');
+    
+    if (dealServicesCount[0].count === 0) {
+      // No deal services yet, return empty array
+      res.json([]);
+      return;
+    }
+    
+    // Try to get pending renewals with company info
+    let pendingRenewals;
+    try {
+      pendingRenewals = await runQuery(`
+        SELECT ds.*, d.title as deal_title, d.company_id, c.legal_business_name as company_name
+        FROM deal_services ds
+        JOIN deals d ON ds.deal_id = d.id
+        LEFT JOIN companies c ON d.company_id = c.id
+        WHERE ds.renewal_status = 'active' 
+        AND ds.next_renewal_date IS NOT NULL 
+        AND ds.next_renewal_date <= date('now', '+30 days')
+        ORDER BY ds.next_renewal_date ASC
+      `);
+    } catch (joinError) {
+      // If join fails, just return deal services without company info
+      pendingRenewals = await runQuery(`
+        SELECT ds.*, d.title as deal_title
+        FROM deal_services ds
+        JOIN deals d ON ds.deal_id = d.id
+        WHERE ds.renewal_status = 'active' 
+        AND ds.next_renewal_date IS NOT NULL 
+        AND ds.next_renewal_date <= date('now', '+30 days')
+        ORDER BY ds.next_renewal_date ASC
+      `);
+    }
+    
+    res.json(pendingRenewals);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/renewals/:serviceId/renew', async (req, res) => {
+  try {
+    const { renewalDate, newEndDate } = req.body;
+    const now = new Date().toISOString();
+    
+    // Update the service with renewal information
+    await runExecute(
+      'UPDATE deal_services SET last_renewal_date = ?, end_date = ?, renewal_count = renewal_count + 1, updated_at = ? WHERE id = ?',
+      [renewalDate, newEndDate, now, req.params.serviceId]
+    );
+    
+    const service = await runQueryOne('SELECT * FROM deal_services WHERE id = ?', [req.params.serviceId]);
+    res.json(service);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1845,6 +2038,44 @@ app.post('/api/usdot-applications', async (req, res) => {
 const checkAndInitializeDatabase = async () => {
   try {
     await initDatabase();
+    
+    // Load SEO automation schema
+    try {
+      const fs = require('fs');
+      const seoSchemaPath = path.join(__dirname, 'src', 'database', 'seo_automation_schema.sql');
+      const seoSchema = fs.readFileSync(seoSchemaPath, 'utf8');
+      
+      // Split the schema into individual statements and execute them
+      const statements = seoSchema.split(';').filter(stmt => stmt.trim().length > 0);
+      for (const statement of statements) {
+        if (statement.trim()) {
+          await runExecute(statement.trim());
+        }
+      }
+      console.log('✅ SEO automation schema loaded successfully');
+    } catch (seoError) {
+      console.warn('⚠️  SEO automation schema loading failed:', seoError.message);
+      console.warn('⚠️  SEO features may not be available');
+    }
+    
+    // Load Training Environment schema
+    try {
+      const fs = require('fs');
+      const trainingSchemaPath = path.join(__dirname, 'src', 'database', 'training_environment_schema.sql');
+      const trainingSchema = fs.readFileSync(trainingSchemaPath, 'utf8');
+      
+      // Split the schema into individual statements and execute them
+      const statements = trainingSchema.split(';').filter(stmt => stmt.trim().length > 0);
+      for (const statement of statements) {
+        if (statement.trim()) {
+          await runExecute(statement.trim());
+        }
+      }
+      console.log('✅ Training environment schema loaded successfully');
+    } catch (trainingError) {
+      console.warn('⚠️  Training environment schema loading failed:', trainingError.message);
+      console.warn('⚠️  Training features may not be available');
+    }
     
     // Run ELD service migration if enabled
     if (process.env.ELD_AUTOMATION_ENABLED === 'true') {
@@ -5499,6 +5730,476 @@ app.get('/api/services', (req, res) => {
     // Return empty array for now - services not fully implemented
     res.json([]);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Training System API Endpoints
+const AgentPerformanceGradingService = require('./src/services/training/AgentPerformanceGradingService.js');
+const GoldenMasterAgentService = require('./src/services/training/GoldenMasterAgentService.js');
+
+// Initialize training services
+let trainingService = null;
+let goldenMasterService = null;
+
+// Training Scenarios API
+app.get('/api/training/scenarios', async (req, res) => {
+  try {
+    const { registration_type, difficulty_min, difficulty_max } = req.query;
+    
+    let query = 'SELECT * FROM training_scenarios WHERE is_active = 1';
+    const params = [];
+    
+    if (registration_type) {
+      query += ' AND registration_type = ?';
+      params.push(registration_type);
+    }
+    
+    if (difficulty_min) {
+      query += ' AND difficulty_level >= ?';
+      params.push(parseInt(difficulty_min));
+    }
+    
+    if (difficulty_max) {
+      query += ' AND difficulty_level <= ?';
+      params.push(parseInt(difficulty_max));
+    }
+    
+    query += ' ORDER BY difficulty_level ASC';
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching training scenarios:', err);
+        res.status(500).json({ error: 'Failed to fetch training scenarios' });
+        return;
+      }
+      
+      // Parse JSON fields
+      const scenarios = rows.map(row => ({
+        ...row,
+        expected_path: JSON.parse(row.expected_path),
+        test_data: JSON.parse(row.test_data)
+      }));
+      
+      res.json(scenarios);
+    });
+  } catch (error) {
+    console.error('Error in training scenarios API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Start Training Session
+app.post('/api/training/sessions', async (req, res) => {
+  try {
+    const { agent_id, scenario_id } = req.body;
+    
+    if (!agent_id || !scenario_id) {
+      return res.status(400).json({ error: 'agent_id and scenario_id are required' });
+    }
+    
+    // Get scenario details
+    db.get('SELECT * FROM training_scenarios WHERE id = ?', [scenario_id], (err, scenario) => {
+      if (err) {
+        console.error('Error fetching scenario:', err);
+        return res.status(500).json({ error: 'Failed to fetch scenario' });
+      }
+      
+      if (!scenario) {
+        return res.status(404).json({ error: 'Scenario not found' });
+      }
+      
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const expectedPath = JSON.parse(scenario.expected_path);
+      
+      const sessionData = {
+        id: sessionId,
+        agent_id,
+        scenario_id,
+        start_time: new Date().toISOString(),
+        current_step: 1,
+        total_steps: expectedPath.length,
+        score: 0,
+        completed: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const query = `
+        INSERT INTO training_sessions 
+        (id, agent_id, scenario_id, start_time, current_step, total_steps, score, completed, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      db.run(query, [
+        sessionData.id, sessionData.agent_id, sessionData.scenario_id,
+        sessionData.start_time, sessionData.current_step, sessionData.total_steps,
+        sessionData.score, sessionData.completed, sessionData.created_at, sessionData.updated_at
+      ], function(err) {
+        if (err) {
+          console.error('Error creating training session:', err);
+          return res.status(500).json({ error: 'Failed to create training session' });
+        }
+        
+        res.json({
+          ...sessionData,
+          scenario: {
+            ...scenario,
+            expected_path: expectedPath,
+            test_data: JSON.parse(scenario.test_data)
+          }
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error in start training session API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Evaluate Training Step
+app.post('/api/training/sessions/:sessionId/evaluate-step', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { step_id, expected_action, actual_action, time_spent, confidence } = req.body;
+    
+    if (!trainingService) {
+      trainingService = new AgentPerformanceGradingService(db);
+    }
+    
+    const evaluation = await trainingService.evaluateStep(
+      sessionId,
+      step_id,
+      expected_action,
+      actual_action,
+      time_spent,
+      confidence
+    );
+    
+    res.json(evaluation);
+  } catch (error) {
+    console.error('Error in evaluate step API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Session Performance
+app.get('/api/training/sessions/:sessionId/performance', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    if (!trainingService) {
+      trainingService = new AgentPerformanceGradingService(db);
+    }
+    
+    const performance = await trainingService.calculateSessionPerformance(sessionId);
+    res.json(performance);
+  } catch (error) {
+    console.error('Error in get session performance API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Complete Training Session
+app.post('/api/training/sessions/:sessionId/complete', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    if (!trainingService) {
+      trainingService = new AgentPerformanceGradingService(db);
+    }
+    
+    const evaluation = await trainingService.evaluateScenario(sessionId);
+    
+    // Update session as completed
+    const endTime = new Date().toISOString();
+    const completed = evaluation.passed ? 1 : 0;
+    
+    db.run(
+      'UPDATE training_sessions SET end_time = ?, completed = ?, score = ? WHERE id = ?',
+      [endTime, completed, evaluation.overallScore, sessionId],
+      (err) => {
+        if (err) {
+          console.error('Error updating training session:', err);
+          return res.status(500).json({ error: 'Failed to complete training session' });
+        }
+        
+        // Check if this qualifies as a Golden Master
+        trainingService.saveGoldenMaster(sessionId).then(isGoldenMaster => {
+          res.json({
+            ...evaluation,
+            isGoldenMaster,
+            endTime
+          });
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error in complete training session API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Agent Performance History
+app.get('/api/training/agents/:agentId/performance', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const { registration_type } = req.query;
+    
+    if (!trainingService) {
+      trainingService = new AgentPerformanceGradingService(db);
+    }
+    
+    const query = `
+      SELECT 
+        ts.*,
+        tsc.name as scenario_name,
+        tsc.registration_type,
+        tsc.difficulty_level
+      FROM training_sessions ts
+      JOIN training_scenarios tsc ON ts.scenario_id = tsc.id
+      WHERE ts.agent_id = ?
+      ${registration_type ? 'AND tsc.registration_type = ?' : ''}
+      ORDER BY ts.created_at DESC
+    `;
+    
+    const params = registration_type ? [agentId, registration_type] : [agentId];
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching agent performance:', err);
+        return res.status(500).json({ error: 'Failed to fetch agent performance' });
+      }
+      
+      res.json(rows);
+    });
+  } catch (error) {
+    console.error('Error in get agent performance API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Check if Agent Should Be Replaced
+app.get('/api/training/agents/:agentId/should-replace', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const { registration_type } = req.query;
+    
+    if (!registration_type) {
+      return res.status(400).json({ error: 'registration_type is required' });
+    }
+    
+    if (!trainingService) {
+      trainingService = new AgentPerformanceGradingService(db);
+    }
+    
+    const replacementCheck = await trainingService.shouldReplaceAgent(agentId, registration_type);
+    res.json(replacementCheck);
+  } catch (error) {
+    console.error('Error in should replace agent API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create Golden Master Agent
+app.post('/api/training/golden-masters', async (req, res) => {
+  try {
+    const { sessionId, agentId, registrationType } = req.body;
+    
+    if (!sessionId || !agentId || !registrationType) {
+      return res.status(400).json({ error: 'sessionId, agentId, and registrationType are required' });
+    }
+    
+    if (!goldenMasterService) {
+      goldenMasterService = new GoldenMasterAgentService(db);
+    }
+    
+    const goldenMaster = await goldenMasterService.createGoldenMaster(sessionId, agentId, registrationType);
+    
+    if (goldenMaster) {
+      res.json(goldenMaster);
+    } else {
+      res.status(400).json({ error: 'Failed to create Golden Master. Session must be completed with 100% accuracy.' });
+    }
+  } catch (error) {
+    console.error('Error in create golden master API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Best Golden Master for Registration Type
+app.get('/api/training/golden-masters/best/:registrationType', async (req, res) => {
+  try {
+    const { registrationType } = req.params;
+    
+    if (!goldenMasterService) {
+      goldenMasterService = new GoldenMasterAgentService(db);
+    }
+    
+    const bestGoldenMaster = await goldenMasterService.getBestGoldenMaster(registrationType);
+    res.json(bestGoldenMaster);
+  } catch (error) {
+    console.error('Error in get best golden master API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Analyze Agent for Replacement
+app.get('/api/training/agents/:agentId/analyze-replacement', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const { registration_type } = req.query;
+    
+    if (!registration_type) {
+      return res.status(400).json({ error: 'registration_type is required' });
+    }
+    
+    if (!goldenMasterService) {
+      goldenMasterService = new GoldenMasterAgentService(db);
+    }
+    
+    const replacementPlan = await goldenMasterService.analyzeAgentForReplacement(agentId, registration_type);
+    res.json(replacementPlan);
+  } catch (error) {
+    console.error('Error in analyze agent replacement API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Execute Agent Replacement
+app.post('/api/training/agents/:agentId/replace', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const { replacementPlan, strategy = 'immediate' } = req.body;
+    
+    if (!replacementPlan) {
+      return res.status(400).json({ error: 'replacementPlan is required' });
+    }
+    
+    if (!goldenMasterService) {
+      goldenMasterService = new GoldenMasterAgentService(db);
+    }
+    
+    const success = await goldenMasterService.executeAgentReplacement(replacementPlan, strategy);
+    
+    if (success) {
+      res.json({ success: true, message: 'Agent replacement executed successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to execute agent replacement' });
+    }
+  } catch (error) {
+    console.error('Error in execute agent replacement API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Deactivate Golden Master
+app.delete('/api/training/golden-masters/:goldenMasterId', async (req, res) => {
+  try {
+    const { goldenMasterId } = req.params;
+    
+    if (!goldenMasterService) {
+      goldenMasterService = new GoldenMasterAgentService(db);
+    }
+    
+    const success = await goldenMasterService.deactivateGoldenMaster(goldenMasterId);
+    
+    if (success) {
+      res.json({ success: true, message: 'Golden Master deactivated successfully' });
+    } else {
+      res.status(404).json({ error: 'Golden Master not found' });
+    }
+  } catch (error) {
+    console.error('Error in deactivate golden master API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Golden Master Statistics
+app.get('/api/training/golden-masters/stats', async (req, res) => {
+  try {
+    const { registration_type } = req.query;
+    
+    if (!goldenMasterService) {
+      goldenMasterService = new GoldenMasterAgentService(db);
+    }
+    
+    const stats = await goldenMasterService.getGoldenMasterStats(registration_type);
+    res.json(stats);
+  } catch (error) {
+    console.error('Error in get golden master stats API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Golden Master Agents
+app.get('/api/training/golden-masters', async (req, res) => {
+  try {
+    const { registration_type } = req.query;
+    
+    let query = 'SELECT * FROM golden_master_agents WHERE is_active = 1';
+    const params = [];
+    
+    if (registration_type) {
+      query += ' AND registration_type = ?';
+      params.push(registration_type);
+    }
+    
+    query += ' ORDER BY created_at DESC';
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching golden master agents:', err);
+        return res.status(500).json({ error: 'Failed to fetch golden master agents' });
+      }
+      
+      // Parse JSON fields
+      const goldenMasters = rows.map(row => ({
+        ...row,
+        agent_config: JSON.parse(row.agent_config),
+        training_data: JSON.parse(row.training_data),
+        performance_metrics: JSON.parse(row.performance_metrics)
+      }));
+      
+      res.json(goldenMasters);
+    });
+  } catch (error) {
+    console.error('Error in get golden masters API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Training Environment Settings
+app.get('/api/training/settings', async (req, res) => {
+  try {
+    const { registration_type } = req.query;
+    
+    let query = 'SELECT * FROM training_environment_settings';
+    const params = [];
+    
+    if (registration_type) {
+      query += ' WHERE registration_type = ?';
+      params.push(registration_type);
+    }
+    
+    query += ' ORDER BY registration_type';
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching training settings:', err);
+        return res.status(500).json({ error: 'Failed to fetch training settings' });
+      }
+      
+      // Parse JSON fields
+      const settings = rows.map(row => ({
+        ...row,
+        scenario_difficulty_range: JSON.parse(row.scenario_difficulty_range)
+      }));
+      
+      res.json(settings);
+    });
+  } catch (error) {
+    console.error('Error in get training settings API:', error);
     res.status(500).json({ error: error.message });
   }
 });

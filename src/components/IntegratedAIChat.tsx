@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PaperAirplaneIcon, MicrophoneIcon, SpeakerWaveIcon, XIcon, ChatIcon } from '@heroicons/react/outline';
 import { useUser } from '../contexts/UserContext';
+import Tooltip from './Tooltip';
 
 interface Message {
   id: string;
@@ -803,12 +804,14 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
               </select>
             </div>
             
-            <button
-              onClick={handleClose}
-              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
+            <Tooltip content="Close the AI chat window. Your conversation history will be saved.">
+              <button
+                onClick={handleClose}
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            </Tooltip>
           </div>
         </div>
 
@@ -879,24 +882,25 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
             </div>
             
             {/* Microphone Button */}
-            <button
-              onClick={() => {
-                if (isListening) {
-                  stopListening();
-                } else {
-                  startListening();
-                }
-              }}
-              disabled={isLoading}
-              className={`relative p-3 rounded-full transition-all duration-300 ${
-                isListening
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-              title={isListening ? 'Stop listening' : 'Start voice input'}
-            >
-              <MicrophoneIcon className="h-6 w-6" />
-            </button>
+            <Tooltip content={isListening ? "Stop voice recording. Click to end your voice message." : "Start voice input. Click and speak to send a voice message to the AI."}>
+              <button
+                onClick={() => {
+                  if (isListening) {
+                    stopListening();
+                  } else {
+                    startListening();
+                  }
+                }}
+                disabled={isLoading}
+                className={`relative p-3 rounded-full transition-all duration-300 ${
+                  isListening
+                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <MicrophoneIcon className="h-6 w-6" />
+              </button>
+            </Tooltip>
             
             {/* Stop Speaking Button - only show when AI is speaking */}
             {isSpeaking && (
@@ -912,24 +916,26 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
             )}
 
             {/* Send Button */}
-            <button
-              onClick={() => sendMessage()}
-              disabled={!inputMessage.trim() || isLoading}
-              className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Send message"
-            >
-              <PaperAirplaneIcon className="h-5 w-5" />
-            </button>
+            <Tooltip content="Send your message to the AI assistant. The AI will respond with helpful information about transportation compliance.">
+              <button
+                onClick={() => sendMessage()}
+                disabled={!inputMessage.trim() || isLoading}
+                className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <PaperAirplaneIcon className="h-5 w-5" />
+              </button>
+            </Tooltip>
 
             {/* Clear Messages Button */}
-            <button
-              onClick={clearMessages}
-              disabled={messages.length === 0}
-              className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Clear chat history"
-            >
-              <XIcon className="h-5 w-5" />
-            </button>
+            <Tooltip content="Clear all chat messages. This will remove the conversation history but won't affect saved data.">
+              <button
+                onClick={clearMessages}
+                disabled={messages.length === 0}
+                className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </Tooltip>
           </div>
           
           {/* Instructions */}

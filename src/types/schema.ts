@@ -208,6 +208,20 @@ export interface Service {
   updatedAt: string;
 }
 
+export interface DealService {
+  id: string;
+  serviceId: string;
+  serviceName: string;
+  customPrice?: number; // Override base service price if needed
+  startDate: string;
+  endDate?: string; // When service expires
+  nextRenewalDate?: string; // When renewal is due
+  renewalStatus: 'active' | 'expired' | 'renewed' | 'cancelled';
+  autoRenewal: boolean;
+  lastRenewalDate?: string;
+  renewalCount: number; // How many times this service has been renewed
+}
+
 export interface Deal {
   id: string;
   title: string;
@@ -218,9 +232,13 @@ export interface Deal {
   expectedCloseDate?: string;
   actualCloseDate?: string;
   
-  // Service Information
-  serviceId: string; // Link to the service being sold
-  serviceName: string; // Cached service name for performance
+  // Multiple Services Support
+  services: DealService[]; // Array of services in this deal
+  totalValue: number; // Sum of all service values
+  
+  // Legacy single service support (for backward compatibility)
+  serviceId?: string; // Link to the primary service being sold
+  serviceName?: string; // Cached primary service name for performance
   customPrice?: number; // Override base service price if needed
   
   // System Info

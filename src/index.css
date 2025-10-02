@@ -15,3 +15,23 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Ensure tooltips always appear on top */
+[data-tooltip], .tooltip, [class*="z-[9999]"], [class*="z-[99999]"] {
+  z-index: 99999 !important;
+}
+
+/* Ensure sidebar tooltips appear above main content */
+.fixed.inset-y-0 .tooltip,
+.fixed.inset-y-0 [class*="z-[9999]"],
+.fixed.inset-y-0 [data-tooltip],
+.fixed.inset-y-0 .relative .tooltip,
+.fixed.inset-y-0 .relative [class*="z-[9999]"],
+.fixed.inset-y-0 .relative [data-tooltip] {
+  z-index: 9999 !important;
+}
+
+/* Ensure sidebar itself is above main content */
+.fixed.inset-y-0 {
+  z-index: 100 !important;
+}

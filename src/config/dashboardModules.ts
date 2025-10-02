@@ -18,7 +18,7 @@ import {
   VideoCameraIcon,
   DocumentTextIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationIcon
 } from '@heroicons/react/outline';
 
 // Import components (lazy loaded)
@@ -29,7 +29,9 @@ const ServicesModule = React.lazy(() => import('../modules/CRM/pages/Services'))
 const ELDModule = React.lazy(() => import('../pages/ELDDashboard'));
 const IFTAModule = React.lazy(() => import('../pages/IFTADashboard'));
 const RegulationTrainingModule = React.lazy(() => import('../components/training/RegulationTrainingDashboard'));
-const RenewalManagementModule = React.lazy(() => import('../modules/RenewalManagement'));
+const USDOTTrainingCenterModule = React.lazy(() => import('../components/training/USDOTRegistrationTrainingCenter'));
+const AgentPerformanceMonitoringModule = React.lazy(() => import('../components/training/AgentPerformanceMonitoringDashboard'));
+const CriticalPathTestCenterModule = React.lazy(() => import('../components/training/CriticalPathTestCenter'));
 const TasksModule = React.lazy(() => import('../modules/CRM/pages/Tasks'));
 const ConversationsModule = React.lazy(() => import('../modules/CRM/pages/Conversations'));
 const AnalyticsModule = React.lazy(() => import('../modules/Analytics'));
@@ -196,7 +198,7 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     order: 9
   },
 
-  // TRAINING MODULE (Single comprehensive training environment)
+  // TRAINING MODULES (Specialized training environments)
   regulationTraining: {
     id: 'regulationTraining',
     name: 'AI Training Environment',
@@ -212,23 +214,54 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     enabled: false,
     order: 10
   },
-
-  // RENEWAL MANAGEMENT (Core business function)
-  renewalManagement: {
-    id: 'renewalManagement',
-    name: 'Renewal Management',
-    component: RenewalManagementModule,
-    category: 'core',
-    required: true,
-    adminOnly: false,
-    trainerOnly: false,
-    icon: ClockIcon,
-    description: 'Track and manage all client renewals and compliance deadlines',
-    tooltip: 'Monitor USDOT (biennial), UCR (annual), IFTA (annual), State registrations, and quarterly reporting requirements. This is where 70% of our revenue comes from.',
-    href: '/renewals',
-    enabled: true,
-    order: 4
+  usdotTrainingCenter: {
+    id: 'usdotTrainingCenter',
+    name: 'USDOT Training Center',
+    component: USDOTTrainingCenterModule,
+    category: 'training',
+    required: false,
+    adminOnly: true,
+    trainerOnly: true,
+    icon: DocumentTextIcon,
+    description: 'Specialized USDOT registration training with pixel-perfect government interface emulation',
+    tooltip: 'Pixel-perfect emulation of the FMCSA USDOT registration process. Train AI agents on real government forms and scenarios with performance grading.',
+    href: '/training/usdot',
+    enabled: false,
+    order: 11
   },
+
+  agentPerformanceMonitoring: {
+    id: 'agentPerformanceMonitoring',
+    name: 'Agent Performance Monitoring',
+    component: AgentPerformanceMonitoringModule,
+    category: 'training',
+    required: false,
+    adminOnly: true,
+    trainerOnly: true,
+    icon: ChartBarIcon,
+    description: 'Real-time monitoring and analytics of AI agent training performance',
+    tooltip: 'Monitor agent performance in real-time, track training progress, identify issues, and manage Golden Master agents.',
+    href: '/training/monitoring',
+    enabled: true,
+    order: 12
+  },
+
+  criticalPathTestCenter: {
+    id: 'criticalPathTestCenter',
+    name: 'Critical Path Test Center',
+    component: CriticalPathTestCenterModule,
+    category: 'training',
+    required: false,
+    adminOnly: true,
+    trainerOnly: true,
+    icon: ExclamationIcon,
+    description: 'Test AI agents on the most common USDOT application failure points',
+    tooltip: 'Focus on critical failure points like business entity mismatches, vehicle/driver ratios, CDL requirements, and insurance gaps.',
+    href: '/training/critical-path',
+    enabled: true,
+    order: 13
+  },
+
 
   // ADMIN MODULES (Admin only, can be toggled)
   compliance: {

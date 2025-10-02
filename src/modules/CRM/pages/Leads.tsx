@@ -24,6 +24,7 @@ import {
 import { Lead } from '../../../types/schema';
 import { useCRM } from '../../../contexts/CRMContext';
 import LeadScoring from '../../../components/LeadScoring';
+import Tooltip from '../../../components/Tooltip';
 
 const Leads: React.FC = () => {
   const { leads, isLoading } = useCRM();
@@ -245,13 +246,15 @@ const Leads: React.FC = () => {
           </p>
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Lead
-          </button>
+          <Tooltip content="Create a new lead record. This will open a form to capture potential client information including contact details, business type, and fleet information.">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Lead
+            </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -347,58 +350,64 @@ const Leads: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Search
             </label>
-            <div className="relative">
-              <SearchIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="Search leads..."
-              />
-            </div>
+            <Tooltip content="Search leads by name, email, or company. The search is case-insensitive and will filter results in real-time.">
+              <div className="relative">
+                <SearchIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholder="Search leads..."
+                />
+              </div>
+            </Tooltip>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Status
             </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            >
-              <option value="all">All Statuses</option>
-              <option value="New">New</option>
-              <option value="Contacted">Contacted</option>
-              <option value="Qualified">Qualified</option>
-              <option value="Unqualified">Unqualified</option>
-              <option value="Converted">Converted</option>
-              <option value="Lost">Lost</option>
-            </select>
+            <Tooltip content="Filter leads by their current status in the sales pipeline. Track progression from initial contact to closed deals.">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Statuses</option>
+                <option value="New">New</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Unqualified">Unqualified</option>
+                <option value="Converted">Converted</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </Tooltip>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Source
             </label>
-            <select
-              value={filterSource}
-              onChange={(e) => setFilterSource(e.target.value)}
-              className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            >
-              <option value="all">All Sources</option>
-              <option value="Website">Website</option>
-              <option value="Referral">Referral</option>
-              <option value="Cold Call">Cold Call</option>
-              <option value="Trade Show">Trade Show</option>
-              <option value="Social Media">Social Media</option>
-              <option value="Email Campaign">Email Campaign</option>
-              <option value="Google Ads">Google Ads</option>
-              <option value="Facebook Ads">Facebook Ads</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="Other">Other</option>
-            </select>
+            <Tooltip content="Filter leads by their source. Track which marketing channels and activities are generating the most qualified leads.">
+              <select
+                value={filterSource}
+                onChange={(e) => setFilterSource(e.target.value)}
+                className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Sources</option>
+                <option value="Website">Website</option>
+                <option value="Referral">Referral</option>
+                <option value="Cold Call">Cold Call</option>
+                <option value="Trade Show">Trade Show</option>
+                <option value="Social Media">Social Media</option>
+                <option value="Email Campaign">Email Campaign</option>
+                <option value="Google Ads">Google Ads</option>
+                <option value="Facebook Ads">Facebook Ads</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Other">Other</option>
+              </select>
+            </Tooltip>
           </div>
         </div>
       </div>

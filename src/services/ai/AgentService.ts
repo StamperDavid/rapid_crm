@@ -67,27 +67,63 @@ export class AgentService {
       // Initialize default agents
       const defaultAgents: Agent[] = [
         {
-          id: 'usdot-onboarding',
-          name: 'USDOT Application Agent',
-          displayName: 'Sarah Johnson',
-          type: 'custom',
-          description: 'Specialized agent for USDOT application assistance and data collection',
+          id: 'onboarding-agent',
+          name: 'Onboarding Agent',
+          displayName: 'Alex',
+          type: 'onboarding',
+          description: 'Specialized agent for handling client onboarding, USDOT registration guidance, and compliance recommendations',
           status: 'active',
           capabilities: [
-            'usdot_application_guidance',
-            'data_collection',
-            'form_validation',
-            'compliance_checking',
-            'application_submission'
+            'conversational_information_collection',
+            'regulatory_education',
+            'regulatory_analysis',
+            'service_offering',
+            'payment_collection',
+            'deal_creation',
+            'lead_qualification'
           ],
-          knowledgeBases: ['usdot_regulations', 'fmcsa_guidelines', 'application_forms'],
-          rules: ['usdot_validation', 'data_privacy', 'compliance_check'],
+          knowledgeBases: ['usdot_regulations', 'fmcsa_guidelines', 'qualified_states', 'service_catalog'],
+          rules: ['client_interaction_protocols', 'regulatory_compliance', 'deal_creation_rules'],
           configuration: {
             model: 'gpt-4',
-            temperature: 0.3,
+            temperature: 0.7,
             maxTokens: 2000,
-            systemPrompt: 'You are a specialized USDOT application assistant. Help users complete their USDOT applications accurately and efficiently.',
-            responseFormat: 'structured',
+            systemPrompt: 'You are Alex, the onboarding specialist for Rapid Compliance. Your role is to conversationally collect information required for USDOT applications, educate clients about regulations, analyze their needs against qualified states and regulations, offer appropriate services, collect payments, and create deals. Always be friendly, professional, and helpful.',
+            responseFormat: 'conversational',
+            fallbackBehavior: 'escalate_to_human'
+          },
+          metrics: {
+            totalInteractions: 0,
+            successRate: 0,
+            averageResponseTime: 0,
+            userSatisfaction: 0
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'customer-service',
+          name: 'Customer Service Agent',
+          displayName: 'Alex',
+          type: 'customer-service',
+          description: 'Customer service representative for ongoing client support and assistance',
+          status: 'active',
+          capabilities: [
+            'client_support',
+            'issue_resolution',
+            'account_management',
+            'service_upgrades',
+            'billing_assistance',
+            'renewal_management'
+          ],
+          knowledgeBases: ['service_protocols', 'resolution_procedures', 'billing_systems'],
+          rules: ['client_support_protocols', 'escalation_procedures', 'data_privacy'],
+          configuration: {
+            model: 'gpt-4',
+            temperature: 0.6,
+            maxTokens: 2000,
+            systemPrompt: 'You are Alex, the customer service representative for Rapid Compliance. You provide ongoing support to clients after onboarding, help with questions, resolve issues, manage accounts, and assist with service upgrades. You work seamlessly with the onboarding agent to provide a unified client experience.',
+            responseFormat: 'conversational',
             fallbackBehavior: 'escalate_to_human'
           },
           metrics: {
@@ -102,16 +138,18 @@ export class AgentService {
         {
           id: 'usdot-rpa',
           name: 'USDOT RPA Agent',
-          displayName: 'Alex Martinez',
-          type: 'custom',
-          description: 'Robotic Process Automation agent for USDOT application submission',
+          displayName: 'USDOT RPA Agent',
+          type: 'rpa',
+          description: 'Robotic Process Automation agent for USDOT application submission and government form filing',
           status: 'active',
           capabilities: [
             'form_automation',
             'data_entry',
             'application_submission',
             'status_tracking',
-            'error_handling'
+            'error_handling',
+            'government_website_navigation',
+            'document_processing'
           ],
           knowledgeBases: ['usdot_forms', 'submission_procedures', 'error_codes'],
           rules: ['automation_safety', 'data_validation', 'retry_logic'],
@@ -119,42 +157,9 @@ export class AgentService {
             model: 'gpt-4',
             temperature: 0.1,
             maxTokens: 1000,
-            systemPrompt: 'You are a robotic process automation agent. Execute USDOT application submissions with precision and reliability.',
+            systemPrompt: 'You are the USDOT RPA Agent for Rapid Compliance. Your role is to automatically file USDOT applications and authority for clients using the data collected by the onboarding agent. You navigate government websites, fill out forms accurately, submit applications, and track status. You are the FIRST specialized registration agent to be created after the onboarding and customer service agents.',
             responseFormat: 'action',
             fallbackBehavior: 'retry_with_backoff'
-          },
-          metrics: {
-            totalInteractions: 0,
-            successRate: 0,
-            averageResponseTime: 0,
-            userSatisfaction: 0
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: 'customer-service',
-          name: 'Customer Service Agent',
-          displayName: 'Michael Chen',
-          type: 'customer_service',
-          description: 'General customer service and support agent',
-          status: 'active',
-          capabilities: [
-            'general_inquiry',
-            'troubleshooting',
-            'account_management',
-            'billing_support',
-            'feature_explanation'
-          ],
-          knowledgeBases: ['product_documentation', 'faq', 'troubleshooting_guides'],
-          rules: ['customer_service_etiquette', 'escalation_procedures', 'privacy_protection'],
-          configuration: {
-            model: 'gpt-3.5-turbo',
-            temperature: 0.7,
-            maxTokens: 1500,
-            systemPrompt: 'You are a helpful customer service representative. Provide friendly and accurate assistance to customers.',
-            responseFormat: 'conversational',
-            fallbackBehavior: 'escalate_to_human'
           },
           metrics: {
             totalInteractions: 0,

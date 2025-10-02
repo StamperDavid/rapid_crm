@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 interface TooltipProps {
   content: string | React.ReactNode;
@@ -19,10 +20,40 @@ const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
+  const [tooltipPosition, setTooltipPosition] = React.useState({ top: 0, left: 0 });
+  const triggerRef = React.useRef<HTMLDivElement>(null);
 
   const showTooltip = () => {
     if (timeoutId) clearTimeout(timeoutId);
-    const id = setTimeout(() => setIsVisible(true), delay);
+    const id = setTimeout(() => {
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        let top = 0;
+        let left = 0;
+        
+        switch (position) {
+          case 'top':
+            top = rect.top - 10;
+            left = rect.left + rect.width / 2;
+            break;
+          case 'bottom':
+            top = rect.bottom + 10;
+            left = rect.left + rect.width / 2;
+            break;
+          case 'left':
+            top = rect.top + rect.height / 2;
+            left = rect.left - 10;
+            break;
+          case 'right':
+            top = rect.top + rect.height / 2;
+            left = rect.right + 10;
+            break;
+        }
+        
+        setTooltipPosition({ top, left });
+      }
+      setIsVisible(true);
+    }, delay);
     setTimeoutId(id);
   };
 
@@ -38,13 +69,6 @@ const Tooltip: React.FC<TooltipProps> = ({
     xl: 'w-96 text-sm'
   };
 
-  const positionClasses = {
-    top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
-    bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
-    left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
-    right: 'left-full top-1/2 transform -translate-y-1/2 ml-2'
-  };
-
   const arrowClasses = {
     top: 'absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900',
     bottom: 'absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900',
@@ -52,24 +76,49 @@ const Tooltip: React.FC<TooltipProps> = ({
     right: 'absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900'
   };
 
+  const getTransform = () => {
+    switch (position) {
+      case 'top':
+      case 'bottom':
+        return 'translateX(-50%)';
+      case 'left':
+        return 'translateX(-100%) translateY(-50%)';
+      case 'right':
+        return 'translateY(-50%)';
+      default:
+        return 'translateX(-50%)';
+    }
+  };
+
   return (
-    <div 
-      className={`relative inline-block ${className}`}
-      onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
-    >
-      {children}
-      {isVisible && (
-        <div className={`absolute z-50 bg-gray-900 text-white rounded-lg p-3 opacity-100 transition-opacity duration-200 ${sizeClasses[size]} ${positionClasses[position]}`}>
+    <>
+      <div 
+        ref={triggerRef}
+        className={`relative inline-block ${className}`}
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+      >
+        {children}
+      </div>
+      {isVisible && createPortal(
+        <div 
+          className={`fixed z-[99999] bg-gray-900 text-white rounded-lg p-3 opacity-100 transition-opacity duration-200 shadow-lg ${sizeClasses[size]}`}
+          style={{
+            top: `${tooltipPosition.top}px`,
+            left: `${tooltipPosition.left}px`,
+            transform: getTransform()
+          }}
+        >
           {typeof content === 'string' ? (
             <div className="whitespace-pre-wrap">{content}</div>
           ) : (
             content
           )}
           <div className={arrowClasses[position]}></div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 

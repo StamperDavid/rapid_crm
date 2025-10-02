@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/outline';
 import { Deal } from '../../../types/schema';
 import { Service } from '../../../types/schema';
+import Tooltip from '../../../components/Tooltip';
 
 interface DealsProps {
   preSelectedCompanyId?: string;
@@ -387,16 +388,18 @@ const Deals: React.FC<DealsProps> = ({ preSelectedCompanyId, preSelectedCompanyN
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
-          <button
-            onClick={() => {
-              setEditingDeal(null);
-              setShowCreateModal(true);
-            }}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add New Deal
-          </button>
+          <Tooltip content="Create a new sales deal. This will open a form to capture deal details including company, services, value, and expected close date.">
+            <button
+              onClick={() => {
+                setEditingDeal(null);
+                setShowCreateModal(true);
+              }}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add New Deal
+            </button>
+          </Tooltip>
         </div>
       </div>
 

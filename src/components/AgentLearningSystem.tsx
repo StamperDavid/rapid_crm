@@ -23,7 +23,7 @@ import {
   SparklesIcon,
   BeakerIcon,
   AdjustmentsHorizontalIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   UserGroupIcon,
   ClockIcon,
   TrophyIcon,
@@ -417,7 +417,7 @@ const AgentLearningSystem: React.FC<AgentLearningSystemProps> = ({
                   {learningSessions.slice(0, 5).map(session => (
                     <div key={session.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                        <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600" />
+                        <ChatIcon className="h-5 w-5 text-blue-600" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">

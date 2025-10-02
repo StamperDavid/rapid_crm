@@ -22,7 +22,7 @@ import {
   ArrowDownIcon,
   LightBulbIcon,
   CpuChipIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   ShieldCheckIcon,
   RocketLaunchIcon,
   AcademicCapIcon,

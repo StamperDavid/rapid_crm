@@ -7,7 +7,7 @@ import {
   ClockIcon,
   AcademicCapIcon,
   LightBulbIcon,
-  ChatBubbleLeftRightIcon,
+  ChatIcon,
   ArrowRightIcon,
   ArrowLeftIcon
 } from '@heroicons/react/outline';
@@ -58,7 +58,7 @@ const SessionReviewModal: React.FC<SessionReviewModalProps> = ({
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-    { id: 'conversation', name: 'Conversation', icon: ChatBubbleLeftRightIcon },
+    { id: 'conversation', name: 'Conversation', icon: ChatIcon },
     { id: 'analysis', name: 'Analysis', icon: AcademicCapIcon },
     { id: 'recommendations', name: 'Recommendations', icon: LightBulbIcon }
   ];

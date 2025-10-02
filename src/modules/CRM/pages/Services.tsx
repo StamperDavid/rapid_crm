@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/outline';
 import { Service } from '../../../types/schema';
 import { useUser } from '../../../contexts/UserContext';
+import Tooltip from '../../../components/Tooltip';
 
 const Services: React.FC = () => {
   const navigate = useNavigate();
@@ -514,13 +515,15 @@ const Services: React.FC = () => {
                 Complete catalog of transportation compliance and registration services
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Create Service
-            </button>
+            <Tooltip content="Create a new service offering. This will open a form to define service details including pricing, renewal terms, and compliance requirements.">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Create Service
+              </button>
+            </Tooltip>
           </div>
         </div>
 
@@ -532,33 +535,37 @@ const Services: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Search Services
                 </label>
-                <div className="relative">
-                  <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search by service name or description..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+                <Tooltip content="Search services by name or description. Find specific compliance services, registration types, or training programs.">
+                  <div className="relative">
+                    <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search by service name or description..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                </Tooltip>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Filter by Category
                 </label>
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="Registration">Registration</option>
-                  <option value="Compliance">Compliance</option>
-                  <option value="Training">Training</option>
-                  <option value="Support">Support</option>
-                </select>
+                <Tooltip content="Filter services by category. Registration services include USDOT, MC, and state permits. Compliance covers ongoing requirements like IFTA and ELD.">
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="Registration">Registration</option>
+                    <option value="Compliance">Compliance</option>
+                    <option value="Training">Training</option>
+                    <option value="Support">Support</option>
+                  </select>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -592,6 +599,12 @@ const Services: React.FC = () => {
                         <ClockIcon className="h-4 w-4 inline mr-1" />
                         {service.estimatedDuration}
                       </div>
+                      {service.hasRenewal && (
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          <CurrencyDollarIcon className="h-3 w-3 inline mr-1" />
+                          Renewal: ${service.renewalPrice} {service.renewalFrequency.toLowerCase()}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -637,6 +650,32 @@ const Services: React.FC = () => {
                         )}
                       </ul>
                     </div>
+                    
+                    {service.hasRenewal && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                          Renewal Information:
+                        </h4>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                          <div className="flex items-center">
+                            <ClockIcon className="h-3 w-3 mr-1 text-blue-500" />
+                            <span className="font-medium">Frequency:</span>
+                            <span className="ml-1">{service.renewalFrequency}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <CurrencyDollarIcon className="h-3 w-3 mr-1 text-green-500" />
+                            <span className="font-medium">Renewal Price:</span>
+                            <span className="ml-1">${service.renewalPrice}</span>
+                          </div>
+                          {service.autoRenewal && (
+                            <div className="flex items-center">
+                              <CheckCircleIcon className="h-3 w-3 mr-1 text-green-500" />
+                              <span className="text-green-600 dark:text-green-400">Auto-renewal available</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 

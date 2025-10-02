@@ -35,6 +35,7 @@ import AdvancedUIAssistantFixed from './AdvancedUIAssistantFixed';
 import IntegratedAIChat from './IntegratedAIChat';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
 import DynamicNavigation from './DynamicNavigation';
+import Tooltip from './Tooltip';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -178,7 +179,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 z-40">
+      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 z-[100]">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-sm">
           {/* Logo section */}
           <div className="flex h-16 shrink-0 items-start px-6 pt-5 border-b border-slate-200 dark:border-slate-700">
@@ -205,9 +206,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       {/* Main content area */}
-      <div className="md:pl-64">
+      <div className="md:pl-64 relative z-0">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           {/* Mobile menu button */}
           <button
             type="button"
@@ -335,13 +336,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         
       {/* Floating AI Chat Button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => setAiChatOpen(!aiChatOpen)}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-          title="Open AI Chat"
-        >
-          <ChatIcon className="h-6 w-6" />
-        </button>
+        <Tooltip content="Open AI chat assistant. Get help with transportation compliance questions, business guidance, and system assistance.">
+          <button
+            onClick={() => setAiChatOpen(!aiChatOpen)}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+          >
+            <ChatIcon className="h-6 w-6" />
+          </button>
+        </Tooltip>
       </div>
       
       {/* AI Chat Modal */}

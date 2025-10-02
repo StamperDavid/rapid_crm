@@ -245,10 +245,43 @@ CREATE TABLE IF NOT EXISTS services (
     deliverables TEXT NOT NULL, -- JSON array
     is_active INTEGER DEFAULT 1, -- 1 for active, 0 for inactive
     
+    -- Renewal Management Fields
+    has_renewal INTEGER DEFAULT 0, -- 1 if service requires renewal, 0 if one-time
+    renewal_frequency TEXT, -- 'Annual', 'Biennial', 'Quarterly', 'Monthly', 'One-time', 'As-needed'
+    renewal_price REAL DEFAULT 0, -- Cost for renewal (may be different from initial price)
+    renewal_description TEXT, -- Description of what renewal includes
+    renewal_requirements TEXT, -- JSON array of what's needed for renewal
+    renewal_deadline TEXT, -- When renewal is due (e.g., "30 days before expiration")
+    auto_renewal INTEGER DEFAULT 0, -- 1 if we can auto-renew this service, 0 if manual
+    renewal_reminders TEXT, -- JSON array of when to send reminders (e.g., ["90 days", "30 days", "7 days"])
+    
     -- System Fields
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     -- No foreign key constraints for services table
+);
+
+-- Deal Services Table (for multiple services per deal with individual renewal tracking)
+CREATE TABLE IF NOT EXISTS deal_services (
+    id TEXT PRIMARY KEY,
+    deal_id TEXT NOT NULL, -- Foreign key to deals table
+    service_id TEXT NOT NULL, -- Foreign key to services table
+    service_name TEXT NOT NULL, -- Cached service name for performance
+    custom_price REAL, -- Override base service price if needed
+    start_date TEXT NOT NULL, -- When service starts
+    end_date TEXT, -- When service expires
+    next_renewal_date TEXT, -- When renewal is due
+    renewal_status TEXT DEFAULT 'active', -- 'active', 'expired', 'renewed', 'cancelled'
+    auto_renewal INTEGER DEFAULT 0, -- 1 if auto-renewal enabled, 0 if manual
+    last_renewal_date TEXT, -- When service was last renewed
+    renewal_count INTEGER DEFAULT 0, -- How many times this service has been renewed
+    
+    -- System Fields
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+    
+    -- FOREIGN KEY (deal_id) REFERENCES deals(id) -- Temporarily disabled for initialization
+    -- FOREIGN KEY (service_id) REFERENCES services(id) -- Temporarily disabled for initialization
 );
 
 CREATE TABLE IF NOT EXISTS deals (
@@ -261,7 +294,10 @@ CREATE TABLE IF NOT EXISTS deals (
     expected_close_date TEXT,
     actual_close_date TEXT,
     
-    -- Service Information
+    -- Multiple Services Support
+    total_value REAL NOT NULL, -- Sum of all service values in this deal
+    
+    -- Legacy single service support (for backward compatibility)
     service_id TEXT, -- Foreign key to services table
     service_name TEXT, -- Cached service name for performance
     custom_price REAL, -- Override base service price if needed
