@@ -28,10 +28,11 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 }) => {
   const location = useLocation();
 
+  // Manager-level tools (shown for managers and admins)
   const editorItems = [
-    ...(hasUserManagement ? [{ name: 'Users', href: '/users', icon: UsersIcon, color: 'text-teal-600' }] : []),
-    { name: 'Content Generator', href: '/video-production', icon: VideoCameraIcon, color: 'text-pink-600' },
-    { name: 'SEO', href: '/seo', icon: ChartBarIcon, color: 'text-green-600' },
+    { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, color: 'text-green-600' },
+    { name: 'Agent Performance', href: '/training/monitoring', icon: ChipIcon, color: 'text-purple-600' },
+    { name: 'Tasks', href: '/tasks', icon: CogIcon, color: 'text-blue-600' },
     { name: 'Reports', href: '/reports', icon: ChartBarIcon, color: 'text-pink-600' },
   ];
 
