@@ -33,7 +33,7 @@ import DataManagement from './pages/DataManagement';
 import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
-import AIAdminPage from './pages/AIAdminPage';
+import AIControlCenter from './components/AIControlCenter';
 import RegulationTrainingDashboard from './components/training/RegulationTrainingDashboard';
 import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
 import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
@@ -125,7 +125,7 @@ function App() {
                         <Route path="/client-portal" element={<ClientPortalDesigner />} />
                         
                         {/* AI Administration - Admin access only */}
-                        <Route path="/admin/ai-control" element={<AIAdminPage />} />
+                        <Route path="/admin/ai-control" element={<AIControlCenter />} />
                         
                         {/* Training Environment Routes - Admin/Trainer access only */}
                         <Route path="/training" element={<RegulationTrainingDashboard />} />

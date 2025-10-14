@@ -287,12 +287,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </div>
                 </div>
                 
-                {/* Right 50% - Admin Tools MOVED TO SIDEBAR */}
-                {/* All admin tools now in left sidebar Administration section */}
+                {/* Right 50% - Admin Tools (fills from right to left) */}
                 {user?.role === 'admin' && (
                   <div className="flex items-center justify-end space-x-1 w-1/2">
+                    <AdminToolbar
+                      hasSystemAccess={hasPermission('canManageUsers')}
+                      hasUserManagement={hasPermission('canManageUsers')}
+                      hasSystemMonitoring={hasPermission('canManageUsers')}
+                      hasAdvancedSettings={hasPermission('canManageUsers')}
+                    />
                     {/* Status indicator - Far right */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 ml-4">
                       <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs text-slate-500 dark:text-slate-400">
                         Admin Mode
