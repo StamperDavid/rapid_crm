@@ -5675,12 +5675,13 @@ app.get('/api/services', (req, res) => {
 });
 
 // Training System API Endpoints
-const AgentPerformanceGradingService = require('./src/services/training/AgentPerformanceGradingService.js');
-const GoldenMasterAgentService = require('./src/services/training/GoldenMasterAgentService.js');
+// TEMPORARILY DISABLED - TypeScript files need proper build process
+// const AgentPerformanceGradingService = require('./src/services/training/AgentPerformanceGradingService.js');
+// const GoldenMasterAgentService = require('./src/services/training/GoldenMasterAgentService.js');
 
 // Initialize training services
-let trainingService = null;
-let goldenMasterService = null;
+let trainingService = null; // Temporarily disabled
+let goldenMasterService = null; // Temporarily disabled
 
 // Training Scenarios API
 app.get('/api/training/scenarios', async (req, res) => {
