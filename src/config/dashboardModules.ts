@@ -26,8 +26,6 @@ const CompaniesModule = React.lazy(() => import('../modules/CRM/pages/Companies'
 const LeadsModule = React.lazy(() => import('../modules/CRM/pages/Leads'));
 const DealsModule = React.lazy(() => import('../modules/CRM/pages/Deals'));
 const ServicesModule = React.lazy(() => import('../modules/CRM/pages/Services'));
-const ELDModule = React.lazy(() => import('../pages/ELDDashboard'));
-const IFTAModule = React.lazy(() => import('../pages/IFTADashboard'));
 const RegulationTrainingModule = React.lazy(() => import('../components/training/RegulationTrainingDashboard'));
 const USDOTTrainingCenterModule = React.lazy(() => import('../components/training/USDOTRegistrationTrainingCenter'));
 const AgentPerformanceMonitoringModule = React.lazy(() => import('../components/training/AgentPerformanceMonitoringDashboard'));
@@ -117,38 +115,6 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     href: '/services',
     enabled: true,
     order: 4
-  },
-
-  // COMPLIANCE MODULES (Always visible, required)
-  eld: {
-    id: 'eld',
-    name: 'ELD',
-    component: ELDModule,
-    category: 'compliance',
-    required: true,
-    adminOnly: false,
-    trainerOnly: false,
-    icon: TruckIcon,
-    description: 'Electronic Logging Device management and HOS compliance',
-    tooltip: 'Electronic Logging Device (ELD) management for Hours of Service (HOS) compliance and driver monitoring.',
-    href: '/eld',
-    enabled: true,
-    order: 5
-  },
-  ifta: {
-    id: 'ifta',
-    name: 'IFTA',
-    component: IFTAModule,
-    category: 'compliance',
-    required: true,
-    adminOnly: false,
-    trainerOnly: false,
-    icon: LightningBoltIcon,
-    description: 'International Fuel Tax Agreement reporting and compliance',
-    tooltip: 'International Fuel Tax Agreement (IFTA) reporting for fuel tax calculations and compliance tracking.',
-    href: '/ifta',
-    enabled: true,
-    order: 6
   },
 
   // ADVANCED MODULES (Optional, can be toggled)

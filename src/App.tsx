@@ -34,14 +34,11 @@ import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIAdminPage from './pages/AIAdminPage';
-import ELDDashboard from './pages/ELDDashboard';
-import IFTADashboard from './pages/IFTADashboard';
 import RegulationTrainingDashboard from './components/training/RegulationTrainingDashboard';
 import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
 import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
 import CriticalPathTestCenter from './components/training/CriticalPathTestCenter';
 import AlexOnboardingTrainingCenter from './components/training/AlexOnboardingTrainingCenter';
-import SEODashboard from './pages/SEODashboard';
 import ClientPortal from './pages/ClientPortal';
 import ClientLogin from './pages/ClientLogin';
 import OnboardingAgent from './pages/OnboardingAgent';
@@ -49,7 +46,6 @@ import ClaudeEventListener from './components/ClaudeEventListener';
 // import CursorAICollaborationPanel from './components/CursorAICollaborationPanel'; // Component not found
 import WorkflowOptimizationDemo from './components/WorkflowOptimizationDemo';
 import RapidCRMAIProfile from './components/RapidCRMAIProfile';
-import VideoProductionDashboard from './pages/VideoProductionDashboard';
 
 // Optimized query client with performance settings
 const queryClient = new QueryClient({
@@ -113,10 +109,6 @@ function App() {
                         <Route path="/services" element={<Services />} />
                         <Route path="/services/edit/:id" element={<EditService />} />
                         <Route path="/compliance" element={<ComplianceModule />} />
-                        <Route path="/eld" element={<ELDDashboard />} />
-                        <Route path="/ifta" element={<IFTADashboard />} />
-                        <Route path="/seo" element={<SEODashboard />} />
-                        <Route path="/video-production" element={<VideoProductionDashboard />} />
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/conversations" element={<Conversations />} />
                         <Route path="/settings/api-keys" element={<ApiKeys />} />
