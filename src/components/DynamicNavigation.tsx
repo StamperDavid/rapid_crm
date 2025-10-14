@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CogIcon } from '@heroicons/react/outline';
-import { getAvailableModules } from '../config/dashboardModules';
+import { getAvailableModules, MODULE_CATEGORIES } from '../config/dashboardModules';
 import { useUser } from '../contexts/UserContext';
 import { useModules } from '../contexts/ModuleContext';
 import { useConversationAlerts } from '../hooks/useConversationAlerts';
@@ -35,49 +35,83 @@ const DynamicNavigation: React.FC = () => {
     setShowModuleToggle(false);
   };
 
+  // Group modules by category
+  const groupedModules = visibleModules.reduce((acc, module) => {
+    if (!acc[module.category]) {
+      acc[module.category] = [];
+    }
+    acc[module.category].push(module);
+    return acc;
+  }, {} as Record<string, typeof visibleModules>);
+
+  // Define display order for categories
+  const categoryOrder = ['core', 'management', 'admin'];
+
   return (
     <>
       <nav className="flex flex-1 flex-col px-4 py-6">
-        <ul role="list" className="flex flex-1 flex-col gap-y-2">
-          {visibleModules.map((module) => {
-            const isActive = location.pathname === module.href || 
-                           (module.href !== '/' && location.pathname.startsWith(module.href));
+        <ul role="list" className="flex flex-1 flex-col gap-y-1">
+          {categoryOrder.map((categoryKey) => {
+            const categoryModules = groupedModules[categoryKey];
+            if (!categoryModules || categoryModules.length === 0) return null;
+            
+            const category = MODULE_CATEGORIES[categoryKey];
+            if (!category) return null;
             
             return (
-              <li key={module.id}>
-                <Link
-                  to={module.href}
-                  className={`group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition-all duration-200 ${
-                    isActive
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
-                  }`}
-                >
-                  <div className="relative">
-                    <module.icon
-                      className={`h-6 w-6 shrink-0 transition-colors ${
-                        isActive 
-                          ? 'text-blue-600 dark:text-blue-400' 
-                          : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
-                      }`}
-                      aria-hidden="true"
-                    />
-                    {/* Show alert badge for conversations */}
-                    {module.id === 'conversations' && alertCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                        {alertCount}
-                      </span>
-                    )}
+              <React.Fragment key={categoryKey}>
+                {/* Section Header */}
+                <li className="mt-4 first:mt-0">
+                  <div className="px-3 mb-2">
+                    <h3 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      {category.name}
+                    </h3>
                   </div>
-                  <span className="flex-1">{module.name}</span>
-                  <VisibleHelpIcon 
-                    content={module.tooltip} 
-                    size="sm" 
-                    position="right"
-                    className="ml-2"
-                  />
-                </Link>
-              </li>
+                </li>
+                
+                {/* Section Modules */}
+                {categoryModules.map((module) => {
+                  const isActive = location.pathname === module.href || 
+                                 (module.href !== '/' && location.pathname.startsWith(module.href));
+                  
+                  return (
+                    <li key={module.id}>
+                      <Link
+                        to={module.href}
+                        className={`group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 transition-all duration-200 ${
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
+                        }`}
+                      >
+                        <div className="relative">
+                          <module.icon
+                            className={`h-6 w-6 shrink-0 transition-colors ${
+                              isActive 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                            }`}
+                            aria-hidden="true"
+                          />
+                          {/* Show alert badge for conversations */}
+                          {module.id === 'conversations' && alertCount > 0 && (
+                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                              {alertCount}
+                            </span>
+                          )}
+                        </div>
+                        <span className="flex-1">{module.name}</span>
+                        <VisibleHelpIcon 
+                          content={module.tooltip} 
+                          size="sm" 
+                          position="right"
+                          className="ml-2"
+                        />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </React.Fragment>
             );
           })}
         </ul>

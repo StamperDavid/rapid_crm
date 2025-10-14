@@ -30,11 +30,21 @@ const RegulationTrainingModule = React.lazy(() => import('../components/training
 const USDOTTrainingCenterModule = React.lazy(() => import('../components/training/USDOTRegistrationTrainingCenter'));
 const AgentPerformanceMonitoringModule = React.lazy(() => import('../components/training/AgentPerformanceMonitoringDashboard'));
 const CriticalPathTestCenterModule = React.lazy(() => import('../components/training/CriticalPathTestCenter'));
+const ContactsModule = React.lazy(() => import('../modules/CRM/pages/Contacts'));
+const DriversModule = React.lazy(() => import('../modules/CRM/pages/Drivers'));
+const VehiclesModule = React.lazy(() => import('../modules/CRM/pages/Vehicles'));
 const TasksModule = React.lazy(() => import('../modules/CRM/pages/Tasks'));
 const ConversationsModule = React.lazy(() => import('../modules/CRM/pages/Conversations'));
 const AnalyticsModule = React.lazy(() => import('../modules/Analytics'));
 const ComplianceModule = React.lazy(() => import('../modules/Compliance'));
 const SystemMonitoringModule = React.lazy(() => import('../modules/SystemMonitoring'));
+const UserManagementModule = React.lazy(() => import('../modules/CRM/pages/UserManagement'));
+const DatabaseManagementModule = React.lazy(() => import('../modules/CRM/pages/DatabaseManagement'));
+const ApiKeysModule = React.lazy(() => import('../modules/CRM/pages/ApiKeys'));
+const SchemaManagementModule = React.lazy(() => import('../pages/SchemaManagement'));
+const ThemeCustomizerModule = React.lazy(() => import('../modules/CRM/pages/ThemeCustomizer'));
+const ClientPortalDesignerModule = React.lazy(() => import('../modules/CRM/pages/ClientPortalDesigner'));
+const AdvancedAIAgentControlPanelModule = React.lazy(() => import('../components/AdvancedAIAgentControlPanel'));
 
 // Training modules - consolidated into RegulationTrainingDashboard
 
@@ -111,60 +121,105 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     trainerOnly: false,
     icon: CurrencyDollarIcon,
     description: 'Configure and manage service packages and pricing',
-    tooltip: 'Services are the compliance packages you offer to clients (USDOT registration, ELD, IFTA, etc.).',
+    tooltip: 'Services are the compliance packages you offer to clients (USDOT registration, MC Number, State registrations, etc.).',
     href: '/services',
     enabled: true,
     order: 4
   },
-
-  // ADVANCED MODULES (Optional, can be toggled)
-  tasks: {
-    id: 'tasks',
-    name: 'Tasks',
-    component: TasksModule,
-    category: 'advanced',
-    required: false,
+  contacts: {
+    id: 'contacts',
+    name: 'Contacts',
+    component: ContactsModule,
+    category: 'core',
+    required: true,
     adminOnly: false,
     trainerOnly: false,
-    icon: ClockIcon,
-    description: 'Task management and workflow tracking',
-    tooltip: 'Task management, workflow tracking, and team collaboration tools.',
-    href: '/tasks',
-    enabled: false,
+    icon: UserCircleIcon,
+    description: 'Manage client contacts and relationships',
+    tooltip: 'Contact management for all people associated with your client companies.',
+    href: '/contacts',
+    enabled: true,
+    order: 5
+  },
+  drivers: {
+    id: 'drivers',
+    name: 'Drivers',
+    component: DriversModule,
+    category: 'core',
+    required: true,
+    adminOnly: false,
+    trainerOnly: false,
+    icon: UserGroupIcon,
+    description: 'Manage fleet drivers and qualifications',
+    tooltip: 'Driver management, qualifications, and compliance tracking.',
+    href: '/drivers',
+    enabled: true,
+    order: 6
+  },
+  vehicles: {
+    id: 'vehicles',
+    name: 'Vehicles',
+    component: VehiclesModule,
+    category: 'core',
+    required: true,
+    adminOnly: false,
+    trainerOnly: false,
+    icon: TruckIcon,
+    description: 'Manage fleet vehicles and maintenance',
+    tooltip: 'Vehicle management, maintenance tracking, and fleet oversight.',
+    href: '/vehicles',
+    enabled: true,
     order: 7
   },
   conversations: {
     id: 'conversations',
     name: 'Conversations',
     component: ConversationsModule,
-    category: 'advanced',
-    required: false,
+    category: 'core',
+    required: true,
     adminOnly: false,
     trainerOnly: false,
     icon: ChatIcon,
-    description: 'AI chat conversations and customer support',
-    tooltip: 'AI chat conversations, customer support tickets, and communication history.',
+    description: 'Client communications and chat history',
+    tooltip: 'All client conversations, chat history, and communication tracking.',
     href: '/conversations',
-    enabled: false,
+    enabled: true,
     order: 8
   },
+
+  // MANAGEMENT MODULES (Managers and Admins only)
   analytics: {
     id: 'analytics',
     name: 'Analytics',
     component: AnalyticsModule,
-    category: 'advanced',
+    category: 'management',
     required: false,
-    adminOnly: false,
+    adminOnly: false,  // Managers can see
     trainerOnly: false,
     icon: ChartBarIcon,
     description: 'Business analytics and performance reports',
     tooltip: 'Comprehensive analytics and reporting for your business performance and client metrics.',
     href: '/analytics',
-    enabled: false,
-    order: 9
+    enabled: true,
+    order: 20
+  },
+  tasks: {
+    id: 'tasks',
+    name: 'Tasks',
+    component: TasksModule,
+    category: 'management',
+    required: false,
+    adminOnly: false,  // Managers can see
+    trainerOnly: false,
+    icon: ClockIcon,
+    description: 'Task management and workflow tracking',
+    tooltip: 'Task management, workflow tracking, and team collaboration tools.',
+    href: '/tasks',
+    enabled: true,
+    order: 22
   },
 
-  // TRAINING MODULES (Specialized training environments)
+  // TRAINING MODULES - Access via AI Control Panel (Not in main sidebar)
   regulationTraining: {
     id: 'regulationTraining',
     name: 'AI Training Environment',
@@ -175,9 +230,9 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     trainerOnly: true,
     icon: AcademicCapIcon,
     description: 'Comprehensive AI agent training for all registration types',
-    tooltip: 'Intelligent training environment that creates scenarios, tests agents, and trains them to 100% accuracy for USDOT, IFTA, State registrations, and renewals.',
+    tooltip: 'Intelligent training environment that creates scenarios, tests agents, and trains them to 100% accuracy for USDOT, State registrations, and renewals.',
     href: '/training',
-    enabled: false,
+    enabled: false,  // Hidden from sidebar - access via AI Control
     order: 10
   },
   usdotTrainingCenter: {
@@ -192,7 +247,7 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     description: 'Specialized USDOT registration training with pixel-perfect government interface emulation',
     tooltip: 'Pixel-perfect emulation of the FMCSA USDOT registration process. Train AI agents on real government forms and scenarios with performance grading.',
     href: '/training/usdot',
-    enabled: false,
+    enabled: false,  // Hidden from sidebar - access via AI Control
     order: 11
   },
 
@@ -200,16 +255,16 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     id: 'agentPerformanceMonitoring',
     name: 'Agent Performance Monitoring',
     component: AgentPerformanceMonitoringModule,
-    category: 'training',
+    category: 'management',  // Changed to management - managers need this
     required: false,
-    adminOnly: true,
-    trainerOnly: true,
+    adminOnly: false,  // Managers can see agent performance
+    trainerOnly: false,
     icon: ChartBarIcon,
-    description: 'Real-time monitoring and analytics of AI agent training performance',
+    description: 'Real-time monitoring and analytics of AI agent performance',
     tooltip: 'Monitor agent performance in real-time, track training progress, identify issues, and manage Golden Master agents.',
     href: '/training/monitoring',
-    enabled: true,  // Available for admins/trainers
-    order: 12
+    enabled: true,
+    order: 21
   },
 
   criticalPathTestCenter: {
@@ -224,12 +279,132 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     description: 'Test AI agents on the most common USDOT application failure points',
     tooltip: 'Focus on critical failure points like business entity mismatches, vehicle/driver ratios, CDL requirements, and insurance gaps.',
     href: '/training/critical-path',
-    enabled: true,  // Available for admins/trainers
+    enabled: false,  // Hidden from sidebar - access via AI Control
     order: 13
   },
 
 
-  // ADMIN MODULES (Admin only, can be toggled)
+  // ADMINISTRATION MODULES (Owner/Admin only)
+  userManagement: {
+    id: 'userManagement',
+    name: 'User Management',
+    component: UserManagementModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: UserGroupIcon,
+    description: 'Manage users, roles, and permissions',
+    tooltip: 'Create and manage user accounts, assign roles, and configure permissions.',
+    href: '/users',
+    enabled: true,
+    order: 30
+  },
+  aiControl: {
+    id: 'aiControl',
+    name: 'AI Control',
+    component: AdvancedAIAgentControlPanelModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: CogIcon,
+    description: 'AI agent management and configuration',
+    tooltip: 'Manage AI agents, configure settings, and access training environments.',
+    href: '/admin/ai-control',
+    enabled: true,
+    order: 31
+  },
+  themeDesigner: {
+    id: 'themeDesigner',
+    name: 'Theme Designer',
+    component: ThemeCustomizerModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: ClipboardCheckIcon,
+    description: 'Customize application theme and branding',
+    tooltip: 'Customize colors, branding, and visual appearance of the application.',
+    href: '/theme',
+    enabled: true,
+    order: 32
+  },
+  portalDesigner: {
+    id: 'portalDesigner',
+    name: 'Portal Designer',
+    component: ClientPortalDesignerModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: UserCircleIcon,
+    description: 'Design and configure client portal',
+    tooltip: 'Customize the client portal interface, features, and experience.',
+    href: '/client-portal',
+    enabled: true,
+    order: 33
+  },
+  databaseManagement: {
+    id: 'databaseManagement',
+    name: 'Database',
+    component: DatabaseManagementModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: CloudIcon,
+    description: 'Database management and maintenance',
+    tooltip: 'Manage database, run backups, and perform maintenance operations.',
+    href: '/database',
+    enabled: true,
+    order: 34
+  },
+  schemaManagement: {
+    id: 'schemaManagement',
+    name: 'Schema',
+    component: SchemaManagementModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: DocumentTextIcon,
+    description: 'Database schema management',
+    tooltip: 'View and manage database schema and structure.',
+    href: '/schema',
+    enabled: true,
+    order: 35
+  },
+  apiKeys: {
+    id: 'apiKeys',
+    name: 'API Keys',
+    component: ApiKeysModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: CheckCircleIcon,
+    description: 'Manage API keys and integrations',
+    tooltip: 'Configure API keys for external services and integrations.',
+    href: '/settings/api-keys',
+    enabled: true,
+    order: 36
+  },
+  systemMonitoring: {
+    id: 'systemMonitoring',
+    name: 'System Monitoring',
+    component: SystemMonitoringModule,
+    category: 'admin',
+    required: false,
+    adminOnly: true,
+    trainerOnly: false,
+    icon: ShieldCheckIcon,
+    description: 'System health monitoring and performance metrics',
+    tooltip: 'Monitor system health, performance metrics, and technical infrastructure.',
+    href: '/monitoring',
+    enabled: true,
+    order: 37
+  },
   compliance: {
     id: 'compliance',
     name: 'Compliance',
@@ -242,23 +417,8 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     description: 'Compliance monitoring and regulatory tracking',
     tooltip: 'Comprehensive compliance monitoring, regulatory tracking, and audit preparation tools.',
     href: '/compliance',
-    enabled: false,
-    order: 14
-  },
-  systemMonitoring: {
-    id: 'systemMonitoring',
-    name: 'System Monitoring',
-    component: SystemMonitoringModule,
-    category: 'admin',
-    required: false,
-    adminOnly: true,
-    trainerOnly: false,
-    icon: CloudIcon,
-    description: 'System health monitoring and performance metrics',
-    tooltip: 'Monitor system health, performance metrics, and technical infrastructure.',
-    href: '/monitoring',
-    enabled: false,
-    order: 15
+    enabled: true,
+    order: 38
   }
 };
 
@@ -266,35 +426,32 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
 export const MODULE_CATEGORIES = {
   core: {
     name: 'Core Business',
-    description: 'Essential business operations',
+    description: 'Daily operations - Everyone',
     alwaysVisible: true,
-    color: 'blue'
+    color: 'blue',
+    roles: ['user', 'manager', 'admin']
   },
-  compliance: {
-    name: 'Compliance',
-    description: 'Regulatory compliance and monitoring',
-    alwaysVisible: false,  // Changed - no longer have ELD/IFTA modules
-    color: 'green'
-  },
-  advanced: {
-    name: 'Advanced Features',
-    description: 'Additional business tools',
+  management: {
+    name: 'Management',
+    description: 'Team oversight - Managers & Admins',
     alwaysVisible: false,
-    color: 'purple'
+    color: 'purple',
+    roles: ['manager', 'admin']
   },
   training: {
     name: 'AI Training',
-    description: 'AI agent training and management',
+    description: 'Agent training - Not shown in sidebar',
     alwaysVisible: false,
     color: 'orange',
-    adminOnly: true
+    roles: ['admin'],
+    hiddenFromSidebar: true  // Access via AI Control panel
   },
   admin: {
     name: 'Administration',
-    description: 'System administration and monitoring',
+    description: 'System configuration - Admins only',
     alwaysVisible: false,
     color: 'gray',
-    adminOnly: true
+    roles: ['admin']
   }
 };
 
@@ -308,24 +465,27 @@ export const getModulesByCategory = (category: string): DashboardModule[] => {
 export const getVisibleModules = (userRole: string, enabledModules: string[] = []): DashboardModule[] => {
   return Object.values(DASHBOARD_MODULES)
     .filter(module => {
-      // Always show required modules
-      if (module.required) return true;
+      // Get the category configuration
+      const category = MODULE_CATEGORIES[module.category];
       
-      // CHECK ROLE PERMISSIONS FIRST (security check)
-      // If module is admin-only and user is not admin, hide it regardless of enabled status
+      // Hide modules from categories that are hidden from sidebar
+      if (category?.hiddenFromSidebar) return false;
+      
+      // Check if user's role is allowed for this category
+      if (category?.roles && !category.roles.includes(userRole)) return false;
+      
+      // CHECK MODULE ROLE PERMISSIONS (security check)
       if (module.adminOnly && userRole !== 'admin') return false;
-      
-      // If module is trainer-only and user is not trainer/admin, hide it
       if (module.trainerOnly && userRole !== 'admin' && userRole !== 'trainer') return false;
       
-      // Now check if module is enabled
+      // Always show required modules (if role permits)
+      if (module.required) return true;
+      
+      // Show enabled modules (if role permits)
+      if (module.enabled) return true;
+      
+      // Show if explicitly in enabled list (if role permits)
       if (enabledModules.includes(module.id)) return true;
-      
-      // Show admin modules for admin users (even if not explicitly enabled)
-      if (module.adminOnly && userRole === 'admin') return true;
-      
-      // Show trainer modules for trainer users (even if not explicitly enabled)
-      if (module.trainerOnly && (userRole === 'admin' || userRole === 'trainer')) return true;
       
       return false;
     })
