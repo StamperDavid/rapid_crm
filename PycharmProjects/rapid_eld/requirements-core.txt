@@ -1,2 +1,0 @@
-# Core dependencies only - for standalone ELD module usage
-requests==2.31.0
