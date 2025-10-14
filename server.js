@@ -21,14 +21,15 @@ const aiPersonaManager = require('./src/services/ai/AIPersonaManager.js');
 // ELD Service Integration - temporarily disabled
 // const { eldComplianceApiRoutes } = require('./src/services/eld/ELDComplianceApiRoutes');
 
-// IFTA Service Integration
-const { createIFTAComplianceApiRoutes } = require('./src/services/ifta/IFTAComplianceApiRoutesCommonJS');
+// REMOVED MODULES - Available in archive/full-feature-set-v1.0 branch
+// IFTA Service Integration - REMOVED
+// const { createIFTAComplianceApiRoutes } = require('./src/services/ifta/IFTAComplianceApiRoutesCommonJS');
 
-// ELD Service Integration
-const { createELDComplianceApiRoutes } = require('./src/services/eld/ELDComplianceApiRoutesCommonJS');
+// ELD Service Integration - REMOVED
+// const { createELDComplianceApiRoutes } = require('./src/services/eld/ELDComplianceApiRoutesCommonJS');
 
-// Video Creation Service
-const VideoCreationService = require('./src/services/video/VideoCreationService.js');
+// Video Creation Service - REMOVED
+// const VideoCreationService = require('./src/services/video/VideoCreationService.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -219,9 +220,9 @@ const rateLimiter = getRateLimiter();
 const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
 const db = new sqlite3.Database(dbPath);
 
-// Initialize Video Creation Service
-const videoCreationService = new VideoCreationService();
-console.log('🎬 Video Creation Service initialized');
+// Initialize Video Creation Service - REMOVED
+// const videoCreationService = new VideoCreationService();
+// console.log('🎬 Video Creation Service initialized');
 
 // Initialize API key service - using direct database access for now
 // const apiKeyService = new ApiKeyService();
@@ -660,69 +661,17 @@ const runExecute = (sql, params = []) => {
 
 // API Routes
 
-// Initialize ELD Compliance Service Integration
-try {
-  // Mount ELD Compliance API routes
-  // app.use('/api/eld', eldComplianceApiRoutes.getRouter());
-  console.log('✅ ELD Compliance API routes mounted at /api/eld');
-} catch (error) {
-  console.warn('⚠️  ELD Compliance Service Integration failed to initialize:', error.message);
-  console.warn('⚠️  ELD endpoints will not be available');
-}
+// REMOVED: ELD and IFTA API route initialization
+// These modules have been removed - see archive/full-feature-set-v1.0 branch
 
-// Initialize ELD Compliance Service Integration
-try {
-  // Mount ELD Compliance API routes
-  const eldApiRoutes = createELDComplianceApiRoutes(db);
-  app.use('/api/eld', eldApiRoutes.getRouter());
-  console.log('✅ ELD Compliance API routes mounted at /api/eld');
-} catch (error) {
-  console.warn('⚠️  ELD Compliance Service Integration failed to initialize:', error.message);
-  console.warn('⚠️  ELD endpoints will not be available');
-}
+// SEO Automation Service Integration - REMOVED
+// const { createSEOAutomationApiRoutes } = require('./src/services/seo/SEOAutomationApiRoutesCommonJS');
+// const { createSEOAutomationAgentApiRoutes } = require('./src/services/ai/SEOAutomationAgentApiRoutesCommonJS');
+// const { createCompetitorResearchApiRoutes } = require('./src/services/seo/CompetitorResearchApiRoutesCommonJS');
+// const { createTrendingContentApiRoutes } = require('./src/services/seo/TrendingContentApiRoutesCommonJS');
 
-// Initialize IFTA Compliance Service Integration
-try {
-  // Mount IFTA Compliance API routes
-  const iftaApiRoutes = createIFTAComplianceApiRoutes(db);
-  app.use('/api/ifta', iftaApiRoutes.getRouter());
-  console.log('✅ IFTA Compliance API routes mounted at /api/ifta');
-} catch (error) {
-  console.warn('⚠️  IFTA Compliance Service Integration failed to initialize:', error.message);
-  console.warn('⚠️  IFTA endpoints will not be available');
-}
-
-// SEO Automation Service Integration
-const { createSEOAutomationApiRoutes } = require('./src/services/seo/SEOAutomationApiRoutesCommonJS');
-const { createSEOAutomationAgentApiRoutes } = require('./src/services/ai/SEOAutomationAgentApiRoutesCommonJS');
-const { createCompetitorResearchApiRoutes } = require('./src/services/seo/CompetitorResearchApiRoutesCommonJS');
-const { createTrendingContentApiRoutes } = require('./src/services/seo/TrendingContentApiRoutesCommonJS');
-
-// Initialize SEO Automation Service Integration
-try {
-  // Mount SEO Automation API routes
-  const seoApiRoutes = createSEOAutomationApiRoutes(db);
-  app.use('/api/seo', seoApiRoutes);
-  console.log('✅ SEO Automation API routes mounted at /api/seo');
-  
-  // Mount SEO Automation Agent API routes
-  const seoAgentApiRoutes = createSEOAutomationAgentApiRoutes(db);
-  app.use('/api/seo-agent', seoAgentApiRoutes);
-  console.log('✅ SEO Automation Agent API routes mounted at /api/seo-agent');
-  
-  // Mount Competitor Research API routes
-  const competitorResearchApiRoutes = createCompetitorResearchApiRoutes(db);
-  app.use('/api/competitors', competitorResearchApiRoutes);
-  console.log('✅ Competitor Research API routes mounted at /api/competitors');
-  
-  // Mount Trending Content API routes
-  const trendingContentApiRoutes = createTrendingContentApiRoutes(db);
-  app.use('/api/trending-content', trendingContentApiRoutes);
-  console.log('✅ Trending Content API routes mounted at /api/trending-content');
-} catch (error) {
-  console.warn('⚠️  SEO Automation Service Integration failed to initialize:', error.message);
-  console.warn('⚠️  SEO endpoints will not be available');
-}
+// REMOVED: SEO API route initialization
+// These modules have been removed - see archive/full-feature-set-v1.0 branch
 
 // Companies
 app.get('/api/companies', async (req, res) => {
@@ -2077,17 +2026,8 @@ const checkAndInitializeDatabase = async () => {
       console.warn('⚠️  Training features may not be available');
     }
     
-    // Run ELD service migration if enabled
-    if (process.env.ELD_AUTOMATION_ENABLED === 'true') {
-      try {
-        const { runEldMigration } = require('./src/database/eldMigration');
-        await runEldMigration(dbPath);
-        console.log('✅ ELD service database migration completed');
-      } catch (eldError) {
-        console.warn('⚠️  ELD service migration failed:', eldError.message);
-        console.warn('⚠️  ELD features may not be available');
-      }
-    }
+    // ELD service migration - REMOVED
+    // Module no longer exists - see archive/full-feature-set-v1.0 branch
   } catch (error) {
     console.error('❌ Failed to initialize database:', error);
     throw error;
