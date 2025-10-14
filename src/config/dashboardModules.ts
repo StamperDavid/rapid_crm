@@ -208,7 +208,7 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     description: 'Real-time monitoring and analytics of AI agent training performance',
     tooltip: 'Monitor agent performance in real-time, track training progress, identify issues, and manage Golden Master agents.',
     href: '/training/monitoring',
-    enabled: true,
+    enabled: true,  // Available for admins/trainers
     order: 12
   },
 
@@ -224,7 +224,7 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     description: 'Test AI agents on the most common USDOT application failure points',
     tooltip: 'Focus on critical failure points like business entity mismatches, vehicle/driver ratios, CDL requirements, and insurance gaps.',
     href: '/training/critical-path',
-    enabled: true,
+    enabled: true,  // Available for admins/trainers
     order: 13
   },
 
@@ -273,7 +273,7 @@ export const MODULE_CATEGORIES = {
   compliance: {
     name: 'Compliance',
     description: 'Regulatory compliance and monitoring',
-    alwaysVisible: true,
+    alwaysVisible: false,  // Changed - no longer have ELD/IFTA modules
     color: 'green'
   },
   advanced: {
@@ -311,13 +311,20 @@ export const getVisibleModules = (userRole: string, enabledModules: string[] = [
       // Always show required modules
       if (module.required) return true;
       
-      // Show enabled modules
+      // CHECK ROLE PERMISSIONS FIRST (security check)
+      // If module is admin-only and user is not admin, hide it regardless of enabled status
+      if (module.adminOnly && userRole !== 'admin') return false;
+      
+      // If module is trainer-only and user is not trainer/admin, hide it
+      if (module.trainerOnly && userRole !== 'admin' && userRole !== 'trainer') return false;
+      
+      // Now check if module is enabled
       if (enabledModules.includes(module.id)) return true;
       
-      // Show admin modules for admin users
+      // Show admin modules for admin users (even if not explicitly enabled)
       if (module.adminOnly && userRole === 'admin') return true;
       
-      // Show trainer modules for trainer users
+      // Show trainer modules for trainer users (even if not explicitly enabled)
       if (module.trainerOnly && (userRole === 'admin' || userRole === 'trainer')) return true;
       
       return false;
