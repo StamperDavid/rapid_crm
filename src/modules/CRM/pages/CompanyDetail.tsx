@@ -196,6 +196,7 @@ const CompanyDetail: React.FC = () => {
                 { id: 'overview', name: 'Overview', icon: '📊' },
                 { id: 'deals', name: 'Deals', icon: '💰' },
                 { id: 'services', name: 'Active Services', icon: '⚙️' },
+                { id: 'compliance', name: 'Compliance', icon: '🛡️' },
                 { id: 'invoices', name: 'Invoices', icon: '📄' }
               ].map((tab) => (
                 <button
@@ -828,6 +829,140 @@ const CompanyDetail: React.FC = () => {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'compliance' && (
+          <div className="space-y-6">
+            {/* Compliance Status Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <ClipboardCheckIcon className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Compliance Status</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Compliant</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <IdentificationIcon className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">USDOT Number</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{company?.usdotNumber || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <TruckIcon className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">MC Number</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{company?.mcNumber || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <DocumentIcon className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Documents</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">5</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Compliance Documents */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Compliance Documents</h3>
+              </div>
+              <div className="px-6 py-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">General Liability Insurance</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Expires: 2024-12-31</p>
+                      </div>
+                    </div>
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-800 bg-green-100 dark:bg-green-900/20 dark:text-green-300">
+                      Valid
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">USDOT Registration</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Expires: 2025-01-20</p>
+                      </div>
+                    </div>
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-800 bg-green-100 dark:bg-green-900/20 dark:text-green-300">
+                      Valid
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Annual Vehicle Inspection</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Expires: 2024-07-15</p>
+                      </div>
+                    </div>
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-800 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-300">
+                      Expiring Soon
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Compliance Alerts */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Compliance Alerts</h3>
+              </div>
+              <div className="px-6 py-6">
+                <div className="space-y-4">
+                  <div className="p-4 border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10 rounded-r-lg">
+                    <div className="flex items-center">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-800 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-300">
+                        Medium Priority
+                      </span>
+                      <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Annual vehicle inspection due in 30 days
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      Due: 2024-07-15
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

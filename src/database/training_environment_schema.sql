@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS training_step_evaluations (
 );
 
 -- Insert default training scenarios for USDOT registration
-INSERT INTO training_scenarios (id, name, description, registration_type, difficulty_level, expected_path, test_data, expected_outcome, created_at, updated_at) VALUES
+INSERT OR IGNORE INTO training_scenarios (id, name, description, registration_type, difficulty_level, expected_path, test_data, expected_outcome, created_at, updated_at) VALUES
 ('usdot_scenario_001', '3rd Party Service Provider - Yes', 'Client is a 3rd party service provider helping others with USDOT registration', 'USDOT', 3, '["3rd_party_yes", "business_type", "service_details"]', '{"isThirdParty": true, "businessType": "service_provider", "services": ["registration_assistance", "compliance_consulting"]}', 'Direct to business type selection and service provider registration path', datetime('now'), datetime('now')),
 
 ('usdot_scenario_002', '3rd Party Service Provider - No', 'Client is NOT a 3rd party service provider, registering for their own business', 'USDOT', 2, '["3rd_party_no", "business_entity", "operation_type"]', '{"isThirdParty": false, "businessEntity": "corporation", "operationType": "interstate_commerce"}', 'Proceed to business entity type and operation details', datetime('now'), datetime('now')),
@@ -160,7 +160,7 @@ INSERT INTO training_scenarios (id, name, description, registration_type, diffic
 ('critical_006', 'Inadequate Insurance Coverage', 'Company has insufficient insurance for operation type', 'USDOT', 8, '["operation_type", "insurance_analysis", "coverage_gap", "recommendation"]', '{"operationType": "hazardous_materials", "requiredInsurance": "Hazmat liability insurance required", "currentInsurance": "Insufficient - need hazmat coverage"}', 'Identify insurance gaps and recommend appropriate coverage', datetime('now'), datetime('now'));
 
 -- Insert default training environment settings
-INSERT INTO training_environment_settings (id, registration_type, auto_generate_scenarios, scenario_difficulty_range, performance_threshold, max_training_attempts, golden_master_threshold, auto_replace_failing_agents, created_at, updated_at) VALUES
+INSERT OR IGNORE INTO training_environment_settings (id, registration_type, auto_generate_scenarios, scenario_difficulty_range, performance_threshold, max_training_attempts, golden_master_threshold, auto_replace_failing_agents, created_at, updated_at) VALUES
 ('usdot_settings', 'USDOT', 1, '[1, 10]', 95.0, 10, 100.0, 1, datetime('now'), datetime('now')),
 ('ucr_settings', 'UCR', 1, '[1, 8]', 95.0, 10, 100.0, 1, datetime('now'), datetime('now')),
 ('ifta_settings', 'IFTA', 1, '[1, 7]', 95.0, 10, 100.0, 1, datetime('now'), datetime('now')),

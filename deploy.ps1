@@ -1,34 +1,34 @@
 # Rapid CRM ELD Service - Production Deployment Script (PowerShell)
 # This script sets up the complete ELD compliance service platform
 
-Write-Host "🚀 Rapid CRM ELD Service - Production Deployment" -ForegroundColor Green
+Write-Host "Rapid CRM ELD Service - Production Deployment" -ForegroundColor Green
 Write-Host "=================================================" -ForegroundColor Green
 
 # Check if Docker is installed
 try {
     $dockerVersion = docker --version
-    Write-Host "✅ Docker is installed: $dockerVersion" -ForegroundColor Green
+    Write-Host "Docker is installed: $dockerVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Docker is not installed. Please install Docker Desktop first." -ForegroundColor Red
+    Write-Host "Docker is not installed. Please install Docker Desktop first." -ForegroundColor Red
     exit 1
 }
 
 try {
     $composeVersion = docker-compose --version
-    Write-Host "✅ Docker Compose is installed: $composeVersion" -ForegroundColor Green
+    Write-Host "Docker Compose is installed: $composeVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Docker Compose is not installed. Please install Docker Compose first." -ForegroundColor Red
+    Write-Host "Docker Compose is not installed. Please install Docker Compose first." -ForegroundColor Red
     exit 1
 }
 
 # Create necessary directories
-Write-Host "📁 Creating directories..." -ForegroundColor Yellow
+Write-Host "Creating directories..." -ForegroundColor Yellow
 if (!(Test-Path "instance")) { New-Item -ItemType Directory -Path "instance" }
 if (!(Test-Path "public\uploads")) { New-Item -ItemType Directory -Path "public\uploads" }
 if (!(Test-Path "logs")) { New-Item -ItemType Directory -Path "logs" }
 
 # Set up environment variables
-Write-Host "⚙️ Setting up environment variables..." -ForegroundColor Yellow
+Write-Host "Setting up environment variables..." -ForegroundColor Yellow
 if (!(Test-Path ".env.production")) {
     $envContent = @"
 # Production Environment Variables
@@ -55,14 +55,14 @@ OMNITRACS_API_KEY=demo_omnitracs_key_replace_with_real
 "@
     
     Set-Content -Path ".env.production" -Value $envContent
-    Write-Host "✅ Created .env.production file with demo keys" -ForegroundColor Green
-    Write-Host "⚠️  IMPORTANT: Replace demo API keys with real keys before going live!" -ForegroundColor Yellow
+    Write-Host "Created .env.production file with demo keys" -ForegroundColor Green
+    Write-Host "IMPORTANT: Replace demo API keys with real keys before going live!" -ForegroundColor Yellow
 } else {
-    Write-Host "✅ .env.production already exists" -ForegroundColor Green
+    Write-Host ".env.production already exists" -ForegroundColor Green
 }
 
 # Initialize database if it doesn't exist
-Write-Host "🗄️ Initializing database..." -ForegroundColor Yellow
+Write-Host "Initializing database..." -ForegroundColor Yellow
 if (!(Test-Path "instance\rapid_crm.db")) {
     Write-Host "Creating new database..." -ForegroundColor Yellow
     # Copy the schema and initialize
@@ -70,36 +70,36 @@ if (!(Test-Path "instance\rapid_crm.db")) {
     Copy-Item "src\database\seedData_empty.sql" "instance\"
     
     # Initialize with demo data
-    Write-Host "📊 Adding demo data..." -ForegroundColor Yellow
+    Write-Host "Adding demo data..." -ForegroundColor Yellow
     node add_api_keys.js
-    Write-Host "✅ Database initialized with demo data" -ForegroundColor Green
+    Write-Host "Database initialized with demo data" -ForegroundColor Green
 } else {
-    Write-Host "✅ Database already exists" -ForegroundColor Green
+    Write-Host "Database already exists" -ForegroundColor Green
 }
 
 # Build and start services
-Write-Host "🏗️ Building Docker images..." -ForegroundColor Yellow
+Write-Host "Building Docker images..." -ForegroundColor Yellow
 docker-compose build
 
-Write-Host "🚀 Starting services..." -ForegroundColor Yellow
+Write-Host "Starting services..." -ForegroundColor Yellow
 docker-compose up -d
 
 # Wait for services to be ready
-Write-Host "⏳ Waiting for services to start..." -ForegroundColor Yellow
+Write-Host "Waiting for services to start..." -ForegroundColor Yellow
 Start-Sleep -Seconds 15
 
 # Check if services are running
-Write-Host "🔍 Checking service health..." -ForegroundColor Yellow
+Write-Host "Checking service health..." -ForegroundColor Yellow
 try {
     $response = Invoke-WebRequest -Uri "http://localhost:3001/api/health" -UseBasicParsing
     if ($response.StatusCode -eq 200) {
-        Write-Host "✅ Backend service is healthy" -ForegroundColor Green
+        Write-Host "Backend service is healthy" -ForegroundColor Green
     } else {
         throw "Backend service returned status code: $($response.StatusCode)"
     }
 } catch {
-    Write-Host "❌ Backend service is not responding" -ForegroundColor Red
-    Write-Host "📋 Checking logs..." -ForegroundColor Yellow
+    Write-Host "Backend service is not responding" -ForegroundColor Red
+    Write-Host "Checking logs..." -ForegroundColor Yellow
     docker-compose logs backend
     exit 1
 }
@@ -107,13 +107,13 @@ try {
 try {
     $response = Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing
     if ($response.StatusCode -eq 200) {
-        Write-Host "✅ Frontend service is healthy" -ForegroundColor Green
+        Write-Host "Frontend service is healthy" -ForegroundColor Green
     } else {
         throw "Frontend service returned status code: $($response.StatusCode)"
     }
 } catch {
-    Write-Host "❌ Frontend service is not responding" -ForegroundColor Red
-    Write-Host "📋 Checking logs..." -ForegroundColor Yellow
+    Write-Host "Frontend service is not responding" -ForegroundColor Red
+    Write-Host "Checking logs..." -ForegroundColor Yellow
     docker-compose logs frontend
     exit 1
 }

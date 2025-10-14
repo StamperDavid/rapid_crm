@@ -35,8 +35,8 @@ const CriticalPathTestCenterModule = React.lazy(() => import('../components/trai
 const TasksModule = React.lazy(() => import('../modules/CRM/pages/Tasks'));
 const ConversationsModule = React.lazy(() => import('../modules/CRM/pages/Conversations'));
 const AnalyticsModule = React.lazy(() => import('../modules/Analytics'));
-const ComplianceModule = React.lazy(() => import('../modules/Compliance'));
 const SystemMonitoringModule = React.lazy(() => import('../modules/SystemMonitoring'));
+const AdvancedAIAgentControlPanelModule = React.lazy(() => import('../components/AdvancedAIAgentControlPanel'));
 
 // Training modules - consolidated into RegulationTrainingDashboard
 
@@ -198,101 +198,41 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     order: 9
   },
 
-  // TRAINING MODULES (Specialized training environments)
-  regulationTraining: {
-    id: 'regulationTraining',
-    name: 'AI Training Environment',
-    component: RegulationTrainingModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: AcademicCapIcon,
-    description: 'Comprehensive AI agent training for all registration types',
-    tooltip: 'Intelligent training environment that creates scenarios, tests agents, and trains them to 100% accuracy for USDOT, IFTA, State registrations, and renewals.',
-    href: '/training',
-    enabled: false,
-    order: 10
-  },
-  usdotTrainingCenter: {
-    id: 'usdotTrainingCenter',
-    name: 'USDOT Training Center',
-    component: USDOTTrainingCenterModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: DocumentTextIcon,
-    description: 'Specialized USDOT registration training with pixel-perfect government interface emulation',
-    tooltip: 'Pixel-perfect emulation of the FMCSA USDOT registration process. Train AI agents on real government forms and scenarios with performance grading.',
-    href: '/training/usdot',
-    enabled: false,
-    order: 11
-  },
 
-  agentPerformanceMonitoring: {
-    id: 'agentPerformanceMonitoring',
-    name: 'Agent Performance Monitoring',
-    component: AgentPerformanceMonitoringModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: ChartBarIcon,
-    description: 'Real-time monitoring and analytics of AI agent training performance',
-    tooltip: 'Monitor agent performance in real-time, track training progress, identify issues, and manage Golden Master agents.',
-    href: '/training/monitoring',
-    enabled: true,
-    order: 12
-  },
 
-  criticalPathTestCenter: {
-    id: 'criticalPathTestCenter',
-    name: 'Critical Path Test Center',
-    component: CriticalPathTestCenterModule,
-    category: 'training',
-    required: false,
-    adminOnly: true,
-    trainerOnly: true,
-    icon: ExclamationIcon,
-    description: 'Test AI agents on the most common USDOT application failure points',
-    tooltip: 'Focus on critical failure points like business entity mismatches, vehicle/driver ratios, CDL requirements, and insurance gaps.',
-    href: '/training/critical-path',
-    enabled: true,
-    order: 13
-  },
+
 
 
   // ADMIN MODULES (Admin only, can be toggled)
-  compliance: {
-    id: 'compliance',
-    name: 'Compliance',
-    component: ComplianceModule,
+  ai_control: {
+    id: 'ai_control',
+    name: 'AI Control',
+    component: AdvancedAIAgentControlPanelModule,
     category: 'admin',
     required: false,
     adminOnly: true,
     trainerOnly: false,
-    icon: ClipboardCheckIcon,
-    description: 'Compliance monitoring and regulatory tracking',
-    tooltip: 'Comprehensive compliance monitoring, regulatory tracking, and audit preparation tools.',
-    href: '/compliance',
+    icon: CogIcon,
+    description: 'AI agent management, training, and system administration',
+    tooltip: 'Complete AI agent management including training, monitoring, and system administration.',
+    href: '/ai-control',
     enabled: false,
-    order: 14
+    order: 10
   },
-  systemMonitoring: {
-    id: 'systemMonitoring',
+  system_monitoring: {
+    id: 'system_monitoring',
     name: 'System Monitoring',
     component: SystemMonitoringModule,
     category: 'admin',
     required: false,
     adminOnly: true,
     trainerOnly: false,
-    icon: CloudIcon,
-    description: 'System health monitoring and performance metrics',
-    tooltip: 'Monitor system health, performance metrics, and technical infrastructure.',
+    icon: ShieldCheckIcon,
+    description: 'System health and performance monitoring',
+    tooltip: 'Monitor system health, performance metrics, and troubleshoot issues.',
     href: '/monitoring',
     enabled: false,
-    order: 15
+    order: 11
   }
 };
 
@@ -303,12 +243,6 @@ export const MODULE_CATEGORIES = {
     description: 'Essential business operations',
     alwaysVisible: true,
     color: 'blue'
-  },
-  compliance: {
-    name: 'Compliance',
-    description: 'Regulatory compliance and monitoring',
-    alwaysVisible: true,
-    color: 'green'
   },
   advanced: {
     name: 'Advanced Features',

@@ -42,6 +42,40 @@ import {
   ComputerDesktopIcon,
 } from '@heroicons/react/outline';
 
+interface ComplianceRecord {
+  id: string;
+  companyId: string;
+  companyName: string;
+  usdotNumber: string;
+  mcNumber: string;
+  status: 'compliant' | 'warning' | 'violation' | 'expired';
+  safetyRating: string;
+  insuranceStatus: 'active' | 'expired' | 'insufficient';
+  lastInspection: string;
+  nextInspection: string;
+  violations: number;
+  documents: ComplianceDocument[];
+}
+
+interface ComplianceDocument {
+  id: string;
+  name: string;
+  type: 'insurance' | 'inspection' | 'permit' | 'license' | 'certification';
+  status: 'valid' | 'expiring' | 'expired';
+  expirationDate: string;
+  fileUrl?: string;
+}
+
+interface ComplianceAlert {
+  id: string;
+  type: 'expiration' | 'violation' | 'inspection_due' | 'insurance_lapse';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  companyName: string;
+  dueDate: string;
+  isRead: boolean;
+}
+
 interface Report {
   id: string;
   name: string;
@@ -131,10 +165,80 @@ interface SalesTechnique {
 }
 
 const AnalyticsModule: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'dashboards' | 'competitive' | 'agents' | 'marketing' | 'custom'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'dashboards' | 'competitive' | 'agents' | 'marketing' | 'custom' | 'compliance'>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<'1h' | '24h' | '7d' | '30d' | '90d' | '1y'>('30d');
   const [realTimeMode, setRealTimeMode] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useState<string>('executive');
+
+  // Mock compliance data
+  const mockComplianceRecords: ComplianceRecord[] = [
+    {
+      id: '1',
+      companyId: '1',
+      companyName: 'Acme Transportation LLC',
+      usdotNumber: '123456',
+      mcNumber: 'MC-789012',
+      status: 'compliant',
+      safetyRating: 'Satisfactory',
+      insuranceStatus: 'active',
+      lastInspection: '2024-01-15',
+      nextInspection: '2024-07-15',
+      violations: 0,
+      documents: [
+        { id: '1', name: 'General Liability Insurance', type: 'insurance', status: 'valid', expirationDate: '2024-12-31' },
+        { id: '2', name: 'Annual Vehicle Inspection', type: 'inspection', status: 'valid', expirationDate: '2024-07-15' },
+        { id: '3', name: 'USDOT Registration', type: 'permit', status: 'valid', expirationDate: '2025-01-20' }
+      ]
+    },
+    {
+      id: '2',
+      companyId: '2',
+      companyName: 'Global Shipping Co',
+      usdotNumber: '789012',
+      mcNumber: 'MC-345678',
+      status: 'warning',
+      safetyRating: 'Conditional',
+      insuranceStatus: 'active',
+      lastInspection: '2024-01-10',
+      nextInspection: '2024-04-10',
+      violations: 2,
+      documents: [
+        { id: '4', name: 'Cargo Insurance', type: 'insurance', status: 'expiring', expirationDate: '2024-02-15' },
+        { id: '5', name: 'Hazmat Endorsement', type: 'certification', status: 'valid', expirationDate: '2024-08-20' },
+        { id: '6', name: 'Vehicle Inspection', type: 'inspection', status: 'expiring', expirationDate: '2024-04-10' }
+      ]
+    }
+  ];
+
+  const mockComplianceAlerts: ComplianceAlert[] = [
+    {
+      id: '1',
+      type: 'expiration',
+      severity: 'high',
+      message: 'Cargo Insurance expires in 15 days',
+      companyName: 'Global Shipping Co',
+      dueDate: '2024-02-15',
+      isRead: false
+    },
+    {
+      id: '2',
+      type: 'inspection_due',
+      severity: 'medium',
+      message: 'Annual vehicle inspection due in 30 days',
+      companyName: 'Global Shipping Co',
+      dueDate: '2024-04-10',
+      isRead: false
+    },
+    {
+      id: '3',
+      type: 'violation',
+      severity: 'critical',
+      message: '2 safety violations reported - immediate action required',
+      companyName: 'Global Shipping Co',
+      dueDate: '2024-01-25',
+      isRead: true
+    }
+  ];
 
   // Real-time data simulation
   useEffect(() => {
@@ -555,10 +659,14 @@ const AnalyticsModule: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
+      case 'compliant':
         return 'text-green-600 bg-green-100 dark:bg-green-900/20 dark:text-green-300';
       case 'idle':
+      case 'warning':
         return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-300';
       case 'error':
+      case 'violation':
+      case 'expired':
         return 'text-red-600 bg-red-100 dark:bg-red-900/20 dark:text-red-300';
       case 'maintenance':
         return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300';
@@ -676,6 +784,207 @@ const AnalyticsModule: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'low':
+        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-300';
+      case 'high':
+        return 'text-orange-600 bg-orange-100 dark:bg-orange-900/20 dark:text-orange-300';
+      case 'critical':
+        return 'text-red-600 bg-red-100 dark:bg-red-900/20 dark:text-red-300';
+      default:
+        return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-300';
+    }
+  };
+
+  const renderComplianceMonitoring = () => (
+    <div className="space-y-6">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
+                    Compliant Companies
+                  </dt>
+                  <dd className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                    {mockComplianceRecords.filter(r => r.status === 'compliant').length}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <ExclamationIcon className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
+                    Companies with Warnings
+                  </dt>
+                  <dd className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                    {mockComplianceRecords.filter(r => r.status === 'warning').length}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
+                    Total Documents
+                  </dt>
+                  <dd className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                    {mockComplianceRecords.reduce((sum, r) => sum + r.documents.length, 0)}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <BellIcon className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
+                    Active Alerts
+                  </dt>
+                  <dd className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                    {mockComplianceAlerts.filter(a => !a.isRead).length}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Company Compliance Status */}
+      <div className="bg-white dark:bg-slate-800 shadow rounded-lg">
+        <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+          <h3 className="text-lg font-medium leading-6 text-slate-900 dark:text-slate-100">
+            Company Compliance Status
+          </h3>
+        </div>
+        <div className="px-6 py-6">
+          <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+            <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-600">
+              <thead className="bg-slate-50 dark:bg-slate-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Company
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    USDOT/MC
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Safety Rating
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Violations
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Next Inspection
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-600">
+                {mockComplianceRecords.map((record) => (
+                  <tr key={record.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {record.companyName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {record.usdotNumber} / {record.mcNumber}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(record.status)}`}>
+                        {record.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {record.safetyRating}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {record.violations}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {record.nextInspection}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Alerts */}
+      <div className="bg-white dark:bg-slate-800 shadow rounded-lg">
+        <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+          <h3 className="text-lg font-medium leading-6 text-slate-900 dark:text-slate-100">
+            Recent Compliance Alerts
+          </h3>
+        </div>
+        <div className="px-6 py-6">
+          <div className="space-y-4">
+            {mockComplianceAlerts.map((alert) => (
+              <div key={alert.id} className={`p-4 border-l-4 rounded-r-lg ${
+                alert.severity === 'critical' ? 'border-red-500 bg-red-50 dark:bg-red-900/10' :
+                alert.severity === 'high' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/10' :
+                alert.severity === 'medium' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10' :
+                'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeverityColor(alert.severity)}`}>
+                      {alert.severity}
+                    </span>
+                    <span className="ml-3 text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {alert.message}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    {alert.companyName} • Due: {alert.dueDate}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

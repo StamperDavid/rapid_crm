@@ -4604,6 +4604,167 @@ app.delete('/api/ai/agents/:id', async (req, res) => {
   }
 });
 
+// Training system API endpoints
+
+// Update qualified states database from CSV
+app.post('/api/training/update-qualified-states', async (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const csv = require('csv-parser');
+    
+    // Read the CSV file
+    const csvPath = path.join(__dirname, 'qualified_states.csv');
+    const results = [];
+    
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(csvPath)
+        .pipe(csv())
+        .on('data', (data) => results.push(data))
+        .on('end', resolve)
+        .on('error', reject);
+    });
+    
+    // Clear existing data
+    await new Promise((resolve, reject) => {
+      db.run('DELETE FROM qualified_states', (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    
+    // Insert new data
+    for (const row of results) {
+      const stateCode = row.State === 'District of Columbia' ? 'DC' : 
+                       row.State.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
+      
+      await new Promise((resolve, reject) => {
+        db.run(`
+          INSERT INTO qualified_states (
+            state_name, state_code,
+            dot_weight_for_hire, dot_weight_private_property, dot_weight_notes,
+            dot_passengers_for_hire, dot_passengers_private_property, dot_passengers_notes,
+            dot_cargo_requirements,
+            dq_weight_for_hire, dq_weight_private_property, dq_weight_notes,
+            dq_passengers_for_hire, dq_passengers_private_property, dq_passengers_notes,
+            dq_cargo_requirements,
+            special_notes
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          row.State,
+          stateCode,
+          parseWeight(row['DOT - Weight'], 'for_hire'),
+          parseWeight(row['DOT - Weight'], 'private_property'),
+          row['DOT - Weight'],
+          parsePassengers(row['DOT - Passengers'], 'for_hire'),
+          parsePassengers(row['DOT - Passengers'], 'private_property'),
+          row['DOT - Passengers'],
+          row['DOT - Cargo'],
+          parseWeight(row['DQ - Weight'], 'for_hire'),
+          parseWeight(row['DQ - Weight'], 'private_property'),
+          row['DQ - Weight'],
+          parsePassengers(row['DQ - Passengers'], 'for_hire'),
+          parsePassengers(row['DQ - Passengers'], 'private_property'),
+          row['DQ - Passengers'],
+          row['DQ - Cargo'],
+          row.Notes
+        ], (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Qualified states database updated successfully',
+      recordsUpdated: results.length
+    });
+    
+  } catch (error) {
+    console.error('Error updating qualified states:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update qualified states database'
+    });
+  }
+});
+
+// Helper functions to parse weight and passenger data
+function parseWeight(value, type) {
+  if (!value || value === 'N/A') return null;
+  
+  if (value.includes('FH:') && value.includes('PP:')) {
+    const match = value.match(/FH:\s*([^-]+)\s*-\s*PP:\s*(.+)/);
+    if (match) {
+      const fhValue = match[1].trim();
+      const ppValue = match[2].trim();
+      
+      if (type === 'for_hire') {
+        return fhValue === 'Any' ? null : parseInt(fhValue);
+      } else {
+        return parseInt(ppValue);
+      }
+    }
+  }
+  
+  return parseInt(value);
+}
+
+function parsePassengers(value, type) {
+  if (!value || value === 'N/A') return null;
+  
+  if (value.includes('FH:') && value.includes('PP:')) {
+    const match = value.match(/FH:\s*([^-]+)\s*-\s*PP:\s*(.+)/);
+    if (match) {
+      const fhValue = match[1].trim();
+      const ppValue = match[2].trim();
+      
+      if (type === 'for_hire') {
+        return parseInt(fhValue);
+      } else {
+        return parseInt(ppValue);
+      }
+    }
+  }
+  
+  return parseInt(value);
+}
+
+// Get qualified states data
+app.get('/api/training/qualified-states', async (req, res) => {
+  try {
+    const { state } = req.query;
+    
+    let query = 'SELECT * FROM qualified_states';
+    let params = [];
+    
+    if (state) {
+      query += ' WHERE state_name = ? OR state_code = ?';
+      params = [state, state];
+    }
+    
+    const results = await new Promise((resolve, reject) => {
+      db.all(query, params, (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+    
+    res.json({
+      success: true,
+      data: results
+    });
+    
+  } catch (error) {
+    console.error('Error fetching qualified states:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch qualified states data'
+    });
+  }
+});
+
 // Truly Intelligent Agent endpoints
 app.post('/api/ai/agents/ask', async (req, res) => {
   try {
@@ -5735,8 +5896,10 @@ app.get('/api/services', (req, res) => {
 });
 
 // Training System API Endpoints
-const AgentPerformanceGradingService = require('./src/services/training/AgentPerformanceGradingService.js');
-const GoldenMasterAgentService = require('./src/services/training/GoldenMasterAgentService.js');
+// Note: These services are TypeScript files and would need to be compiled or imported differently
+// For now, we'll comment them out to prevent server startup errors
+// const AgentPerformanceGradingService = require('./src/services/training/AgentPerformanceGradingService.js');
+// const GoldenMasterAgentService = require('./src/services/training/GoldenMasterAgentService.js');
 
 // Initialize training services
 let trainingService = null;
@@ -5863,9 +6026,9 @@ app.post('/api/training/sessions/:sessionId/evaluate-step', async (req, res) => 
     const { sessionId } = req.params;
     const { step_id, expected_action, actual_action, time_spent, confidence } = req.body;
     
-    if (!trainingService) {
-      trainingService = new AgentPerformanceGradingService(db);
-    }
+    // if (!trainingService) {
+    //   trainingService = new AgentPerformanceGradingService(db);
+    // }
     
     const evaluation = await trainingService.evaluateStep(
       sessionId,
@@ -5888,9 +6051,9 @@ app.get('/api/training/sessions/:sessionId/performance', async (req, res) => {
   try {
     const { sessionId } = req.params;
     
-    if (!trainingService) {
-      trainingService = new AgentPerformanceGradingService(db);
-    }
+    // if (!trainingService) {
+    //   trainingService = new AgentPerformanceGradingService(db);
+    // }
     
     const performance = await trainingService.calculateSessionPerformance(sessionId);
     res.json(performance);
@@ -5905,9 +6068,9 @@ app.post('/api/training/sessions/:sessionId/complete', async (req, res) => {
   try {
     const { sessionId } = req.params;
     
-    if (!trainingService) {
-      trainingService = new AgentPerformanceGradingService(db);
-    }
+    // if (!trainingService) {
+    //   trainingService = new AgentPerformanceGradingService(db);
+    // }
     
     const evaluation = await trainingService.evaluateScenario(sessionId);
     
@@ -5946,9 +6109,9 @@ app.get('/api/training/agents/:agentId/performance', async (req, res) => {
     const { agentId } = req.params;
     const { registration_type } = req.query;
     
-    if (!trainingService) {
-      trainingService = new AgentPerformanceGradingService(db);
-    }
+    // if (!trainingService) {
+    //   trainingService = new AgentPerformanceGradingService(db);
+    // }
     
     const query = `
       SELECT 
@@ -5989,9 +6152,9 @@ app.get('/api/training/agents/:agentId/should-replace', async (req, res) => {
       return res.status(400).json({ error: 'registration_type is required' });
     }
     
-    if (!trainingService) {
-      trainingService = new AgentPerformanceGradingService(db);
-    }
+    // if (!trainingService) {
+    //   trainingService = new AgentPerformanceGradingService(db);
+    // }
     
     const replacementCheck = await trainingService.shouldReplaceAgent(agentId, registration_type);
     res.json(replacementCheck);
@@ -6010,9 +6173,9 @@ app.post('/api/training/golden-masters', async (req, res) => {
       return res.status(400).json({ error: 'sessionId, agentId, and registrationType are required' });
     }
     
-    if (!goldenMasterService) {
-      goldenMasterService = new GoldenMasterAgentService(db);
-    }
+    // if (!goldenMasterService) {
+    //   goldenMasterService = new GoldenMasterAgentService(db);
+    // }
     
     const goldenMaster = await goldenMasterService.createGoldenMaster(sessionId, agentId, registrationType);
     
@@ -6032,9 +6195,9 @@ app.get('/api/training/golden-masters/best/:registrationType', async (req, res) 
   try {
     const { registrationType } = req.params;
     
-    if (!goldenMasterService) {
-      goldenMasterService = new GoldenMasterAgentService(db);
-    }
+    // if (!goldenMasterService) {
+    //   goldenMasterService = new GoldenMasterAgentService(db);
+    // }
     
     const bestGoldenMaster = await goldenMasterService.getBestGoldenMaster(registrationType);
     res.json(bestGoldenMaster);
@@ -6054,9 +6217,9 @@ app.get('/api/training/agents/:agentId/analyze-replacement', async (req, res) =>
       return res.status(400).json({ error: 'registration_type is required' });
     }
     
-    if (!goldenMasterService) {
-      goldenMasterService = new GoldenMasterAgentService(db);
-    }
+    // if (!goldenMasterService) {
+    //   goldenMasterService = new GoldenMasterAgentService(db);
+    // }
     
     const replacementPlan = await goldenMasterService.analyzeAgentForReplacement(agentId, registration_type);
     res.json(replacementPlan);
@@ -6076,9 +6239,9 @@ app.post('/api/training/agents/:agentId/replace', async (req, res) => {
       return res.status(400).json({ error: 'replacementPlan is required' });
     }
     
-    if (!goldenMasterService) {
-      goldenMasterService = new GoldenMasterAgentService(db);
-    }
+    // if (!goldenMasterService) {
+    //   goldenMasterService = new GoldenMasterAgentService(db);
+    // }
     
     const success = await goldenMasterService.executeAgentReplacement(replacementPlan, strategy);
     
@@ -6098,9 +6261,9 @@ app.delete('/api/training/golden-masters/:goldenMasterId', async (req, res) => {
   try {
     const { goldenMasterId } = req.params;
     
-    if (!goldenMasterService) {
-      goldenMasterService = new GoldenMasterAgentService(db);
-    }
+    // if (!goldenMasterService) {
+    //   goldenMasterService = new GoldenMasterAgentService(db);
+    // }
     
     const success = await goldenMasterService.deactivateGoldenMaster(goldenMasterId);
     
@@ -6120,9 +6283,9 @@ app.get('/api/training/golden-masters/stats', async (req, res) => {
   try {
     const { registration_type } = req.query;
     
-    if (!goldenMasterService) {
-      goldenMasterService = new GoldenMasterAgentService(db);
-    }
+    // if (!goldenMasterService) {
+    //   goldenMasterService = new GoldenMasterAgentService(db);
+    // }
     
     const stats = await goldenMasterService.getGoldenMasterStats(registration_type);
     res.json(stats);

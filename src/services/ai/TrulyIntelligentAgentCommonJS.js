@@ -318,18 +318,21 @@ class TrulyIntelligentAgent {
   /**
    * Main question processing method with persistent memory
    */
-  async askQuestion(question, context = {}) {
-    console.log(`🧠 Processing question: "${question}" with memory context`);
+  async askQuestion(question, context = {}, retryCount = 0) {
+    const maxRetries = 2;
     
-    // Video creation is now handled by intent analysis below
-    
-    // Check cache first for performance (DISABLED FOR DEBUGGING)
-    const cacheKey = `${this.userId}_${question.toLowerCase().trim()}`;
-    const cachedResponse = this.responseCache.get(cacheKey);
-    if (false && cachedResponse && (Date.now() - cachedResponse.timestamp) < this.cacheTimeout) {
-      console.log(`⚡ Cache hit for question: "${question}"`);
-      return cachedResponse.response;
-    }
+    try {
+      console.log(`🧠 Processing question: "${question}" with memory context (attempt ${retryCount + 1})`);
+      
+      // Video creation is now handled by intent analysis below
+      
+      // Check cache first for performance (DISABLED FOR DEBUGGING)
+      const cacheKey = `${this.userId}_${question.toLowerCase().trim()}`;
+      const cachedResponse = this.responseCache.get(cacheKey);
+      if (false && cachedResponse && (Date.now() - cachedResponse.timestamp) < this.cacheTimeout) {
+        console.log(`⚡ Cache hit for question: "${question}"`);
+        return cachedResponse.response;
+      }
     
     // Get conversation history and context (optimized for performance)
     const conversationHistory = this.memoryService.getConversationHistory(
@@ -383,83 +386,29 @@ class TrulyIntelligentAgent {
       confidence = 0.9;
       intelligenceLevel = 'expert';
     } else {
-      // Route to appropriate handler based on intent
-      if (intent.type === 'hours_of_service') {
-        answer = this.generateHOSAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'eld') {
-        answer = this.generateELDAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'maintenance') {
-        answer = this.generateMaintenanceAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'hazmat') {
-        answer = this.generateHazmatAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'current_capabilities') {
-        answer = this.generateCurrentCapabilitiesAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'voice_capabilities') {
-        answer = this.generateVoiceCapabilitiesAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'general_knowledge') {
-        answer = this.generateGeneralKnowledgeAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'video_info') {
-        answer = this.generateVideoInfoAnswer(question, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'business_model') {
-        answer = this.generateBusinessModelAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'agent_orchestration') {
-        answer = this.generateAgentOrchestrationAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'video_creation') {
-        // Handle video creation request
-        console.log('🎬 Processing video creation request via intent handler');
-        
-        const videoRequest = {
-          name: `Video ${Date.now()}`,
-          description: question,
-          prompt: question,
-          style: 'realistic',
-          duration: 30,
-          resolution: '1080p',
-          aspectRatio: '16:9',
-          fps: 30,
-          quality: 'standard',
-          userId: this.userId
-        };
-        
-        const videoResult = await this.createVideo(videoRequest);
-        
-        if (videoResult.success) {
-          answer = `I've started creating your video! 🎬\n\n**Video Details:**\n- Name: ${videoResult.project.name}\n- ID: ${videoResult.project.id}\n- Status: ${videoResult.project.status}\n- Progress: ${videoResult.project.progress}%\n\nYour video is being generated and will be available in your video library once complete. You can check the progress in the video production dashboard.`;
-          confidence = 0.95;
-          intelligenceLevel = 'expert';
-        } else {
-          answer = `I encountered an issue while creating your video: ${videoResult.error}. Let me try a different approach or you can check the video production dashboard for more options.`;
-          confidence = 0.3;
-          intelligenceLevel = 'basic';
-        }
-      } else if (intent.type === 'system_capabilities') {
-        answer = this.generateSystemCapabilitiesAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else {
+      // ALWAYS use the intelligent AI service - NO scripted fallbacks
+      console.log('🤖 Using intelligent AI service for all questions');
+      try {
         answer = await this.generateGeneralAnswer(question, intent, enhancedContext);
         confidence = this.calculateConfidence(answer, intent, enhancedContext);
         intelligenceLevel = this.assessIntelligenceLevel(answer, enhancedContext);
+      } catch (error) {
+        console.error('❌ CRITICAL: AI Service failed, reporting error instead of scripted fallback:', error);
+        answer = `❌ **AI SERVICE FAILURE**\n\n` +
+                 `I encountered a critical error while processing your question and cannot provide a response.\n\n` +
+                 `**Error Details:**\n` +
+                 `• Error: ${error.message}\n` +
+                 `• Intent: ${intent.type}\n` +
+                 `• Timestamp: ${new Date().toISOString()}\n\n` +
+                 `**What This Means:**\n` +
+                 `The AI service is completely down. This is a system failure that needs immediate attention.\n\n` +
+                 `**Action Required:**\n` +
+                 `• Check server logs for detailed error information\n` +
+                 `• Verify API key configuration\n` +
+                 `• Restart the AI service\n\n` +
+                 `I will NOT provide scripted responses as a fallback. This ensures you know when there's a real problem.`;
+        confidence = 0.0;
+        intelligenceLevel = 'error';
       }
     }
     
@@ -513,6 +462,44 @@ class TrulyIntelligentAgent {
     }
     
     return response;
+    
+    } catch (error) {
+      console.error(`❌ Error processing question (attempt ${retryCount + 1}):`, error);
+      
+      // If we haven't exceeded max retries, try again
+      if (retryCount < maxRetries) {
+        console.log(`🔄 Retrying question processing (attempt ${retryCount + 2}/${maxRetries + 1})`);
+        // Wait a brief moment before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return this.askQuestion(question, context, retryCount + 1);
+      }
+      
+      // If we've exhausted retries, return a proper error message
+      const errorResponse = {
+        hasResponse: true,
+        response: `❌ **SYSTEM ERROR - Processing Failed**\n\n` +
+                 `I encountered an error while processing your question and was unable to recover after ${maxRetries + 1} attempts.\n\n` +
+                 `**Error Details:**\n` +
+                 `• Error Type: ${error.name || 'Unknown'}\n` +
+                 `• Error Message: ${error.message}\n` +
+                 `• Attempts Made: ${maxRetries + 1}\n\n` +
+                 `**What You Can Do:**\n` +
+                 `• Try rephrasing your question\n` +
+                 `• Check if the system is experiencing issues\n` +
+                 `• Contact support if the problem persists\n\n` +
+                 `**Technical Details:**\n` +
+                 `• Timestamp: ${new Date().toISOString()}\n` +
+                 `• User ID: ${this.userId}\n` +
+                 `• Conversation ID: ${this.currentConversationId}`,
+        confidence: 0.0,
+        reasoning: `Error processing question: ${error.message}`,
+        processingTime: Date.now(),
+        memoryEnabled: true,
+        conversationId: this.currentConversationId
+      };
+      
+      return errorResponse;
+    }
   }
 
   /**
@@ -539,39 +526,8 @@ class TrulyIntelligentAgent {
       return { type: 'video_creation', subtype: 'api_call' };
     }
     
-    // HOS intent detection
-    if (lowerQuestion.includes('hours of service') || lowerQuestion.includes('hos') || 
-        lowerQuestion.includes('driving time') || lowerQuestion.includes('on duty') ||
-        lowerQuestion.includes('11 hour') || lowerQuestion.includes('14 hour') ||
-        lowerQuestion.includes('30 minute') || lowerQuestion.includes('break')) {
-      return { type: 'hours_of_service', subtype: this.getHOSSubtype(lowerQuestion) };
-    }
-    
-    // ELD intent detection
-    if (lowerQuestion.includes('eld') || lowerQuestion.includes('electronic logging') ||
-        lowerQuestion.includes('elog') || lowerQuestion.includes('logbook')) {
-      return { type: 'eld', subtype: 'requirements' };
-    }
-    
-    // Maintenance intent detection
-    if (lowerQuestion.includes('maintenance') || lowerQuestion.includes('inspection') ||
-        lowerQuestion.includes('dvir') || lowerQuestion.includes('annual inspection')) {
-      return { type: 'maintenance', subtype: 'inspection' };
-    }
-    
-    // Hazmat intent detection
-    if (lowerQuestion.includes('hazmat') || lowerQuestion.includes('hazardous') ||
-        lowerQuestion.includes('dangerous goods') || lowerQuestion.includes('training')) {
-      return { type: 'hazmat', subtype: 'training' };
-    }
-    
-    // Current Capabilities & Limitations intent detection
-    if (lowerQuestion.includes('limitations') || lowerQuestion.includes('what can you do') ||
-        lowerQuestion.includes('capabilities') || lowerQuestion.includes('improve') ||
-        lowerQuestion.includes('constraints') || lowerQuestion.includes('boundaries') ||
-        lowerQuestion.includes('help improve') || lowerQuestion.includes('system constraints')) {
-      return { type: 'current_capabilities', subtype: 'capabilities_overview' };
-    }
+    // Let the AI service handle ALL questions intelligently - no scripted responses
+    return { type: 'general', subtype: 'intelligent_response' };
     
     // Voice & Audio Capabilities intent detection (more specific patterns)
     if ((lowerQuestion.includes('voice') && (lowerQuestion.includes('capabilities') || lowerQuestion.includes('synthesis') || lowerQuestion.includes('preference') || lowerQuestion.includes('test'))) ||
@@ -837,40 +793,45 @@ class TrulyIntelligentAgent {
   }
 
   /**
-   * Generate hazmat-specific answer
+   * Generate thoughtful, enterprise-level responses
    */
-  generateHazmatAnswer(question, intent) {
-    const hazmatKnowledge = this.knowledgeBase.get('hazmat');
-    const regulations = hazmatKnowledge.regulations;
+  generateThoughtfulResponse(question, intent, context, topic) {
+    // Enterprise-level response: thoughtful, accurate, and contextual
+    let answer = '';
     
-    let answer = '**Hazmat Training Requirements**\n\n';
+    // Add a brief pause indicator for enterprise feel
+    answer += `Let me analyze your question about ${topic}...\n\n`;
     
-    answer += `**Comprehensive Training (49 CFR 177.800)**:\n`;
-    const comprehensiveReg = regulations['49_CFR_177_800'];
-    answer += `• **${comprehensiveReg.title}**: ${comprehensiveReg.answer}\n`;
-    answer += `• **Details**: ${comprehensiveReg.details}\n`;
-    answer += `• **Penalties**: ${comprehensiveReg.penalties}\n\n`;
+    // Provide a thoughtful, contextual response based on the specific question
+    const lowerQuestion = question.toLowerCase();
     
-    answer += `**Security Awareness Training (49 CFR 177.817)**:\n`;
-    const securityReg = regulations['49_CFR_177_817'];
-    answer += `• **${securityReg.title}**: ${securityReg.answer}\n`;
-    answer += `• **Details**: ${securityReg.details}\n`;
-    answer += `• **Penalties**: ${securityReg.penalties}\n\n`;
-    
-    answer += `**Actionable Steps**:\n`;
-    answer += `1. **Identify Hazmat Employees** - Determine who handles hazmat\n`;
-    answer += `2. **Develop Training Program** - Create comprehensive training curriculum\n`;
-    answer += `3. **Conduct Training** - Provide initial and recurrent training\n`;
-    answer += `4. **Document Training** - Keep detailed training records\n`;
-    answer += `5. **Test Competency** - Ensure employees understand requirements\n`;
-    answer += `6. **Update Training** - Provide refresher training every 3 years\n\n`;
-    
-    answer += `**Training Components**:\n`;
-    answer += `• General awareness and familiarization\n`;
-    answer += `• Function-specific training\n`;
-    answer += `• Safety training\n`;
-    answer += `• Security awareness training\n`;
-    answer += `• Driver training (if applicable)`;
+    if (topic === 'hazmat') {
+      if (lowerQuestion.includes('training') || lowerQuestion.includes('requirements')) {
+        answer += `I understand you're asking about hazmat training requirements. `;
+        answer += `This is a complex regulatory area that requires careful consideration of your specific operations.\n\n`;
+        answer += `To provide you with accurate, actionable guidance, I need to understand:\n`;
+        answer += `• What type of hazmat operations you're involved in\n`;
+        answer += `• Your current compliance status\n`;
+        answer += `• Specific training gaps you're trying to address\n\n`;
+        answer += `Would you like to discuss your specific hazmat training needs? `;
+        answer += `I can then provide targeted guidance rather than generic information.`;
+      } else {
+        answer += `I can help with hazmat-related questions, but I want to ensure I provide `;
+        answer += `accurate, enterprise-level guidance rather than generic information.\n\n`;
+        answer += `Could you provide more specific details about what you need to know? `;
+        answer += `This will help me give you the most relevant and actionable information.`;
+      }
+    } else if (topic === 'general') {
+      answer += `I want to provide you with the most accurate and helpful response possible. `;
+      answer += `To ensure I give you enterprise-level guidance, could you help me understand:\n\n`;
+      answer += `• What specific outcome are you trying to achieve?\n`;
+      answer += `• What context or situation are you working with?\n`;
+      answer += `• Are there any particular constraints or requirements I should know about?\n\n`;
+      answer += `This will help me provide targeted, actionable information rather than generic responses.`;
+    } else {
+      answer += `I'm analyzing your question to provide the most accurate and helpful response. `;
+      answer += `Could you provide more specific details about what you're looking for?`;
+    }
     
     return answer;
   }
@@ -1329,10 +1290,11 @@ class TrulyIntelligentAgent {
         return `❌ AI Service Error: Invalid response format`;
       }
     } catch (error) {
-      console.error('❌ Error calling RealAIService:', error);
+      console.error('❌ CRITICAL: RealAIService completely failed:', error);
       
-      // Return error instead of pretending to be the agent
-      return `❌ AI Service Error: ${error.message}`;
+      // THROW the error instead of returning a scripted response
+      // This will be caught by the outer try-catch and reported properly
+      throw new Error(`RealAIService failed: ${error.message}`);
     }
   }
 
@@ -2105,6 +2067,7 @@ class TrulyIntelligentAgent {
     
     return answer;
   }
+
 }
 
 module.exports = { TrulyIntelligentAgent };

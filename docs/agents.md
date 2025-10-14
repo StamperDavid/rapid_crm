@@ -136,86 +136,156 @@ This document provides a comprehensive reference for all AI agents in the Rapid 
 
 ---
 
-### 4. Onboarding Agent
-**Agent ID**: `onboarding_agent`
-**Type**: Customer-Facing Agent
+### 4. Alex Onboarding Agent
+**Agent ID**: `onboarding-agent`
+**Type**: Customer-Facing Agent (Website-Hosted)
 **Status**: Active
-**Persona**: Sarah Johnson (Human Persona)
+**Persona**: Alex (AI Persona)
+**Deployment**: Public-facing chatbot and standalone units on company website
+
+**Primary Mission**: **Determine and sell registration services** by accurately identifying required regulations for client operations
 
 **Core Responsibilities**:
-- Handle client onboarding for USDOT registration
-- Gather client business information systematically
-- Determine required regulatory registrations and services
-- Process payments for services
-- Guide clients through compliance requirements
-- Maintain focus on transportation-related questions only
+- **Regulatory Analysis**: Accurately determine which regulations apply to client's business
+- **Service Determination**: Identify which registration services client needs to purchase
+- **Sales Focus**: Convert regulatory analysis into service sales opportunities
+- **Information Collection**: Gather business details needed for regulatory determinations
+- **Service Presentation**: Present required services with pricing and competitive analysis
+- **CRM Management**: Create leads or deals based on service sales decisions
+
+**Regulatory Determination Process**:
+1. **Business Analysis**: Understand client's transportation business model
+2. **Regulatory Mapping**: Determine which regulations apply (USDOT, MC, IFTA, etc.)
+3. **Service Identification**: Map regulations to specific services we offer
+4. **Sales Presentation**: Present required services as solutions to compliance needs
+5. **Deal Creation**: Convert service needs into sales opportunities
 
 **Capabilities**:
-- Regulatory compliance assessment
-- Client information gathering
-- Service requirement determination
-- Payment processing guidance
-- Workflow adherence
-- Focus management (stays on task)
+- **Regulatory expertise** for accurate service determination
+- **Sales skills** for service presentation and conversion
+- **Business analysis** to understand client operations
+- **Service mapping** from regulations to offerings
+- **CRM integration** for lead/deal management
+- **Competitive analysis** for pricing presentations
 
 **Knowledge Base Requirements**:
-- Qualified states data (CRITICAL)
-- USDOT registration requirements
-- Service requirement triggers
-- Regulatory compliance rules
-- Payment processing protocols
+- **Qualified States List (CRITICAL)**: State-specific thresholds that supersede federal regulations
+- **Regulatory Hierarchy**: DQ (Driver Qualification) requirements ALWAYS supersede DOT (Federal) requirements
+- **Regulatory requirements** for all transportation business types
+- **Service offerings** and what each registration covers
+- **Pricing and competitive landscape**
+- **Business classification criteria**
+- **Sales processes and conversion techniques**
+- **CRM data entry protocols**
 
-**Human Persona Details**:
-- Name: Sarah Johnson
-- Title: Compliance Specialist
-- Background: 8+ years in transportation compliance
-- Personality: Professional, helpful, detail-oriented
-- Voice: Warm, professional female
-- Greeting: "Hi there! I'm Sarah, your compliance specialist. I'm here to help you get your transportation business properly registered and compliant."
+**Qualified States Logic (HARD-CODED REQUIREMENT)**:
+- **MUST ALWAYS CHECK** qualified states list first before applying federal regulations
+- **DQ Requirements Supersede DOT**: State driver qualification thresholds override federal USDOT thresholds
+- **Use Lower Threshold**: When DQ and DOT have different thresholds, use the LOWER (stricter) requirement
+- **Example - Idaho**: DOT=26,001 lbs, DQ=26,001 lbs → Compliance required at 26,001 lbs
+- **Example - Alaska**: DOT=10,001 lbs, DQ=26,001 lbs → Compliance required at 10,001 lbs (lower threshold)
+- **State-Specific Thresholds**: Each state has unique weight/passenger/cargo requirements
+- **For-Hire vs Private Property**: Different thresholds for commercial vs private operations
+- **Special Notes**: State-specific exemptions and special requirements must be considered
+
+**How to Read Qualified States Data**:
+1. **DOT Weight/Passengers/Cargo**: Federal USDOT number requirements
+2. **DQ Weight/Passengers/Cargo**: State driver qualification requirements  
+3. **Apply Lower Threshold**: Use whichever threshold is lower (stricter)
+4. **Check Special Notes**: Look for state-specific exemptions or variations
+5. **For-Hire vs Private Property**: Apply correct threshold based on operation type
+
+**AI Persona Details**:
+- Name: Alex
+- Title: Transportation Compliance Advisor
+- Background: AI-powered compliance specialist focused on service determination
+- Personality: Professional, consultative, sales-oriented, detail-oriented
+- Voice: jasper_voice (configurable)
+- Greeting: "Hello! I'm Alex, your AI transportation compliance advisor. I'm here to help you understand what registrations you need for your transportation business and guide you through our services."
 
 **Training Focus**:
-- Regulation training scenarios
-- Qualified states logic testing
-- Service determination accuracy
-- Payment processing workflows
+- **Qualified States Logic (CRITICAL)**: Always check state-specific thresholds first
+- **Regulatory determination accuracy** (CRITICAL for sales success)
+- **DQ vs DOT hierarchy understanding** (DQ requirements supersede DOT)
+- **Service mapping** from regulations to offerings
+- **Sales conversation techniques**
+- **Business analysis skills**
+- **Service presentation and pricing**
+- **Lead vs deal classification**
+- **CRM data entry accuracy**
+
+**Critical Success Factors**:
+- **Accurate Regulatory Analysis**: Wrong determinations = lost sales
+- **Service Sales Focus**: Convert compliance needs into service purchases
+- **Complete Business Understanding**: Gather all details for accurate determinations
+- **Effective Sales Presentation**: Present services as solutions to compliance needs
 
 ---
 
 ### 5. Customer Service Agent
-**Agent ID**: `customer_service_agent_001`
-**Type**: Customer-Facing Agent
+**Agent ID**: `customer-service`
+**Type**: Customer-Facing Agent (Client Portal)
 **Status**: Active
-**Persona**: Sarah Johnson (Shared Persona)
+**Persona**: Alex (Shared Persona - SEAMLESS CLIENT EXPERIENCE)
+**Deployment**: Client portal for existing customers
+
+**Primary Mission**: **Portal guidance and account management** for existing clients
 
 **Core Responsibilities**:
-- Provide ongoing customer support
-- Handle client inquiries and issues
-- Coordinate with other agents for complex issues
-- Maintain client relationships
-- Escalate issues to human staff when needed
+- **Portal Navigation**: Guide clients through full use of their client portal
+- **Account Management**: Make changes to client accounts on their behalf
+- **Service Renewals**: Handle renewal processes and notifications
+- **Ongoing Support**: Provide support for existing services and registrations
+- **Issue Resolution**: Coordinate with other agents for complex issues
+- **Relationship Management**: Maintain long-term client relationships
+
+**Portal Management Capabilities**:
+- **Portal Training**: Teach clients how to use all portal features
+- **Account Updates**: Make changes to client account information
+- **Service Management**: Help with service modifications and additions
+- **Renewal Processing**: Handle renewal workflows and payments
+- **Document Access**: Guide clients to their documents and certificates
+- **Status Updates**: Provide updates on application and service status
+
+**Unified Client Experience**:
+- **Same Persona**: Both agents use "Alex" identity
+- **Seamless Handoff**: Client never knows they're talking to different agents
+- **Consistent Communication**: Same voice, personality, and knowledge base
+- **Continuous Relationship**: From initial inquiry through ongoing support
+- **Stateful Memory**: Full access to 18 months of interaction history
 
 **Capabilities**:
+- Portal navigation and training
+- Account management and updates
+- Service renewal processing
 - Client support and assistance
 - Issue resolution
 - Agent coordination
 - Relationship management
 - Escalation protocols
+- **Seamless persona continuity**
 
 **Knowledge Base Requirements**:
+- Client portal features and functionality
+- Account management procedures
+- Service renewal processes
 - Client service protocols
 - Issue resolution procedures
 - Agent coordination rules
 - Escalation criteria
+- **Complete client history and context (18 months)**
 
-**Human Persona Details**:
-- Same as Onboarding Agent (Sarah Johnson)
-- Shared persona ID: `sarah_johnson_persona`
-- Ensures consistent client experience
+**AI Persona Details**:
+- **Identical to Onboarding Agent**: Same Alex persona
+- **Shared persona ID**: `alex_persona`
+- **Unified client experience**: Client sees one consistent AI assistant
+- **Context awareness**: Knows client's full journey from onboarding
+- **Portal expertise**: Specialized in client portal navigation and management
 
 ---
 
 ### 6. USDOT RPA Agent
-**Agent ID**: `usdot_rpa_agent`
+**Agent ID**: `usdot-rpa`
 **Type**: Process Automation Agent
 **Status**: Development
 **Persona**: Automated Process Handler
@@ -318,13 +388,68 @@ Jasper (Main AI & Manager)
 2. **Jasper** → **All Agents**: Knowledge distribution and monitoring
 3. **Jasper** → **AI Training Supervisor**: Training requests and performance queries
 4. **Onboarding Agent** → **USDOT RPA Agent**: Triggers application process
-5. **Customer Service Agent** → **Onboarding Agent**: Client handoffs
+5. **Onboarding Agent** → **Customer Service Agent**: Seamless client handoff (same Alex persona)
 6. **All Agents** → **Jasper**: Status updates and performance data
 7. **AI Training Supervisor** → **Onboarding Agent**: Training scenarios and evaluation
+
+### Unified Client Experience (CRITICAL)
+**Onboarding Agent + Customer Service Agent = One "Alex" to the Client**
+
+- **Seamless Handoff**: When onboarding completes, client continues with same "Alex" persona
+- **Context Preservation**: Customer Service Agent has full access to onboarding conversation history
+- **Consistent Identity**: Same voice, personality, knowledge, and communication style
+- **Continuous Relationship**: Client never experiences agent switching or context loss
+- **Unified Knowledge**: Both agents share same knowledge base and client understanding
+
+### Stateful Memory System (CRITICAL)
+**Shared Memory Between Onboarding and Customer Service Agents**
+
+- **Memory Duration**: 18 months of complete interaction history
+- **Shared State**: Both agents access the same client memory database
+- **Context Continuity**: Customer Service Agent knows everything from onboarding conversations
+- **Relationship Memory**: Full conversation history, preferences, and relationship context
+- **Service History**: Complete record of services purchased, renewals, and account changes
+- **Issue Tracking**: History of problems, resolutions, and client satisfaction
+- **Personalization**: Memory enables personalized service based on full relationship history
+
+**Memory Categories**:
+- **Conversation History**: All interactions and communications
+- **Service Records**: Purchased services, renewals, modifications
+- **Account Changes**: Updates to business information, contacts, preferences
+- **Issue Resolution**: Problems encountered and how they were resolved
+- **Client Preferences**: Communication style, service preferences, contact methods
+- **Business Context**: Company details, operations, compliance requirements
 
 ---
 
 ## 🎓 Training and Development
+
+### Training Environments
+Jasper has access to the following training environments for agent development and monitoring:
+
+1. **Alex Onboarding Agent Training Center**
+   - Location: `/training/alex`
+   - Purpose: Train Alex on conversational guidance, regulatory analysis, and service recommendations
+   - Features: Dynamic scenario generation, automated and manual training modes, real-time performance grading
+   - Focus Areas: General scenarios, edge cases, critical path testing
+
+2. **USDOT Training Center**
+   - Location: `/training/usdot`
+   - Purpose: Train USDOT RPA Agent on form-filling and government website navigation
+   - Features: Pixel-perfect FMCSA website emulation, step-by-step application process
+   - Training: Form completion accuracy, document upload, payment processing
+
+3. **Performance Monitoring Dashboard**
+   - Location: `/training/monitoring`
+   - Purpose: Monitor agent performance across all training environments
+   - Features: Real-time metrics, performance history, success rates
+   - Metrics: Accuracy, speed, error rates, improvement trends
+
+4. **Critical Path Test Center**
+   - Location: `/training/critical-path`
+   - Purpose: Test agents on complex, failure-prone scenarios
+   - Features: Edge case testing, error recovery, complex decision paths
+   - Focus: Common failure points, regulatory complexity, business logic
 
 ### Training Methods
 1. **AI Training Supervisor**: Specialized regulatory AI that trains other agents
@@ -333,6 +458,8 @@ Jasper (Main AI & Manager)
 4. **Performance Monitoring**: Continuous tracking of agent effectiveness
 5. **Base Agent System**: Save well-trained agents for reset/repair purposes
 6. **AI-to-AI Training**: Training supervisor evaluates and improves other agents
+7. **Dynamic Scenario Generation**: Realistic client profiles and conversation starters
+8. **Real-time Performance Grading**: Step-by-step evaluation and feedback
 
 ### Training Scenarios
 - Qualified States Logic Testing (AI Training Supervisor generates)

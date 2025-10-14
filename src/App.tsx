@@ -27,8 +27,8 @@ import Conversations from './modules/CRM/pages/ConversationsScalable';
 import ApiKeys from './modules/CRM/pages/ApiKeys';
 import DatabaseManagement from './modules/CRM/pages/DatabaseManagement';
 import SystemMonitoringModule from './modules/SystemMonitoring/index';
-import ComplianceModule from './modules/Compliance/index';
 import AnalyticsModule from './modules/Analytics/index';
+import AdvancedAIAgentControlPanel from './components/AdvancedAIAgentControlPanel';
 import DataManagement from './pages/DataManagement';
 import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
@@ -74,10 +74,10 @@ function App() {
               <UIStateProvider>
                 <ModuleProvider>
                   <QueryClientProvider client={queryClient}>
-              <Router>
-              <div className="min-h-screen">
-                <ClaudeEventListener />
-                <Routes>
+                    <Router>
+                      <div className="min-h-screen">
+                        <ClaudeEventListener />
+                        <Routes>
                   {/* Client Login Route */}
                   <Route path="/client-login" element={<ClientLogin />} />
                   
@@ -112,7 +112,6 @@ function App() {
                         <Route path="/deals" element={<Deals />} />
                         <Route path="/services" element={<Services />} />
                         <Route path="/services/edit/:id" element={<EditService />} />
-                        <Route path="/compliance" element={<ComplianceModule />} />
                         <Route path="/eld" element={<ELDDashboard />} />
                         <Route path="/ifta" element={<IFTADashboard />} />
                         <Route path="/seo" element={<SEODashboard />} />
@@ -150,26 +149,26 @@ function App() {
                         <Route path="/data" element={<DataManagement />} />
                         <Route path="/schema" element={<SchemaManagement />} />
                         <Route path="/monitoring/*" element={<SystemMonitoringModule />} />
-                        <Route path="/compliance/*" element={<ComplianceModule />} />
                         <Route path="/analytics/*" element={<AnalyticsModule />} />
+                        <Route path="/ai-control" element={<AdvancedAIAgentControlPanel />} />
                         </Routes>
                       </Layout>
                     </ErrorBoundary>
                   } />
-                </Routes>
-                <Toaster
-                  position="top-right"
-                  toastOptions={{
-                    duration: 4000,
-                    style: {
-                      background: '#1f2937',
-                      color: '#f9fafb',
-                      border: '1px solid #374151',
-                    },
-                  }}
-                />
-              </div>
-            </Router>
+                        </Routes>
+                        <Toaster
+                          position="top-right"
+                          toastOptions={{
+                            duration: 4000,
+                            style: {
+                              background: '#1f2937',
+                              color: '#f9fafb',
+                              border: '1px solid #374151',
+                            },
+                          }}
+                        />
+                      </div>
+                    </Router>
                   </QueryClientProvider>
                 </ModuleProvider>
               </UIStateProvider>

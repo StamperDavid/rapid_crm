@@ -13,8 +13,37 @@ const DynamicNavigation: React.FC = () => {
   const { user } = useUser();
   const location = useLocation();
   const { alertCount } = useConversationAlerts();
-  const { enabledModules, setEnabledModules, getVisibleModules } = useModules();
   const [showModuleToggle, setShowModuleToggle] = useState(false);
+  
+  // Safe access to ModuleContext - always call hooks in same order
+  let moduleContext;
+  let isContextAvailable = false;
+  
+  try {
+    moduleContext = useModules();
+    isContextAvailable = true;
+  } catch (error) {
+    console.error('ModuleContext not available:', error);
+    isContextAvailable = false;
+  }
+  
+  // If ModuleContext is not available, show loading state
+  if (!isContextAvailable) {
+    return (
+      <nav className="flex flex-1 flex-col px-4 py-6">
+        <ul role="list" className="flex flex-1 flex-col gap-y-2">
+          <li>
+            <div className="group flex gap-x-3 rounded-xl p-3 text-sm font-semibold leading-6 text-slate-600 dark:text-slate-300">
+              <div className="h-6 w-6 shrink-0 bg-slate-200 dark:bg-slate-600 rounded"></div>
+              <span className="flex-1">Loading...</span>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    );
+  }
+  
+  const { enabledModules, setEnabledModules, getVisibleModules } = moduleContext;
 
   // Get visible modules based on user role and enabled modules
   const visibleModules = getVisibleModules(user?.role || 'user');

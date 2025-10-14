@@ -36,7 +36,7 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
     { name: 'Database', href: '/database', icon: DatabaseIcon, color: 'text-slate-600' },
     { name: 'Schema', href: '/schema', icon: CogIcon, color: 'text-amber-600' },
     { name: 'API Keys', href: '/settings/api-keys', icon: KeyIcon, color: 'text-yellow-600' },
-    { name: 'AI Control', href: '/admin/ai-control', icon: ChipIcon, color: 'text-purple-600' },
+    { name: 'AI Control', href: '/ai-control', icon: ChipIcon, color: 'text-purple-600' },
   ];
 
   if (adminItems.length === 0) {
