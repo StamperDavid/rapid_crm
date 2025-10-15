@@ -15,21 +15,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // Import AI Persona Manager
 const aiPersonaManager = require('./src/services/ai/AIPersonaManager.js');
 
-// Import API key service - using direct database access for now
-// const { ApiKeyService } = require('./src/services/apiKeys/ApiKeyService');
-
-// ELD Service Integration - temporarily disabled
-// const { eldComplianceApiRoutes } = require('./src/services/eld/ELDComplianceApiRoutes');
-
-// REMOVED MODULES - Available in archive/full-feature-set-v1.0 branch
-// IFTA Service Integration - REMOVED
-// const { createIFTAComplianceApiRoutes } = require('./src/services/ifta/IFTAComplianceApiRoutesCommonJS');
-
-// ELD Service Integration - REMOVED
-// const { createELDComplianceApiRoutes } = require('./src/services/eld/ELDComplianceApiRoutesCommonJS');
-
-// Video Creation Service - REMOVED
-// const VideoCreationService = require('./src/services/video/VideoCreationService.js');
+// NOTE: API Key Service - using direct database access for security
+// NOTE: ELD/IFTA/Video services removed - see archive/full-feature-set-v1.0 branch if needed
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -5694,9 +5681,8 @@ app.get('/api/services', (req, res) => {
 });
 
 // Training System API Endpoints
-// TEMPORARILY DISABLED - TypeScript files need proper build process
-// const AgentPerformanceGradingService = require('./src/services/training/AgentPerformanceGradingService.js');
-// const GoldenMasterAgentService = require('./src/services/training/GoldenMasterAgentService.js');
+// NOTE: AgentPerformanceGradingService and GoldenMasterAgentService temporarily disabled
+// These TypeScript files need proper build process before use
 
 // Initialize training services
 let trainingService = null; // Temporarily disabled
