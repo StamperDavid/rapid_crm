@@ -6368,6 +6368,92 @@ app.post('/api/alex-training/submit-feedback', async (req, res) => {
 });
 
 // ===================================
+// USDOT RPA TRAINING CENTER ROUTES
+// ===================================
+
+// Get RPA training stats
+app.get('/api/usdot-rpa-training/stats', async (req, res) => {
+  try {
+    const totalScenarios = await runQueryOne(
+      'SELECT COUNT(*) as count FROM alex_training_scenarios'
+    );
+    
+    const completed = await runQueryOne(
+      `SELECT COUNT(*) as count FROM alex_test_results WHERE is_correct IS NOT NULL`
+    );
+    
+    const correctTests = await runQueryOne(
+      `SELECT COUNT(*) as count FROM alex_test_results WHERE is_correct = 1`
+    );
+    
+    const averageAccuracy = completed.count > 0 
+      ? (correctTests.count / completed.count) * 100 
+      : 0;
+    
+    res.json({
+      totalScenarios: totalScenarios.count || 0,
+      completed: completed.count || 0,
+      averageAccuracy: averageAccuracy || 0
+    });
+  } catch (error) {
+    console.error('Error getting RPA training stats:', error);
+    res.json({
+      totalScenarios: 0,
+      completed: 0,
+      averageAccuracy: 0
+    });
+  }
+});
+
+// Submit RPA test result
+app.post('/api/usdot-rpa-training/submit-result', async (req, res) => {
+  try {
+    const { 
+      sessionId, 
+      scenarioId, 
+      applicationData, 
+      fieldComparisons, 
+      accuracy, 
+      reviewFeedback,
+      isCorrect 
+    } = req.body;
+    
+    const resultId = `result_${Date.now()}`;
+    const now = new Date().toISOString();
+    
+    // Store the RPA test result
+    await runExecute(`
+      INSERT INTO alex_test_results (
+        id,
+        scenario_id,
+        test_session_id,
+        alex_full_response,
+        is_correct,
+        reviewer_feedback,
+        reviewed_by,
+        reviewed_at,
+        tested_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      resultId,
+      scenarioId,
+      sessionId,
+      JSON.stringify({ applicationData, fieldComparisons, accuracy }),
+      isCorrect ? 1 : 0,
+      reviewFeedback || '',
+      'admin',
+      now,
+      now
+    ]);
+    
+    res.json({ success: true, resultId });
+  } catch (error) {
+    console.error('Error submitting RPA result:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================
 // QUALIFIED STATES MANAGEMENT ROUTES
 // ===================================
 

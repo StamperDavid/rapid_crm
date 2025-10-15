@@ -182,17 +182,17 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
   },
   usdotTrainingCenter: {
     id: 'usdotTrainingCenter',
-    name: 'USDOT Training Center',
+    name: 'USDOT RPA Training',
     component: USDOTTrainingCenterModule,
     category: 'training',
     required: false,
     adminOnly: true,
     trainerOnly: true,
     icon: DocumentTextIcon,
-    description: 'Specialized USDOT registration training with pixel-perfect government interface emulation',
-    tooltip: 'Pixel-perfect emulation of the FMCSA USDOT registration process. Train AI agents on real government forms and scenarios with performance grading.',
+    description: 'Train USDOT RPA agent with real scenarios - watch it fill out applications',
+    tooltip: 'Pixel-perfect FMCSA interface. Load scenarios from database and watch the RPA agent auto-fill USDOT applications. Review, correct, and train for 95%+ accuracy.',
     href: '/training/usdot',
-    enabled: false,
+    enabled: true,
     order: 11
   },
 
