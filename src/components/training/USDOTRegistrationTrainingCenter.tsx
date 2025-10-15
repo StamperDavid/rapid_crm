@@ -164,10 +164,12 @@ interface TrainingSession {
 
 interface FieldComparison {
   fieldName: string;
+  displayName: string;
   expected: any;
   actual: any;
-  isCorrect: boolean;
+  isCorrect: boolean | null; // null = not reviewed yet
   fieldPath: string;
+  category: string; // 'business', 'contact', 'operations', 'vehicles', 'drivers', 'compliance'
 }
 
 const USDOTRegistrationTrainingCenter: React.FC = () => {
@@ -413,22 +415,40 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     compareResults(formData);
   };
 
-  // Compare RPA results with expected scenario data
+  // Compare RPA results with expected scenario data - detailed field mapping
   const compareResults = (expectedData: Partial<USDOTApplicationData>) => {
-    const comparisons: FieldComparison[] = [];
-    
-    // Compare all fields
-    Object.keys(expectedData).forEach(key => {
-      const expected = (expectedData as any)[key];
-      const actual = (applicationData as any)[key];
-      comparisons.push({
-        fieldName: key,
-        expected,
-        actual,
-        isCorrect: JSON.stringify(expected) === JSON.stringify(actual),
-        fieldPath: key
-      });
-    });
+    const comparisons: FieldComparison[] = [
+      // Business Information
+      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: applicationData.legalBusinessName, isCorrect: null, fieldPath: 'legalBusinessName', category: 'business' },
+      { fieldName: 'dbaName', displayName: 'Doing Business As Name', expected: expectedData.dbaName, actual: applicationData.dbaName, isCorrect: null, fieldPath: 'dbaName', category: 'business' },
+      { fieldName: 'formOfBusiness', displayName: 'Form of Business', expected: expectedData.formOfBusiness, actual: applicationData.formOfBusiness, isCorrect: null, fieldPath: 'formOfBusiness', category: 'business' },
+      { fieldName: 'ein', displayName: 'Employer Identification Number (EIN)', expected: expectedData.ein, actual: applicationData.ein, isCorrect: null, fieldPath: 'ein', category: 'business' },
+      { fieldName: 'phone', displayName: 'Business Telephone Number', expected: expectedData.phone, actual: applicationData.phone, isCorrect: null, fieldPath: 'phone', category: 'business' },
+      
+      // Company Contact
+      { fieldName: 'contactFirstName', displayName: 'Contact First Name', expected: expectedData.contactFirstName, actual: applicationData.contactFirstName, isCorrect: null, fieldPath: 'contactFirstName', category: 'contact' },
+      { fieldName: 'contactLastName', displayName: 'Contact Last Name', expected: expectedData.contactLastName, actual: applicationData.contactLastName, isCorrect: null, fieldPath: 'contactLastName', category: 'contact' },
+      { fieldName: 'contactEmail', displayName: 'Contact Email', expected: expectedData.contactEmail, actual: applicationData.contactEmail, isCorrect: null, fieldPath: 'contactEmail', category: 'contact' },
+      { fieldName: 'contactPhone', displayName: 'Contact Phone', expected: expectedData.contactPhone, actual: applicationData.contactPhone, isCorrect: null, fieldPath: 'contactPhone', category: 'contact' },
+      
+      // Operations
+      { fieldName: 'transportProperty', displayName: 'Transport Property?', expected: expectedData.transportProperty, actual: applicationData.transportProperty, isCorrect: null, fieldPath: 'transportProperty', category: 'operations' },
+      { fieldName: 'receiveCompensation', displayName: 'Receive Compensation?', expected: expectedData.receiveCompensation, actual: applicationData.receiveCompensation, isCorrect: null, fieldPath: 'receiveCompensation', category: 'operations' },
+      { fieldName: 'interstateCommerce', displayName: 'Interstate Commerce?', expected: expectedData.interstateCommerce, actual: applicationData.interstateCommerce, isCorrect: null, fieldPath: 'interstateCommerce', category: 'operations' },
+      
+      // Vehicles
+      { fieldName: 'ownedVehicles.straightTrucks', displayName: 'Owned Straight Trucks', expected: expectedData.ownedVehicles?.straightTrucks, actual: applicationData.ownedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'ownedVehicles.straightTrucks', category: 'vehicles' },
+      { fieldName: 'ownedVehicles.truckTractors', displayName: 'Owned Truck Tractors', expected: expectedData.ownedVehicles?.truckTractors, actual: applicationData.ownedVehicles?.truckTractors, isCorrect: null, fieldPath: 'ownedVehicles.truckTractors', category: 'vehicles' },
+      { fieldName: 'interstateVehicles', displayName: 'CMVs in Interstate Commerce', expected: expectedData.interstateVehicles, actual: applicationData.interstateVehicles, isCorrect: null, fieldPath: 'interstateVehicles', category: 'vehicles' },
+      { fieldName: 'intrastateVehicles', displayName: 'CMVs in Intrastate Commerce', expected: expectedData.intrastateVehicles, actual: applicationData.intrastateVehicles, isCorrect: null, fieldPath: 'intrastateVehicles', category: 'vehicles' },
+      
+      // Drivers
+      { fieldName: 'interstateDriversBeyond100Mile', displayName: 'Interstate Drivers (Beyond 100 miles)', expected: expectedData.interstateDriversBeyond100Mile, actual: applicationData.interstateDriversBeyond100Mile, isCorrect: null, fieldPath: 'interstateDriversBeyond100Mile', category: 'drivers' },
+      { fieldName: 'cdlDrivers', displayName: 'Drivers with CDL', expected: expectedData.cdlDrivers, actual: applicationData.cdlDrivers, isCorrect: null, fieldPath: 'cdlDrivers', category: 'drivers' },
+      
+      // Compliance
+      { fieldName: 'electronicSignature', displayName: 'Electronic Signature', expected: expectedData.electronicSignature, actual: applicationData.electronicSignature, isCorrect: null, fieldPath: 'electronicSignature', category: 'compliance' },
+    ];
     
     setFieldComparisons(comparisons);
   };
@@ -463,10 +483,24 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   };
 
   // Submit correction and load next scenario
-  const submitCorrection = async (isCorrect: boolean) => {
+  const submitCorrection = async (overallCorrect: boolean) => {
     if (!trainingSession || !currentScenario) return;
 
-    const accuracy = fieldComparisons.filter(f => f.isCorrect).length / fieldComparisons.length * 100;
+    // Calculate accuracy from individual field reviews
+    const correctFields = fieldComparisons.filter(f => f.isCorrect === true).length;
+    const totalFields = fieldComparisons.length;
+    const accuracy = (correctFields / totalFields) * 100;
+
+    // Collect incorrect fields with details
+    const incorrectFields = fieldComparisons
+      .filter(f => f.isCorrect === false)
+      .map(f => ({
+        fieldName: f.fieldName,
+        displayName: f.displayName,
+        expected: f.expected,
+        actual: f.actual,
+        category: f.category
+      }));
 
     try {
       await fetch('/api/usdot-rpa-training/submit-result', {
@@ -477,9 +511,12 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
           scenarioId: currentScenario.id,
           applicationData: applicationData,
           fieldComparisons: fieldComparisons,
+          incorrectFields: incorrectFields,
           accuracy: accuracy,
           reviewFeedback: reviewFeedback,
-          isCorrect: isCorrect
+          isCorrect: overallCorrect,
+          reviewedFields: totalFields,
+          correctFields: correctFields
         })
       });
     } catch (error) {
@@ -492,6 +529,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     setIsTraining(false);
     setCurrentScenario(null);
     setApplicationData({});
+    setFieldComparisons([]);
     await loadSessionStats();
   };
 
@@ -1256,108 +1294,278 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     );
   };
 
-  // Render review/correction interface
+  // Toggle field correctness
+  const toggleFieldCorrectness = (index: number, isCorrect: boolean) => {
+    setFieldComparisons(prev => prev.map((comp, idx) => 
+      idx === index ? { ...comp, isCorrect } : comp
+    ));
+  };
+
+  // Render review/correction interface - SPLIT SCREEN DESIGN
   const renderReviewInterface = () => {
-    const correctFields = fieldComparisons.filter(f => f.isCorrect).length;
+    if (!currentScenario) return null;
+
+    const reviewedCount = fieldComparisons.filter(f => f.isCorrect !== null).length;
+    const correctCount = fieldComparisons.filter(f => f.isCorrect === true).length;
     const totalFields = fieldComparisons.length;
-    const accuracy = ((correctFields / totalFields) * 100).toFixed(1);
+    const allReviewed = reviewedCount === totalFields;
+    const accuracy = allReviewed ? ((correctCount / totalFields) * 100).toFixed(1) : 'N/A';
+
+    // Group fields by category
+    const groupedFields = fieldComparisons.reduce((acc, field) => {
+      if (!acc[field.category]) acc[field.category] = [];
+      acc[field.category].push(field);
+      return acc;
+    }, {} as Record<string, FieldComparison[]>);
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              RPA Application Review
-            </h2>
-
-            {/* Accuracy Summary */}
-            <div className={`p-4 rounded-lg mb-6 ${
-              parseFloat(accuracy) >= 95 ? 'bg-green-50 border-2 border-green-300' : 
-              parseFloat(accuracy) >= 80 ? 'bg-yellow-50 border-2 border-yellow-300' : 
-              'bg-red-50 border-2 border-red-300'
-            }`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold">
-                    Accuracy: {accuracy}%
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {correctFields} of {totalFields} fields correct
-                  </p>
+      <div className="fixed inset-0 bg-gray-100 z-50 overflow-hidden">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="bg-white border-b-2 border-gray-300 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  USDOT RPA Application Review
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Review each field: Mark correct ✓ or incorrect ✗
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Progress</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {reviewedCount}/{totalFields} reviewed
                 </div>
-                <div className="text-4xl font-bold">
-                  {parseFloat(accuracy) >= 95 ? '✅' : parseFloat(accuracy) >= 80 ? '⚠️' : '❌'}
+              </div>
+            </div>
+          </div>
+
+          {/* Split Screen Content */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* LEFT PANEL: Client Scenario Data */}
+            <div className="w-1/3 bg-white border-r-2 border-gray-300 overflow-y-auto p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center sticky top-0 bg-white pb-2">
+                <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
+                Client's Information
+              </h3>
+
+              <div className="space-y-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                  <div className="font-bold text-blue-900 mb-1">Scenario ID</div>
+                  <div className="text-blue-800 font-mono text-xs">{currentScenario.id}</div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Business Information</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Legal Name:</span> {currentScenario.legalBusinessName}</div>
+                    <div><span className="font-semibold">DBA:</span> {currentScenario.doingBusinessAs}</div>
+                    <div><span className="font-semibold">Form:</span> {currentScenario.formOfBusiness.replace(/_/g, ' ')}</div>
+                    <div><span className="font-semibold">EIN:</span> {currentScenario.ein}</div>
+                    <div><span className="font-semibold">Phone:</span> {currentScenario.businessPhone}</div>
+                  </div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Company Contact</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Name:</span> {currentScenario.companyContact.firstName} {currentScenario.companyContact.lastName}</div>
+                    <div><span className="font-semibold">Email:</span> {currentScenario.companyContact.email}</div>
+                    <div><span className="font-semibold">Phone:</span> {currentScenario.companyContact.phone}</div>
+                  </div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Operations</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Transport Property:</span> {currentScenario.transportProperty}</div>
+                    <div><span className="font-semibold">Compensation:</span> {currentScenario.receiveCompensationForTransport === 'Yes' ? 'For-Hire' : 'Private'}</div>
+                    <div><span className="font-semibold">Interstate:</span> {currentScenario.transportNonHazardousInterstate}</div>
+                    <div><span className="font-semibold">Property Type:</span> {currentScenario.propertyType.replace(/_/g, ' ')}</div>
+                  </div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Vehicles</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Straight Trucks (Owned):</span> {currentScenario.vehicles.straightTrucks.owned}</div>
+                    <div><span className="font-semibold">Truck Tractors (Owned):</span> {currentScenario.vehicles.truckTractors.owned}</div>
+                    <div><span className="font-semibold">Interstate CMVs:</span> {currentScenario.cmvInterstateOnly}</div>
+                    <div><span className="font-semibold">Intrastate CMVs:</span> {currentScenario.cmvIntrastateOnly}</div>
+                  </div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Drivers</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Interstate (Beyond 100mi):</span> {currentScenario.driversInterstate.beyond100Miles}</div>
+                    <div><span className="font-semibold">Drivers with CDL:</span> {currentScenario.driversWithCDL}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="font-bold text-gray-700 mb-2">Signature</div>
+                  <div className="text-xs">{currentScenario.electronicSignature}</div>
                 </div>
               </div>
             </div>
 
-            {/* Field Comparison */}
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Field-by-Field Comparison</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto border-2 border-gray-200 rounded p-4">
-                {fieldComparisons.map((comparison, idx) => (
-                  <div 
-                    key={idx}
-                    className={`p-3 rounded ${
-                      comparison.isCorrect ? 'bg-green-50' : 'bg-red-50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          {comparison.isCorrect ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
-                          ) : (
-                            <XCircleIcon className="h-5 w-5 text-red-500 mr-2" />
-                          )}
-                          <span className="font-medium text-sm">{comparison.fieldName}</span>
-                        </div>
-                        {!comparison.isCorrect && (
-                          <div className="ml-7 mt-1 text-xs">
-                            <div className="text-gray-600">
-                              Expected: <span className="font-mono">{JSON.stringify(comparison.expected)}</span>
-                            </div>
-                            <div className="text-gray-600">
-                              RPA Filled: <span className="font-mono">{JSON.stringify(comparison.actual)}</span>
+            {/* RIGHT PANEL: Question-by-Question Review */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 sticky top-0 bg-gray-100 pb-2">
+                Field-by-Field Review
+              </h3>
+
+              {Object.entries(groupedFields).map(([category, fields]) => (
+                <div key={category} className="mb-6">
+                  <h4 className="text-md font-bold text-gray-800 mb-3 capitalize bg-gray-200 px-3 py-2 rounded">
+                    {category === 'business' ? 'Business Information' :
+                     category === 'contact' ? 'Company Contact' :
+                     category === 'operations' ? 'Operations Classification' :
+                     category === 'vehicles' ? 'Vehicle Summary' :
+                     category === 'drivers' ? 'Driver Summary' :
+                     'Compliance & Signature'}
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    {fields.map((field, idx) => {
+                      const fieldIndex = fieldComparisons.indexOf(field);
+                      const matches = JSON.stringify(field.expected) === JSON.stringify(field.actual);
+                      
+                      return (
+                        <div 
+                          key={field.fieldName}
+                          className={`bg-white border-2 rounded-lg p-4 ${
+                            field.isCorrect === null ? 'border-gray-300' :
+                            field.isCorrect ? 'border-green-500 bg-green-50' :
+                            'border-red-500 bg-red-50'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="font-bold text-gray-900 mb-1">{field.displayName}</div>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                  <div className="text-xs text-gray-600 font-semibold">Expected (from scenario):</div>
+                                  <div className="font-mono text-xs bg-blue-50 p-2 rounded mt-1">
+                                    {JSON.stringify(field.expected) || '(empty)'}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-gray-600 font-semibold">RPA Filled:</div>
+                                  <div className={`font-mono text-xs p-2 rounded mt-1 ${
+                                    matches ? 'bg-green-50' : 'bg-red-50'
+                                  }`}>
+                                    {JSON.stringify(field.actual) || '(empty)'}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Training Feedback */}
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Your Training Feedback & Corrections:
-              </label>
+                          {/* Correct/Incorrect Buttons */}
+                          <div className="flex space-x-2 mt-3">
+                            <button
+                              onClick={() => toggleFieldCorrectness(fieldIndex, true)}
+                              className={`flex-1 px-4 py-2 rounded font-medium transition-all ${
+                                field.isCorrect === true 
+                                  ? 'bg-green-600 text-white' 
+                                  : 'bg-gray-200 text-gray-700 hover:bg-green-100'
+                              }`}
+                            >
+                              <CheckCircleIcon className="h-4 w-4 inline mr-1" />
+                              Correct
+                            </button>
+                            <button
+                              onClick={() => toggleFieldCorrectness(fieldIndex, false)}
+                              className={`flex-1 px-4 py-2 rounded font-medium transition-all ${
+                                field.isCorrect === false 
+                                  ? 'bg-red-600 text-white' 
+                                  : 'bg-gray-200 text-gray-700 hover:bg-red-100'
+                              }`}
+                            >
+                              <XCircleIcon className="h-4 w-4 inline mr-1" />
+                              Incorrect
+                            </button>
+                          </div>
+
+                          {/* Auto-suggest based on match */}
+                          {matches && field.isCorrect === null && (
+                            <div className="mt-2 text-xs text-green-600 italic">
+                              ✓ Values match - likely correct
+                            </div>
+                          )}
+                          {!matches && field.isCorrect === null && (
+                            <div className="mt-2 text-xs text-red-600 italic">
+                              ⚠️ Values don't match - review carefully
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* BOTTOM PANEL: Training Feedback */}
+          <div className="bg-white border-t-2 border-gray-300 p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Training Feedback</h3>
+                  <p className="text-sm text-gray-600">
+                    Explain corrections in detail - the RPA will learn from your feedback
+                  </p>
+                </div>
+                <div className="text-right">
+                  {!allReviewed && (
+                    <div className="text-sm text-orange-600 font-medium">
+                      ⚠️ Please review all {totalFields} fields before submitting
+                    </div>
+                  )}
+                  {allReviewed && (
+                    <div className={`text-sm font-bold ${
+                      parseFloat(accuracy as string) >= 95 ? 'text-green-600' : 
+                      parseFloat(accuracy as string) >= 80 ? 'text-yellow-600' : 
+                      'text-red-600'
+                    }`}>
+                      Overall Accuracy: {accuracy}%
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <textarea
                 value={reviewFeedback}
                 onChange={(e) => setReviewFeedback(e.target.value)}
-                className="w-full h-32 px-3 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                placeholder="Explain what the RPA did wrong and how it should be corrected. Be specific about field mapping errors, data transformation issues, or logic problems..."
-              />
-            </div>
+                className="w-full h-32 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                placeholder="Provide detailed training feedback. For incorrect fields, explain:
+• What the RPA should have filled instead
+• Why it got it wrong (e.g., incorrect field mapping, wrong data source)
+• How to fix it (e.g., 'interstateVehicles should sum all owned vehicles when interstateCommerce = Yes')
 
-            {/* Action Buttons */}
-            <div className="flex space-x-4">
-              <button
-                onClick={() => submitCorrection(true)}
-                className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center justify-center"
-              >
-                <ThumbUpIcon className="h-5 w-5 mr-2" />
-                Mark Correct & Continue
-              </button>
-              <button
-                onClick={() => submitCorrection(false)}
-                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center justify-center"
-              >
-                <ThumbDownIcon className="h-5 w-5 mr-2" />
-                Mark Incorrect & Train
-              </button>
+Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 straight trucks + 2 tractors owned). The mapping logic needs to check if interstateCommerce=Yes, then sum vehicles.straightTrucks.owned + vehicles.truckTractors.owned.'"
+              />
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4 mt-4">
+                <button
+                  onClick={() => submitCorrection(correctCount === totalFields)}
+                  disabled={!allReviewed}
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center"
+                >
+                  Submit Review & Load Next Scenario
+                </button>
+                <button
+                  onClick={() => setShowReview(false)}
+                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
+                >
+                  Back to Form
+                </button>
+              </div>
             </div>
           </div>
         </div>
