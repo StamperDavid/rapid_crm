@@ -18,7 +18,7 @@ import {
   ChartBarIcon,
   PlayIcon,
   PauseIcon,
-  ArrowPathIcon,
+  RefreshIcon,
   DocumentTextIcon,
   ExclamationIcon,
   ArrowRightIcon,
@@ -1478,7 +1478,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 >
                   {isAutoFilling ? (
                     <>
-                      <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+                      <RefreshIcon className="h-5 w-5 mr-2 animate-spin" />
                       Auto-Filling...
                     </>
                   ) : (
