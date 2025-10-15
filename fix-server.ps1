@@ -35,7 +35,7 @@ $content = $content -replace "(?s)const \{ runEldMigration.*?console\.warn\('⚠
 # Write back
 $content | Out-File -FilePath server.js -Encoding UTF8 -NoNewline
 
-Write-Host "✓ server.js references removed" -ForegroundColor Green
-Write-Host "Note: Manual cleanup of API endpoint implementations (lines 2320-3880) still needed" -ForegroundColor Yellow
+Write-Host "Server.js references removed" -ForegroundColor Green
+Write-Host "Note: Manual cleanup of API endpoint implementations still needed" -ForegroundColor Yellow
 
 
