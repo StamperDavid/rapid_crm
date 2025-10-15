@@ -1,146 +1,172 @@
 /**
- * ONBOARDING AGENT TRAINING SCENARIO GENERATOR
- * 
- * Generates realistic fake clients for Regulation Training of the onboarding agent
- * Based on the actual USDOT application form requirements
+ * Scenario Generator Service
+ * Generates complete USDOT application scenarios for training Alex
+ * Each scenario includes ALL USDOT questions with realistic answers
  */
 
-import { RegulatoryKnowledgeBase } from './RegulatoryKnowledgeBase';
-
-export interface FakeClient {
+export interface USDOTApplicationScenario {
   id: string;
-  // Business Information
-  legalBusinessName: string;
-  dbaName?: string;
-  principalAddress: Address;
-  mailingAddress?: Address;
-  phoneNumber: string;
-  einOrSsn: string;
-  dunBradstreetNumber?: string;
   
-  // Business Classification
-  isGovernmentUnit: boolean;
-  businessForm: BusinessForm;
-  ownership: OwnershipType;
+  // Operation Classification
+  hasDunsBradstreet: 'Yes' | 'No';
+  legalBusinessName: string;
+  doingBusinessAs: string;
+  principalAddressSameAsContact: 'Yes' | 'No';
+  principalAddress: {
+    country: string;
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  mailingAddress: {
+    country: string;
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  businessPhone: string;
+  ein: string;
+  isUnitOfGovernment: 'Yes' | 'No';
+  formOfBusiness: 'sole_proprietor' | 'partnership' | 'limited_liability_company' | 'corporation' | 'limited_liability_partnership' | 'trusts' | 'other';
+  ownershipControl: 'us_citizen' | 'canadian_citizen' | 'mexican_citizen' | 'other_foreign';
   
   // Company Contact
-  contact: CompanyContact;
+  companyContact: {
+    firstName: string;
+    middleName: string;
+    lastName: string;
+    suffix: string;
+    title: string;
+    email: string;
+    phone: string;
+    address: {
+      country: string;
+      street: string;
+      city: string;
+      state: string;
+      postalCode: string;
+    };
+  };
   
-  // Operations
-  operations: Operations;
-  
-  // Vehicles
-  vehicles: VehicleInfo;
-  
-  // Drivers
-  drivers: DriverInfo;
-  
-  // Expected Outcomes
-  expectedServices: string[];
-  expectedRevenue: number;
-  complexity: 'simple' | 'intermediate' | 'complex' | 'expert';
-  
-  // Training Metadata
-  scenario: string;
-  difficulty: number; // 1-10
-  createdAt: Date;
-}
-
-export interface Address {
-  country: string;
-  streetAddress: string;
-  city: string;
-  state: string;
-  postalCode: string;
-}
-
-export interface CompanyContact {
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  suffix?: string;
-  title: string;
-  email: string;
-  phoneNumber: string;
-  address: Address;
-}
-
-export type BusinessForm = 
-  | 'sole_proprietor'
-  | 'partnership'
-  | 'limited_liability_company'
-  | 'corporation'
-  | 'limited_liability_partnership'
-  | 'trust'
-  | 'other';
-
-export type OwnershipType = 
-  | 'us_citizen'
-  | 'canadian_citizen'
-  | 'mexican_citizen'
-  | 'other_foreign';
-
-export type WeightClass = 
-  | 'light'      // Under 26,000 lbs
-  | 'medium'     // 26,000-33,000 lbs
-  | 'heavy'      // Over 26,000 lbs (interstate)
-  | 'mixed'      // Multiple weight classes
-  | 'none';      // No vehicles (broker)
-
-export interface Operations {
-  // Service Types
-  isIntermodalEquipmentProvider: boolean;
-  transportsProperty: boolean;
-  receivesCompensation: boolean;
-  propertyType: 'hazardous_materials' | 'household_goods' | 'exempt_commodities' | 'other_freight';
-  transportsInterstate: boolean;
-  transportsOwnProperty: boolean;
-  transportsPassengers: boolean;
-  providesBrokerServices: boolean;
-  providesFreightForwarderServices: boolean;
-  operatesCargoTankFacility: boolean;
-  operatesDriveaway: boolean;
-  operatesTowaway: boolean;
+  // Operation Type Questions
+  operateAsIntermodalEquipmentProvider: 'Yes' | 'No';
+  transportProperty: 'Yes' | 'No';
+  receiveCompensationForTransport: 'Yes' | 'No';
+  propertyType: 'hazardous_materials' | 'household_goods' | 'exempt_commodities' | 'other_non_hazardous';
+  transportNonHazardousInterstate: 'Yes' | 'No';
+  transportOwnProperty: 'Yes' | 'No';
+  transportPassengers: 'Yes' | 'No';
+  provideBrokerServices: 'Yes' | 'No';
+  provideFreightForwarderServices: 'Yes' | 'No';
+  operateCargoTankFacility: 'Yes' | 'No';
+  operateAsDriveaway: 'Yes' | 'No';
+  operateAsTowaway: 'Yes' | 'No';
   cargoClassifications: string[];
-}
-
-export interface VehicleInfo {
-  nonCmvProperty: number;
+  
+  // Vehicle Summary
+  nonCMVProperty: number;
   vehicles: {
-    straightTrucks: { owned: number; termLeased: number; tripLeased: number; towDriveaway: number };
-    truckTractors: { owned: number; termLeased: number; tripLeased: number; towDriveaway: number };
-    trailers: { owned: number; termLeased: number; tripLeased: number; towDriveaway: number };
-    iepTrailerChassis: { owned: number; termLeased: number; tripLeased: number; towDriveaway: number; serviced: number };
+    straightTrucks: {
+      owned: number;
+      termLeased: number;
+      tripLeased: number;
+      towDriveway: number;
+      serviced: number;
+    };
+    truckTractors: {
+      owned: number;
+      termLeased: number;
+      tripLeased: number;
+      towDriveway: number;
+      serviced: number;
+    };
+    trailers: {
+      owned: number;
+      termLeased: number;
+      tripLeased: number;
+      towDriveway: number;
+      serviced: number;
+    };
+    iepTrailerChassis: {
+      owned: number;
+      termLeased: number;
+      tripLeased: number;
+      towDriveway: number;
+      serviced: number;
+    };
   };
-  canadaVehicles: number;
-  mexicoVehicles: number;
-  interstateVehicles: number;
-  intrastateVehicles: number;
-}
-
-export interface DriverInfo {
-  interstateDrivers: {
+  vehiclesInCanada: number;
+  vehiclesInMexico: number;
+  cmvInterstateOnly: number;
+  cmvIntrastateOnly: number;
+  
+  // Driver Summary
+  driversInterstate: {
     within100Miles: number;
     beyond100Miles: number;
   };
-  intrastateDrivers: {
+  driversIntrastate: {
     within100Miles: number;
     beyond100Miles: number;
   };
-  cdlDrivers: number;
-  canadaDrivers: number;
-  mexicoDrivers: number;
+  driversWithCDL: number;
+  driversInCanada: number;
+  driversInMexico: number;
+  
+  // Affiliation
+  hasAffiliations: 'Yes' | 'No';
+  
+  // Compliance Certifications (all should be Yes/checked)
+  certifyWillingAndAble: 'Yes';
+  certifyProduceDocuments: 'Yes';
+  certifyNotDisqualified: 'Yes';
+  certifyUnderstandProcessAgent: 'Yes';
+  certifyNotUnderSuspension: 'Yes';
+  certifyDeficienciesCorrected: 'Yes';
+  electronicSignature: string;
+  
+  // Expected Requirements (What Alex should determine)
+  expectedRequirements: {
+    usdotRequired: boolean;
+    mcAuthorityRequired: boolean;
+    hazmatEndorsementRequired: boolean;
+    iftaRequired: boolean;
+    stateRegistrationRequired: boolean;
+    reasoning: string;
+  };
+  
+  // Metadata
+  generatedAt: string;
 }
 
 export class ScenarioGenerator {
   private static instance: ScenarioGenerator;
-  private scenarioTemplates: any[] = [];
-  private regulatoryKB: RegulatoryKnowledgeBase;
 
-  private constructor() {
-    this.regulatoryKB = RegulatoryKnowledgeBase.getInstance();
-    this.initializeScenarioTemplates();
-  }
+  // US States
+  private readonly states = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'
+  ];
+
+  private readonly businessTypes: Array<'sole_proprietor' | 'partnership' | 'limited_liability_company' | 'corporation'> = [
+    'sole_proprietor', 'partnership', 'limited_liability_company', 'corporation'
+  ];
+
+  private readonly companyNames = [
+    'ABC Trucking', 'XYZ Logistics', 'Smith Transport', 'Jones Freight',
+    'Eagle Express', 'Liberty Hauling', 'Freedom Transport', 'Pioneer Logistics',
+    'Rapid Freight', 'American Transport', 'United Cargo', 'National Haulers'
+  ];
+
+  private readonly firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Jennifer'];
+  private readonly lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
+
+  private constructor() {}
 
   public static getInstance(): ScenarioGenerator {
     if (!ScenarioGenerator.instance) {
@@ -150,831 +176,408 @@ export class ScenarioGenerator {
   }
 
   /**
-   * Generate a random fake client based on scenario templates
+   * Generate all compliance scenarios with full USDOT applications
    */
-  public generateFakeClient(scenarioType?: string): FakeClient {
-    const template = this.getRandomTemplate(scenarioType);
-    return this.createClientFromTemplate(template);
-  }
+  public async generateAllScenarios(): Promise<USDOTApplicationScenario[]> {
+    console.log('🎯 Starting full scenario generation with complete USDOT applications...');
+    const scenarios: USDOTApplicationScenario[] = [];
+    let scenarioId = 1;
 
-  /**
-   * Generate multiple fake clients for training
-   */
-  public generateTrainingBatch(count: number, scenarioTypes?: string[]): FakeClient[] {
-    const clients: FakeClient[] = [];
-    
-    for (let i = 0; i < count; i++) {
-      const scenarioType = scenarioTypes ? 
-        scenarioTypes[Math.floor(Math.random() * scenarioTypes.length)] : 
-        undefined;
-      
-      clients.push(this.generateFakeClient(scenarioType));
-    }
-    
-    return clients;
-  }
+    // Generate scenarios for each state
+    for (const state of this.states) {
+      // For-hire interstate
+      scenarios.push(...this.generateForHireInterstateScenarios(scenarioId, state));
+      scenarioId += 100;
 
-  /**
-   * Generate a specific scenario type
-   */
-  public generateScenario(scenarioType: string): FakeClient {
-    const template = this.scenarioTemplates.find(t => t.type === scenarioType);
-    if (!template) {
-      throw new Error(`Scenario type "${scenarioType}" not found`);
-    }
-    
-    return this.createClientFromTemplate(template);
-  }
+      // For-hire intrastate
+      scenarios.push(...this.generateForHireIntrastateScenarios(scenarioId, state));
+      scenarioId += 100;
 
-  /**
-   * Set qualified states for regulatory testing
-   */
-  public setQualifiedStates(qualifiedStates: any[]): void {
-    this.regulatoryKB.setQualifiedStates(qualifiedStates);
-  }
+      // Private property interstate
+      scenarios.push(...this.generatePrivateInterstateScenarios(scenarioId, state));
+      scenarioId += 100;
 
-  /**
-   * Add regulatory testing scenarios that test qualified states logic
-   */
-  private addRegulatoryTestingScenarios(): any[] {
-    return [
-      // Qualified State Testing Scenarios
-      {
-        type: 'qualified_state_under_threshold',
-        name: 'Qualified State - Under Threshold',
-        description: 'Vehicle under qualified state GVWR threshold - should NOT require USDOT',
-        difficulty: 3,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: false,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: [], // Should NOT need USDOT if under qualified state threshold
-        businessForm: 'sole_proprietor',
-        weightClass: 'light',
-        testScenario: true,
-        regulatoryTest: {
-          gvwr: 8000, // Under typical qualified state threshold
-          passengers: 8, // Under passenger threshold
-          interstate: false,
-          forHire: true,
-          hazmat: false,
-          stateCode: 'TX', // Example qualified state
-          expectedResult: 'no_usdot_required'
-        }
-      },
-      {
-        type: 'qualified_state_over_threshold',
-        name: 'Qualified State - Over Threshold',
-        description: 'Vehicle over qualified state GVWR threshold - SHOULD require USDOT',
-        difficulty: 3,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: false,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT'], // Should need USDOT if over qualified state threshold
-        businessForm: 'limited_liability_company',
-        weightClass: 'medium',
-        testScenario: true,
-        regulatoryTest: {
-          gvwr: 15000, // Over typical qualified state threshold
-          passengers: 8,
-          interstate: false,
-          forHire: true,
-          hazmat: false,
-          stateCode: 'TX', // Example qualified state
-          expectedResult: 'usdot_required'
-        }
-      },
-      {
-        type: 'qualified_state_passenger_threshold',
-        name: 'Qualified State - Passenger Threshold',
-        description: 'Vehicle meeting qualified state passenger threshold - SHOULD require USDOT',
-        difficulty: 3,
-        operations: {
-          transportsPassengers: true,
-          receivesCompensation: true,
-          transportsInterstate: false,
-          cargoClassifications: ['passengers']
-        },
-        vehicles: {
-          straightTrucks: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          buses: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT'], // Should need USDOT if meets passenger threshold
-        businessForm: 'corporation',
-        weightClass: 'heavy',
-        testScenario: true,
-        regulatoryTest: {
-          gvwr: 12000,
-          passengers: 12, // Over typical qualified state passenger threshold
-          interstate: false,
-          forHire: true,
-          hazmat: false,
-          stateCode: 'TX', // Example qualified state
-          expectedResult: 'usdot_required'
-        }
-      },
-      {
-        type: 'interstate_under_qualified_threshold',
-        name: 'Interstate - Under Qualified State Threshold',
-        description: 'Interstate operation but under qualified state threshold - tests priority logic',
-        difficulty: 4,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true, // Interstate operation
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT'], // Interstate commerce should still require USDOT
-        businessForm: 'limited_liability_company',
-        weightClass: 'medium',
-        testScenario: true,
-        regulatoryTest: {
-          gvwr: 8000, // Under qualified state threshold but interstate
-          passengers: 8,
-          interstate: true, // This should trigger USDOT requirement
-          forHire: true,
-          hazmat: false,
-          stateCode: 'TX',
-          expectedResult: 'usdot_required_interstate'
-        }
-      },
-      {
-        type: 'non_qualified_state_test',
-        name: 'Non-Qualified State - Standard Rules',
-        description: 'Operation in non-qualified state - should follow standard federal/state rules',
-        difficulty: 3,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: false,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: [], // Should follow standard rules (likely no USDOT for under 26,000 lbs intrastate)
-        businessForm: 'sole_proprietor',
-        weightClass: 'light',
-        testScenario: true,
-        regulatoryTest: {
-          gvwr: 15000, // Under standard 26,000 lbs threshold
-          passengers: 8,
-          interstate: false,
-          forHire: true,
-          hazmat: false,
-          stateCode: 'WY', // Example non-qualified state
-          expectedResult: 'no_usdot_required'
-        }
-      }
-    ];
-  }
-
-  private initializeScenarioTemplates(): void {
-    this.scenarioTemplates = [
-      // REGULATORY TESTING SCENARIOS (Added first for priority)
-      ...this.addRegulatoryTestingScenarios(),
-      
-      // SIMPLE SCENARIOS
-      {
-        type: 'light_truck_owner_operator',
-        name: 'Light Truck Owner-Operator',
-        description: 'Single light truck (under 26,000 lbs), local delivery',
-        difficulty: 2,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: false,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: [], // May not need USDOT
-        businessForm: 'sole_proprietor',
-        weightClass: 'light'
-      },
-      {
-        type: 'medium_truck_local',
-        name: 'Medium Truck Local',
-        description: 'Medium truck (26,000-33,000 lbs), local operation',
-        difficulty: 3,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: false,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT'],
-        businessForm: 'sole_proprietor',
-        weightClass: 'medium'
-      },
-      {
-        type: 'heavy_truck_interstate',
-        name: 'Heavy Truck Interstate',
-        description: 'Heavy truck (over 26,000 lbs), interstate commerce',
-        difficulty: 4,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'IFTA'],
-        businessForm: 'sole_proprietor',
-        weightClass: 'heavy'
-      },
-
-      // INTERMEDIATE SCENARIOS
-      {
-        type: 'small_fleet_general',
-        name: 'Small Fleet General Freight',
-        description: '2-5 truck fleet, general freight, interstate',
-        difficulty: 5,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight']
-        },
-        vehicles: {
-          straightTrucks: { owned: 2, termLeased: 1, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 1, termLeased: 1, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 2, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA'],
-        businessForm: 'limited_liability_company',
-        weightClass: 'mixed'
-      },
-      {
-        type: 'household_goods_mover',
-        name: 'Household Goods Mover',
-        description: 'Specialized household goods transportation',
-        difficulty: 6,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'household_goods',
-          cargoClassifications: ['household_goods']
-        },
-        vehicles: {
-          straightTrucks: { owned: 3, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 2, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 5, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'corporation',
-        weightClass: 'heavy'
-      },
-      {
-        type: 'passenger_bus_company',
-        name: 'Passenger Bus Company',
-        description: 'Bus company transporting passengers interstate',
-        difficulty: 6,
-        operations: {
-          transportsPassengers: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          cargoClassifications: ['passengers']
-        },
-        vehicles: {
-          straightTrucks: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          buses: { owned: 5, termLeased: 2, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'limited_liability_company',
-        weightClass: 'heavy'
-      },
-      {
-        type: 'freight_broker',
-        name: 'Freight Broker',
-        description: 'Broker-only operation, no vehicles',
-        difficulty: 4,
-        operations: {
-          providesBrokerServices: true,
-          transportsProperty: false,
-          receivesCompensation: true
-        },
-        vehicles: {
-          straightTrucks: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['MC'],
-        businessForm: 'limited_liability_company',
-        weightClass: 'none'
-      },
-
-      // COMPLEX SCENARIOS
-      {
-        type: 'hazmat_carrier',
-        name: 'Hazardous Materials Carrier',
-        description: 'Specialized hazardous materials transportation',
-        difficulty: 8,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'hazardous_materials',
-          cargoClassifications: ['hazardous_materials', 'liquids_gases']
-        },
-        vehicles: {
-          straightTrucks: { owned: 2, termLeased: 1, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 4, termLeased: 2, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 6, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD', 'Hazmat'],
-        businessForm: 'corporation',
-        weightClass: 'heavy'
-      },
-      {
-        type: 'large_fleet_mixed',
-        name: 'Large Fleet Mixed Operations',
-        description: '10+ vehicle fleet with mixed cargo types',
-        difficulty: 9,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight', 'refrigerated_food', 'building_materials', 'motor_vehicles']
-        },
-        vehicles: {
-          straightTrucks: { owned: 5, termLeased: 3, tripLeased: 2, towDriveaway: 1 },
-          truckTractors: { owned: 8, termLeased: 4, tripLeased: 1, towDriveaway: 0 },
-          trailers: { owned: 12, termLeased: 2, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'corporation',
-        weightClass: 'mixed'
-      },
-      {
-        type: 'construction_heavy',
-        name: 'Construction Heavy Equipment',
-        description: 'Construction company with heavy equipment transport',
-        difficulty: 7,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['machinery_large_objects', 'construction', 'building_materials']
-        },
-        vehicles: {
-          straightTrucks: { owned: 3, termLeased: 0, tripLeased: 0, towDriveaway: 2 },
-          truckTractors: { owned: 4, termLeased: 1, tripLeased: 0, towDriveaway: 3 },
-          trailers: { owned: 6, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'corporation',
-        weightClass: 'heavy'
-      },
-      {
-        type: 'agricultural_carrier',
-        name: 'Agricultural Carrier',
-        description: 'Farm and agricultural commodity transportation',
-        difficulty: 6,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['fresh_produce', 'grain_feed_hay', 'farm_supplies', 'livestock']
-        },
-        vehicles: {
-          straightTrucks: { owned: 4, termLeased: 1, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 6, termLeased: 2, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 8, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'partnership',
-        weightClass: 'heavy'
-      },
-
-      // EXPERT SCENARIOS
-      {
-        type: 'mega_fleet_logistics',
-        name: 'Mega Fleet Logistics',
-        description: 'Large logistics company with 50+ vehicles',
-        difficulty: 10,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          providesBrokerServices: true,
-          providesFreightForwarderServices: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['general_freight', 'intermodal_containers', 'refrigerated_food', 'motor_vehicles', 'building_materials']
-        },
-        vehicles: {
-          straightTrucks: { owned: 15, termLeased: 10, tripLeased: 5, towDriveaway: 2 },
-          truckTractors: { owned: 25, termLeased: 15, tripLeased: 8, towDriveaway: 1 },
-          trailers: { owned: 35, termLeased: 10, tripLeased: 3, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'corporation',
-        weightClass: 'mixed'
-      },
-      {
-        type: 'specialized_hazmat',
-        name: 'Specialized Hazmat Carrier',
-        description: 'High-risk hazardous materials with specialized equipment',
-        difficulty: 10,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'hazardous_materials',
-          cargoClassifications: ['hazardous_materials', 'liquids_gases', 'oil_field_equipment']
-        },
-        vehicles: {
-          straightTrucks: { owned: 8, termLeased: 4, tripLeased: 2, towDriveaway: 1 },
-          truckTractors: { owned: 12, termLeased: 6, tripLeased: 3, towDriveaway: 0 },
-          trailers: { owned: 15, termLeased: 5, tripLeased: 2, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD', 'Hazmat'],
-        businessForm: 'corporation',
-        weightClass: 'heavy'
-      },
-      {
-        type: 'intermodal_provider',
-        name: 'Intermodal Equipment Provider',
-        description: 'Specialized intermodal container and chassis provider',
-        difficulty: 9,
-        operations: {
-          isIntermodalEquipmentProvider: true,
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'other_freight',
-          cargoClassifications: ['intermodal_containers']
-        },
-        vehicles: {
-          straightTrucks: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 5, termLeased: 3, tripLeased: 2, towDriveaway: 0 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          iepTrailerChassis: { owned: 50, termLeased: 20, tripLeased: 10, towDriveaway: 5, serviced: 100 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'corporation',
-        weightClass: 'heavy'
-      },
-
-      // EDGE CASES
-      {
-        type: 'exempt_commodities',
-        name: 'Exempt Commodities Only',
-        description: 'Transporting only exempt commodities, may not need USDOT',
-        difficulty: 5,
-        operations: {
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'exempt_commodities',
-          cargoClassifications: ['exempt_commodities']
-        },
-        vehicles: {
-          straightTrucks: { owned: 2, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          truckTractors: { owned: 1, termLeased: 0, tripLeased: 0, towDriveaway: 0 },
-          trailers: { owned: 2, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: [], // May not need USDOT
-        businessForm: 'sole_proprietor',
-        weightClass: 'medium'
-      },
-      {
-        type: 'driveaway_towaway',
-        name: 'Driveaway/Towaway Operation',
-        description: 'Specialized vehicle delivery service',
-        difficulty: 6,
-        operations: {
-          operatesDriveaway: true,
-          operatesTowaway: true,
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          cargoClassifications: ['drive_away_tow_away', 'motor_vehicles']
-        },
-        vehicles: {
-          straightTrucks: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 5 },
-          truckTractors: { owned: 3, termLeased: 2, tripLeased: 1, towDriveaway: 8 },
-          trailers: { owned: 0, termLeased: 0, tripLeased: 0, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD'],
-        businessForm: 'limited_liability_company',
-        weightClass: 'mixed'
-      },
-      {
-        type: 'cargo_tank_facility',
-        name: 'Cargo Tank Facility',
-        description: 'Specialized cargo tank facility operation',
-        difficulty: 8,
-        operations: {
-          operatesCargoTankFacility: true,
-          transportsProperty: true,
-          receivesCompensation: true,
-          transportsInterstate: true,
-          propertyType: 'hazardous_materials',
-          cargoClassifications: ['hazardous_materials', 'liquids_gases']
-        },
-        vehicles: {
-          straightTrucks: { owned: 4, termLeased: 2, tripLeased: 1, towDriveaway: 0 },
-          truckTractors: { owned: 6, termLeased: 3, tripLeased: 2, towDriveaway: 0 },
-          trailers: { owned: 8, termLeased: 2, tripLeased: 1, towDriveaway: 0 }
-        },
-        expectedServices: ['USDOT', 'MC', 'IFTA', 'ELD', 'Hazmat'],
-        businessForm: 'corporation',
-        weightClass: 'heavy'
-      }
-    ];
-  }
-
-  private getRandomTemplate(scenarioType?: string) {
-    if (scenarioType) {
-      return this.scenarioTemplates.find(t => t.type === scenarioType) || this.scenarioTemplates[0];
-    }
-    return this.scenarioTemplates[Math.floor(Math.random() * this.scenarioTemplates.length)];
-  }
-
-  private createClientFromTemplate(template: any): FakeClient {
-    const clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    return {
-      id: clientId,
-      legalBusinessName: this.generateBusinessName(template.businessForm),
-      dbaName: Math.random() > 0.7 ? this.generateDbaName() : undefined,
-      principalAddress: this.generateAddress(),
-      mailingAddress: Math.random() > 0.8 ? this.generateAddress() : undefined,
-      phoneNumber: this.generatePhoneNumber(),
-      einOrSsn: this.generateEinOrSsn(),
-      dunBradstreetNumber: Math.random() > 0.6 ? this.generateDunsNumber() : undefined,
-      isGovernmentUnit: Math.random() > 0.95,
-      businessForm: template.businessForm,
-      ownership: 'us_citizen', // Default to US citizen for simplicity
-      contact: this.generateCompanyContact(),
-      operations: {
-        ...template.operations,
-        isIntermodalEquipmentProvider: Math.random() > 0.9,
-        operatesCargoTankFacility: Math.random() > 0.9,
-        operatesDriveaway: Math.random() > 0.9,
-        operatesTowaway: Math.random() > 0.9,
-        providesFreightForwarderServices: Math.random() > 0.8
-      },
-      vehicles: {
-        ...template.vehicles,
-        nonCmvProperty: Math.floor(Math.random() * 5),
-        canadaVehicles: Math.floor(Math.random() * 3),
-        mexicoVehicles: Math.floor(Math.random() * 2),
-        interstateVehicles: Math.floor(Math.random() * 10),
-        intrastateVehicles: Math.floor(Math.random() * 5)
-      },
-      drivers: {
-        interstateDrivers: {
-          within100Miles: Math.floor(Math.random() * 3),
-          beyond100Miles: Math.floor(Math.random() * 5)
-        },
-        intrastateDrivers: {
-          within100Miles: Math.floor(Math.random() * 2),
-          beyond100Miles: Math.floor(Math.random() * 3)
-        },
-        cdlDrivers: Math.floor(Math.random() * 8),
-        canadaDrivers: Math.floor(Math.random() * 2),
-        mexicoDrivers: Math.floor(Math.random() * 1)
-      },
-      expectedServices: template.expectedServices,
-      expectedRevenue: this.calculateExpectedRevenue(template.expectedServices),
-      complexity: this.determineComplexity(template.difficulty),
-      scenario: template.name,
-      difficulty: template.difficulty,
-      createdAt: new Date()
-    };
-  }
-
-  private generateBusinessName(businessForm: BusinessForm): string {
-    const businessTypes = {
-      sole_proprietor: ['Transport', 'Logistics', 'Hauling', 'Freight', 'Delivery'],
-      partnership: ['Transport Partners', 'Logistics Group', 'Freight Solutions', 'Delivery Team'],
-      corporation: ['Transport Corp', 'Logistics Inc', 'Freight Solutions LLC', 'Delivery Systems'],
-      limited_liability_company: ['Transport LLC', 'Logistics Group LLC', 'Freight Solutions LLC']
-    };
-
-    const types = businessTypes[businessForm] || businessTypes.sole_proprietor;
-    const prefixes = ['Ace', 'Premier', 'Elite', 'Pro', 'Express', 'Swift', 'Reliable', 'Quality'];
-    const suffixes = ['Services', 'Solutions', 'Systems', 'Group', 'Enterprises'];
-
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const type = types[Math.floor(Math.random() * types.length)];
-    const suffix = Math.random() > 0.5 ? suffixes[Math.floor(Math.random() * suffixes.length)] : '';
-
-    return `${prefix} ${type}${suffix ? ' ' + suffix : ''}`;
-  }
-
-  private generateDbaName(): string {
-    const dbaNames = ['DBA Express Transport', 'DBA Quick Delivery', 'DBA Reliable Hauling', 'DBA Fast Freight'];
-    return dbaNames[Math.floor(Math.random() * dbaNames.length)];
-  }
-
-  private generateAddress(): Address {
-    const cities = ['Dallas', 'Houston', 'Austin', 'San Antonio', 'Fort Worth', 'El Paso', 'Arlington', 'Corpus Christi'];
-    const states = ['TX', 'CA', 'FL', 'NY', 'IL', 'PA', 'OH', 'GA'];
-    const streets = ['Main St', 'Oak Ave', 'First St', 'Second Ave', 'Park Rd', 'Broadway', 'Commerce St', 'Industrial Blvd'];
-
-    return {
-      country: 'US',
-      streetAddress: `${Math.floor(Math.random() * 9999) + 1} ${streets[Math.floor(Math.random() * streets.length)]}`,
-      city: cities[Math.floor(Math.random() * cities.length)],
-      state: states[Math.floor(Math.random() * states.length)],
-      postalCode: `${Math.floor(Math.random() * 90000) + 10000}`
-    };
-  }
-
-  private generatePhoneNumber(): string {
-    const areaCode = Math.floor(Math.random() * 900) + 100;
-    const exchange = Math.floor(Math.random() * 900) + 100;
-    const number = Math.floor(Math.random() * 9000) + 1000;
-    return `(${areaCode}) ${exchange}-${number}`;
-  }
-
-  private generateEinOrSsn(): string {
-    // Generate EIN format: XX-XXXXXXX
-    const first = Math.floor(Math.random() * 90) + 10;
-    const second = Math.floor(Math.random() * 9000000) + 1000000;
-    return `${first}-${second}`;
-  }
-
-  private generateDunsNumber(): string {
-    return Math.floor(Math.random() * 900000000) + 100000000;
-  }
-
-  private generateCompanyContact(): CompanyContact {
-    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Lisa', 'Robert', 'Jennifer', 'William', 'Mary'];
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
-    const titles = ['Owner', 'President', 'CEO', 'Manager', 'Director', 'Partner'];
-
-    return {
-      firstName: firstNames[Math.floor(Math.random() * firstNames.length)],
-      middleName: Math.random() > 0.7 ? firstNames[Math.floor(Math.random() * firstNames.length)] : undefined,
-      lastName: lastNames[Math.floor(Math.random() * lastNames.length)],
-      suffix: Math.random() > 0.9 ? ['Jr', 'Sr', 'III'][Math.floor(Math.random() * 3)] : undefined,
-      title: titles[Math.floor(Math.random() * titles.length)],
-      email: `${firstNames[Math.floor(Math.random() * firstNames.length)].toLowerCase()}@${this.generateBusinessName('sole_proprietor').toLowerCase().replace(/\s+/g, '')}.com`,
-      phoneNumber: this.generatePhoneNumber(),
-      address: this.generateAddress()
-    };
-  }
-
-  private calculateExpectedRevenue(services: string[]): number {
-    const servicePrices = {
-      'USDOT': 300,
-      'MC': 300,
-      'IFTA': 200,
-      'ELD': 150,
-      'Hazmat': 100
-    };
-
-    return services.reduce((total, service) => {
-      return total + (servicePrices[service as keyof typeof servicePrices] || 0);
-    }, 0);
-  }
-
-  private determineComplexity(difficulty: number): 'simple' | 'intermediate' | 'complex' | 'expert' {
-    if (difficulty <= 3) return 'simple';
-    if (difficulty <= 6) return 'intermediate';
-    if (difficulty <= 8) return 'complex';
-    return 'expert';
-  }
-
-  /**
-   * Test regulatory compliance for a scenario
-   */
-  public testRegulatoryCompliance(scenario: any): {
-    isCompliant: boolean;
-    regulatoryAssessment: any;
-    errors: string[];
-    recommendations: string[];
-  } {
-    const result = {
-      isCompliant: true,
-      regulatoryAssessment: null as any,
-      errors: [] as string[],
-      recommendations: [] as string[]
-    };
-
-    // If this is a test scenario, run regulatory assessment
-    if (scenario.testScenario && scenario.regulatoryTest) {
-      const test = scenario.regulatoryTest;
-      result.regulatoryAssessment = this.regulatoryKB.requiresUSDOT({
-        gvwr: test.gvwr,
-        passengers: test.passengers,
-        interstate: test.interstate,
-        forHire: test.forHire,
-        hazmat: test.hazmat,
-        stateCode: test.stateCode
-      });
-
-      // Check if the assessment matches expected result
-      const expected = test.expectedResult;
-      const actual = result.regulatoryAssessment.required;
-
-      if (expected === 'no_usdot_required' && actual) {
-        result.errors.push(`Expected no USDOT requirement, but assessment shows USDOT required: ${result.regulatoryAssessment.reason}`);
-        result.isCompliant = false;
-      } else if (expected === 'usdot_required' && !actual) {
-        result.errors.push(`Expected USDOT requirement, but assessment shows no USDOT required: ${result.regulatoryAssessment.reason}`);
-        result.isCompliant = false;
-      } else if (expected === 'usdot_required_interstate' && !actual) {
-        result.errors.push(`Expected USDOT requirement for interstate commerce, but assessment shows no USDOT required: ${result.regulatoryAssessment.reason}`);
-        result.isCompliant = false;
-      }
-
-      // Add recommendations based on regulatory source
-      if (result.regulatoryAssessment.regulatorySource.includes('Qualified State')) {
-        result.recommendations.push('Qualified state regulations are being applied correctly');
-      } else if (result.regulatoryAssessment.regulatorySource.includes('Federal')) {
-        result.recommendations.push('Federal regulations are being applied correctly');
-      }
+      // Private property intrastate
+      scenarios.push(...this.generatePrivateIntrastateScenarios(scenarioId, state));
+      scenarioId += 100;
     }
 
-    return result;
+    console.log(`✅ Generated ${scenarios.length} complete USDOT application scenarios`);
+    return scenarios;
   }
 
   /**
-   * Get available scenario types
+   * Generate for-hire interstate scenarios
    */
-  public getAvailableScenarios(): Array<{type: string, name: string, description: string, difficulty: number, isTestScenario?: boolean}> {
-    return this.scenarioTemplates.map(t => ({
-      type: t.type,
-      name: t.name,
-      description: t.description,
-      difficulty: t.difficulty,
-      isTestScenario: t.testScenario || false
+  private generateForHireInterstateScenarios(startId: number, state: string): USDOTApplicationScenario[] {
+    const scenarios: USDOTApplicationScenario[] = [];
+    let id = startId;
+
+    // General freight scenarios
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: true,
+      isInterstate: true,
+      propertyType: 'other_non_hazardous',
+      fleetSize: 'small', // 1-3 trucks
+      hasHazmat: false
     }));
+
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: true,
+      isInterstate: true,
+      propertyType: 'other_non_hazardous',
+      fleetSize: 'medium', // 4-10 trucks
+      hasHazmat: false
+    }));
+
+    // Hazmat scenarios
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: true,
+      isInterstate: true,
+      propertyType: 'hazardous_materials',
+      fleetSize: 'small',
+      hasHazmat: true
+    }));
+
+    // Household goods
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: true,
+      isInterstate: true,
+      propertyType: 'household_goods',
+      fleetSize: 'small',
+      hasHazmat: false
+    }));
+
+    return scenarios;
   }
 
   /**
-   * Get test scenarios only
+   * Generate for-hire intrastate scenarios
    */
-  public getTestScenarios(): Array<{type: string, name: string, description: string, difficulty: number}> {
-    return this.scenarioTemplates
-      .filter(t => t.testScenario)
-      .map(t => ({
-        type: t.type,
-        name: t.name,
-        description: t.description,
-        difficulty: t.difficulty
-      }));
+  private generateForHireIntrastateScenarios(startId: number, state: string): USDOTApplicationScenario[] {
+    const scenarios: USDOTApplicationScenario[] = [];
+    let id = startId;
+
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: true,
+      isInterstate: false,
+      propertyType: 'other_non_hazardous',
+      fleetSize: 'small',
+      hasHazmat: false
+    }));
+
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: true,
+      isInterstate: false,
+      propertyType: 'hazardous_materials',
+      fleetSize: 'medium',
+      hasHazmat: true
+    }));
+
+    return scenarios;
   }
 
   /**
-   * Get qualified states configuration
+   * Generate private property interstate scenarios
    */
-  public getQualifiedStatesConfig(): any[] {
-    return this.regulatoryKB.getQualifiedStates();
+  private generatePrivateInterstateScenarios(startId: number, state: string): USDOTApplicationScenario[] {
+    const scenarios: USDOTApplicationScenario[] = [];
+    let id = startId;
+
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: false,
+      isInterstate: true,
+      propertyType: 'other_non_hazardous',
+      fleetSize: 'small',
+      hasHazmat: false
+    }));
+
+    return scenarios;
+  }
+
+  /**
+   * Generate private property intrastate scenarios
+   */
+  private generatePrivateIntrastateScenarios(startId: number, state: string): USDOTApplicationScenario[] {
+    const scenarios: USDOTApplicationScenario[] = [];
+    let id = startId;
+
+    scenarios.push(this.createScenario(id++, state, {
+      isForHire: false,
+      isInterstate: false,
+      propertyType: 'other_non_hazardous',
+      fleetSize: 'small',
+      hasHazmat: false
+    }));
+
+    return scenarios;
+  }
+
+  /**
+   * Create a complete USDOT application scenario
+   */
+  private createScenario(
+    id: number,
+    state: string,
+    config: {
+      isForHire: boolean;
+      isInterstate: boolean;
+      propertyType: 'hazardous_materials' | 'household_goods' | 'exempt_commodities' | 'other_non_hazardous';
+      fleetSize: 'small' | 'medium' | 'large';
+      hasHazmat: boolean;
+    }
+  ): USDOTApplicationScenario {
+    const companyName = this.getRandomItem(this.companyNames);
+    const businessType = this.getRandomItem(this.businessTypes);
+    const firstName = this.getRandomItem(this.firstNames);
+    const lastName = this.getRandomItem(this.lastNames);
+    
+    const fleetCounts = {
+      small: { owned: this.random(1, 3), leased: 0 },
+      medium: { owned: this.random(4, 10), leased: this.random(0, 2) },
+      large: { owned: this.random(11, 25), leased: this.random(2, 5) }
+    };
+
+    const fleet = fleetCounts[config.fleetSize];
+    const totalVehicles = fleet.owned + fleet.leased;
+
+    return {
+      id: `scenario_${id.toString().padStart(6, '0')}`,
+      
+      // Operation Classification
+      hasDunsBradstreet: 'No',
+      legalBusinessName: companyName + ' LLC',
+      doingBusinessAs: companyName,
+      principalAddressSameAsContact: 'Yes',
+      principalAddress: {
+        country: 'United States',
+        street: `${this.random(100, 9999)} Main Street`,
+        city: this.getCityForState(state),
+        state: state,
+        postalCode: this.generateZip()
+      },
+      mailingAddress: {
+        country: 'United States',
+        street: `${this.random(100, 9999)} Main Street`,
+        city: this.getCityForState(state),
+        state: state,
+        postalCode: this.generateZip()
+      },
+      businessPhone: this.generatePhone(),
+      ein: this.generateEIN(),
+      isUnitOfGovernment: 'No',
+      formOfBusiness: businessType,
+      ownershipControl: 'us_citizen',
+      
+      // Company Contact
+      companyContact: {
+        firstName,
+        middleName: '',
+        lastName,
+        suffix: '',
+        title: 'Owner',
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${companyName.toLowerCase().replace(/\s/g, '')}.com`,
+        phone: this.generatePhone(),
+        address: {
+          country: 'United States',
+          street: `${this.random(100, 9999)} Main Street`,
+          city: this.getCityForState(state),
+          state: state,
+          postalCode: this.generateZip()
+        }
+      },
+      
+      // Operation Type
+      operateAsIntermodalEquipmentProvider: 'No',
+      transportProperty: 'Yes',
+      receiveCompensationForTransport: config.isForHire ? 'Yes' : 'No',
+      propertyType: config.propertyType,
+      transportNonHazardousInterstate: config.isInterstate && !config.hasHazmat ? 'Yes' : 'No',
+      transportOwnProperty: config.isForHire ? 'No' : 'Yes',
+      transportPassengers: 'No',
+      provideBrokerServices: 'No',
+      provideFreightForwarderServices: 'No',
+      operateCargoTankFacility: 'No',
+      operateAsDriveaway: 'No',
+      operateAsTowaway: 'No',
+      cargoClassifications: this.getCargoClassifications(config.propertyType),
+      
+      // Vehicles
+      nonCMVProperty: 0,
+      vehicles: {
+        straightTrucks: {
+          owned: config.fleetSize === 'small' ? fleet.owned : 0,
+          termLeased: 0,
+          tripLeased: 0,
+          towDriveway: 0,
+          serviced: 0
+        },
+        truckTractors: {
+          owned: config.fleetSize !== 'small' ? fleet.owned : 0,
+          termLeased: fleet.leased,
+          tripLeased: 0,
+          towDriveway: 0,
+          serviced: 0
+        },
+        trailers: {
+          owned: config.fleetSize !== 'small' ? fleet.owned : 0,
+          termLeased: fleet.leased,
+          tripLeased: 0,
+          towDriveway: 0,
+          serviced: 0
+        },
+        iepTrailerChassis: {
+          owned: 0,
+          termLeased: 0,
+          tripLeased: 0,
+          towDriveway: 0,
+          serviced: 0
+        }
+      },
+      vehiclesInCanada: 0,
+      vehiclesInMexico: 0,
+      cmvInterstateOnly: config.isInterstate ? totalVehicles : 0,
+      cmvIntrastateOnly: config.isInterstate ? 0 : totalVehicles,
+      
+      // Drivers
+      driversInterstate: {
+        within100Miles: config.isInterstate ? this.random(1, 3) : 0,
+        beyond100Miles: config.isInterstate ? totalVehicles : 0
+      },
+      driversIntrastate: {
+        within100Miles: config.isInterstate ? 0 : this.random(1, 3),
+        beyond100Miles: config.isInterstate ? 0 : totalVehicles
+      },
+      driversWithCDL: totalVehicles,
+      driversInCanada: 0,
+      driversInMexico: 0,
+      
+      // Affiliation
+      hasAffiliations: 'No',
+      
+      // Certifications
+      certifyWillingAndAble: 'Yes',
+      certifyProduceDocuments: 'Yes',
+      certifyNotDisqualified: 'Yes',
+      certifyUnderstandProcessAgent: 'Yes',
+      certifyNotUnderSuspension: 'Yes',
+      certifyDeficienciesCorrected: 'Yes',
+      electronicSignature: `${firstName} ${lastName}`,
+      
+      // Expected requirements
+      expectedRequirements: this.determineExpectedRequirements(state, config, totalVehicles),
+      
+      generatedAt: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Determine what Alex should correctly identify as required
+   */
+  private determineExpectedRequirements(
+    state: string,
+    config: {
+      isForHire: boolean;
+      isInterstate: boolean;
+      propertyType: string;
+      fleetSize: string;
+      hasHazmat: boolean;
+    },
+    vehicleCount: number
+  ): USDOTApplicationScenario['expectedRequirements'] {
+    let reasoning = '';
+    let usdotRequired = false;
+    let mcAuthorityRequired = false;
+    let hazmatEndorsementRequired = false;
+    let iftaRequired = false;
+    let stateRegistrationRequired = false;
+
+    if (config.isInterstate) {
+      reasoning += 'Interstate operation: Federal 49 CFR applies. ';
+      usdotRequired = true;
+      reasoning += 'USDOT required for interstate commerce with CMVs over 10,001 lbs. ';
+      
+      if (config.isForHire) {
+        mcAuthorityRequired = true;
+        reasoning += 'MC Authority required for for-hire interstate property transport. ';
+      }
+      
+      if (vehicleCount >= 2) {
+        iftaRequired = true;
+        reasoning += 'IFTA required for interstate fuel tax reporting. ';
+      }
+    } else {
+      reasoning += `Intrastate operation in ${state}: State-specific thresholds apply (qualified states list). `;
+      // This would query qualified states table in real implementation
+      usdotRequired = true;
+      stateRegistrationRequired = true;
+    }
+
+    if (config.hasHazmat) {
+      hazmatEndorsementRequired = true;
+      reasoning += 'Hazmat endorsement required for transporting hazardous materials. ';
+    }
+
+    return {
+      usdotRequired,
+      mcAuthorityRequired,
+      hazmatEndorsementRequired,
+      iftaRequired,
+      stateRegistrationRequired,
+      reasoning: reasoning.trim()
+    };
+  }
+
+  // Helper methods
+  private getRandomItem<T>(array: readonly T[]): T {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  private random(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  private generatePhone(): string {
+    return `(${this.random(200, 999)}) ${this.random(200, 999)}-${this.random(1000, 9999)}`;
+  }
+
+  private generateEIN(): string {
+    return `${this.random(10, 99)}-${this.random(1000000, 9999999)}`;
+  }
+
+  private generateZip(): string {
+    return this.random(10000, 99999).toString();
+  }
+
+  private getCityForState(state: string): string {
+    const cities: Record<string, string[]> = {
+      'CA': ['Los Angeles', 'San Diego', 'San Francisco'],
+      'TX': ['Houston', 'Dallas', 'Austin'],
+      'FL': ['Miami', 'Tampa', 'Orlando'],
+      'NY': ['New York', 'Buffalo', 'Rochester']
+    };
+    const stateCities = cities[state] || ['Springfield'];
+    return this.getRandomItem(stateCities);
+  }
+
+  private getCargoClassifications(propertyType: string): string[] {
+    const classifications: Record<string, string[]> = {
+      'hazardous_materials': ['general_freight', 'hazmat'],
+      'household_goods': ['household_goods'],
+      'exempt_commodities': ['general_freight'],
+      'other_non_hazardous': ['general_freight']
+    };
+    return classifications[propertyType] || ['general_freight'];
+  }
+
+  /**
+   * Get total possible scenario count
+   */
+  public getTotalScenarioCount(): number {
+    // 51 states × 4 operation types (for-hire interstate/intrastate, private interstate/intrastate) 
+    // × 4 property types × 3 fleet sizes = ~2,448 base scenarios
+    return 51 * 4 * 4 * 3;
   }
 }
+
+export const scenarioGenerator = ScenarioGenerator.getInstance();

@@ -2026,6 +2026,25 @@ const checkAndInitializeDatabase = async () => {
       console.warn('⚠️  Training features may not be available');
     }
     
+    // Load Qualified States schema
+    try {
+      const fs = require('fs');
+      const qualifiedStatesSchemaPath = path.join(__dirname, 'src', 'database', 'qualified_states_schema.sql');
+      const qualifiedStatesSchema = fs.readFileSync(qualifiedStatesSchemaPath, 'utf8');
+      
+      // Split the schema into individual statements and execute them
+      const statements = qualifiedStatesSchema.split(';').filter(stmt => stmt.trim().length > 0);
+      for (const statement of statements) {
+        if (statement.trim()) {
+          await runExecute(statement.trim());
+        }
+      }
+      console.log('✅ Qualified States schema loaded successfully');
+    } catch (qualifiedStatesError) {
+      console.warn('⚠️  Qualified States schema loading failed:', qualifiedStatesError.message);
+      console.warn('⚠️  Qualified States features may not be available');
+    }
+    
     // ELD service migration - REMOVED
     // Module no longer exists - see archive/full-feature-set-v1.0 branch
   } catch (error) {
@@ -6142,6 +6161,880 @@ app.get('/api/training/settings', async (req, res) => {
   } catch (error) {
     console.error('Error in get training settings API:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================
+// ALEX TRAINING CENTER API ROUTES
+// ===================================
+
+// Import Alex Training Service (CommonJS)
+let alexTrainingService = null;
+try {
+  const { alexTrainingService: ats } = require('./src/services/training/AlexTrainingService.js');
+  alexTrainingService = ats;
+  console.log('✅ Alex Training Service loaded');
+} catch (error) {
+  console.log('⚠️ Alex Training Service failed to load:', error.message);
+}
+
+// Get or create training session
+app.get('/api/alex-training/session', async (req, res) => {
+  try {
+    if (!alexTrainingService) {
+      return res.json({ session: null, message: 'Training service not available' });
+    }
+    
+    const session = alexTrainingService.getOrCreateSession();
+    res.json({ session });
+  } catch (error) {
+    console.error('Error getting training session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate training scenarios
+app.post('/api/alex-training/generate-scenarios', async (req, res) => {
+  try {
+    if (!alexTrainingService) {
+      return res.status(500).json({ error: 'Training service not available' });
+    }
+    
+    const result = await alexTrainingService.generateTrainingScenarios();
+    res.json(result);
+  } catch (error) {
+    console.error('Error generating scenarios:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get next scenario to test
+app.get('/api/alex-training/next-scenario', async (req, res) => {
+  try {
+    if (!alexTrainingService) {
+      return res.status(500).json({ error: 'Training service not available' });
+    }
+    
+    const scenario = alexTrainingService.getNextScenario();
+    res.json({ scenario });
+  } catch (error) {
+    console.error('Error getting next scenario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Test Alex with a scenario
+app.post('/api/alex-training/test-scenario', async (req, res) => {
+  try {
+    if (!alexTrainingService) {
+      return res.status(500).json({ error: 'Training service not available' });
+    }
+    
+    const { scenario } = req.body;
+    const response = await alexTrainingService.testAlexWithScenario(scenario);
+    res.json({ response });
+  } catch (error) {
+    console.error('Error testing scenario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Run full onboarding conversation with scenario
+app.post('/api/alex-training/run-conversation', async (req, res) => {
+  try {
+    const { scenario } = req.body;
+    
+    // Simulate a realistic onboarding conversation with varied client responses
+    const isInterstate = scenario.transportNonHazardousInterstate === 'Yes';
+    const isForHire = scenario.receiveCompensationForTransport === 'Yes';
+    const totalTrucks = scenario.cmvInterstateOnly + scenario.cmvIntrastateOnly;
+    const hasHazmat = scenario.cargoClassifications.includes('hazmat');
+    
+    // Realistic varied client responses
+    const interstateResponses = [
+      'Yeah, we deliver to multiple states - California, Nevada, Arizona.',
+      'Yes, we cross state lines pretty regularly for our routes.',
+      'We do interstate hauls, going across several state borders.',
+    ];
+    
+    const intrastateResponses = [
+      `Nope, just local deliveries within ${scenario.principalAddress.state}.`,
+      `No, we stay within ${scenario.principalAddress.state} only.`,
+      `Just ${scenario.principalAddress.state} for now, keeping it local.`,
+    ];
+    
+    const forHireResponses = [
+      'We haul freight for different companies - it\'s our business.',
+      'Yeah, we\'re a carrier. We transport goods for customers who pay us.',
+      'We do for-hire trucking, moving freight for various clients.',
+    ];
+    
+    const privateResponses = [
+      'No, we just move our own company\'s products.',
+      'It\'s for our own business - transporting our own goods.',
+      'Private use only, just hauling our own stuff.',
+    ];
+    
+    const randomPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    
+    // Comprehensive conversation with trigger detection
+    const conversation = [
+      // Greeting
+      { sender: 'client', content: `Hi, I'm ${scenario.companyContact.firstName} from ${scenario.legalBusinessName}. We need help getting a USDOT number.` },
+      { sender: 'alex', content: `Hi ${scenario.companyContact.firstName}! I'm Alex, your compliance specialist. I'll help ${scenario.legalBusinessName} get your USDOT registration. Let me gather some information. First, confirm your legal business name and structure?` },
+      { sender: 'client', content: `${scenario.legalBusinessName}, we're a ${scenario.formOfBusiness.replace(/_/g, ' ')}.` },
+      
+      // Business details
+      { sender: 'alex', content: 'Do you have an EIN?' },
+      { sender: 'client', content: `Yes, ${scenario.ein}.` },
+      { sender: 'alex', content: `And where's your principal place of business located?` },
+      { sender: 'client', content: `${scenario.principalAddress.street}, ${scenario.principalAddress.city}, ${scenario.principalAddress.state} ${scenario.principalAddress.postalCode}.`, triggers: ['State'] },
+      
+      // Operation type - CRITICAL - Triggers USDOT
+      { sender: 'alex', content: `Will you be crossing state lines (interstate) or operating only within ${scenario.principalAddress.state} (intrastate)?` },
+      { 
+        sender: 'client', 
+        content: isInterstate ? randomPick(['We cross state lines.', 'Interstate - we operate in multiple states.']) : randomPick([`Just within ${scenario.principalAddress.state}.`, 'Intrastate only.']),
+        triggers: isInterstate ? ['USDOT', 'Interstate'] : ['Intrastate']
+      },
+      
+      // For-hire vs private - CRITICAL - Triggers MC Authority
+      { sender: 'alex', content: 'Will you be transporting property for hire (for paying customers) or your own company property?' },
+      { 
+        sender: 'client', 
+        content: isForHire ? randomPick(['For hire - we haul for customers.', 'We\'re a carrier, for-hire trucking.']) : randomPick(['Our own property.', 'Just our company goods.']),
+        triggers: isForHire && isInterstate ? ['MC Authority'] : []
+      },
+      
+      // Cargo - Triggers Hazmat
+      { sender: 'alex', content: 'What type of cargo?' },
+      { 
+        sender: 'client', 
+        content: hasHazmat ? 'General freight and hazmat.' : scenario.propertyType === 'household_goods' ? 'Household goods.' : 'General freight.',
+        triggers: hasHazmat ? ['Hazmat'] : []
+      },
+      
+      // Fleet - May trigger IFTA
+      { sender: 'alex', content: 'How many vehicles and what types?' },
+      { 
+        sender: 'client', 
+        content: `${totalTrucks} ${scenario.vehicles.straightTrucks.owned > 0 ? 'straight trucks' : 'tractor-trailers'}.`,
+        triggers: (isInterstate && totalTrucks >= 2) ? ['IFTA'] : []
+      },
+      { sender: 'alex', content: 'How many drivers?' },
+      { sender: 'client', content: `${scenario.driversWithCDL} drivers with CDLs.` },
+      
+      // Additional questions
+      { sender: 'alex', content: 'Do you operate as an Intermodal Equipment Provider, freight broker, or freight forwarder?' },
+      { sender: 'client', content: 'No, none of those.' },
+      
+      // Conclusion
+      { sender: 'alex', content: 'Perfect. Let me determine what requirements apply to your operation.' }
+    ];
+
+    // Get Alex's determination
+    const determination = await alexTrainingService.testAlexWithScenario(scenario);
+    
+    res.json({
+      conversation,
+      determination
+    });
+  } catch (error) {
+    console.error('Error running conversation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Submit feedback for a test result
+app.post('/api/alex-training/submit-feedback', async (req, res) => {
+  try {
+    if (!alexTrainingService) {
+      return res.status(500).json({ error: 'Training service not available' });
+    }
+    
+    const { scenarioId, isCorrect, feedback, determination } = req.body;
+    const session = await alexTrainingService.submitFeedback(
+      scenarioId,
+      isCorrect,
+      feedback,
+      determination
+    );
+    
+    res.json({ success: true, session });
+  } catch (error) {
+    console.error('Error submitting feedback:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================
+// QUALIFIED STATES MANAGEMENT ROUTES
+// ===================================
+
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+const XLSX = require('xlsx');
+const fs = require('fs');
+
+// GET all qualified states (or filter by state code with ?state=XX query param)
+app.get('/api/qualified-states', async (req, res) => {
+  const { state } = req.query;
+  
+  try {
+    if (state) {
+      // Query specific state
+      db.all(
+        `SELECT * FROM qualified_states WHERE state_code = ? OR LOWER(state_name) = LOWER(?)`,
+        [state.toUpperCase(), state],
+        (err, rows) => {
+          if (err) {
+            console.error('Error fetching qualified state:', err);
+            return res.status(500).json({ error: err.message });
+          }
+          res.json({ states: rows || [] });
+        }
+      );
+    } else {
+      // Get all states
+      db.all(
+        `SELECT * FROM qualified_states ORDER BY state_code`,
+        [],
+        (err, rows) => {
+          if (err) {
+            console.error('Error fetching qualified states:', err);
+            return res.status(500).json({ error: err.message });
+          }
+          res.json({ states: rows || [] });
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Error in qualified states GET:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET single qualified state
+app.get('/api/qualified-states/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    db.get(
+      `SELECT * FROM qualified_states WHERE id = ?`,
+      [id],
+      (err, row) => {
+        if (err) {
+          console.error('Error fetching qualified state:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+          return res.status(404).json({ error: 'State not found' });
+        }
+        res.json(row);
+      }
+    );
+  } catch (error) {
+    console.error('Error in qualified state GET:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST new qualified state
+app.post('/api/qualified-states', async (req, res) => {
+  const {
+    state_code,
+    state_name,
+    gvwr_threshold_fh,
+    gvwr_notes_fh,
+    gvwr_threshold_pp,
+    gvwr_notes_pp,
+    passenger_threshold_fh,
+    passenger_notes_fh,
+    passenger_threshold_pp,
+    passenger_notes_pp,
+    requires_intrastate_authority,
+    intrastate_authority_name,
+    authority_threshold_gvwr,
+    authority_notes,
+    additional_requirements,
+    state_regulation_reference,
+    adopted_federal_49cfr,
+    partial_adoption_notes,
+    notes
+  } = req.body;
+
+  try {
+    db.run(
+      `INSERT INTO qualified_states (
+        state_code, state_name,
+        gvwr_threshold_fh, gvwr_notes_fh,
+        gvwr_threshold_pp, gvwr_notes_pp,
+        passenger_threshold_fh, passenger_notes_fh,
+        passenger_threshold_pp, passenger_notes_pp,
+        requires_intrastate_authority, intrastate_authority_name,
+        authority_threshold_gvwr, authority_notes, additional_requirements,
+        state_regulation_reference, adopted_federal_49cfr, partial_adoption_notes,
+        notes, last_updated, updated_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, date('now'), 'admin')`,
+      [
+        state_code,
+        state_name,
+        gvwr_threshold_fh || 0,
+        gvwr_notes_fh || null,
+        gvwr_threshold_pp || 0,
+        gvwr_notes_pp || null,
+        passenger_threshold_fh || 0,
+        passenger_notes_fh || null,
+        passenger_threshold_pp || 0,
+        passenger_notes_pp || null,
+        requires_intrastate_authority ? 1 : 0,
+        intrastate_authority_name || null,
+        authority_threshold_gvwr || null,
+        authority_notes || null,
+        additional_requirements || null,
+        state_regulation_reference || null,
+        adopted_federal_49cfr ? 1 : 0,
+        partial_adoption_notes || null,
+        notes || null
+      ],
+      function (err) {
+        if (err) {
+          console.error('Error inserting qualified state:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({
+          id: this.lastID,
+          message: 'Qualified state added successfully'
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error in qualified state POST:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT update qualified state
+app.put('/api/qualified-states/:id', async (req, res) => {
+  const { id } = req.params;
+  const {
+    state_code,
+    state_name,
+    gvwr_threshold_fh,
+    gvwr_notes_fh,
+    gvwr_threshold_pp,
+    gvwr_notes_pp,
+    passenger_threshold_fh,
+    passenger_notes_fh,
+    passenger_threshold_pp,
+    passenger_notes_pp,
+    requires_intrastate_authority,
+    intrastate_authority_name,
+    authority_threshold_gvwr,
+    authority_notes,
+    additional_requirements,
+    state_regulation_reference,
+    adopted_federal_49cfr,
+    partial_adoption_notes,
+    notes
+  } = req.body;
+
+  try {
+    db.run(
+      `UPDATE qualified_states SET
+        state_code = ?, state_name = ?,
+        gvwr_threshold_fh = ?, gvwr_notes_fh = ?,
+        gvwr_threshold_pp = ?, gvwr_notes_pp = ?,
+        passenger_threshold_fh = ?, passenger_notes_fh = ?,
+        passenger_threshold_pp = ?, passenger_notes_pp = ?,
+        requires_intrastate_authority = ?, intrastate_authority_name = ?,
+        authority_threshold_gvwr = ?, authority_notes = ?, additional_requirements = ?,
+        state_regulation_reference = ?, adopted_federal_49cfr = ?, partial_adoption_notes = ?,
+        notes = ?, last_updated = date('now'), updated_by = 'admin'
+      WHERE id = ?`,
+      [
+        state_code,
+        state_name,
+        gvwr_threshold_fh || 0,
+        gvwr_notes_fh || null,
+        gvwr_threshold_pp || 0,
+        gvwr_notes_pp || null,
+        passenger_threshold_fh || 0,
+        passenger_notes_fh || null,
+        passenger_threshold_pp || 0,
+        passenger_notes_pp || null,
+        requires_intrastate_authority ? 1 : 0,
+        intrastate_authority_name || null,
+        authority_threshold_gvwr || null,
+        authority_notes || null,
+        additional_requirements || null,
+        state_regulation_reference || null,
+        adopted_federal_49cfr ? 1 : 0,
+        partial_adoption_notes || null,
+        notes || null,
+        id
+      ],
+      function (err) {
+        if (err) {
+          console.error('Error updating qualified state:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'State not found' });
+        }
+        res.json({ message: 'Qualified state updated successfully' });
+      }
+    );
+  } catch (error) {
+    console.error('Error in qualified state PUT:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE qualified state
+app.delete('/api/qualified-states/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    db.run(
+      `DELETE FROM qualified_states WHERE id = ?`,
+      [id],
+      function (err) {
+        if (err) {
+          console.error('Error deleting qualified state:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'State not found' });
+        }
+        res.json({ message: 'Qualified state deleted successfully' });
+      }
+    );
+  } catch (error) {
+    console.error('Error in qualified state DELETE:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST log compliance determination (for training and improvement)
+app.post('/api/compliance-log', async (req, res) => {
+  const {
+    company_name,
+    state_code,
+    operation_type,
+    operation_radius,
+    gvwr,
+    passenger_capacity,
+    cargo_types,
+    determination_logic,
+    requires_usdot,
+    requires_authority,
+    authority_type,
+    additional_requirements,
+    determination_correct,
+    correction_notes
+  } = req.body;
+
+  try {
+    db.run(
+      `INSERT INTO compliance_determination_log (
+        company_name, state_code, operation_type, operation_radius,
+        gvwr, passenger_capacity, cargo_types, determination_logic,
+        requires_usdot, requires_authority, authority_type,
+        additional_requirements, determination_correct, correction_notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        company_name,
+        state_code,
+        operation_type,
+        operation_radius,
+        gvwr,
+        passenger_capacity,
+        cargo_types,
+        determination_logic,
+        requires_usdot ? 1 : 0,
+        requires_authority ? 1 : 0,
+        authority_type,
+        additional_requirements,
+        determination_correct !== undefined ? (determination_correct ? 1 : 0) : null,
+        correction_notes
+      ],
+      function (err) {
+        if (err) {
+          console.error('Error logging compliance determination:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({
+          id: this.lastID,
+          message: 'Compliance determination logged successfully'
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error in compliance log POST:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST check USDOT requirement (for AI agents)
+app.post('/api/qualified-states/check-requirement', async (req, res) => {
+  const { stateCode, operationType, operationRadius, gvwr, passengerCapacity, cargoType } = req.body;
+
+  try {
+    // RULE 1: Interstate operations ALWAYS use Federal 49 CFR
+    if (operationRadius === 'interstate' || operationRadius === 'both') {
+      const requiresUSDOT = (gvwr || 0) >= 10001 || (passengerCapacity || 0) >= 8;
+      
+      return res.json({
+        requiresUSDOT,
+        requiresDQFile: requiresUSDOT,
+        threshold: { gvwr: 10001, passengers: 8 },
+        reasoning: `Interstate operations ALWAYS follow Federal 49 CFR regulations. USDOT required if GVWR is 10,001+ lbs OR 8+ passengers. Vehicle: ${gvwr || 0} lbs GVWR, ${passengerCapacity || 0} passengers.`,
+        ruleSource: 'federal_49_cfr',
+        operationType,
+        operationRadius
+      });
+    }
+
+    // RULE 2: Intrastate operations - Use Qualified States List
+    db.get(
+      `SELECT * FROM qualified_states WHERE state_code = ? OR LOWER(state_name) = LOWER(?)`,
+      [stateCode.toUpperCase(), stateCode],
+      (err, state) => {
+        if (err) {
+          console.error('Error checking qualified state:', err);
+          return res.status(500).json({ error: err.message });
+        }
+
+        if (!state) {
+          // Fallback to federal if state not found
+          const requiresUSDOT = (gvwr || 0) >= 10001 || (passengerCapacity || 0) >= 8;
+          return res.json({
+            requiresUSDOT,
+            requiresDQFile: requiresUSDOT,
+            threshold: { gvwr: 10001, passengers: 8 },
+            reasoning: `State ${stateCode} not in Qualified States List. Using Federal 49 CFR fallback.`,
+            ruleSource: 'federal_49_cfr',
+            operationType,
+            operationRadius
+          });
+        }
+
+        // Apply state-specific thresholds based on operation type
+        const gvwrThreshold = operationType === 'for_hire' ? state.gvwr_threshold_fh : state.gvwr_threshold_pp;
+        const passengerThreshold = operationType === 'for_hire' ? state.passenger_threshold_fh : state.passenger_threshold_pp;
+        const cargoNotes = operationType === 'for_hire' ? state.gvwr_notes_fh : state.gvwr_notes_pp;
+
+        // Check if USDOT is required
+        let requiresUSDOT = false;
+        let reasoning = '';
+
+        // Handle "ANY" (threshold = 1) meaning all operations require USDOT
+        if (gvwrThreshold === 1 || passengerThreshold === 1) {
+          requiresUSDOT = true;
+          reasoning = `${state.state_name} requires USDOT for ANY ${operationType.replace('_', ' ')} operations (intrastate). `;
+        } else {
+          const meetsGVWR = (gvwr || 0) > 0 && gvwrThreshold > 0 && (gvwr || 0) >= gvwrThreshold;
+          const meetsPassenger = (passengerCapacity || 0) > 0 && passengerThreshold > 0 && (passengerCapacity || 0) >= passengerThreshold;
+          
+          requiresUSDOT = meetsGVWR || meetsPassenger;
+
+          if (requiresUSDOT) {
+            reasoning = `${state.state_name} (intrastate ${operationType.replace('_', ' ')}): USDOT REQUIRED. ` +
+              `Thresholds: ${gvwrThreshold || 'N/A'} lbs GVWR, ${passengerThreshold || 'N/A'} passengers. ` +
+              `Your vehicle: ${gvwr || 0} lbs, ${passengerCapacity || 0} passengers. `;
+          } else {
+            reasoning = `${state.state_name} (intrastate ${operationType.replace('_', ' ')}): USDOT NOT required. ` +
+              `Thresholds: ${gvwrThreshold || 'N/A'} lbs GVWR, ${passengerThreshold || 'N/A'} passengers. ` +
+              `Your vehicle: ${gvwr || 0} lbs, ${passengerCapacity || 0} passengers is BELOW the threshold. `;
+          }
+        }
+
+        // Add cargo notes
+        if (cargoNotes && cargoType) {
+          reasoning += `Cargo: ${cargoNotes}. `;
+        }
+
+        // Add state notes
+        if (state.notes) {
+          reasoning += `Note: ${state.notes}`;
+        }
+
+        // Check for savings vs federal
+        const federalRequiresUSDOT = (gvwr || 0) >= 10001 || (passengerCapacity || 0) >= 8;
+        let potentialSavings;
+        
+        if (federalRequiresUSDOT && !requiresUSDOT) {
+          potentialSavings = `💰 SAVINGS: Federal rules would require USDOT, but ${state.state_name} intrastate ${operationType.replace('_', ' ')} does NOT. This saves thousands in registration and compliance costs!`;
+        } else if (!federalRequiresUSDOT && requiresUSDOT) {
+          potentialSavings = `⚠️ IMPORTANT: Federal rules would NOT require USDOT, but ${state.state_name} intrastate ${operationType.replace('_', ' ')} DOES require it.`;
+        }
+
+        res.json({
+          requiresUSDOT,
+          requiresDQFile: requiresUSDOT,
+          threshold: { gvwr: gvwrThreshold, passengers: passengerThreshold },
+          reasoning,
+          ruleSource: 'qualified_states_list',
+          operationType,
+          operationRadius,
+          potentialSavings,
+          stateData: {
+            stateCode: state.state_code,
+            stateName: state.state_name,
+            forHire: {
+              gvwr: state.gvwr_threshold_fh,
+              passengers: state.passenger_threshold_fh,
+              cargoNotes: state.gvwr_notes_fh
+            },
+            privateProperty: {
+              gvwr: state.gvwr_threshold_pp,
+              passengers: state.passenger_threshold_pp,
+              cargoNotes: state.gvwr_notes_pp
+            }
+          }
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error in check-requirement:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST upload qualified states file (Excel, CSV, ODS)
+app.post('/api/qualified-states/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const filePath = req.file.path;
+  const fileExtension = path.extname(req.file.originalname).toLowerCase();
+
+  try {
+    let workbook;
+    
+    // Read the file based on extension
+    if (fileExtension === '.csv') {
+      const csvData = fs.readFileSync(filePath, 'utf8');
+      workbook = XLSX.read(csvData, { type: 'string' });
+    } else if (['.xlsx', '.xls', '.ods'].includes(fileExtension)) {
+      workbook = XLSX.readFile(filePath);
+    } else {
+      fs.unlinkSync(filePath); // Clean up uploaded file
+      return res.status(400).json({ error: 'Unsupported file format. Please upload .xlsx, .xls, .csv, or .ods' });
+    }
+
+    // Get the first sheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    
+    // Handle grid layout: A2-A51 (states), B2-H51 (data columns)
+    let data = [];
+    
+    console.log('📊 Processing grid layout (Columns A-H, Rows 2-51)');
+    console.log('📊 Sheet name:', sheetName);
+    console.log('📊 Sample cells: A1=', worksheet['A1']?.v, 'A2=', worksheet['A2']?.v, 'B2=', worksheet['B2']?.v);
+    
+    // Process rows 2-51 (A2-A51, B2-B51, etc.)
+    for (let row = 2; row <= 51; row++) {
+      const stateCell = worksheet[`A${row}`];
+      const dotWeightCell = worksheet[`B${row}`];
+      const dotPassengerCell = worksheet[`C${row}`];
+      const dotCargoCell = worksheet[`D${row}`];
+      const dqWeightCell = worksheet[`E${row}`];
+      const dqPassengerCell = worksheet[`F${row}`];
+      const dqCargoCell = worksheet[`G${row}`];
+      const notesCell = worksheet[`H${row}`];
+      
+      // Skip if no state name
+      if (!stateCell || !stateCell.v) continue;
+      
+      const stateName = stateCell.v.toString().trim();
+      if (!stateName) continue;
+      
+      // Create row object with the grid data
+      const rowData = {
+        'State': stateName,
+        'DOT - Weight': dotWeightCell ? dotWeightCell.v : '',
+        'DOT - Passengers': dotPassengerCell ? dotPassengerCell.v : '',
+        'DOT - Cargo': dotCargoCell ? dotCargoCell.v : '',
+        'DQ - Weight': dqWeightCell ? dqWeightCell.v : '',
+        'DQ - Passengers': dqPassengerCell ? dqPassengerCell.v : '',
+        'DQ - Cargo': dqCargoCell ? dqCargoCell.v : '',
+        'Notes': notesCell ? notesCell.v : ''
+      };
+      
+      data.push(rowData);
+    }
+
+    if (data.length === 0) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({ error: 'No state data found in rows A2-A51' });
+    }
+
+    // Validate and insert data
+    let insertedCount = 0;
+    const errors = [];
+
+    // Log first row to see what columns we have
+    if (data.length > 0) {
+      console.log('📋 First row columns:', Object.keys(data[0]));
+      console.log('📋 First row data:', data[0]);
+    }
+
+    for (const row of data) {
+      // Map columns based on your specific file structure:
+      // A = State Name
+      // B = DOT - Weight (For Hire GVWR threshold)
+      // C = DOT - Passengers (For Hire passenger threshold)
+      // D = DOT - Cargo (For Hire cargo notes)
+      // E = DQ - Weight (Private Property GVWR threshold)
+      // F = DQ - Passengers (Private Property passenger threshold)
+      // G = DQ - Cargo (Private Property cargo notes)
+      // H = Notes (general notes)
+      
+      const stateName = row['State'];
+      const dotWeight = row['DOT - Weight'] || '';
+      const dotPassengers = row['DOT - Passengers'] || '';
+      const dotCargo = row['DOT - Cargo'] || '';
+      const dqWeight = row['DQ - Weight'] || '';
+      const dqPassengers = row['DQ - Passengers'] || '';
+      const dqCargo = row['DQ - Cargo'] || '';
+      const generalNotes = row['Notes'] || '';
+
+      console.log(`Processing row: State="${stateName}", DOT Weight="${dotWeight}", DOT Pass="${dotPassengers}", DQ Weight="${dqWeight}", DQ Pass="${dqPassengers}"`);
+
+      // Skip if no state name found
+      if (!stateName) {
+        errors.push(`Skipped row - no valid state name found`);
+        continue;
+      }
+
+      // Convert state name to state code
+      const stateCodeMap = {
+        'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+        'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+        'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+        'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+        'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+        'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+        'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
+        'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+        'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+        'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY',
+        'district of columbia': 'DC'
+      };
+
+      const stateCode = stateCodeMap[stateName.toLowerCase()] || stateName.substring(0, 2).toUpperCase();
+
+      // Helper function to parse values that might be "FH: X - PP: Y" or just a number
+      const parseThreshold = (value) => {
+        const str = String(value).trim();
+        
+        // Handle N/A
+        if (str === 'N/A' || str === '') {
+          return { fh: 0, pp: 0 };
+        }
+        
+        // Check if it contains "FH:" and "PP:"
+        if (str.includes('FH:') && str.includes('PP:')) {
+          const fhMatch = str.match(/FH:\s*([^-]+)/);
+          const ppMatch = str.match(/PP:\s*(.+)/);
+          
+          const fhValue = fhMatch ? fhMatch[1].trim() : '';
+          const ppValue = ppMatch ? ppMatch[1].trim() : '';
+          
+          // Handle "Any" as 1 (meaning all operations)
+          const fh = fhValue.toLowerCase() === 'any' ? 1 : parseInt(fhValue) || 0;
+          const pp = ppValue.toLowerCase() === 'any' ? 1 : parseInt(ppValue) || 0;
+          
+          return { fh, pp };
+        }
+        
+        // Just a number - use for both FH and PP
+        const num = parseInt(str) || 0;
+        return { fh: num, pp: num };
+      };
+
+      // Parse weight and passenger thresholds
+      const dotWeightParsed = parseThreshold(dotWeight);
+      const dotPassengersParsed = parseThreshold(dotPassengers);
+      const dqWeightParsed = parseThreshold(dqWeight);
+      const dqPassengersParsed = parseThreshold(dqPassengers);
+
+      // Map to database columns
+      // DOT columns = For Hire (FH), DQ columns = Private Property (PP)
+      const gvwrThresholdFH = dotWeightParsed.fh;
+      const passengerThresholdFH = dotPassengersParsed.fh;
+      const gvwrThresholdPP = dqWeightParsed.pp;
+      const passengerThresholdPP = dqPassengersParsed.pp;
+
+      // Determine if requires authority (if either for-hire threshold is set and above 0)
+      const requiresAuthority = gvwrThresholdFH > 0 || passengerThresholdFH > 0;
+      const authorityName = requiresAuthority ? `${stateName} Intrastate Authority` : null;
+
+      console.log(`Final values: State=${stateCode}, Name=${stateName}, FH GVWR=${gvwrThresholdFH}, FH Pass=${passengerThresholdFH}, PP GVWR=${gvwrThresholdPP}, PP Pass=${passengerThresholdPP}`);
+
+      try {
+        await new Promise((resolve, reject) => {
+          db.run(
+            `INSERT OR REPLACE INTO qualified_states (
+              state_code, state_name, 
+              gvwr_threshold_fh, gvwr_notes_fh,
+              gvwr_threshold_pp, gvwr_notes_pp,
+              passenger_threshold_fh, passenger_notes_fh,
+              passenger_threshold_pp, passenger_notes_pp,
+              requires_intrastate_authority, intrastate_authority_name,
+              adopted_federal_49cfr, notes, last_updated, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, date('now'), 'admin')`,
+            [
+              stateCode.toUpperCase().trim(),
+              stateName.trim(),
+              gvwrThresholdFH,
+              dotCargo || null,
+              gvwrThresholdPP,
+              dqCargo || null,
+              passengerThresholdFH,
+              dotCargo || null, // Using same cargo notes for passenger context
+              passengerThresholdPP,
+              dqCargo || null,
+              requiresAuthority ? 1 : 0,
+              authorityName || null,
+              0, // Set to 0 for now - can be updated later
+              generalNotes || null
+            ],
+            function (err) {
+              if (err) {
+                reject(err);
+              } else {
+                insertedCount++;
+                resolve();
+              }
+            }
+          );
+        });
+      } catch (err) {
+        errors.push(`Error inserting ${stateCode}: ${err.message}`);
+      }
+    }
+
+    // Clean up uploaded file
+    fs.unlinkSync(filePath);
+
+    res.json({
+      success: true,
+      count: insertedCount,
+      totalRows: data.length,
+      errors: errors.length > 0 ? errors : undefined,
+      message: `Successfully imported ${insertedCount} of ${data.length} states`
+    });
+
+  } catch (error) {
+    console.error('Error processing file:', error);
+    // Clean up uploaded file
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    res.status(500).json({ error: 'Error processing file: ' + error.message });
   }
 });
 

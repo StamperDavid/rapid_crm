@@ -11,8 +11,13 @@ import {
   ExclamationIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  EyeIcon,
+  PencilIcon,
+  ThumbUpIcon,
+  ThumbDownIcon
 } from '@heroicons/react/outline';
+import type { USDOTApplicationScenario } from '../../services/training/ScenarioGenerator';
 
 interface USDOTApplicationData {
   // 3rd Party Service Provider
@@ -141,26 +146,212 @@ interface TrainingSession {
   mistakes: string[];
   completed: boolean;
   applicationData: Partial<USDOTApplicationData>;
+  scenario?: USDOTApplicationScenario;
+}
+
+interface FieldComparison {
+  fieldName: string;
+  expected: any;
+  actual: any;
+  isCorrect: boolean;
+  fieldPath: string;
 }
 
 const USDOTRegistrationTrainingCenter: React.FC = () => {
   const [trainingSession, setTrainingSession] = useState<TrainingSession | null>(null);
+  const [currentScenario, setCurrentScenario] = useState<USDOTApplicationScenario | null>(null);
   const [isTraining, setIsTraining] = useState(false);
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [applicationData, setApplicationData] = useState<Partial<USDOTApplicationData>>({});
   const [sessionHistory, setSessionHistory] = useState<TrainingSession[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [agentId, setAgentId] = useState<string>('');
+  const [showReview, setShowReview] = useState(false);
+  const [fieldComparisons, setFieldComparisons] = useState<FieldComparison[]>([]);
+  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [agentId, setAgentId] = useState<string>('usdot_rpa_agent');
   const [isMonitoring, setIsMonitoring] = useState(false);
+  const [autoFillSpeed, setAutoFillSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
+  const [sessionStats, setSessionStats] = useState({
+    totalScenarios: 0,
+    completed: 0,
+    averageAccuracy: 0
+  });
 
-  // Get agent ID from URL parameters
+  // Get agent ID from URL parameters and load session stats
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const agentIdParam = urlParams.get('agentId');
     if (agentIdParam) {
       setAgentId(agentIdParam);
     }
+    loadSessionStats();
   }, []);
+
+  // Load session statistics
+  const loadSessionStats = async () => {
+    try {
+      const response = await fetch('/api/usdot-rpa-training/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setSessionStats(data);
+      }
+    } catch (error) {
+      console.error('Error loading session stats:', error);
+    }
+  };
+
+  // Load a random scenario from the database
+  const loadNextScenario = async () => {
+    try {
+      const response = await fetch('/api/alex-training/next-scenario');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.scenario) {
+          setCurrentScenario(data.scenario);
+          return data.scenario;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading scenario:', error);
+    }
+    return null;
+  };
+
+  // Map scenario data to USDOT form format
+  const mapScenarioToFormData = (scenario: USDOTApplicationScenario): Partial<USDOTApplicationData> => {
+    return {
+      isThirdPartyProvider: 'N',
+      legalBusinessName: scenario.legalBusinessName,
+      dbaName: scenario.doingBusinessAs,
+      principalAddressSame: scenario.principalAddressSameAsContact,
+      principalAddress: {
+        country: scenario.principalAddress.country,
+        street: scenario.principalAddress.street,
+        city: scenario.principalAddress.city,
+        state: scenario.principalAddress.state,
+        zip: scenario.principalAddress.postalCode
+      },
+      mailingAddress: {
+        country: scenario.mailingAddress.country,
+        street: scenario.mailingAddress.street,
+        city: scenario.mailingAddress.city,
+        state: scenario.mailingAddress.state,
+        zip: scenario.mailingAddress.postalCode
+      },
+      phone: scenario.businessPhone,
+      ein: scenario.ein,
+      isGovernmentUnit: scenario.isUnitOfGovernment,
+      formOfBusiness: scenario.formOfBusiness,
+      ownershipControl: scenario.ownershipControl,
+      contactFirstName: scenario.companyContact.firstName,
+      contactMiddleName: scenario.companyContact.middleName,
+      contactLastName: scenario.companyContact.lastName,
+      contactSuffix: scenario.companyContact.suffix,
+      contactTitle: scenario.companyContact.title,
+      contactEmail: scenario.companyContact.email,
+      contactPhone: scenario.companyContact.phone,
+      contactAddress: {
+        country: scenario.companyContact.address.country,
+        street: scenario.companyContact.address.street,
+        city: scenario.companyContact.address.city,
+        state: scenario.companyContact.address.state,
+        zip: scenario.companyContact.address.postalCode
+      },
+      intermodalEquipmentProvider: scenario.operateAsIntermodalEquipmentProvider,
+      transportProperty: scenario.transportProperty,
+      receiveCompensation: scenario.receiveCompensationForTransport,
+      propertyType: scenario.propertyType,
+      interstateCommerce: scenario.transportNonHazardousInterstate,
+      transportOwnProperty: scenario.transportOwnProperty,
+      transportPassengers: scenario.transportPassengers,
+      brokerServices: scenario.provideBrokerServices,
+      freightForwarder: scenario.provideFreightForwarderServices,
+      cargoTankFacility: scenario.operateCargoTankFacility,
+      driveaway: scenario.operateAsDriveaway,
+      towaway: scenario.operateAsTowaway,
+      cargoClassifications: scenario.cargoClassifications,
+      nonCMVProperty: scenario.nonCMVProperty.toString(),
+      ownedVehicles: {
+        straightTrucks: scenario.vehicles.straightTrucks.owned.toString(),
+        truckTractors: scenario.vehicles.truckTractors.owned.toString(),
+        trailers: scenario.vehicles.trailers.owned.toString(),
+        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.owned.toString()
+      },
+      termLeasedVehicles: {
+        straightTrucks: scenario.vehicles.straightTrucks.termLeased.toString(),
+        truckTractors: scenario.vehicles.truckTractors.termLeased.toString(),
+        trailers: scenario.vehicles.trailers.termLeased.toString(),
+        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.termLeased.toString()
+      },
+      tripLeasedVehicles: {
+        straightTrucks: scenario.vehicles.straightTrucks.tripLeased.toString(),
+        truckTractors: scenario.vehicles.truckTractors.tripLeased.toString(),
+        trailers: scenario.vehicles.trailers.tripLeased.toString(),
+        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.tripLeased.toString()
+      },
+      towDriveawayVehicles: {
+        straightTrucks: scenario.vehicles.straightTrucks.towDriveway.toString(),
+        truckTractors: scenario.vehicles.truckTractors.towDriveway.toString(),
+        trailers: scenario.vehicles.trailers.towDriveway.toString(),
+        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.towDriveway.toString()
+      },
+      canadaVehicles: scenario.vehiclesInCanada.toString(),
+      mexicoVehicles: scenario.vehiclesInMexico.toString(),
+      interstateVehicles: scenario.cmvInterstateOnly.toString(),
+      intrastateVehicles: scenario.cmvIntrastateOnly.toString(),
+      interstateDrivers100Mile: scenario.driversInterstate.within100Miles.toString(),
+      interstateDriversBeyond100Mile: scenario.driversInterstate.beyond100Miles.toString(),
+      intrastateDrivers100Mile: scenario.driversIntrastate.within100Miles.toString(),
+      intrastateDriversBeyond100Mile: scenario.driversIntrastate.beyond100Miles.toString(),
+      cdlDrivers: scenario.driversWithCDL.toString(),
+      canadaDrivers: scenario.driversInCanada.toString(),
+      mexicoDrivers: scenario.driversInMexico.toString(),
+      hasAffiliations: scenario.hasAffiliations,
+      complianceCertifications: {
+        willingAble: scenario.certifyWillingAndAble,
+        produceDocuments: scenario.certifyProduceDocuments,
+        notDisqualified: scenario.certifyNotDisqualified,
+        processAgent: scenario.certifyUnderstandProcessAgent,
+        notSuspended: scenario.certifyNotUnderSuspension,
+        deficienciesCorrected: scenario.certifyDeficienciesCorrected
+      },
+      electronicSignature: scenario.electronicSignature
+    };
+  };
+
+  // Simulate RPA auto-filling fields with delay
+  const autoFillField = async (fieldName: string, value: any, delay: number) => {
+    await new Promise(resolve => setTimeout(resolve, delay));
+    setApplicationData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+  };
+
+  // Auto-fill all fields for current step
+  const autoFillCurrentStep = async () => {
+    if (!currentScenario) return;
+    
+    setIsAutoFilling(true);
+    const formData = mapScenarioToFormData(currentScenario);
+    const speed = autoFillSpeed === 'slow' ? 1000 : autoFillSpeed === 'normal' ? 500 : 200;
+
+    // Auto-fill based on current step
+    switch (currentStep) {
+      case 1: // 3rd Party
+        await autoFillField('isThirdPartyProvider', formData.isThirdPartyProvider, speed);
+        break;
+      case 2: // Business Info
+        await autoFillField('legalBusinessName', formData.legalBusinessName, speed);
+        await autoFillField('dbaName', formData.dbaName, speed);
+        await autoFillField('formOfBusiness', formData.formOfBusiness, speed);
+        break;
+      // Add more cases for other steps...
+    }
+
+    setIsAutoFilling(false);
+  };
 
   // Application steps configuration
   const applicationSteps = [

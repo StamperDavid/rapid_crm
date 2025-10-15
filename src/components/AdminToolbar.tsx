@@ -12,6 +12,7 @@ import {
   ColorSwatchIcon,
   GlobeAltIcon,
   ChipIcon,
+  LocationMarkerIcon,
 } from '@heroicons/react/outline';
 import { clsx } from 'clsx';
 
@@ -34,6 +35,7 @@ const AdminToolbar: React.FC<AdminToolbarProps> = ({
     { name: 'Users', href: '/users', icon: UserGroupIcon, color: 'text-blue-600' },
     { name: 'Theme', href: '/theme', icon: ColorSwatchIcon, color: 'text-rose-600' },
     { name: 'Portal Designer', href: '/client-portal', icon: GlobeAltIcon, color: 'text-emerald-600' },
+    { name: 'Qualified States', href: '/qualified-states', icon: LocationMarkerIcon, color: 'text-indigo-600' },
     { name: 'Database', href: '/database', icon: DatabaseIcon, color: 'text-slate-600' },
     { name: 'Schema', href: '/schema', icon: CogIcon, color: 'text-amber-600' },
     { name: 'API Keys', href: '/settings/api-keys', icon: KeyIcon, color: 'text-yellow-600' },

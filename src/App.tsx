@@ -38,10 +38,11 @@ import RegulationTrainingDashboard from './components/training/RegulationTrainin
 import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
 import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
 import CriticalPathTestCenter from './components/training/CriticalPathTestCenter';
-import AlexOnboardingTrainingCenter from './components/training/AlexOnboardingTrainingCenter';
+import AlexTrainingCenter from './components/training/AlexTrainingCenter';
 import ClientPortal from './pages/ClientPortal';
 import ClientLogin from './pages/ClientLogin';
 import OnboardingAgent from './pages/OnboardingAgent';
+import QualifiedStatesManagement from './pages/QualifiedStatesManagement';
 import ClaudeEventListener from './components/ClaudeEventListener';
 // import CursorAICollaborationPanel from './components/CursorAICollaborationPanel'; // Component not found
 import WorkflowOptimizationDemo from './components/WorkflowOptimizationDemo';
@@ -114,6 +115,7 @@ function App() {
                         <Route path="/settings/api-keys" element={<ApiKeys />} />
                         <Route path="/database" element={<DatabaseManagement />} />
                         <Route path="/users" element={<UserManagement />} />
+                        <Route path="/qualified-states" element={<QualifiedStatesManagement />} />
                         
                         {/* Reports */}
                         <Route path="/reports" element={<AnalyticsModule />} />
@@ -129,7 +131,7 @@ function App() {
                         
                         {/* Training Environment Routes - Admin/Trainer access only */}
                         <Route path="/training" element={<RegulationTrainingDashboard />} />
-                        <Route path="/training/alex" element={<AlexOnboardingTrainingCenter />} />
+                        <Route path="/training/alex" element={<AlexTrainingCenter />} />
                         <Route path="/training/usdot" element={<USDOTRegistrationTrainingCenter />} />
                         <Route path="/training/monitoring" element={<AgentPerformanceMonitoringDashboard />} />
                         <Route path="/training/critical-path" element={<CriticalPathTestCenter />} />

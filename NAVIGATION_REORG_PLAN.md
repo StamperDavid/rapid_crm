@@ -340,3 +340,4 @@ getSettingsMenuItems(userRole) {
 **Author**: AI Assistant  
 **Status**: Pending Implementation
 
+
