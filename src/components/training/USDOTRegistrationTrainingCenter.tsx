@@ -360,8 +360,9 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     await autoFillField('isThirdPartyProvider', formData.isThirdPartyProvider, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 2: Business Information
+    // Step 2: Operation Classification Summary
     setCurrentStep(2);
+    await autoFillField('hasDunsBradstreet', formData.hasDunsBradstreet, speed);
     await autoFillField('legalBusinessName', formData.legalBusinessName, speed);
     await autoFillField('dbaName', formData.dbaName, speed);
     await autoFillField('principalAddressSame', formData.principalAddressSame, speed);
@@ -374,7 +375,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     await autoFillField('ownershipControl', formData.ownershipControl, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 3: Company Contact
+    // Step 3: Company Contact Information
     setCurrentStep(3);
     await autoFillField('contactFirstName', formData.contactFirstName, speed);
     await autoFillField('contactMiddleName', formData.contactMiddleName, speed);
@@ -386,7 +387,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     await autoFillField('contactAddress', formData.contactAddress, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 4: Operations Classification
+    // Step 4: Operation Type Questions
     setCurrentStep(4);
     await autoFillField('intermodalEquipmentProvider', formData.intermodalEquipmentProvider, speed);
     await autoFillField('transportProperty', formData.transportProperty, speed);
@@ -403,42 +404,58 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     await autoFillField('cargoClassifications', formData.cargoClassifications, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 5: Vehicle Summary
+    // Step 5: Vehicle Summary - Owned Vehicles
     setCurrentStep(5);
     await autoFillField('nonCMVProperty', formData.nonCMVProperty, speed);
     await autoFillField('ownedVehicles', formData.ownedVehicles, speed);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Step 6: Vehicle Summary - Leased Vehicles
+    setCurrentStep(6);
     await autoFillField('termLeasedVehicles', formData.termLeasedVehicles, speed);
     await autoFillField('tripLeasedVehicles', formData.tripLeasedVehicles, speed);
     await autoFillField('towDriveawayVehicles', formData.towDriveawayVehicles, speed);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Step 7: Vehicle Summary - International Operations
+    setCurrentStep(7);
     await autoFillField('canadaVehicles', formData.canadaVehicles, speed);
     await autoFillField('mexicoVehicles', formData.mexicoVehicles, speed);
     await autoFillField('interstateVehicles', formData.interstateVehicles, speed);
     await autoFillField('intrastateVehicles', formData.intrastateVehicles, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 6: Driver Summary
-    setCurrentStep(6);
+    // Step 8: Driver Summary - Interstate Drivers
+    setCurrentStep(8);
     await autoFillField('interstateDrivers100Mile', formData.interstateDrivers100Mile, speed);
     await autoFillField('interstateDriversBeyond100Mile', formData.interstateDriversBeyond100Mile, speed);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Step 9: Driver Summary - Intrastate Drivers
+    setCurrentStep(9);
     await autoFillField('intrastateDrivers100Mile', formData.intrastateDrivers100Mile, speed);
     await autoFillField('intrastateDriversBeyond100Mile', formData.intrastateDriversBeyond100Mile, speed);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Step 10: Driver Summary - CDL & International
+    setCurrentStep(10);
     await autoFillField('cdlDrivers', formData.cdlDrivers, speed);
     await autoFillField('canadaDrivers', formData.canadaDrivers, speed);
     await autoFillField('mexicoDrivers', formData.mexicoDrivers, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 7: Affiliations
-    setCurrentStep(7);
+    // Step 11: Affiliation with Others Summary
+    setCurrentStep(11);
     await autoFillField('hasAffiliations', formData.hasAffiliations, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 8: Compliance Certifications
-    setCurrentStep(8);
+    // Step 12: Compliance Certifications Summary
+    setCurrentStep(12);
     await autoFillField('complianceCertifications', formData.complianceCertifications, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 9: Electronic Signature
-    setCurrentStep(9);
+    // Step 13: Electronic Signature
+    setCurrentStep(13);
     await autoFillField('electronicSignature', formData.electronicSignature, speed);
     
     setIsAutoFilling(false);
@@ -617,24 +634,28 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     await loadSessionStats();
   };
 
-  // Application steps configuration
+  // Application steps configuration - COMPLETE USDOT APPLICATION
   const applicationSteps = [
     { id: 1, title: '3rd Party Service Provider' },
-    { id: 2, title: 'Business Information' },
-    { id: 3, title: 'Company Contact' },
-    { id: 4, title: 'Operations Classification' },
-    { id: 5, title: 'Vehicle Summary' },
-    { id: 6, title: 'Driver Summary' },
-    { id: 7, title: 'Affiliations' },
-    { id: 8, title: 'Compliance Certifications' },
-    { id: 9, title: 'Electronic Signature' }
+    { id: 2, title: 'Operation Classification Summary' },
+    { id: 3, title: 'Company Contact Information' },
+    { id: 4, title: 'Operation Type Questions' },
+    { id: 5, title: 'Vehicle Summary - Owned Vehicles' },
+    { id: 6, title: 'Vehicle Summary - Leased Vehicles' },
+    { id: 7, title: 'Vehicle Summary - International Operations' },
+    { id: 8, title: 'Driver Summary - Interstate Drivers' },
+    { id: 9, title: 'Driver Summary - Intrastate Drivers' },
+    { id: 10, title: 'Driver Summary - CDL & International' },
+    { id: 11, title: 'Affiliation with Others Summary' },
+    { id: 12, title: 'Compliance Certifications Summary' },
+    { id: 13, title: 'Electronic Signature' }
   ];
 
   // Render FMCSA Header (pixel-perfect government styling)
   const renderFMCSAHeader = () => (
     <div className="bg-blue-900 text-white" style={{ backgroundColor: '#003366' }}>
       <div className="max-w-6xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="text-2xl font-bold">FMCSA</div>
             <div className="text-sm">
@@ -645,7 +666,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
           <div className="text-right text-xs">
             <div>Unified Registration System</div>
             <div className="opacity-90">https://safer.fmcsa.dot.gov</div>
-          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -671,9 +692,9 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
           <button className="px-4 py-2 hover:bg-gray-200 font-medium text-red-600">
             LOGOUT
           </button>
+          </div>
+          </div>
         </div>
-      </div>
-    </div>
   );
 
   // Render current form step
@@ -689,15 +710,15 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-bold text-gray-900">
               USDOT Number Application
-            </h2>
+          </h2>
             <span className="text-sm text-gray-600">
-              Step {currentStep} of 9
+              Step {currentStep} of 13
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
               className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-              style={{ width: `${(currentStep / 9) * 100}%` }}
+              style={{ width: `${(currentStep / 13) * 100}%` }}
             ></div>
           </div>
         </div>
@@ -705,11 +726,11 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
         {/* Form Content */}
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="bg-white border-2 border-gray-300 shadow-sm p-6">
-            {renderStepContent()}
-          </div>
+          {renderStepContent()}
+        </div>
 
           {/* Navigation Buttons */}
-          <div className="mt-6 flex justify-between items-center">
+        <div className="mt-6 flex justify-between items-center">
             <button 
               className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
               disabled={currentStep === 1 || isAutoFilling}
@@ -721,7 +742,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
               className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 font-medium"
               disabled={isAutoFilling}
               onClick={() => {
-                if (currentStep < 9) {
+                if (currentStep < 13) {
                   setCurrentStep(currentStep + 1);
                 } else {
                   setShowReview(true);
@@ -729,7 +750,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 }
               }}
             >
-              {currentStep === 9 ? 'SUBMIT' : 'NEXT →'}
+              {currentStep === 13 ? 'SUBMIT' : 'NEXT →'}
             </button>
           </div>
         </div>
@@ -737,7 +758,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     );
   };
 
-  // Render content for each step
+  // Render content for each step - COMPLETE USDOT APPLICATION
   const renderStepContent = () => {
     const fieldClass = (fieldName: string) => 
       `w-full px-3 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500 ${
@@ -746,18 +767,18 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
 
     switch (currentStep) {
       case 1:
-        return (
-          <div>
+    return (
+      <div>
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Are you a 3rd Party Service Provider?
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               A 3rd party service provider is a business or individual that assists others in completing USDOT registrations.
             </p>
-            <div className="space-y-3">
+        <div className="space-y-3">
               <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
-                <input
-                  type="radio"
+            <input
+              type="radio"
                   name="thirdParty"
                   value="Yes"
                   checked={applicationData.isThirdPartyProvider === 'Yes'}
@@ -765,11 +786,11 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                   className="w-5 h-5 text-blue-600"
                 />
                 <span className="text-gray-900 font-medium">Yes</span>
-              </label>
-              
+          </label>
+          
               <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
-                <input
-                  type="radio"
+            <input
+              type="radio"
                   name="thirdParty"
                   value="No"
                   checked={applicationData.isThirdPartyProvider === 'No'}
@@ -777,61 +798,61 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                   className="w-5 h-5 text-blue-600"
                 />
                 <span className="text-gray-900 font-medium">No</span>
-              </label>
-            </div>
-          </div>
-        );
+          </label>
+        </div>
+      </div>
+    );
 
       case 2:
-        return (
-          <div className="space-y-4">
+    return (
+      <div className="space-y-4">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Business Information</h3>
             
-            <div>
+        <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">
                 Legal Business Name <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                value={applicationData.legalBusinessName || ''}
+          </label>
+          <input
+            type="text"
+            value={applicationData.legalBusinessName || ''}
                 onChange={(e) => setApplicationData(prev => ({ ...prev, legalBusinessName: e.target.value }))}
                 className={fieldClass('legalBusinessName')}
-                placeholder="Enter legal business name"
-              />
-            </div>
-            
-            <div>
+            placeholder="Enter legal business name"
+          />
+        </div>
+        
+        <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">
                 Doing Business As (DBA) Name
-              </label>
-              <input
-                type="text"
-                value={applicationData.dbaName || ''}
+          </label>
+          <input
+            type="text"
+            value={applicationData.dbaName || ''}
                 onChange={(e) => setApplicationData(prev => ({ ...prev, dbaName: e.target.value }))}
                 className={fieldClass('dbaName')}
                 placeholder="Enter DBA name if different"
-              />
-            </div>
+          />
+        </div>
 
-            <div>
+        <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">
                 Form of Business <span className="text-red-600">*</span>
-              </label>
-              <select
-                value={applicationData.formOfBusiness || ''}
+          </label>
+          <select
+            value={applicationData.formOfBusiness || ''}
                 onChange={(e) => setApplicationData(prev => ({ ...prev, formOfBusiness: e.target.value }))}
                 className={fieldClass('formOfBusiness')}
-              >
+          >
                 <option value="">Select...</option>
-                <option value="sole_proprietor">Sole Proprietor</option>
-                <option value="partnership">Partnership</option>
+            <option value="sole_proprietor">Sole Proprietor</option>
+            <option value="partnership">Partnership</option>
                 <option value="limited_liability_company">Limited Liability Company (LLC)</option>
-                <option value="corporation">Corporation</option>
+            <option value="corporation">Corporation</option>
                 <option value="limited_liability_partnership">Limited Liability Partnership (LLP)</option>
                 <option value="trusts">Trust</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
+            <option value="other">Other</option>
+          </select>
+        </div>
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">
@@ -857,9 +878,9 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 className={fieldClass('phone')}
                 placeholder="(XXX) XXX-XXXX"
               />
-            </div>
-          </div>
-        );
+        </div>
+      </div>
+    );
 
       case 3:
         return (
@@ -915,8 +936,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 className={fieldClass('contactPhone')}
               />
             </div>
-          </div>
-        );
+    </div>
+  );
 
       case 4:
         return (
@@ -1015,8 +1036,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 </label>
               </div>
             </div>
-          </div>
-        );
+    </div>
+  );
 
       case 5:
         return (
@@ -1080,8 +1101,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 min="0"
               />
             </div>
-          </div>
-        );
+    </div>
+  );
 
       case 6:
         return (
@@ -1126,8 +1147,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 min="0"
               />
             </div>
-          </div>
-        );
+    </div>
+  );
 
       case 7:
         return (
@@ -1166,8 +1187,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 </label>
               </div>
             </div>
-          </div>
-        );
+    </div>
+  );
 
       case 8:
         return (
@@ -1232,8 +1253,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 </span>
               </label>
             </div>
-          </div>
-        );
+    </div>
+  );
 
       case 9:
         return (
@@ -1268,8 +1289,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 This constitutes your electronic signature. Date: {new Date().toLocaleDateString()}
               </p>
             </div>
-          </div>
-        );
+    </div>
+  );
 
       default:
         return <div>Step not implemented</div>;
@@ -1280,7 +1301,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   const renderScenarioPanel = () => {
     if (!currentScenario) return null;
 
-    return (
+  return (
       <div className="bg-white border-2 border-gray-300 shadow p-6 h-full overflow-y-auto">
         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
           <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
@@ -1313,8 +1334,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
             <p className="text-gray-900">
               {currentScenario.receiveCompensationForTransport === 'Yes' ? 'For-Hire' : 'Private'} / 
               {currentScenario.transportNonHazardousInterstate === 'Yes' ? ' Interstate' : ' Intrastate'}
-            </p>
-          </div>
+          </p>
+        </div>
 
           <div>
             <label className="font-bold text-gray-700">Fleet Size:</label>
@@ -1334,7 +1355,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 )}
                 <span className={currentScenario.expectedRequirements.usdotRequired ? 'text-green-700' : 'text-gray-500'}>
                   USDOT Number
-                </span>
+                  </span>
               </div>
               <div className="flex items-center">
                 {currentScenario.expectedRequirements.mcAuthorityRequired ? (
@@ -1366,13 +1387,13 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                   Hazmat Endorsement
                 </span>
               </div>
-            </div>
-          </div>
-
+                </div>
+              </div>
+              
           <div className="border-t pt-4">
             <label className="font-bold text-gray-700 mb-2 block">Reasoning:</label>
             <p className="text-gray-700 text-xs">{currentScenario.expectedRequirements.reasoning}</p>
-          </div>
+            </div>
         </div>
       </div>
     );
@@ -1415,15 +1436,15 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 <p className="text-sm text-gray-600">
                   Review each USDOT question: Mark correct ✓ or incorrect ✗
                 </p>
-              </div>
+                    </div>
               <div className="text-right">
                 <div className="text-sm text-gray-600">Progress</div>
                 <div className="text-2xl font-bold text-gray-900">
                   {reviewedCount}/{totalFields} reviewed
+                    </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
           {/* Split Screen Content */}
           <div className="flex-1 flex overflow-hidden">
@@ -1638,26 +1659,26 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                       );
                     })}
                   </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
           {/* BOTTOM PANEL: Training Feedback */}
           <div className="bg-white border-t-2 border-gray-300 p-6">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-4">
-                <div>
+                        <div>
                   <h3 className="text-lg font-bold text-gray-900">Training Feedback</h3>
                   <p className="text-sm text-gray-600">
                     Provide detailed explanations for corrections - the RPA will learn from your feedback
                   </p>
-                </div>
+                          </div>
                 <div className="text-right">
                   {!allReviewed && (
                     <div className="text-sm text-orange-600 font-medium">
                       ⚠️ Please review all {totalFields} questions before submitting
-                    </div>
+                          </div>
                   )}
                   {allReviewed && (
                     <div className={`text-sm font-bold ${
@@ -1666,10 +1687,10 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                       'text-red-600'
                     }`}>
                       Overall Accuracy: {accuracy}%
-                    </div>
+                        </div>
                   )}
-                </div>
-              </div>
+                          </div>
+                          </div>
 
               <textarea
                 value={reviewFeedback}
@@ -1699,11 +1720,11 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
                 >
                   Back to Form
                 </button>
-              </div>
+                        </div>
+                      </div>
+                  </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
     );
   };
 
@@ -1719,7 +1740,7 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
           <p className="text-gray-600">
             Watch the RPA agent fill out USDOT applications using real scenarios. Review and train for accuracy.
           </p>
-        </div>
+          </div>
 
         {/* Session Stats */}
         {!isTraining && (
@@ -1727,7 +1748,7 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm text-gray-600">Total Scenarios</div>
               <div className="text-2xl font-bold text-gray-900">{sessionStats.totalScenarios}</div>
-            </div>
+              </div>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm text-gray-600">Completed</div>
               <div className="text-2xl font-bold text-gray-900">{sessionStats.completed}</div>
@@ -1790,8 +1811,8 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
                   />
                   <span>Fast (0.2s per field)</span>
                 </label>
-              </div>
-            </div>
+                </div>
+                </div>
 
             <button
               onClick={startTrainingSession}
@@ -1800,7 +1821,7 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
               <PlayIcon className="h-5 w-5" />
               <span>Load Scenario & Start Training</span>
             </button>
-          </div>
+              </div>
         )}
 
         {/* Training Interface */}
@@ -1813,7 +1834,7 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
               {/* RPA Controls */}
               <div className="bg-white border-2 border-gray-300 shadow p-4 mt-4">
                 <h4 className="font-bold text-gray-900 mb-3">RPA Controls</h4>
-                <button
+              <button
                   onClick={autoFillAllSteps}
                   disabled={isAutoFilling}
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mb-2 flex items-center justify-center"
@@ -1829,9 +1850,9 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
                       Watch RPA Auto-Fill
                     </>
                   )}
-                </button>
+              </button>
                 <p className="text-xs text-gray-600 mt-2">
-                  Click to watch the RPA agent automatically fill out all 9 steps of the application.
+                  Click to watch the RPA agent automatically fill out all 13 steps of the complete USDOT application.
                 </p>
               </div>
             </div>
