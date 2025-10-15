@@ -347,7 +347,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     setHighlightedField('');
   };
 
-  // Auto-fill all steps automatically
+  // Auto-fill all steps automatically - COMPREHENSIVE FIELD MAPPING
   const autoFillAllSteps = async () => {
     if (!currentScenario) return;
     
@@ -355,58 +355,89 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     const formData = mapScenarioToFormData(currentScenario);
     const speed = autoFillSpeed === 'slow' ? 1000 : autoFillSpeed === 'normal' ? 500 : 200;
 
-    // Step 1
+    // Step 1: 3rd Party Service Provider
     setCurrentStep(1);
     await autoFillField('isThirdPartyProvider', formData.isThirdPartyProvider, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 2
+    // Step 2: Business Information
     setCurrentStep(2);
     await autoFillField('legalBusinessName', formData.legalBusinessName, speed);
     await autoFillField('dbaName', formData.dbaName, speed);
-    await autoFillField('formOfBusiness', formData.formOfBusiness, speed);
-    await autoFillField('ein', formData.ein, speed);
+    await autoFillField('principalAddressSame', formData.principalAddressSame, speed);
+    await autoFillField('principalAddress', formData.principalAddress, speed);
+    await autoFillField('mailingAddress', formData.mailingAddress, speed);
     await autoFillField('phone', formData.phone, speed);
+    await autoFillField('ein', formData.ein, speed);
+    await autoFillField('isGovernmentUnit', formData.isGovernmentUnit, speed);
+    await autoFillField('formOfBusiness', formData.formOfBusiness, speed);
+    await autoFillField('ownershipControl', formData.ownershipControl, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 3
+    // Step 3: Company Contact
     setCurrentStep(3);
     await autoFillField('contactFirstName', formData.contactFirstName, speed);
+    await autoFillField('contactMiddleName', formData.contactMiddleName, speed);
     await autoFillField('contactLastName', formData.contactLastName, speed);
+    await autoFillField('contactSuffix', formData.contactSuffix, speed);
+    await autoFillField('contactTitle', formData.contactTitle, speed);
     await autoFillField('contactEmail', formData.contactEmail, speed);
     await autoFillField('contactPhone', formData.contactPhone, speed);
+    await autoFillField('contactAddress', formData.contactAddress, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 4
+    // Step 4: Operations Classification
     setCurrentStep(4);
+    await autoFillField('intermodalEquipmentProvider', formData.intermodalEquipmentProvider, speed);
     await autoFillField('transportProperty', formData.transportProperty, speed);
     await autoFillField('receiveCompensation', formData.receiveCompensation, speed);
+    await autoFillField('propertyType', formData.propertyType, speed);
     await autoFillField('interstateCommerce', formData.interstateCommerce, speed);
+    await autoFillField('transportOwnProperty', formData.transportOwnProperty, speed);
+    await autoFillField('transportPassengers', formData.transportPassengers, speed);
+    await autoFillField('brokerServices', formData.brokerServices, speed);
+    await autoFillField('freightForwarder', formData.freightForwarder, speed);
+    await autoFillField('cargoTankFacility', formData.cargoTankFacility, speed);
+    await autoFillField('driveaway', formData.driveaway, speed);
+    await autoFillField('towaway', formData.towaway, speed);
+    await autoFillField('cargoClassifications', formData.cargoClassifications, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 5
+    // Step 5: Vehicle Summary
     setCurrentStep(5);
+    await autoFillField('nonCMVProperty', formData.nonCMVProperty, speed);
     await autoFillField('ownedVehicles', formData.ownedVehicles, speed);
+    await autoFillField('termLeasedVehicles', formData.termLeasedVehicles, speed);
+    await autoFillField('tripLeasedVehicles', formData.tripLeasedVehicles, speed);
+    await autoFillField('towDriveawayVehicles', formData.towDriveawayVehicles, speed);
+    await autoFillField('canadaVehicles', formData.canadaVehicles, speed);
+    await autoFillField('mexicoVehicles', formData.mexicoVehicles, speed);
     await autoFillField('interstateVehicles', formData.interstateVehicles, speed);
+    await autoFillField('intrastateVehicles', formData.intrastateVehicles, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 6
+    // Step 6: Driver Summary
     setCurrentStep(6);
+    await autoFillField('interstateDrivers100Mile', formData.interstateDrivers100Mile, speed);
     await autoFillField('interstateDriversBeyond100Mile', formData.interstateDriversBeyond100Mile, speed);
+    await autoFillField('intrastateDrivers100Mile', formData.intrastateDrivers100Mile, speed);
+    await autoFillField('intrastateDriversBeyond100Mile', formData.intrastateDriversBeyond100Mile, speed);
     await autoFillField('cdlDrivers', formData.cdlDrivers, speed);
+    await autoFillField('canadaDrivers', formData.canadaDrivers, speed);
+    await autoFillField('mexicoDrivers', formData.mexicoDrivers, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 7
+    // Step 7: Affiliations
     setCurrentStep(7);
     await autoFillField('hasAffiliations', formData.hasAffiliations, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 8
+    // Step 8: Compliance Certifications
     setCurrentStep(8);
     await autoFillField('complianceCertifications', formData.complianceCertifications, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Step 9
+    // Step 9: Electronic Signature
     setCurrentStep(9);
     await autoFillField('electronicSignature', formData.electronicSignature, speed);
     
@@ -415,39 +446,92 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     compareResults(formData);
   };
 
-  // Compare RPA results with expected scenario data - detailed field mapping
+  // Compare RPA results with expected scenario data - comprehensive USDOT questions mapping
   const compareResults = (expectedData: Partial<USDOTApplicationData>) => {
     const comparisons: FieldComparison[] = [
-      // Business Information
-      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: applicationData.legalBusinessName, isCorrect: null, fieldPath: 'legalBusinessName', category: 'business' },
-      { fieldName: 'dbaName', displayName: 'Doing Business As Name', expected: expectedData.dbaName, actual: applicationData.dbaName, isCorrect: null, fieldPath: 'dbaName', category: 'business' },
-      { fieldName: 'formOfBusiness', displayName: 'Form of Business', expected: expectedData.formOfBusiness, actual: applicationData.formOfBusiness, isCorrect: null, fieldPath: 'formOfBusiness', category: 'business' },
-      { fieldName: 'ein', displayName: 'Employer Identification Number (EIN)', expected: expectedData.ein, actual: applicationData.ein, isCorrect: null, fieldPath: 'ein', category: 'business' },
-      { fieldName: 'phone', displayName: 'Business Telephone Number', expected: expectedData.phone, actual: applicationData.phone, isCorrect: null, fieldPath: 'phone', category: 'business' },
+      // Operation Classification Questions
+      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: currentScenario?.hasDunsBradstreet, actual: applicationData.isThirdPartyProvider, isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
+      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: applicationData.legalBusinessName, isCorrect: null, fieldPath: 'legalBusinessName', category: 'operation_classification' },
+      { fieldName: 'dbaName', displayName: 'Doing Business As Name(s) (if different from Legal Business Name)', expected: expectedData.dbaName, actual: applicationData.dbaName, isCorrect: null, fieldPath: 'dbaName', category: 'operation_classification' },
+      { fieldName: 'principalAddressSame', displayName: 'Is the Applicant\'s Principal Place of Business Address the same as the Application Contact\'s Address?', expected: expectedData.principalAddressSame, actual: applicationData.principalAddressSame, isCorrect: null, fieldPath: 'principalAddressSame', category: 'operation_classification' },
+      { fieldName: 'principalAddress', displayName: 'Principal Place of Business Address', expected: expectedData.principalAddress, actual: applicationData.principalAddress, isCorrect: null, fieldPath: 'principalAddress', category: 'operation_classification' },
+      { fieldName: 'mailingAddress', displayName: 'Mailing Address', expected: expectedData.mailingAddress, actual: applicationData.mailingAddress, isCorrect: null, fieldPath: 'mailingAddress', category: 'operation_classification' },
+      { fieldName: 'phone', displayName: 'Principal Place of Business Telephone Number', expected: expectedData.phone, actual: applicationData.phone, isCorrect: null, fieldPath: 'phone', category: 'operation_classification' },
+      { fieldName: 'ein', displayName: 'Employer Identification Number (EIN) or Social Security Number (SSN)', expected: expectedData.ein, actual: applicationData.ein, isCorrect: null, fieldPath: 'ein', category: 'operation_classification' },
+      { fieldName: 'isGovernmentUnit', displayName: 'Is the Applicant a Unit of Government?', expected: expectedData.isGovernmentUnit, actual: applicationData.isGovernmentUnit, isCorrect: null, fieldPath: 'isGovernmentUnit', category: 'operation_classification' },
+      { fieldName: 'formOfBusiness', displayName: 'Form of Business (Select the business form that applies)', expected: expectedData.formOfBusiness, actual: applicationData.formOfBusiness, isCorrect: null, fieldPath: 'formOfBusiness', category: 'operation_classification' },
+      { fieldName: 'ownershipControl', displayName: 'Ownership and Control', expected: expectedData.ownershipControl, actual: applicationData.ownershipControl, isCorrect: null, fieldPath: 'ownershipControl', category: 'operation_classification' },
       
-      // Company Contact
-      { fieldName: 'contactFirstName', displayName: 'Contact First Name', expected: expectedData.contactFirstName, actual: applicationData.contactFirstName, isCorrect: null, fieldPath: 'contactFirstName', category: 'contact' },
-      { fieldName: 'contactLastName', displayName: 'Contact Last Name', expected: expectedData.contactLastName, actual: applicationData.contactLastName, isCorrect: null, fieldPath: 'contactLastName', category: 'contact' },
-      { fieldName: 'contactEmail', displayName: 'Contact Email', expected: expectedData.contactEmail, actual: applicationData.contactEmail, isCorrect: null, fieldPath: 'contactEmail', category: 'contact' },
-      { fieldName: 'contactPhone', displayName: 'Contact Phone', expected: expectedData.contactPhone, actual: applicationData.contactPhone, isCorrect: null, fieldPath: 'contactPhone', category: 'contact' },
+      // Company Contact Questions
+      { fieldName: 'contactFirstName', displayName: 'Company Contact First Name', expected: expectedData.contactFirstName, actual: applicationData.contactFirstName, isCorrect: null, fieldPath: 'contactFirstName', category: 'company_contact' },
+      { fieldName: 'contactMiddleName', displayName: 'Company Contact Middle Name', expected: expectedData.contactMiddleName, actual: applicationData.contactMiddleName, isCorrect: null, fieldPath: 'contactMiddleName', category: 'company_contact' },
+      { fieldName: 'contactLastName', displayName: 'Company Contact Last Name', expected: expectedData.contactLastName, actual: applicationData.contactLastName, isCorrect: null, fieldPath: 'contactLastName', category: 'company_contact' },
+      { fieldName: 'contactSuffix', displayName: 'Company Contact Suffix', expected: expectedData.contactSuffix, actual: applicationData.contactSuffix, isCorrect: null, fieldPath: 'contactSuffix', category: 'company_contact' },
+      { fieldName: 'contactTitle', displayName: 'Company Official\'s Title', expected: expectedData.contactTitle, actual: applicationData.contactTitle, isCorrect: null, fieldPath: 'contactTitle', category: 'company_contact' },
+      { fieldName: 'contactEmail', displayName: 'Company Contact Email', expected: expectedData.contactEmail, actual: applicationData.contactEmail, isCorrect: null, fieldPath: 'contactEmail', category: 'company_contact' },
+      { fieldName: 'contactPhone', displayName: 'Company Contact Telephone Number', expected: expectedData.contactPhone, actual: applicationData.contactPhone, isCorrect: null, fieldPath: 'contactPhone', category: 'company_contact' },
+      { fieldName: 'contactAddress', displayName: 'Company Contact Address', expected: expectedData.contactAddress, actual: applicationData.contactAddress, isCorrect: null, fieldPath: 'contactAddress', category: 'company_contact' },
       
-      // Operations
-      { fieldName: 'transportProperty', displayName: 'Transport Property?', expected: expectedData.transportProperty, actual: applicationData.transportProperty, isCorrect: null, fieldPath: 'transportProperty', category: 'operations' },
-      { fieldName: 'receiveCompensation', displayName: 'Receive Compensation?', expected: expectedData.receiveCompensation, actual: applicationData.receiveCompensation, isCorrect: null, fieldPath: 'receiveCompensation', category: 'operations' },
-      { fieldName: 'interstateCommerce', displayName: 'Interstate Commerce?', expected: expectedData.interstateCommerce, actual: applicationData.interstateCommerce, isCorrect: null, fieldPath: 'interstateCommerce', category: 'operations' },
+      // Operation Type Questions
+      { fieldName: 'intermodalEquipmentProvider', displayName: 'Will the Applicant operate as an Intermodal Equipment Provider?', expected: expectedData.intermodalEquipmentProvider, actual: applicationData.intermodalEquipmentProvider, isCorrect: null, fieldPath: 'intermodalEquipmentProvider', category: 'operation_type' },
+      { fieldName: 'transportProperty', displayName: 'Will the Applicant transport Property?', expected: expectedData.transportProperty, actual: applicationData.transportProperty, isCorrect: null, fieldPath: 'transportProperty', category: 'operation_type' },
+      { fieldName: 'receiveCompensation', displayName: 'Will the Applicant receive compensation for the business of transporting the property belonging to others?', expected: expectedData.receiveCompensation, actual: applicationData.receiveCompensation, isCorrect: null, fieldPath: 'receiveCompensation', category: 'operation_type' },
+      { fieldName: 'propertyType', displayName: 'What type of Property will the Applicant transport?', expected: expectedData.propertyType, actual: applicationData.propertyType, isCorrect: null, fieldPath: 'propertyType', category: 'operation_type' },
+      { fieldName: 'interstateCommerce', displayName: 'Will the Applicant transport Non-Hazardous Materials across state lines, otherwise known as Interstate Commerce?', expected: expectedData.interstateCommerce, actual: applicationData.interstateCommerce, isCorrect: null, fieldPath: 'interstateCommerce', category: 'operation_type' },
+      { fieldName: 'transportOwnProperty', displayName: 'Will the Applicant transport their own property?', expected: expectedData.transportOwnProperty, actual: applicationData.transportOwnProperty, isCorrect: null, fieldPath: 'transportOwnProperty', category: 'operation_type' },
+      { fieldName: 'transportPassengers', displayName: 'Will the Applicant transport any Passengers?', expected: expectedData.transportPassengers, actual: applicationData.transportPassengers, isCorrect: null, fieldPath: 'transportPassengers', category: 'operation_type' },
+      { fieldName: 'brokerServices', displayName: 'Will the Applicant provide Property or Household Goods (HHG) Broker services?', expected: expectedData.brokerServices, actual: applicationData.brokerServices, isCorrect: null, fieldPath: 'brokerServices', category: 'operation_type' },
+      { fieldName: 'freightForwarder', displayName: 'Will the Applicant provide Freight Forwarder services?', expected: expectedData.freightForwarder, actual: applicationData.freightForwarder, isCorrect: null, fieldPath: 'freightForwarder', category: 'operation_type' },
+      { fieldName: 'cargoTankFacility', displayName: 'Will the Applicant operate a Cargo Tank Facility?', expected: expectedData.cargoTankFacility, actual: applicationData.cargoTankFacility, isCorrect: null, fieldPath: 'cargoTankFacility', category: 'operation_type' },
+      { fieldName: 'driveaway', displayName: 'Will the Applicant operate as a Driveaway?', expected: expectedData.driveaway, actual: applicationData.driveaway, isCorrect: null, fieldPath: 'driveaway', category: 'operation_type' },
+      { fieldName: 'towaway', displayName: 'Will the Applicant operate as a Towaway?', expected: expectedData.towaway, actual: applicationData.towaway, isCorrect: null, fieldPath: 'towaway', category: 'operation_type' },
+      { fieldName: 'cargoClassifications', displayName: 'Please select all classifications of cargo that the Applicant will transport or handle', expected: expectedData.cargoClassifications, actual: applicationData.cargoClassifications, isCorrect: null, fieldPath: 'cargoClassifications', category: 'operation_type' },
       
-      // Vehicles
-      { fieldName: 'ownedVehicles.straightTrucks', displayName: 'Owned Straight Trucks', expected: expectedData.ownedVehicles?.straightTrucks, actual: applicationData.ownedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'ownedVehicles.straightTrucks', category: 'vehicles' },
-      { fieldName: 'ownedVehicles.truckTractors', displayName: 'Owned Truck Tractors', expected: expectedData.ownedVehicles?.truckTractors, actual: applicationData.ownedVehicles?.truckTractors, isCorrect: null, fieldPath: 'ownedVehicles.truckTractors', category: 'vehicles' },
-      { fieldName: 'interstateVehicles', displayName: 'CMVs in Interstate Commerce', expected: expectedData.interstateVehicles, actual: applicationData.interstateVehicles, isCorrect: null, fieldPath: 'interstateVehicles', category: 'vehicles' },
-      { fieldName: 'intrastateVehicles', displayName: 'CMVs in Intrastate Commerce', expected: expectedData.intrastateVehicles, actual: applicationData.intrastateVehicles, isCorrect: null, fieldPath: 'intrastateVehicles', category: 'vehicles' },
+      // Vehicle Summary Questions
+      { fieldName: 'nonCMVProperty', displayName: 'Non-CMV Property', expected: expectedData.nonCMVProperty, actual: applicationData.nonCMVProperty, isCorrect: null, fieldPath: 'nonCMVProperty', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.straightTrucks', displayName: 'Owned Straight Truck(s)', expected: expectedData.ownedVehicles?.straightTrucks, actual: applicationData.ownedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'ownedVehicles.straightTrucks', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.truckTractors', displayName: 'Owned Truck Tractor(s)', expected: expectedData.ownedVehicles?.truckTractors, actual: applicationData.ownedVehicles?.truckTractors, isCorrect: null, fieldPath: 'ownedVehicles.truckTractors', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.trailers', displayName: 'Owned Trailer(s)', expected: expectedData.ownedVehicles?.trailers, actual: applicationData.ownedVehicles?.trailers, isCorrect: null, fieldPath: 'ownedVehicles.trailers', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.iepTrailerChassis', displayName: 'Owned IEP Trailer Chassis Only', expected: expectedData.ownedVehicles?.iepTrailerChassis, actual: applicationData.ownedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'ownedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.straightTrucks', displayName: 'Term Leased Straight Truck(s)', expected: expectedData.termLeasedVehicles?.straightTrucks, actual: applicationData.termLeasedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'termLeasedVehicles.straightTrucks', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.truckTractors', displayName: 'Term Leased Truck Tractor(s)', expected: expectedData.termLeasedVehicles?.truckTractors, actual: applicationData.termLeasedVehicles?.truckTractors, isCorrect: null, fieldPath: 'termLeasedVehicles.truckTractors', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.trailers', displayName: 'Term Leased Trailer(s)', expected: expectedData.termLeasedVehicles?.trailers, actual: applicationData.termLeasedVehicles?.trailers, isCorrect: null, fieldPath: 'termLeasedVehicles.trailers', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.iepTrailerChassis', displayName: 'Term Leased IEP Trailer Chassis Only', expected: expectedData.termLeasedVehicles?.iepTrailerChassis, actual: applicationData.termLeasedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'termLeasedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
+      { fieldName: 'tripLeasedVehicles.straightTrucks', displayName: 'Trip Leased Straight Truck(s)', expected: expectedData.tripLeasedVehicles?.straightTrucks, actual: applicationData.tripLeasedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'tripLeasedVehicles.straightTrucks', category: 'vehicle_summary' },
+      { fieldName: 'tripLeasedVehicles.truckTractors', displayName: 'Trip Leased Truck Tractor(s)', expected: expectedData.tripLeasedVehicles?.truckTractors, actual: applicationData.tripLeasedVehicles?.truckTractors, isCorrect: null, fieldPath: 'tripLeasedVehicles.truckTractors', category: 'vehicle_summary' },
+      { fieldName: 'tripLeasedVehicles.trailers', displayName: 'Trip Leased Trailer(s)', expected: expectedData.tripLeasedVehicles?.trailers, actual: applicationData.tripLeasedVehicles?.trailers, isCorrect: null, fieldPath: 'tripLeasedVehicles.trailers', category: 'vehicle_summary' },
+      { fieldName: 'tripLeasedVehicles.iepTrailerChassis', displayName: 'Trip Leased IEP Trailer Chassis Only', expected: expectedData.tripLeasedVehicles?.iepTrailerChassis, actual: applicationData.tripLeasedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'tripLeasedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
+      { fieldName: 'towDriveawayVehicles.straightTrucks', displayName: 'Tow / Driveway Straight Truck(s)', expected: expectedData.towDriveawayVehicles?.straightTrucks, actual: applicationData.towDriveawayVehicles?.straightTrucks, isCorrect: null, fieldPath: 'towDriveawayVehicles.straightTrucks', category: 'vehicle_summary' },
+      { fieldName: 'towDriveawayVehicles.truckTractors', displayName: 'Tow / Driveway Truck Tractor(s)', expected: expectedData.towDriveawayVehicles?.truckTractors, actual: applicationData.towDriveawayVehicles?.truckTractors, isCorrect: null, fieldPath: 'towDriveawayVehicles.truckTractors', category: 'vehicle_summary' },
+      { fieldName: 'towDriveawayVehicles.trailers', displayName: 'Tow / Driveway Trailer(s)', expected: expectedData.towDriveawayVehicles?.trailers, actual: applicationData.towDriveawayVehicles?.trailers, isCorrect: null, fieldPath: 'towDriveawayVehicles.trailers', category: 'vehicle_summary' },
+      { fieldName: 'towDriveawayVehicles.iepTrailerChassis', displayName: 'Tow / Driveway IEP Trailer Chassis Only', expected: expectedData.towDriveawayVehicles?.iepTrailerChassis, actual: applicationData.towDriveawayVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'towDriveawayVehicles.iepTrailerChassis', category: 'vehicle_summary' },
+      { fieldName: 'canadaVehicles', displayName: 'Please provide the number of vehicles that the Entity will operate in Canada', expected: expectedData.canadaVehicles, actual: applicationData.canadaVehicles, isCorrect: null, fieldPath: 'canadaVehicles', category: 'vehicle_summary' },
+      { fieldName: 'mexicoVehicles', displayName: 'Please provide the number of vehicles that the Entity will operate in Mexico', expected: expectedData.mexicoVehicles, actual: applicationData.mexicoVehicles, isCorrect: null, fieldPath: 'mexicoVehicles', category: 'vehicle_summary' },
+      { fieldName: 'interstateVehicles', displayName: 'Please provide the number of Commercial Motor Vehicles the Applicant will operate solely in Interstate Commerce', expected: expectedData.interstateVehicles, actual: applicationData.interstateVehicles, isCorrect: null, fieldPath: 'interstateVehicles', category: 'vehicle_summary' },
+      { fieldName: 'intrastateVehicles', displayName: 'Please provide the number of Commercial Motor Vehicles the Applicant will operate solely in Intrastate Commerce', expected: expectedData.intrastateVehicles, actual: applicationData.intrastateVehicles, isCorrect: null, fieldPath: 'intrastateVehicles', category: 'vehicle_summary' },
       
-      // Drivers
-      { fieldName: 'interstateDriversBeyond100Mile', displayName: 'Interstate Drivers (Beyond 100 miles)', expected: expectedData.interstateDriversBeyond100Mile, actual: applicationData.interstateDriversBeyond100Mile, isCorrect: null, fieldPath: 'interstateDriversBeyond100Mile', category: 'drivers' },
-      { fieldName: 'cdlDrivers', displayName: 'Drivers with CDL', expected: expectedData.cdlDrivers, actual: applicationData.cdlDrivers, isCorrect: null, fieldPath: 'cdlDrivers', category: 'drivers' },
+      // Driver Summary Questions
+      { fieldName: 'interstateDrivers100Mile', displayName: 'What are the number of drivers who will operate as Interstate - Within a 100 Air-Mile Radius', expected: expectedData.interstateDrivers100Mile, actual: applicationData.interstateDrivers100Mile, isCorrect: null, fieldPath: 'interstateDrivers100Mile', category: 'driver_summary' },
+      { fieldName: 'interstateDriversBeyond100Mile', displayName: 'What are the number of drivers who will operate as Interstate - Beyond a 100 Air-Mile Radius', expected: expectedData.interstateDriversBeyond100Mile, actual: applicationData.interstateDriversBeyond100Mile, isCorrect: null, fieldPath: 'interstateDriversBeyond100Mile', category: 'driver_summary' },
+      { fieldName: 'intrastateDrivers100Mile', displayName: 'What are the number of drivers who will operate solely as Intrastate - Within a 100 Air-Mile Radius', expected: expectedData.intrastateDrivers100Mile, actual: applicationData.intrastateDrivers100Mile, isCorrect: null, fieldPath: 'intrastateDrivers100Mile', category: 'driver_summary' },
+      { fieldName: 'intrastateDriversBeyond100Mile', displayName: 'What are the number of drivers who will operate solely as Intrastate - Beyond a 100 Air-Mile Radius', expected: expectedData.intrastateDriversBeyond100Mile, actual: applicationData.intrastateDriversBeyond100Mile, isCorrect: null, fieldPath: 'intrastateDriversBeyond100Mile', category: 'driver_summary' },
+      { fieldName: 'cdlDrivers', displayName: 'What are the number of drivers with a Commercial Driver\'s License (CDL), Licencia Federal de Conductor (LFC), or a valid Canadian License Class 1, 2, 3, or 4 (or Class A, B, C, or D if licensed in Ontario)?', expected: expectedData.cdlDrivers, actual: applicationData.cdlDrivers, isCorrect: null, fieldPath: 'cdlDrivers', category: 'driver_summary' },
+      { fieldName: 'canadaDrivers', displayName: 'What are the number of drivers who will operate in Canada', expected: expectedData.canadaDrivers, actual: applicationData.canadaDrivers, isCorrect: null, fieldPath: 'canadaDrivers', category: 'driver_summary' },
+      { fieldName: 'mexicoDrivers', displayName: 'What are the number of drivers who will operate in Mexico', expected: expectedData.mexicoDrivers, actual: applicationData.mexicoDrivers, isCorrect: null, fieldPath: 'mexicoDrivers', category: 'driver_summary' },
       
-      // Compliance
-      { fieldName: 'electronicSignature', displayName: 'Electronic Signature', expected: expectedData.electronicSignature, actual: applicationData.electronicSignature, isCorrect: null, fieldPath: 'electronicSignature', category: 'compliance' },
+      // Affiliation Questions
+      { fieldName: 'hasAffiliations', displayName: 'Does the Applicant currently have, or has had within the last 3 years of the date of filing this application, relationships involving common stock, common ownership, common management, common control or familial relationships or any other person or applicant for registration?', expected: expectedData.hasAffiliations, actual: applicationData.hasAffiliations, isCorrect: null, fieldPath: 'hasAffiliations', category: 'affiliation' },
+      
+      // Compliance Certifications Questions
+      { fieldName: 'complianceCertifications.willingAble', displayName: 'Does the Applicant certify it is willing and able to provide the proposed operations or service and to comply with all pertinent statutory and regulatory requirements and regulations issued or administered by the U.S. Department of Transportation?', expected: expectedData.complianceCertifications?.willingAble, actual: applicationData.complianceCertifications?.willingAble, isCorrect: null, fieldPath: 'complianceCertifications.willingAble', category: 'compliance_certifications' },
+      { fieldName: 'complianceCertifications.produceDocuments', displayName: 'Does the Applicant certify it is willing and able to produce for review or inspection documents which are requested for the purpose of determining compliance with applicable statutes and regulations administered by the Department of Transportation?', expected: expectedData.complianceCertifications?.produceDocuments, actual: applicationData.complianceCertifications?.produceDocuments, isCorrect: null, fieldPath: 'complianceCertifications.produceDocuments', category: 'compliance_certifications' },
+      { fieldName: 'complianceCertifications.notDisqualified', displayName: 'Does the Applicant certify it is not currently disqualified from operating commercial motor vehicles in the United States?', expected: expectedData.complianceCertifications?.notDisqualified, actual: applicationData.complianceCertifications?.notDisqualified, isCorrect: null, fieldPath: 'complianceCertifications.notDisqualified', category: 'compliance_certifications' },
+      { fieldName: 'complianceCertifications.processAgent', displayName: 'Does the Applicant certify it understands that the agent(s) for service of process designation will be deemed the applicant\'s official representative(s) in the United States for receipt of filings and notices in administrative proceedings under 49 U.S.C. § 13303?', expected: expectedData.complianceCertifications?.processAgent, actual: applicationData.complianceCertifications?.processAgent, isCorrect: null, fieldPath: 'complianceCertifications.processAgent', category: 'compliance_certifications' },
+      { fieldName: 'complianceCertifications.notSuspended', displayName: 'Does the Applicant certify that the carrier is not prohibited from filing this application because its FMCSA registration is currently under suspension, or was revoked less than 30 days before filing the application?', expected: expectedData.complianceCertifications?.notSuspended, actual: applicationData.complianceCertifications?.notSuspended, isCorrect: null, fieldPath: 'complianceCertifications.notSuspended', category: 'compliance_certifications' },
+      { fieldName: 'complianceCertifications.deficienciesCorrected', displayName: 'If the Applicant\'s registration is currently revoked, does the Applicant certify the deficiencies cited in the revocation proceeding have been corrected?', expected: expectedData.complianceCertifications?.deficienciesCorrected, actual: applicationData.complianceCertifications?.deficienciesCorrected, isCorrect: null, fieldPath: 'complianceCertifications.deficienciesCorrected', category: 'compliance_certifications' },
+      
+      // Electronic Signature
+      { fieldName: 'electronicSignature', displayName: 'Electronic Signature (Applicant\'s First Name and Last Name)', expected: expectedData.electronicSignature, actual: applicationData.electronicSignature, isCorrect: null, fieldPath: 'electronicSignature', category: 'electronic_signature' },
     ];
     
     setFieldComparisons(comparisons);
@@ -1301,7 +1385,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     ));
   };
 
-  // Render review/correction interface - SPLIT SCREEN DESIGN
+  // Render review/correction interface - IMPROVED SPLIT SCREEN DESIGN
   const renderReviewInterface = () => {
     if (!currentScenario) return null;
 
@@ -1329,7 +1413,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                   USDOT RPA Application Review
                 </h2>
                 <p className="text-sm text-gray-600">
-                  Review each field: Mark correct ✓ or incorrect ✗
+                  Review each USDOT question: Mark correct ✓ or incorrect ✗
                 </p>
               </div>
               <div className="text-right">
@@ -1343,11 +1427,11 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
 
           {/* Split Screen Content */}
           <div className="flex-1 flex overflow-hidden">
-            {/* LEFT PANEL: Client Scenario Data */}
+            {/* LEFT PANEL: Complete Scenario Company Information */}
             <div className="w-1/3 bg-white border-r-2 border-gray-300 overflow-y-auto p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center sticky top-0 bg-white pb-2">
                 <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
-                Client's Information
+                Scenario Company Information
               </h3>
 
               <div className="space-y-4 text-sm">
@@ -1357,75 +1441,124 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 </div>
 
                 <div className="border-b pb-3">
-                  <div className="font-bold text-gray-700 mb-2">Business Information</div>
+                  <div className="font-bold text-gray-700 mb-2">Operation Classification</div>
                   <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">D&B Number:</span> {currentScenario.hasDunsBradstreet}</div>
                     <div><span className="font-semibold">Legal Name:</span> {currentScenario.legalBusinessName}</div>
                     <div><span className="font-semibold">DBA:</span> {currentScenario.doingBusinessAs}</div>
-                    <div><span className="font-semibold">Form:</span> {currentScenario.formOfBusiness.replace(/_/g, ' ')}</div>
-                    <div><span className="font-semibold">EIN:</span> {currentScenario.ein}</div>
+                    <div><span className="font-semibold">Address Same:</span> {currentScenario.principalAddressSameAsContact}</div>
+                    <div><span className="font-semibold">Principal Address:</span> {currentScenario.principalAddress.street}, {currentScenario.principalAddress.city}, {currentScenario.principalAddress.state} {currentScenario.principalAddress.postalCode}</div>
+                    <div><span className="font-semibold">Mailing Address:</span> {currentScenario.mailingAddress.street}, {currentScenario.mailingAddress.city}, {currentScenario.mailingAddress.state} {currentScenario.mailingAddress.postalCode}</div>
                     <div><span className="font-semibold">Phone:</span> {currentScenario.businessPhone}</div>
+                    <div><span className="font-semibold">EIN:</span> {currentScenario.ein}</div>
+                    <div><span className="font-semibold">Government Unit:</span> {currentScenario.isUnitOfGovernment}</div>
+                    <div><span className="font-semibold">Business Form:</span> {currentScenario.formOfBusiness.replace(/_/g, ' ')}</div>
+                    <div><span className="font-semibold">Ownership:</span> {currentScenario.ownershipControl.replace(/_/g, ' ')}</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Company Contact</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Name:</span> {currentScenario.companyContact.firstName} {currentScenario.companyContact.lastName}</div>
+                    <div><span className="font-semibold">Name:</span> {currentScenario.companyContact.firstName} {currentScenario.companyContact.middleName} {currentScenario.companyContact.lastName} {currentScenario.companyContact.suffix}</div>
+                    <div><span className="font-semibold">Title:</span> {currentScenario.companyContact.title}</div>
                     <div><span className="font-semibold">Email:</span> {currentScenario.companyContact.email}</div>
                     <div><span className="font-semibold">Phone:</span> {currentScenario.companyContact.phone}</div>
+                    <div><span className="font-semibold">Address:</span> {currentScenario.companyContact.address.street}, {currentScenario.companyContact.address.city}, {currentScenario.companyContact.address.state} {currentScenario.companyContact.address.postalCode}</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
-                  <div className="font-bold text-gray-700 mb-2">Operations</div>
+                  <div className="font-bold text-gray-700 mb-2">Operation Type</div>
                   <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Intermodal Provider:</span> {currentScenario.operateAsIntermodalEquipmentProvider}</div>
                     <div><span className="font-semibold">Transport Property:</span> {currentScenario.transportProperty}</div>
-                    <div><span className="font-semibold">Compensation:</span> {currentScenario.receiveCompensationForTransport === 'Yes' ? 'For-Hire' : 'Private'}</div>
-                    <div><span className="font-semibold">Interstate:</span> {currentScenario.transportNonHazardousInterstate}</div>
+                    <div><span className="font-semibold">Compensation:</span> {currentScenario.receiveCompensationForTransport}</div>
                     <div><span className="font-semibold">Property Type:</span> {currentScenario.propertyType.replace(/_/g, ' ')}</div>
+                    <div><span className="font-semibold">Interstate Commerce:</span> {currentScenario.transportNonHazardousInterstate}</div>
+                    <div><span className="font-semibold">Transport Own:</span> {currentScenario.transportOwnProperty}</div>
+                    <div><span className="font-semibold">Transport Passengers:</span> {currentScenario.transportPassengers}</div>
+                    <div><span className="font-semibold">Broker Services:</span> {currentScenario.provideBrokerServices}</div>
+                    <div><span className="font-semibold">Freight Forwarder:</span> {currentScenario.provideFreightForwarderServices}</div>
+                    <div><span className="font-semibold">Cargo Tank:</span> {currentScenario.operateCargoTankFacility}</div>
+                    <div><span className="font-semibold">Driveaway:</span> {currentScenario.operateAsDriveaway}</div>
+                    <div><span className="font-semibold">Towaway:</span> {currentScenario.operateAsTowaway}</div>
+                    <div><span className="font-semibold">Cargo Classifications:</span> {currentScenario.cargoClassifications.join(', ')}</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
-                  <div className="font-bold text-gray-700 mb-2">Vehicles</div>
+                  <div className="font-bold text-gray-700 mb-2">Vehicle Summary</div>
                   <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Non-CMV Property:</span> {currentScenario.nonCMVProperty}</div>
                     <div><span className="font-semibold">Straight Trucks (Owned):</span> {currentScenario.vehicles.straightTrucks.owned}</div>
                     <div><span className="font-semibold">Truck Tractors (Owned):</span> {currentScenario.vehicles.truckTractors.owned}</div>
+                    <div><span className="font-semibold">Trailers (Owned):</span> {currentScenario.vehicles.trailers.owned}</div>
+                    <div><span className="font-semibold">IEP Chassis (Owned):</span> {currentScenario.vehicles.iepTrailerChassis.owned}</div>
+                    <div><span className="font-semibold">Canada Vehicles:</span> {currentScenario.vehiclesInCanada}</div>
+                    <div><span className="font-semibold">Mexico Vehicles:</span> {currentScenario.vehiclesInMexico}</div>
                     <div><span className="font-semibold">Interstate CMVs:</span> {currentScenario.cmvInterstateOnly}</div>
                     <div><span className="font-semibold">Intrastate CMVs:</span> {currentScenario.cmvIntrastateOnly}</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
-                  <div className="font-bold text-gray-700 mb-2">Drivers</div>
+                  <div className="font-bold text-gray-700 mb-2">Driver Summary</div>
                   <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Interstate (100mi):</span> {currentScenario.driversInterstate.within100Miles}</div>
                     <div><span className="font-semibold">Interstate (Beyond 100mi):</span> {currentScenario.driversInterstate.beyond100Miles}</div>
+                    <div><span className="font-semibold">Intrastate (100mi):</span> {currentScenario.driversIntrastate.within100Miles}</div>
+                    <div><span className="font-semibold">Intrastate (Beyond 100mi):</span> {currentScenario.driversIntrastate.beyond100Miles}</div>
                     <div><span className="font-semibold">Drivers with CDL:</span> {currentScenario.driversWithCDL}</div>
+                    <div><span className="font-semibold">Canada Drivers:</span> {currentScenario.driversInCanada}</div>
+                    <div><span className="font-semibold">Mexico Drivers:</span> {currentScenario.driversInMexico}</div>
+                  </div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Affiliation</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Has Affiliations:</span> {currentScenario.hasAffiliations}</div>
+                  </div>
+                </div>
+
+                <div className="border-b pb-3">
+                  <div className="font-bold text-gray-700 mb-2">Compliance Certifications</div>
+                  <div className="space-y-1 text-xs">
+                    <div><span className="font-semibold">Willing & Able:</span> {currentScenario.certifyWillingAndAble}</div>
+                    <div><span className="font-semibold">Produce Documents:</span> {currentScenario.certifyProduceDocuments}</div>
+                    <div><span className="font-semibold">Not Disqualified:</span> {currentScenario.certifyNotDisqualified}</div>
+                    <div><span className="font-semibold">Process Agent:</span> {currentScenario.certifyUnderstandProcessAgent}</div>
+                    <div><span className="font-semibold">Not Suspended:</span> {currentScenario.certifyNotUnderSuspension}</div>
+                    <div><span className="font-semibold">Deficiencies Corrected:</span> {currentScenario.certifyDeficienciesCorrected}</div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="font-bold text-gray-700 mb-2">Signature</div>
+                  <div className="font-bold text-gray-700 mb-2">Electronic Signature</div>
                   <div className="text-xs">{currentScenario.electronicSignature}</div>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT PANEL: Question-by-Question Review */}
+            {/* RIGHT PANEL: All USDOT Questions with RPA Answers */}
             <div className="flex-1 overflow-y-auto p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 sticky top-0 bg-gray-100 pb-2">
-                Field-by-Field Review
+                USDOT Questions & RPA Answers Review
               </h3>
 
               {Object.entries(groupedFields).map(([category, fields]) => (
                 <div key={category} className="mb-6">
                   <h4 className="text-md font-bold text-gray-800 mb-3 capitalize bg-gray-200 px-3 py-2 rounded">
-                    {category === 'business' ? 'Business Information' :
-                     category === 'contact' ? 'Company Contact' :
-                     category === 'operations' ? 'Operations Classification' :
-                     category === 'vehicles' ? 'Vehicle Summary' :
-                     category === 'drivers' ? 'Driver Summary' :
-                     'Compliance & Signature'}
+                    {category === 'operation_classification' ? 'Operation Classification Summary' :
+                     category === 'company_contact' ? 'Company Contact' :
+                     category === 'operation_type' ? 'Operation Type Questions' :
+                     category === 'vehicle_summary' ? 'Vehicle Summary' :
+                     category === 'driver_summary' ? 'Driver Summary' :
+                     category === 'affiliation' ? 'Affiliation with Others Summary' :
+                     category === 'compliance_certifications' ? 'Compliance Certifications Summary' :
+                     category === 'electronic_signature' ? 'Electronic Signature' :
+                     category}
                   </h4>
                   
                   <div className="space-y-3">
@@ -1444,20 +1577,20 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                         >
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <div className="font-bold text-gray-900 mb-1">{field.displayName}</div>
+                              <div className="font-bold text-gray-900 mb-2 text-sm leading-relaxed">{field.displayName}</div>
                               <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
-                                  <div className="text-xs text-gray-600 font-semibold">Expected (from scenario):</div>
-                                  <div className="font-mono text-xs bg-blue-50 p-2 rounded mt-1">
-                                    {JSON.stringify(field.expected) || '(empty)'}
+                                  <div className="text-xs text-gray-600 font-semibold mb-1">Expected (from scenario):</div>
+                                  <div className="font-mono text-xs bg-blue-50 p-2 rounded border">
+                                    {typeof field.expected === 'object' ? JSON.stringify(field.expected, null, 2) : (field.expected || '(empty)')}
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="text-xs text-gray-600 font-semibold">RPA Filled:</div>
-                                  <div className={`font-mono text-xs p-2 rounded mt-1 ${
-                                    matches ? 'bg-green-50' : 'bg-red-50'
+                                  <div className="text-xs text-gray-600 font-semibold mb-1">RPA Filled:</div>
+                                  <div className={`font-mono text-xs p-2 rounded border ${
+                                    matches ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
                                   }`}>
-                                    {JSON.stringify(field.actual) || '(empty)'}
+                                    {typeof field.actual === 'object' ? JSON.stringify(field.actual, null, 2) : (field.actual || '(empty)')}
                                   </div>
                                 </div>
                               </div>
@@ -1512,18 +1645,18 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
 
           {/* BOTTOM PANEL: Training Feedback */}
           <div className="bg-white border-t-2 border-gray-300 p-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Training Feedback</h3>
                   <p className="text-sm text-gray-600">
-                    Explain corrections in detail - the RPA will learn from your feedback
+                    Provide detailed explanations for corrections - the RPA will learn from your feedback
                   </p>
                 </div>
                 <div className="text-right">
                   {!allReviewed && (
                     <div className="text-sm text-orange-600 font-medium">
-                      ⚠️ Please review all {totalFields} fields before submitting
+                      ⚠️ Please review all {totalFields} questions before submitting
                     </div>
                   )}
                   {allReviewed && (
@@ -1542,9 +1675,10 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 value={reviewFeedback}
                 onChange={(e) => setReviewFeedback(e.target.value)}
                 className="w-full h-32 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                placeholder="Provide detailed training feedback. For incorrect fields, explain:
-• What the RPA should have filled instead
-• Why it got it wrong (e.g., incorrect field mapping, wrong data source)
+                placeholder="Provide detailed training feedback. For incorrect answers, explain:
+
+• What the RPA should have answered instead
+• Why it got it wrong (e.g., incorrect field mapping, wrong data source, logic error)
 • How to fix it (e.g., 'interstateVehicles should sum all owned vehicles when interstateCommerce = Yes')
 
 Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 straight trucks + 2 tractors owned). The mapping logic needs to check if interstateCommerce=Yes, then sum vehicles.straightTrucks.owned + vehicles.truckTractors.owned.'"
