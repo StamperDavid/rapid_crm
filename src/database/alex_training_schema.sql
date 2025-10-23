@@ -170,3 +170,6 @@ CREATE INDEX IF NOT EXISTS idx_test_results_correctness ON alex_test_results(is_
 CREATE INDEX IF NOT EXISTS idx_knowledge_state ON shared_regulatory_knowledge(state, operation_type, operation_radius);
 CREATE INDEX IF NOT EXISTS idx_corrections_scenario ON alex_training_corrections(scenario_id);
 
+
+
+

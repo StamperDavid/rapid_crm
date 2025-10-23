@@ -1,0 +1,67 @@
+<!-- FMCSA USDOT Application - Page 31: Transport Property Question -->
+<!-- form_B0051P050021, Question Q05002 - Yes/No with TOOLTIP -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "Property") -->
+<label class="questionDesc" id="questionDesc_Q05002">
+  Will the Applicant transport 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of general freight, hazardous materials or household goods. This category includes transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. These exemptions can be found in 49 U.S.C. chapter 135.');">
+    Property
+  </span>?
+</label>
+
+<!-- Icon: icon_Property.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050021S05002_Q05002" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050021S05002_Q05002_id_Y">
+<label for="questionCode_B0051P050021S05002_Q05002_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050021S05002_Q05002" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050021S05002_Q05002_id_N">
+<label for="questionCode_B0051P050021S05002_Q05002_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050021
+Branch: B0051
+Page: P050021
+Section: S05002
+Question: Q05002
+Field Name: questionCode_B0051P050021S05002_Q05002
+Field Type: Radio button (Yes/No)
+Icon: icon_Property.png
+Progress: 27%
+
+TOOLTIP DEFINITION:
+"Transportation of general freight, hazardous materials or household goods. This category includes 
+transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. 
+These exemptions can be found in 49 U.S.C. chapter 135."
+
+WHAT "PROPERTY" INCLUDES:
+- General freight
+- Hazardous materials
+- Household goods
+- Some exempt transportation (per 49 U.S.C. chapters 135 & 139)
+
+BRANCHING LOGIC:
+- If "Yes": Leads to property carrier questions (For-Hire vs Private, cargo types, etc.)
+- If "No": Skips property carrier questions, continues to next operation type
+
+This question determines if the applicant will be a:
+- Motor Carrier of Property (general freight)
+- Motor Carrier of Household Goods (if household goods checked)
+- Or both
+
+The tooltip clarifies the legal scope including exempt transportation categories.
+-->
+

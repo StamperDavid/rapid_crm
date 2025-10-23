@@ -243,3 +243,6 @@ Make sure Alex understands this fundamental rule!
 
 **Your training center is ready! Start training Alex now at `/training/alex`**
 
+
+
+

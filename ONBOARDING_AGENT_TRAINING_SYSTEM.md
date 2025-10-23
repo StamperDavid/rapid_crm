@@ -374,3 +374,6 @@ You mentioned the agent needs to "collect payments" - this is separate from comp
 **Your system is now set up to learn from YOU (the expert) and make consistent, accurate determinations based on REAL regulatory data, not guesses.**
 
 
+
+
+

@@ -1,0 +1,101 @@
+<!-- FMCSA USDOT Application - Page 37: Broker Services Question -->
+<!-- form_B0051P050221, Question Q05013 - Property/HHG Broker determination -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "Property or Household Goods (HHG) Broker") -->
+<label class="questionDesc" id="questionDesc_Q05013">
+  Will the Applicant provide 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'An entity that arranges for the interstate transportation of cargo belonging to others, using for-hire motor carriers subject to the commercial registration requirements to provide the actual transportation.');">
+    Property or Household Goods (HHG) Broker
+  </span> 
+  services?
+</label>
+
+<!-- Icon: icon_Broker.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050221S05022_Q05013" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050221S05022_Q05013_id_Y">
+<label for="questionCode_B0051P050221S05022_Q05013_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050221S05022_Q05013" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050221S05022_Q05013_id_N">
+<label for="questionCode_B0051P050221S05022_Q05013_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050221
+Branch: B0051
+Page: P050221
+Section: S05022
+Question: Q05013
+Field Name: questionCode_B0051P050221S05022_Q05013
+Field Type: Radio button (Yes/No)
+Icon: icon_Broker.png
+Progress: 27%
+
+TOOLTIP DEFINITION:
+"An entity that arranges for the interstate transportation of cargo belonging to others, using 
+for-hire motor carriers subject to the commercial registration requirements to provide the actual 
+transportation."
+
+BROKER DEFINITION - KEY CHARACTERISTICS:
+
+WHAT BROKERS DO:
+- ARRANGE transportation (not perform it themselves)
+- Act as intermediary between shippers and carriers
+- Use authorized for-hire motor carriers to do actual hauling
+- Cargo belongs to others (not broker's property)
+- Interstate transportation only (intrastate brokers = different regulation)
+
+WHAT BROKERS DO NOT DO:
+- Do NOT assume responsibility for cargo
+- Do NOT own/operate trucks (typically)
+- Do NOT employ drivers (typically)
+- Are NOT the actual motor carrier
+
+BROKER TYPES:
+1. Property Broker - General freight
+2. Household Goods (HHG) Broker - Residential moves
+
+REGULATORY REQUIREMENTS FOR BROKERS:
+
+IF YES (Broker):
+- Requires MC Number (Broker Authority) - NOT same as carrier MC Number
+- Requires BMC-84 Broker Bond ($75,000)
+- NO USDOT Number required (unless also operating as carrier)
+- Subject to broker-specific regulations
+- Must use registered/authorized motor carriers
+- Cannot transport cargo themselves (unless separately registered as carrier)
+
+IF NO (Not a Broker):
+- Does not need Broker Authority
+- May still need carrier authority if transporting
+
+IMPORTANT DISTINCTION:
+Many companies are BOTH:
+- Broker (arranges transportation for others)
+- Motor Carrier (transports own loads)
+These need BOTH registrations (MC for carrier + MC for broker = different numbers)
+
+This question determines if Broker Authority (MC Number for Brokerage) is required.
+Completely different regulatory framework from motor carriers.
+
+BRANCHING LOGIC:
+- If "Yes": Leads to broker-specific questions
+  * Bond information
+  * Process agent designation
+  * Broker contact information
+  
+- If "No": Skips broker questions
+-->
+

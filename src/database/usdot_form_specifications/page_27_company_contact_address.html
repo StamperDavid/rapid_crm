@@ -1,0 +1,219 @@
+<!-- FMCSA USDOT Application - Page 27: Company Contact Address -->
+<!-- form_bdCompAddr - Address with COUNTRY-BASED CONDITIONAL fields -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Company Contact Address</label>
+
+<!-- TABLE: compAddressTable -->
+<table id="compAddressTable" style="width:100%">
+  <!-- FIELD 1: Country (Combobox) -->
+  <tr>
+    <td colspan="2" align="left">
+      <label for="Q04041_COUNTRY">Country</label>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">
+      <input type="text" 
+             id="Q04041_COUNTRY" 
+             role="combobox" 
+             aria-required="false" 
+             tabindex="0">
+      <input type="hidden" name="Q04041_COUNTRY" value="US">
+    </td>
+  </tr>
+
+  <!-- FIELD 2: Street Address Line 1 (Always visible) -->
+  <tr>
+    <td>
+      <div id="div_Q04042_ADDRESS1">
+        <label for="Q04042_ADDRESS1">Street Address/Route Number Line 1</label>
+        <input type="text" 
+               id="Q04042_ADDRESS1" 
+               name="Q04042_ADDRESS1" 
+               maxlength="38" 
+               aria-required="true" 
+               tabindex="0">
+      </div>
+
+      <!-- FIELD 3: Street Address Line 2 (Always visible) -->
+      <div id="div_Q04043_ADDRESS2">
+        <label for="Q04043_ADDRESS2">Street Address/Route Number Line 2</label>
+        <input type="text" 
+               id="Q04043_ADDRESS2" 
+               name="Q04043_ADDRESS2" 
+               maxlength="38" 
+               aria-required="false" 
+               tabindex="0">
+      </div>
+
+      <!-- FIELD 4: Street Address Line 3 (CONDITIONAL - hidden for US/Canada) -->
+      <div id="div_Q04044_ADDRESS3" style="display: none;">
+        <label for="Q04044_ADDRESS3">Street Address/Route Number Line 3</label>
+        <input type="text" 
+               id="Q04044_ADDRESS3" 
+               name="Q04044_ADDRESS3" 
+               maxlength="256" 
+               aria-required="false" 
+               tabindex="0">
+      </div>
+
+      <!-- FIELD 5: Street Address Line 4 (CONDITIONAL - hidden for US/Canada) -->
+      <div id="div_Q04045_ADDRESS4" style="display: none;">
+        <label for="Q04045_ADDRESS4">Street Address/Route Number Line 4</label>
+        <input type="text" 
+               id="Q04045_ADDRESS4" 
+               name="Q04045_ADDRESS4" 
+               maxlength="256" 
+               aria-required="false" 
+               tabindex="0">
+      </div>
+    </td>
+  </tr>
+
+  <!-- FIELD 6 & 7: City and State/Province (side by side) -->
+  <tr>
+    <td align="left">
+      <label for="Q04046_CITY">City</label>
+    </td>
+    <td align="left">
+      <label for="Q04047_STATE" id="Q04047_STATE_label">State/Province</label>
+    </td>
+  </tr>
+  <tr>
+    <!-- City field -->
+    <td align="left">
+      <input type="text" 
+             id="Q04046_CITY" 
+             name="Q04046_CITY" 
+             maxlength="25" 
+             aria-required="true" 
+             tabindex="0" 
+             style="width: 95%;">
+    </td>
+
+    <!-- State/Province DROPDOWN (for US/Canada) -->
+    <td id="Q04047_STATE_control" align="left" style="display: block;">
+      <input type="text" 
+             id="Q04047_STATE" 
+             role="combobox" 
+             aria-required="true" 
+             aria-labelledby="Q04047_STATE_label"
+             aria-disabled="false"
+             tabindex="0">
+      <input type="hidden" name="Q04047_STATE" value="NONE">
+    </td>
+
+    <!-- State/Province TEXT FIELD (for other countries - hidden/disabled) -->
+    <td id="Q04047_STATE_TXT_control" align="left" style="display: none;">
+      <input type="text" 
+             id="Q04047_STATE_TXT" 
+             name="Q04047_STATE_TXT" 
+             maxlength="256" 
+             aria-required="false" 
+             disabled 
+             tabindex="-1">
+    </td>
+  </tr>
+
+  <!-- FIELD 8: Postal Code -->
+  <tr>
+    <td colspan="2" align="left">
+      <label for="Q04048_POSTAL_CODE">Postal Code</label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="left">
+      <input type="text" 
+             id="Q04048_POSTAL_CODE" 
+             name="Q04048_POSTAL_CODE" 
+             maxlength="10" 
+             aria-required="true" 
+             tabindex="0">
+    </td>
+  </tr>
+
+  <!-- FIELD 9: Colonia (CONDITIONAL - only for Mexico - hidden/disabled) -->
+  <tr id="Q04049_COLONIA_TR1" style="display: none;">
+    <td colspan="2" align="left">
+      <label for="Q04049_COLONIA">Colonia</label>
+    </td>
+  </tr>
+  <tr id="Q04049_COLONIA_TR2" style="display: none;">
+    <td colspan="2" align="left">
+      <input type="text" 
+             id="Q04049_COLONIA" 
+             name="Q04049_COLONIA" 
+             maxlength="128" 
+             aria-required="true" 
+             disabled 
+             tabindex="-1">
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_bdCompAddr
+Table ID: compAddressTable
+Progress: 22%
+
+FIELDS (with country-based conditional logic):
+1. Q04041_COUNTRY - Country (Combobox, default="US")
+2. Q04042_ADDRESS1 - Street Address Line 1 (maxlength=38, REQUIRED)
+3. Q04043_ADDRESS2 - Street Address Line 2 (maxlength=38, optional)
+4. Q04044_ADDRESS3 - Street Address Line 3 (maxlength=256, CONDITIONAL)
+5. Q04045_ADDRESS4 - Street Address Line 4 (maxlength=256, CONDITIONAL)
+6. Q04046_CITY - City (maxlength=25, REQUIRED)
+7a. Q04047_STATE - State/Province DROPDOWN (for US/Canada)
+7b. Q04047_STATE_TXT - State/Province TEXT FIELD (for other countries)
+8. Q04048_POSTAL_CODE - Postal Code (maxlength=10, REQUIRED)
+9. Q04049_COLONIA - Colonia (maxlength=128, CONDITIONAL for Mexico only)
+
+COUNTRY-BASED CONDITIONAL LOGIC:
+
+FOR UNITED STATES (US):
+- ADDRESS1, ADDRESS2: Visible (maxlength=38)
+- ADDRESS3, ADDRESS4: Hidden (display:none)
+- STATE: Dropdown visible (US states)
+- STATE_TXT: Hidden (display:none)
+- COLONIA: Hidden (display:none)
+
+FOR CANADA (CA):
+- ADDRESS1, ADDRESS2: Visible (maxlength=38)
+- ADDRESS3, ADDRESS4: Hidden (display:none)
+- STATE: Dropdown visible (Canadian provinces)
+- STATE_TXT: Hidden (display:none)
+- COLONIA: Hidden (display:none)
+
+FOR MEXICO (MX):
+- ADDRESS1, ADDRESS2: Visible (maxlength=38)
+- ADDRESS3, ADDRESS4: Visible (maxlength=256)
+- STATE: Dropdown visible (Mexican states)
+- STATE_TXT: Hidden (display:none)
+- COLONIA: Visible and REQUIRED
+
+FOR OTHER COUNTRIES:
+- ADDRESS1, ADDRESS2: Visible (maxlength=38)
+- ADDRESS3, ADDRESS4: Visible (maxlength=256)
+- STATE: Hidden (display:none)
+- STATE_TXT: Visible (freeform text for province/region)
+- COLONIA: Hidden (display:none)
+
+TWO STATE FIELD CONTROLS:
+- Q04047_STATE_control: Contains dropdown (id="Q04047_STATE")
+- Q04047_STATE_TXT_control: Contains text field (id="Q04047_STATE_TXT")
+- Only ONE is visible at a time based on country selection
+- display:block vs display:none toggles between them
+
+This address format handles:
+- US addresses (2 lines, state dropdown, ZIP)
+- Canadian addresses (2 lines, province dropdown, postal code)
+- Mexican addresses (4 lines, state dropdown, postal code, colonia)
+- International addresses (4 lines, freeform state/province, postal code)
+
+USPS VALIDATION NOTICE:
+The confirmation dialog shows that US addresses are validated against USPS database
+and may be auto-corrected to standard USPS formatting.
+-->
+

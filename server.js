@@ -6179,6 +6179,29 @@ app.get('/api/alex-training/session', async (req, res) => {
   }
 });
 
+// Check scenario count and details
+app.get('/api/alex-training/scenario-count', async (req, res) => {
+  try {
+    const count = await runQueryOne('SELECT COUNT(*) as count FROM alex_training_scenarios WHERE is_active = 1');
+    const total = await runQueryOne('SELECT COUNT(*) as count FROM alex_training_scenarios');
+    const sessionCount = await runQueryOne('SELECT COUNT(*) as count FROM alex_training_sessions');
+    
+    console.log('📊 Scenario count check:');
+    console.log(`   Total scenarios: ${total?.count || 0}`);
+    console.log(`   Active scenarios: ${count?.count || 0}`);
+    console.log(`   Training sessions: ${sessionCount?.count || 0}`);
+    
+    res.json({ 
+      count: count?.count || 0,
+      total: total?.count || 0,
+      sessions: sessionCount?.count || 0
+    });
+  } catch (error) {
+    console.error('Error getting scenario count:', error);
+    res.json({ count: 0, total: 0, sessions: 0 });
+  }
+});
+
 // Generate training scenarios
 app.post('/api/alex-training/generate-scenarios', async (req, res) => {
   try {
@@ -6198,13 +6221,45 @@ app.post('/api/alex-training/generate-scenarios', async (req, res) => {
 app.get('/api/alex-training/next-scenario', async (req, res) => {
   try {
     if (!alexTrainingService) {
+      console.error('❌ Alex Training Service not available');
       return res.status(500).json({ error: 'Training service not available' });
     }
     
+    console.log('🎯 Getting next scenario...');
     const scenario = alexTrainingService.getNextScenario();
+    
+    if (!scenario) {
+      console.log('⚠️ No scenario returned from service');
+      console.log('⚠️ This usually means: no scenarios in DB OR all scenarios already tested in current session');
+    } else {
+      console.log('✅ Found scenario:', scenario.id);
+    }
+    
     res.json({ scenario });
   } catch (error) {
-    console.error('Error getting next scenario:', error);
+    console.error('❌ Error getting next scenario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Diagnostic endpoint for Jasper to report training issues
+app.post('/api/training/diagnostic-report', async (req, res) => {
+  try {
+    const { issue, context, userDescription } = req.body;
+    
+    console.log('\n');
+    console.log('🚨 =====================================================');
+    console.log('🚨 TRAINING DIAGNOSTIC REPORT FROM JASPER');
+    console.log('🚨 =====================================================');
+    console.log('📝 Issue:', issue);
+    console.log('📋 Context:', JSON.stringify(context, null, 2));
+    console.log('👤 User Description:', userDescription);
+    console.log('🚨 =====================================================');
+    console.log('\n');
+    
+    res.json({ success: true, message: 'Diagnostic report received' });
+  } catch (error) {
+    console.error('Error processing diagnostic report:', error);
     res.status(500).json({ error: error.message });
   }
 });

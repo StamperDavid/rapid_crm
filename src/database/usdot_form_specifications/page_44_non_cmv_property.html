@@ -1,0 +1,86 @@
+<!-- FMCSA USDOT Application - Page 44: Non-CMV Property Vehicles Count -->
+<!-- form_B0061P060121, Questions Q06116 & Q06117 - Numeric input -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Vehicle</label>
+
+<!-- QUESTION DESCRIPTION -->
+<label class="questionDesc" id="questionDesc_Q06116_NON_CMV_CAT_PROP">
+  Please provide the number of non-CMVs the Applicant plans to operate.
+</label>
+
+<!-- FIELD: Non-CMV Property Count -->
+<label class="forInput" id="questionDesc_Q06117_NON_CMV_PROP_ONLY">
+  Non-CMV Property
+</label>
+
+<input type="text" 
+       id="questionCode_B0061P060121S06061_Q06117_NON_CMV_PROP_ONLY_id" 
+       name="questionCode_B0061P060121S06061_Q06117_NON_CMV_PROP_ONLY" 
+       maxlength="5" 
+       size="5" 
+       aria-required="false" 
+       tabindex="0" 
+       style="width: 100px;">
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0061P060121
+Branch: B0061 (Vehicles)
+Page: P060121
+Section: S06061
+Questions: Q06116 (description), Q06117 (input field)
+Field Name: questionCode_B0061P060121S06061_Q06117_NON_CMV_PROP_ONLY
+Field Type: Text input (numeric)
+Progress: 32%
+
+NON-CMV DEFINITION:
+CMV = Commercial Motor Vehicle
+Non-CMV = Non-Commercial Motor Vehicle
+
+Vehicles that do NOT meet federal CMV thresholds:
+- Under 10,001 lbs GVWR (Gross Vehicle Weight Rating)
+- Not designed to transport 9+ passengers (including driver)
+- Not used to transport hazardous materials requiring placarding
+
+EXAMPLES OF NON-CMVs:
+- Pickup trucks under 10,001 lbs
+- Cargo vans under 10,001 lbs
+- Small delivery vehicles
+- Service vehicles
+- Support vehicles
+
+WHY THIS QUESTION MATTERS:
+Many carriers operate a MIXED FLEET:
+- CMVs (require DOT registration, driver CDL, hours of service, etc.)
+- Non-CMVs (support vehicles, lighter vehicles)
+
+The application likely asks for CMVs separately (next page probably).
+Non-CMVs are tracked but have different regulatory requirements.
+
+FIELD SPECIFICATIONS:
+- Maxlength: 5 characters (up to 99,999 vehicles)
+- Size: 5 (display width)
+- Width: 100px (CSS styling)
+- Type: text (not number type, allows validation flexibility)
+- Not required (aria-required="false")
+- Can be left blank (0 non-CMVs)
+
+NUMERIC INPUT PATTERN:
+- Text field expecting numeric entry
+- Maxlength limits to reasonable fleet size
+- No client-side type="number" (uses text with validation)
+- Likely server-side validates as integer
+
+This is likely the first of multiple vehicle count questions:
+- Non-CMV Property (this page)
+- CMV Property (next page likely)
+- Passenger vehicles
+- Other specialized vehicle types
+
+For RPA training:
+- Enter numeric value (0-99999)
+- Can enter 0 if no non-CMVs
+- Must be whole number
+-->
+

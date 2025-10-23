@@ -37,6 +37,7 @@ interface USDOTApplicationData {
   isThirdPartyProvider: string;
   
   // Step 2: Business Information
+  hasDunsBradstreet: string;
   legalBusinessName: string;
   dbaName: string;
   principalAddressSame: string;
@@ -192,11 +193,52 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     averageAccuracy: 0
   });
   const [highlightedField, setHighlightedField] = useState<string>('');
+  const [isGeneratingScenarios, setIsGeneratingScenarios] = useState(false);
+  const [scenarioCount, setScenarioCount] = useState(0);
 
   // Load session stats on mount
   useEffect(() => {
     loadSessionStats();
+    checkScenarioCount();
   }, []);
+
+  const checkScenarioCount = async () => {
+    try {
+      const response = await fetch('/api/alex-training/scenario-count');
+      if (response.ok) {
+        const data = await response.json();
+        setScenarioCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error checking scenario count:', error);
+      setScenarioCount(0);
+    }
+  };
+
+  const generateScenarios = async () => {
+    setIsGeneratingScenarios(true);
+    try {
+      const response = await fetch('/api/alex-training/generate-scenarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Generated scenarios:', data);
+        await checkScenarioCount();
+        await loadSessionStats();
+        alert(`Successfully generated ${data.count} training scenarios!`);
+      } else {
+        alert('Failed to generate scenarios. Please check the console for errors.');
+      }
+    } catch (error) {
+      console.error('Error generating scenarios:', error);
+      alert('Error generating scenarios. Please check the console.');
+    } finally {
+      setIsGeneratingScenarios(false);
+    }
+  };
 
   const loadSessionStats = async () => {
     try {
@@ -237,6 +279,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   const mapScenarioToFormData = (scenario: USDOTApplicationScenario): Partial<USDOTApplicationData> => {
     return {
       isThirdPartyProvider: 'No',
+      hasDunsBradstreet: scenario.hasDunsBradstreet,
       legalBusinessName: scenario.legalBusinessName,
       dbaName: scenario.doingBusinessAs,
       principalAddressSame: scenario.principalAddressSameAsContact,
@@ -467,7 +510,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   const compareResults = (expectedData: Partial<USDOTApplicationData>) => {
     const comparisons: FieldComparison[] = [
       // Operation Classification Questions
-      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: currentScenario?.hasDunsBradstreet, actual: applicationData.isThirdPartyProvider, isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
+      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: currentScenario?.hasDunsBradstreet, actual: applicationData.hasDunsBradstreet, isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
       { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: applicationData.legalBusinessName, isCorrect: null, fieldPath: 'legalBusinessName', category: 'operation_classification' },
       { fieldName: 'dbaName', displayName: 'Doing Business As Name(s) (if different from Legal Business Name)', expected: expectedData.dbaName, actual: applicationData.dbaName, isCorrect: null, fieldPath: 'dbaName', category: 'operation_classification' },
       { fieldName: 'principalAddressSame', displayName: 'Is the Applicant\'s Principal Place of Business Address the same as the Application Contact\'s Address?', expected: expectedData.principalAddressSame, actual: applicationData.principalAddressSame, isCorrect: null, fieldPath: 'principalAddressSame', category: 'operation_classification' },
@@ -567,7 +610,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       agentId: agentId,
       startTime: new Date(),
       currentStep: 1,
-      totalSteps: 9,
+      totalSteps: 13,
       score: 0,
       mistakes: [],
       completed: false,
@@ -1814,13 +1857,37 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
                 </div>
                 </div>
 
-            <button
-              onClick={startTrainingSession}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center space-x-2 mx-auto"
-            >
-              <PlayIcon className="h-5 w-5" />
-              <span>Load Scenario & Start Training</span>
-            </button>
+            {scenarioCount === 0 ? (
+              <div className="text-center">
+                <p className="text-red-600 mb-4 font-medium">
+                  No training scenarios found in the database.
+                </p>
+                <button
+                  onClick={generateScenarios}
+                  disabled={isGeneratingScenarios}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshIcon className={`h-5 w-5 ${isGeneratingScenarios ? 'animate-spin' : ''}`} />
+                  <span>{isGeneratingScenarios ? 'Generating Scenarios...' : 'Generate Training Scenarios'}</span>
+                </button>
+                <p className="text-sm text-gray-500 mt-2">
+                  This will create 25 diverse USDOT application scenarios for training
+                </p>
+              </div>
+            ) : (
+              <div className="text-center">
+                <p className="text-green-600 mb-4 font-medium">
+                  {scenarioCount} training scenarios available
+                </p>
+                <button
+                  onClick={startTrainingSession}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center space-x-2 mx-auto"
+                >
+                  <PlayIcon className="h-5 w-5" />
+                  <span>Load Scenario & Start Training</span>
+                </button>
+              </div>
+            )}
               </div>
         )}
 

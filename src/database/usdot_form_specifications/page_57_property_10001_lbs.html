@@ -1,0 +1,143 @@
+<!-- FMCSA USDOT Application - Page 57: Property in Vehicles >= 10,001 lbs -->
+<!-- form_B0131P130061, Question Q13007 - Insurance coverage threshold determination -->
+<!-- CRITICAL QUESTION: Determines minimum insurance requirements -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Financial Responsibility</label>
+
+<!-- QUESTION (with DUAL tooltips and context from previous answers) -->
+<label class="questionDesc" id="questionDesc_Q13007">
+  In the Operation Classification section of this application, you specified the entity will be transporting 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of general freight, hazardous materials or household goods. This category includes transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. These exemptions can be found in 49 U.S.C. chapter 135.');">
+    Property
+  </span> 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of any amount of hazardous material: &lt;br/&gt; (1) across State lines, including international boundaries; or &lt;br/&gt; (2) entirely within one State as part of a through movement that originates or terminates in another State or country.');">
+    Interstate
+  </span> 
+  and for Compensation. Will any of this property get transported in vehicles &gt;= 10,001 pounds?
+</label>
+
+<!-- ANSWER OPTIONS (Radio with shared image on top) -->
+<table class="selectbuttonsTable">
+  <!-- SHARED IMAGE ROW -->
+  <tr class="selectbuttonsSharedImageRow">
+    <td class="selectbuttonsSharedImageCell">
+      <label for="">
+        <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_Yes.png" 
+             alt="image" 
+             border="0">
+      </label>
+    </td>
+    <td class="answersTD">
+      <table class="answersTable">
+        <tr class="selectbuttonsRow"></tr>
+        
+        <!-- YES OPTION -->
+        <tr class="answerRow">
+          <td class="answerCellLeft">
+            <table class="answerMiniTable">
+              <tr class="answerMiniTableButtonLabelRow">
+                <td class="answerValueCell">
+                  <input name="questionCode_B0131P130061S13006_Q13007" 
+                         type="radio" 
+                         role="radio" 
+                         value="Y" 
+                         tabindex="0" 
+                         id="questionCode_B0131P130061S13006_Q13007_id_Y">
+                </td>
+                <td class="answerLabelCell">
+                  <label class="answerLabel" 
+                         for="questionCode_B0131P130061S13006_Q13007_id_Y" 
+                         id="ansLbl_B0131P130061S13006_Q13007_id_Y">
+                    Yes
+                  </label>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        
+        <!-- NO OPTION -->
+        <tr class="answerRow">
+          <td class="answerCellLeft">
+            <table class="answerMiniTable">
+              <tr class="answerMiniTableButtonLabelRow">
+                <td class="answerValueCell">
+                  <input name="questionCode_B0131P130061S13006_Q13007" 
+                         type="radio" 
+                         role="radio" 
+                         value="N" 
+                         tabindex="0" 
+                         id="questionCode_B0131P130061S13006_Q13007_id_N">
+                </td>
+                <td class="answerLabelCell">
+                  <label class="answerLabel" 
+                         for="questionCode_B0131P130061S13006_Q13007_id_N" 
+                         id="ansLbl_B0131P130061S13006_Q13007_id_N">
+                    No
+                  </label>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0131P130061
+Branch: B013 (Financial Responsibility)
+Page: P130061
+Section: S13006
+Question: Q13007
+Progress: Still at 72%
+
+PAGE TITLE ROW HIDDEN:
+Notice that the leafPageTitleTR has style="display: none;" - no visible page title.
+
+CRITICAL INSURANCE THRESHOLD: 10,001 POUNDS
+
+This is a MAJOR regulatory threshold for insurance requirements!
+
+GVWR/GCWR >= 10,001 lbs determines:
+1. Minimum Liability Insurance amounts
+2. Cargo insurance requirements
+3. Whether BMC-91 or BMC-91X filing applies
+
+TYPICAL MINIMUM INSURANCE REQUIREMENTS:
+- Vehicles < 10,001 lbs: Lower minimums or exempt
+- Vehicles >= 10,001 lbs carrying general freight: $750,000 minimum
+- Vehicles >= 10,001 lbs carrying hazmat: $1,000,000 - $5,000,000 depending on quantity
+
+CONTEXTUAL QUESTION:
+Notice the question references PREVIOUS ANSWERS:
+"In the Operation Classification section of this application, you specified..."
+- Property carrier (vs passengers)
+- Interstate (vs intrastate)
+- For Compensation (For-Hire vs Private)
+
+The system is building context from earlier responses to ask relevant follow-up questions.
+
+DUAL TOOLTIPS:
+1. "Property" - Definition of property transportation
+2. "Interstate" - NEW definition specifically for HAZMAT:
+   "Transportation of ANY AMOUNT of hazardous material:
+    (1) across State lines, including international boundaries; or
+    (2) entirely within one State as part of a through movement..."
+   
+   Note: This is different from the CMV interstate definition - this is hazmat-specific!
+
+SHARED IMAGE LAYOUT:
+- icon_Yes.png displayed at top
+- Radio buttons below in mini-tables
+- Same layout pattern as earlier radio questions
+
+TOTAL FIELDS: 1 radio (Yes/No)
+-->
+

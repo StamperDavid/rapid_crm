@@ -1,0 +1,142 @@
+<!-- FMCSA USDOT Application - Page 24: Form of Business -->
+<!-- form_bdProprietor, Question Q04028 - RADIO with CONDITIONAL sub-fields -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel" id="Q04059_BUS_TYPE_LABEL">
+  Form of Business (Select the business form that applies)
+</label>
+
+<!-- RADIO OPTIONS (7 options, some with conditional fields) -->
+<table>
+  <!-- 1. Sole Proprietor -->
+  <tr id="tr_formOfBusiness_soleProprietor">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="1" tabindex="0" id="formOfBusiness_soleProprietor">
+    </td>
+    <td align="left">
+      <label for="formOfBusiness_soleProprietor">Sole Proprietor</label>
+    </td>
+  </tr>
+
+  <!-- 2. Partnership -->
+  <tr id="tr_formOfBusiness_partnership">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="2" tabindex="0" id="formOfBusiness_partnership">
+    </td>
+    <td align="left">
+      <label for="formOfBusiness_partnership">Partnership</label>
+    </td>
+  </tr>
+
+  <!-- 3. Limited Liability Company (with STATE dropdown) -->
+  <tr id="tr_formOfBusiness_llc">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="3" tabindex="0" id="formOfBusiness_llc">
+    </td>
+    <td align="left">
+      <label id="llcLabel" for="formOfBusiness_llc">Limited Liability Company</label>
+      
+      <!-- CONDITIONAL FIELD: State of Formation (hidden/disabled until LLC selected) -->
+      <div id="div_Q04032_FORM_OF_BUS_STATE" style="display: none;">
+        <input type="text" 
+               id="Q04032_FORM_OF_BUS_STATE" 
+               name="Q04032_FORM_OF_BUS_STATE"
+               aria-required="true" 
+               role="combobox"
+               disabled
+               aria-disabled="true">
+        <input type="hidden" name="Q04032_FORM_OF_BUS_STATE" value="NONE" disabled>
+      </div>
+    </td>
+  </tr>
+
+  <!-- 4. Corporation (State of Incorporation) -->
+  <tr id="tr_formOfBusiness_corp">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="4" tabindex="0" id="formOfBusiness_corp">
+    </td>
+    <td align="left">
+      <label id="corpLabel" for="formOfBusiness_corp">Corporation (State of Incorporation)</label>
+    </td>
+  </tr>
+
+  <!-- 5. Limited Liability Partnership -->
+  <tr id="tr_formOfBusiness_llp">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="6" tabindex="0" id="formOfBusiness_limitedLiabilityPartnership">
+    </td>
+    <td align="left">
+      <label id="llpLabel" for="formOfBusiness_limitedLiabilityPartnership">Limited Liability Partnership</label>
+    </td>
+  </tr>
+
+  <!-- 6. Trusts -->
+  <tr id="tr_formOfBusiness_trusts">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="7" tabindex="0" id="formOfBusiness_trusts">
+    </td>
+    <td align="left">
+      <label for="formOfBusiness_trusts">Trusts</label>
+    </td>
+  </tr>
+
+  <!-- 7. Other (with TEXT field for description) -->
+  <tr id="tr_formOfBusiness_other">
+    <td align="left">
+      <input name="Q04028_BUS_TYPE" type="radio" value="8" tabindex="0" id="formOfBusiness_other">
+    </td>
+    <td align="left">
+      <label for="formOfBusiness_other">Other form of business</label>
+      
+      <!-- CONDITIONAL FIELD: Other business type description (hidden/disabled until "Other" selected) -->
+      <div id="div_Q04029_OTHER_BUS_TYPE">
+        <input type="text" 
+               id="Q04029_OTHER_BUS_TYPE" 
+               name="Q04029_OTHER_BUS_TYPE" 
+               maxlength="100" 
+               aria-required="true" 
+               disabled
+               tabindex="-1">
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_bdProprietor
+Field Name: Q04028_BUS_TYPE
+Progress: 22%
+
+RADIO OPTIONS (Q04028_BUS_TYPE):
+1 = Sole Proprietor
+2 = Partnership
+3 = Limited Liability Company
+4 = Corporation (State of Incorporation)
+6 = Limited Liability Partnership
+7 = Trusts
+8 = Other form of business
+
+CONDITIONAL FIELDS:
+1. Q04032_FORM_OF_BUS_STATE - Shows when LLC (value=3) selected
+   - State dropdown (combobox)
+   - Required when enabled
+   - Initially hidden and disabled
+   
+2. Q04029_OTHER_BUS_TYPE - Shows when "Other" (value=8) selected
+   - Text input (maxlength=100)
+   - Required when enabled
+   - Initially hidden and disabled
+
+CONDITIONAL FIELD PATTERN:
+- Fields start as display:none and disabled
+- When parent radio selected, field becomes visible and enabled
+- When parent radio deselected, field becomes hidden and disabled again
+- This ensures only relevant fields are active based on selection
+
+This is important for RPA - must:
+1. Select appropriate radio button
+2. If LLC or Other selected, also fill the conditional field
+3. Handle enable/disable state changes
+-->
+

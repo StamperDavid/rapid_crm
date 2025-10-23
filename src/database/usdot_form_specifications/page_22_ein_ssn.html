@@ -1,0 +1,75 @@
+<!-- FMCSA USDOT Application - Page 22: EIN or SSN -->
+<!-- form_B0041P040111, Questions Q04024 & Q04040 - CRITICAL TAX ID FIELD -->
+
+<!-- SECTION: Business Description -->
+
+<!-- STEP 1: Choose EIN or SSN (Q04024) -->
+<label class="forInput" id="questionDesc_Q04024_EIN_SSN">
+  Employer Identification Number (EIN) or Social Security Number (SSN)
+  <span class="questionDescription">
+    Note: Sole proprietor owner/operators who do not have an EIN may submit their Social Security Number (SSN) 
+    instead of the EIN but are encouraged to obtain an EIN rather than using an SSN to register for a USDOT Number.
+  </span>
+</label>
+
+<!-- Icon: icon_FMCSAEINorSSN.png -->
+
+<!-- Radio Options -->
+<input name="questionCode_B0041P040111S04006_Q04024_EIN_SSN" 
+       type="radio" 
+       role="radio" 
+       value="1" 
+       tabindex="0" 
+       id="questionCode_B0041P040111S04006_Q04024_EIN_SSN_id_1">
+<label for="questionCode_B0041P040111S04006_Q04024_EIN_SSN_id_1">EIN</label>
+
+<input name="questionCode_B0041P040111S04006_Q04024_EIN_SSN" 
+       type="radio" 
+       role="radio" 
+       value="2" 
+       tabindex="0" 
+       id="questionCode_B0041P040111S04006_Q04024_EIN_SSN_id_2">
+<label for="questionCode_B0041P040111S04006_Q04024_EIN_SSN_id_2">SSN</label>
+
+<!-- STEP 2: Enter the Number (Q04040) -->
+<label class="forInput" id="questionDesc_Q04040">
+  Employer Identification Number (EIN) or Social Security Number (SSN)
+</label>
+
+<!-- IMPORTANT: PASSWORD FIELD (for security) -->
+<input type="password"
+       id="questionCode_B0041P040111S04006_Q04040_id"
+       name="questionCode_B0041P040111S04006_Q04040"
+       maxlength="9"
+       aria-required="false"
+       autocomplete="off"
+       tabindex="0">
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0041P040111
+Branch: B0041
+Page: P040111
+Section: S04006
+Questions: Q04024 (radio), Q04040 (password input)
+Progress: 22%
+
+FIELDS:
+1. questionCode_B0041P040111S04006_Q04024_EIN_SSN - Radio (EIN=1 or SSN=2)
+2. questionCode_B0041P040111S04006_Q04040 - Password field (maxlength=9)
+
+KEY FEATURES:
+- PASSWORD field type (not text!) - for security/privacy
+- Maxlength: 9 characters (EIN/SSN format: XX-XXXXXXX without dashes = 9 digits)
+- Note encourages EIN over SSN for sole proprietors
+- Radio selection determines label interpretation but same input field used
+
+IMPORTANT FOR RPA:
+- Must select EIN or SSN radio first
+- Must enter exactly 9 digits
+- Field is type="password" so characters are masked
+- No dashes/formatting - just 9 digits
+
+Icon: icon_FMCSAEINorSSN.png
+-->
+

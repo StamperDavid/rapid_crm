@@ -1,7 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
+// Use project root instead of script directory
+const dbPath = path.join(__dirname, '..', '..', 'instance', 'rapid_crm.db');
 
 console.log('🔍 Validating database schema...');
 console.log('Database path:', dbPath);

@@ -475,3 +475,6 @@ export class AlexTrainingService {
 
 export const alexTrainingService = AlexTrainingService.getInstance();
 
+
+
+

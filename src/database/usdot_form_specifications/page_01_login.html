@@ -1,0 +1,143 @@
+<!-- FMCSA USDOT Application - Page 1: Login.gov Authentication -->
+<!-- This is the authentication page where users sign in via Login.gov -->
+
+<html class="js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Login.gov">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in | Login.gov</title>
+</head>
+
+<body class="site tablet:bg-primary-lighter">
+  
+  <!-- US Government Banner -->
+  <section class="usa-banner usa-banner--centered" aria-label="Official government website">
+    <div class="usa-accordion">
+      <div class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <img alt="US flag" class="usa-banner__header-flag" src="https://secure.login.gov/assets/us_flag-9715e180.svg" width="16" height="11">
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">
+              An official website of the United States government
+            </p>
+            <p class="usa-banner__header-action" aria-hidden="true">Here's how you know</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Header with Logos -->
+  <header>
+    <div class="page-header page-header--basic">
+      <img height="15" width="111" alt="Login.gov" src="https://secure.login.gov/assets/logo-a6f6c558.svg">
+      <div class="margin-x-105 height-5 border-right border-primary-light"></div>
+      <img height="40" alt="Unified Registration System" src="/assets/sp-logos/dot_unified_registration_system_4392_20231212-d84c6253.png">
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="site-wrap bg-primary-lighter" id="main-content">
+    <div class="grid-container padding-y-4 tablet:padding-y-8 card padding-x-2 tablet:padding-x-10 tablet:margin-bottom-8">
+      
+      <!-- Service Provider Info -->
+      <div class="text-center">
+        <img width="280" height="91" alt="" aria-hidden="true" src="https://secure.login.gov/assets/user-access-9df0c67e.svg">
+        <h1 class="margin-bottom-4 text-primary text-normal">
+          <strong>Unified Registration System</strong>
+          is using Login.gov to allow you to sign in to your account safely and securely.
+        </h1>
+      </div>
+
+      <!-- Tab Navigation -->
+      <nav aria-label="Account creation tabs" class="margin-bottom-4 tab-navigation">
+        <ul class="usa-button-group">
+          <li class="usa-button-group__item display-list-item">
+            <a aria-current="page" class="usa-button usa-button--big usa-button--outline" href="/">Sign in</a>
+          </li>
+          <li class="usa-button-group__item">
+            <a class="usa-button usa-button--big usa-button--unstyled" href="/sign_up/enter_email">Create an account</a>
+          </li>
+        </ul>
+      </nav>
+
+      <h1 class="page-heading">Sign in for existing users</h1>
+
+      <!-- Login Form -->
+      <form class="simple_form margin-top-4 new_user" id="new_user" autocomplete="off" action="/" accept-charset="UTF-8" method="post">
+        <input type="hidden" name="authenticity_token" value="[CSRF_TOKEN]" autocomplete="off">
+        
+        <!-- Email Field -->
+        <div class="margin-bottom-4 email required user_email validated-field__input-wrapper">
+          <label class="usa-label email required" for="user_email">Email address</label>
+          <input class="usa-input usa-input--big string email required validated-field__input" 
+                 autocorrect="off" 
+                 aria-invalid="false" 
+                 required="required" 
+                 type="email" 
+                 name="user[email]" 
+                 id="user_email">
+        </div>
+
+        <!-- Password Field -->
+        <div class="margin-bottom-4 password required user_password validated-field__input-wrapper">
+          <label class="usa-label password required" for="password-toggle-input-39249361">Password</label>
+          <input class="usa-input usa-input--big password required password-toggle__input validated-field__input" 
+                 autocomplete="current-password" 
+                 id="password-toggle-input-39249361" 
+                 aria-invalid="false" 
+                 required="required" 
+                 type="password" 
+                 name="user[password]">
+        </div>
+        
+        <!-- Show Password Checkbox -->
+        <input id="password-toggle-39249361" type="checkbox" class="usa-checkbox__input password-toggle__toggle">
+        <label for="password-toggle-39249361" class="usa-checkbox__label password-toggle__toggle-label">
+          Show password
+        </label>
+
+        <!-- Hidden Fields -->
+        <input type="hidden" name="platform_authenticator_available" id="platform_authenticator_available" value="true" autocomplete="off">
+        <input value="" class="hidden" autocomplete="off" type="hidden" name="user[recaptcha_token]" id="user_recaptcha_token">
+
+        <!-- Submit Button -->
+        <button name="button" type="submit" class="usa-button usa-button--big usa-button--wide usa-button--full-width">
+          <span class="spinner-button__content">Submit</span>
+        </button>
+      </form>
+      
+      <!-- Additional Links -->
+      <div class="margin-x-neg-1 margin-top-205">
+        <a class="padding-x-1" href="https://secure.login.gov/login/piv_cac">Sign in with your government employee ID</a>
+      </div>
+
+      <!-- Footer Links -->
+      <div class="page-footer margin-top-4 padding-top-2 border-top border-primary-light">
+        <div class="margin-bottom-1">
+          <a href="/redirect/return_to_sp/cancel?step=authentication">‹ Back to Unified Registration System</a>
+        </div>
+        <div class="margin-bottom-1">
+          <a href="https://secure.login.gov/users/password/new">Forgot your password?</a>
+        </div>
+        <p class="margin-y-1">
+          <a target="_blank" class="usa-link--external" rel="noopener noreferrer" href="https://secure.login.gov/redirect/policy">
+            Security Practices and Privacy Act Statement
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <a class="footer__agency-logo usa-link--external" target="_blank" rel="noopener noreferrer" href="https://www.gsa.gov">
+      US General Services Administration
+    </a>
+  </footer>
+
+</body>
+</html>
+

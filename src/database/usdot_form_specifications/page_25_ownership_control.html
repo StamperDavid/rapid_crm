@@ -1,0 +1,112 @@
+<!-- FMCSA USDOT Application - Page 25: Ownership and Control -->
+<!-- form_bdOwnership, Question Q04030 - RADIO with CONDITIONAL country dropdown -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Ownership and Control</label>
+
+<!-- RADIO OPTIONS (4 options, last one has conditional field) -->
+<table>
+  <!-- 1. United States -->
+  <tr>
+    <td align="left">
+      <input name="Q04030_BUS_OWNER_CONTROL" 
+             type="radio" 
+             value="US" 
+             tabindex="0" 
+             id="Q04030_BUS_OWNER_CONTROL_US">
+    </td>
+    <td align="left">
+      <label for="Q04030_BUS_OWNER_CONTROL_US">Owned/controlled by citizen of United States</label>
+    </td>
+  </tr>
+
+  <!-- 2. Canada -->
+  <tr>
+    <td align="left">
+      <input name="Q04030_BUS_OWNER_CONTROL" 
+             type="radio" 
+             value="CA" 
+             tabindex="0" 
+             id="Q04030_BUS_OWNER_CONTROL_CA">
+    </td>
+    <td align="left">
+      <label for="Q04030_BUS_OWNER_CONTROL_CA">Owned/controlled by citizen of Canada</label>
+    </td>
+  </tr>
+
+  <!-- 3. Mexico -->
+  <tr>
+    <td align="left">
+      <input name="Q04030_BUS_OWNER_CONTROL" 
+             type="radio" 
+             value="MX" 
+             tabindex="0" 
+             id="Q04030_BUS_OWNER_CONTROL_MX">
+    </td>
+    <td align="left">
+      <label for="Q04030_BUS_OWNER_CONTROL_MX">Owned/controlled by citizen of Mexico</label>
+    </td>
+  </tr>
+
+  <!-- 4. Other Foreign Country (with CONDITIONAL country dropdown) -->
+  <tr>
+    <td align="left">
+      <input name="Q04030_BUS_OWNER_CONTROL" 
+             type="radio" 
+             value="A0970" 
+             tabindex="0" 
+             id="Q04030_BUS_OWNER_CONTROL_other">
+    </td>
+    <td align="left">
+      <label for="Q04030_BUS_OWNER_CONTROL_other">Owned/controlled by citizen of other foreign country</label>
+      
+      <!-- CONDITIONAL FIELD: Country dropdown (hidden/disabled until "Other" selected) -->
+      <div id="div_Q04033_OTHER_COUNTRY_OWNERSHIP" style="display: none;">
+        <input type="text" 
+               id="Q04033_OTHER_COUNTRY_OWNERSHIP" 
+               name="Q04033_OTHER_COUNTRY_OWNERSHIP"
+               role="combobox"
+               aria-required="true" 
+               aria-disabled="true"
+               disabled
+               tabindex="-1">
+        <input type="hidden" 
+               name="Q04033_OTHER_COUNTRY_OWNERSHIP" 
+               value="NONE" 
+               disabled>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_bdOwnership
+Field Name: Q04030_BUS_OWNER_CONTROL
+Progress: 22%
+
+RADIO OPTIONS (Q04030_BUS_OWNER_CONTROL):
+US = Owned/controlled by citizen of United States
+CA = Owned/controlled by citizen of Canada
+MX = Owned/controlled by citizen of Mexico
+A0970 = Owned/controlled by citizen of other foreign country
+
+CONDITIONAL FIELD:
+Q04033_OTHER_COUNTRY_OWNERSHIP - Shows when "Other" (value=A0970) selected
+- Country dropdown (combobox)
+- Required when enabled
+- Initially hidden (display:none) and disabled
+- When enabled, user selects from list of countries (excluding US, CA, MX)
+
+CONDITIONAL FIELD PATTERN (same as previous pages):
+- Field starts hidden and disabled
+- When "Other foreign country" radio selected, field becomes visible and enabled
+- When deselected, field becomes hidden and disabled again
+- Default value when disabled is "NONE"
+
+This captures citizenship/ownership information which is critical for:
+- NAFTA compliance
+- International carrier restrictions
+- Border crossing authority
+-->
+

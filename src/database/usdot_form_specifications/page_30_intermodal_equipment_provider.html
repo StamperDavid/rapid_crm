@@ -1,0 +1,78 @@
+<!-- FMCSA USDOT Application - Page 30: Intermodal Equipment Provider -->
+<!-- form_B0051P050011, Question Q05001 - Yes/No with TOOLTIP and extended description -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "Intermodal Equipment Provider") -->
+<label class="questionDesc" id="questionDesc_Q05001">
+  Will the Applicant operate as an 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Any person who interchanges intermodal equipment with a motor carrier pursuant to a written interchange agreement or has a contractual responsibility for the maintenance of the intermodal equipment.');">
+    Intermodal Equipment Provider
+  </span>?
+  
+  <span class="questionDescription">
+    <p>
+    <br>
+    Intermodal equipment means trailing equipment that transports containers and consists mainly of 
+    chassis, but may also include trailers. The IEP (or its agent) enters into a written interchange 
+    agreement with a motor carrier (or its agent) or any other written document executed between the 
+    IEP and a carrier. IEPs have contractual responsibility for marking their intermodal equipment 
+    with its legal (or trade) name and USDOT Number, and systematically inspecting, repairing and 
+    maintaining their intermodal equipment. An example of an IEP is someone who provides a container 
+    chassis to move containers when they come off either a ship or rail. IEP may provide a chassis 
+    to a motor carrier which will move the container or provide the chassis for the intermodal movement, 
+    which the IEP will perform itself, with its own tractor.
+    </p>
+  </span>
+</label>
+
+<!-- Icon: icon_IntermodalEquipmentProvider.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050011S05001_Q05001" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050011S05001_Q05001_id_Y">
+<label for="questionCode_B0051P050011S05001_Q05001_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050011S05001_Q05001" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050011S05001_Q05001_id_N">
+<label for="questionCode_B0051P050011S05001_Q05001_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050011
+Branch: B0051
+Page: P050011
+Section: S05001
+Question: Q05001
+Field Name: questionCode_B0051P050011S05001_Q05001
+Field Type: Radio button (Yes/No)
+Icon: icon_IntermodalEquipmentProvider.png
+Progress: 27%
+
+TOOLTIP DEFINITION:
+"Any person who interchanges intermodal equipment with a motor carrier pursuant to a written 
+interchange agreement or has a contractual responsibility for the maintenance of the intermodal equipment."
+
+EXTENDED DESCRIPTION (in questionDescription span):
+Provides detailed explanation of:
+- What intermodal equipment means (chassis, trailers)
+- IEP responsibilities (written agreements, marking equipment with name/USDOT number, inspection/repair/maintenance)
+- Example: Someone who provides container chassis for ship/rail containers
+- IEP may provide chassis to motor carrier OR perform the movement themselves
+
+This is the first actual question in the Operation Classification section.
+The answer determines if IEP-specific questions will follow.
+
+BRANCHING LOGIC:
+- If "Yes": Likely leads to IEP-specific questions about equipment types, quantities, etc.
+- If "No": Skips IEP questions, continues to next operation type question
+-->
+

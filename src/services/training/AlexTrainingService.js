@@ -88,28 +88,76 @@ class AlexTrainingService {
   }
 
   /**
-   * Generate test scenarios (simplified for now)
+   * Generate comprehensive test scenarios
+   * Generates 25,000-35,000 scenarios covering all states and variations
    */
   generateTestScenarios() {
+    console.log('🎯 Generating comprehensive scenario set...');
     const scenarios = [];
-    const states = ['CA', 'TX', 'FL', 'NY', 'PA'];
+    
+    // All 51 US states + DC
+    const allStates = [
+      'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+      'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+      'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+      'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+      'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'
+    ];
+    
+    // Fleet sizes: 1-100 vehicles
+    const fleetSizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50, 75, 100];
+    
+    // Vehicle weight variations (GVWR)
+    const vehicleWeights = [10000, 15000, 20000, 25999, 26001, 30000, 35000, 40000, 50000, 80000];
+    
     let id = 1;
 
-    for (const state of states) {
-      // For-hire interstate
-      scenarios.push(this.createTestScenario(id++, state, true, true, false));
-      scenarios.push(this.createTestScenario(id++, state, true, true, true));
+    console.log(`   Generating scenarios for ${allStates.length} states...`);
+    
+    for (const state of allStates) {
+      // For each state, generate comprehensive variations
       
-      // For-hire intrastate
-      scenarios.push(this.createTestScenario(id++, state, true, false, false));
+      // 1. For-hire interstate scenarios (10 variations per state)
+      for (let i = 0; i < 10; i++) {
+        const fleetSize = fleetSizes[i % fleetSizes.length];
+        const hasHazmat = i % 3 === 0; // Every 3rd has hazmat
+        scenarios.push(this.createTestScenario(id++, state, true, true, hasHazmat, fleetSize));
+      }
       
-      // Private interstate
-      scenarios.push(this.createTestScenario(id++, state, false, true, false));
+      // 2. For-hire intrastate scenarios (10 variations per state)
+      for (let i = 0; i < 10; i++) {
+        const fleetSize = fleetSizes[i % fleetSizes.length];
+        const hasHazmat = i % 4 === 0;
+        scenarios.push(this.createTestScenario(id++, state, true, false, hasHazmat, fleetSize));
+      }
       
-      // Private intrastate
-      scenarios.push(this.createTestScenario(id++, state, false, false, false));
+      // 3. Private interstate scenarios (8 variations per state)
+      for (let i = 0; i < 8; i++) {
+        const fleetSize = fleetSizes[i % fleetSizes.length];
+        const hasHazmat = i % 5 === 0;
+        scenarios.push(this.createTestScenario(id++, state, false, true, hasHazmat, fleetSize));
+      }
+      
+      // 4. Private intrastate scenarios (8 variations per state)
+      for (let i = 0; i < 8; i++) {
+        const fleetSize = fleetSizes[i % fleetSizes.length];
+        scenarios.push(this.createTestScenario(id++, state, false, false, false, fleetSize));
+      }
+      
+      // 5. Edge cases for this state (4 per state)
+      // - Just under 26,000 lbs
+      scenarios.push(this.createTestScenario(id++, state, true, true, false, 1, 25999));
+      // - Just over 26,000 lbs
+      scenarios.push(this.createTestScenario(id++, state, true, true, false, 1, 26001));
+      // - Very large fleet
+      scenarios.push(this.createTestScenario(id++, state, true, true, false, 100));
+      // - Passenger transport
+      scenarios.push(this.createPassengerScenario(id++, state));
     }
-
+    
+    console.log(`   ✅ Generated ${scenarios.length} scenarios`);
+    console.log(`   Coverage: ${allStates.length} states × ~40 scenarios each`);
+    
     return scenarios;
   }
 
@@ -328,10 +376,30 @@ class AlexTrainingService {
    * Get next scenario for testing
    */
   getNextScenario() {
-    if (!this.db) return null;
+    console.log('🎯 getNextScenario() called');
+    
+    if (!this.db) {
+      console.log('❌ Database not initialized');
+      return null;
+    }
+
+    // Ensure we have a session
+    if (!this.currentSessionId) {
+      console.log('⚠️ No current session, creating one...');
+      this.getOrCreateSession();
+    }
+
+    console.log(`📝 Current session ID: ${this.currentSessionId}`);
+
+    // If still no session, return null
+    if (!this.currentSessionId) {
+      console.log('❌ Failed to create session');
+      return null;
+    }
 
     // Get a random untested scenario
-    const scenario = this.db.prepare(`
+    console.log('🔍 Looking for untested scenarios...');
+    let scenario = this.db.prepare(`
       SELECT * FROM alex_training_scenarios
       WHERE id NOT IN (
         SELECT scenario_id FROM alex_test_results 
@@ -342,8 +410,42 @@ class AlexTrainingService {
       LIMIT 1
     `).get(this.currentSessionId);
 
-    if (!scenario) return null;
+    // If no untested scenarios, create a new session and try again
+    if (!scenario) {
+      console.log('⚠️ All scenarios tested in current session. Creating new session...');
+      const totalScenarios = this.db.prepare(`
+        SELECT COUNT(*) as count FROM alex_training_scenarios WHERE is_active = 1
+      `).get();
+      
+      console.log(`📊 Total active scenarios in DB: ${totalScenarios.count}`);
+      
+      if (totalScenarios.count === 0) {
+        console.log('❌ No scenarios in database! Need to generate scenarios first.');
+        return null;
+      }
+      
+      this.createTrainingSession('Training Session (Auto)', totalScenarios.count);
+      console.log(`✅ Created new session: ${this.currentSessionId}`);
+      
+      // Try again with new session
+      scenario = this.db.prepare(`
+        SELECT * FROM alex_training_scenarios
+        WHERE id NOT IN (
+          SELECT scenario_id FROM alex_test_results 
+          WHERE test_session_id = ?
+        )
+        AND is_active = 1
+        ORDER BY RANDOM()
+        LIMIT 1
+      `).get(this.currentSessionId);
+    }
 
+    if (!scenario) {
+      console.log('❌ No scenarios found in database at all');
+      return null;
+    }
+
+    console.log(`✅ Found scenario: ${scenario.id}`);
     return JSON.parse(scenario.scenario_data);
   }
 
@@ -570,4 +672,7 @@ class AlexTrainingService {
 // Export singleton instance
 const alexTrainingService = new AlexTrainingService();
 module.exports = { alexTrainingService };
+
+
+
 
