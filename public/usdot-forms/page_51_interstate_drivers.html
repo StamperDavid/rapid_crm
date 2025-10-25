@@ -1,0 +1,103 @@
+<!-- FMCSA USDOT Application - Page 51: Interstate Drivers by Radius -->
+<!-- form_B0071P070021, Questions Q07011, Q07001, Q07002 - Driver HOS categorization -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Drivers</label>
+
+<!-- MAIN QUESTION (with tooltip on "Interstate") -->
+<label class="questionDesc" id="questionDesc_Q07011">
+  What is the number of drivers who will operate as 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'The driver transports passengers or property: &lt;br/&gt; (1) across State lines, including international boundaries; or &lt;br/&gt; (2) entirely within one State as part of a through movement that originates or terminates in another State or country.');">
+    Interstate
+  </span> ?
+</label>
+
+<!-- FIELD 1: Within 100 Air-Mile Radius -->
+<table class="questionTable" width="100%">
+  <tr class="questionRow">
+    <td class="questionCell">
+      <label class="forInput" id="questionDesc_Q07001">Within a 100 Air-Mile Radius</label>
+    </td>
+  </tr>
+  <tr class="answerRow">
+    <td class="answerCell">
+      <input type="text" 
+             id="questionCode_B0071P070021S07002_Q07001_id"
+             name="questionCode_B0071P070021S07002_Q07001"
+             maxlength="5" 
+             size="5"
+             aria-required="false"
+             tabindex="0"
+             style="width: 100px;">
+    </td>
+  </tr>
+</table>
+
+<!-- FIELD 2: Beyond 100 Air-Mile Radius -->
+<table class="questionTable" width="100%">
+  <tr class="questionRow">
+    <td class="questionCell">
+      <label class="forInput" id="questionDesc_Q07002">Beyond a 100 Air-Mile Radius</label>
+    </td>
+  </tr>
+  <tr class="answerRow">
+    <td class="answerCell">
+      <input type="text" 
+             id="questionCode_B0071P070021S07002_Q07002_id"
+             name="questionCode_B0071P070021S07002_Q07002"
+             maxlength="5" 
+             size="5"
+             aria-required="false"
+             tabindex="0"
+             style="width: 100px;">
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0071P070021
+Branch: B007 (Drivers)
+Page: P070021
+Section: S07002
+Questions: Q07011 (main), Q07001 (within 100), Q07002 (beyond 100)
+Progress: Still at 36%
+
+PAGE TITLE ROW HIDDEN:
+Notice that the leafPageTitleTR has style="display: none;" - no visible page title.
+
+100 AIR-MILE RADIUS SIGNIFICANCE:
+This is a critical regulatory distinction for Hours of Service (HOS) requirements:
+
+- WITHIN 100 Air-Mile Radius: Simplified HOS rules
+  - Drivers who operate within 100 air-miles of their normal work reporting location
+  - May use time records instead of logs
+  - Extended duty period (14 hours)
+  - Exemptions from electronic logging device (ELD) if meet conditions
+
+- BEYOND 100 Air-Mile Radius: Full HOS rules
+  - Drivers who travel more than 100 air-miles from base
+  - Required to keep logs (Records of Duty Status)
+  - Standard duty period (11 hours driving, 14 hours on-duty)
+  - ELD mandate typically applies
+
+INTERSTATE DEFINITION (from tooltip):
+"The driver transports passengers or property:
+(1) across State lines, including international boundaries; or
+(2) entirely within one State as part of a through movement that originates or terminates in another State or country."
+
+FIELD DETAILS:
+- Both fields: maxlength="5", size="5", width="100px"
+- aria-required="false" (optional fields)
+- Numeric inputs
+
+REGULATORY CONTEXT:
+This categorization helps FMCSA understand:
+1. How many drivers need full ELD compliance
+2. Which drivers qualify for HOS exemptions
+3. Inspection/compliance priorities
+
+TOTAL FIELDS: 2 numeric inputs (optional)
+-->
+

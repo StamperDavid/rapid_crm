@@ -16,7 +16,46 @@ import {
   LightningBoltIcon,
   PlayIcon
 } from '@heroicons/react/outline';
-import type { USDOTApplicationScenario } from '../../services/training/ScenarioGenerator';
+// Scenario interface (matches database schema)
+interface USDOTApplicationScenario {
+  id: string;
+  legalBusinessName: string;
+  doingBusinessAs: string;
+  formOfBusiness: string;
+  ein: string;
+  businessPhone: string;
+  principalAddress: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  companyContact: {
+    firstName: string;
+    lastName: string;
+    title: string;
+    email: string;
+    phone: string;
+  };
+  receiveCompensationForTransport: string;
+  transportNonHazardousInterstate: string;
+  propertyType: string;
+  transportHazardousMaterials: string;
+  operationType: string;
+  vehicles: {
+    straightTrucks: { owned: number; termLeased: number };
+    truckTractors: { owned: number; termLeased: number };
+    trailers: { owned: number; termLeased: number };
+  };
+  complianceRequirements: {
+    usdotRequired: boolean;
+    mcAuthorityRequired: boolean;
+    hazmatEndorsementRequired: boolean;
+    iftaRequired: boolean;
+    stateRegistrationRequired: boolean;
+    reasoning: string;
+  };
+}
 
 interface Message {
   id: string;
@@ -459,14 +498,21 @@ const AlexTrainingCenter: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      {!session || session.totalScenarios === 0 ? (
+      {!session || session.totalScenarios === 0 || session.totalScenarios < 918 ? (
         <div className="max-w-2xl mx-auto mt-20 p-8 bg-white dark:bg-gray-800 rounded-lg shadow">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Generate Training Scenarios
+            {session && session.totalScenarios > 0 ? 'Regenerate Training Scenarios (918 Total)' : 'Generate Training Scenarios'}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            First, generate all training scenarios. This creates ~25 complete USDOT applications that will be stored permanently for training.
-            You only need to do this once (or when you want to refresh the scenarios).
+            {session && session.totalScenarios > 0 ? (
+              <>
+                Current: {session.totalScenarios} scenarios. Click below to regenerate with all 918 transportation compliance scenarios (51 states × 6 operation types × 3 fleet sizes).
+              </>
+            ) : (
+              <>
+                Click below to generate all 918 training scenarios for transportation compliance. This will create complete USDOT applications that will be stored permanently for training.
+              </>
+            )}
           </p>
           <button
             onClick={generateScenarios}
@@ -476,12 +522,12 @@ const AlexTrainingCenter: React.FC = () => {
             {isGenerating ? (
               <>
                 <RefreshIcon className="h-5 w-5 mr-2 animate-spin" />
-                Generating {session?.totalScenarios || '~25'} Scenarios...
+                Generating 918 Scenarios...
               </>
             ) : (
               <>
                 <PlayIcon className="h-5 w-5 mr-2" />
-                Generate All Training Scenarios
+                {session && session.totalScenarios > 0 ? 'Regenerate All 918 Training Scenarios' : 'Generate All 918 Training Scenarios'}
               </>
             )}
           </button>

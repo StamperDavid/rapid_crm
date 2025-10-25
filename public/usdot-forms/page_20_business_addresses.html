@@ -1,0 +1,255 @@
+<!-- FMCSA USDOT Application - Page 20: Principal & Mailing Addresses -->
+<!-- form_dbAddress - TWO COMPLETE ADDRESS SECTIONS -->
+
+<!-- PAGE TITLE -->
+<div class="mainRegTopDiv">
+  <div id="landingDiv" class="pageTitleDiv">
+    <span class="heavy">Business Description</span>
+  </div>
+</div>
+
+<!-- ===== SECTION 1: PRINCIPAL PLACE OF BUSINESS ADDRESS ===== -->
+<label class="pageSectionTitleLabel">
+  Principal Place of Business Address
+</label>
+<span style="font-size:smaller;"> (P.O. Box will not be accepted)</span>
+
+<table id="principalAddressTable">
+  <!-- Country -->
+  <tr>
+    <td colspan="2" align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04003_COUNTRY" id="Q04003_COUNTRY_label">Country</label>
+    </td>
+  </tr>
+  <tr>
+    <td align="left" class="bottomTDInVerticalQA">
+      <input type="text" id="Q04003_COUNTRY" aria-required="true" role="combobox">
+      <input type="hidden" name="Q04003_COUNTRY" value="US">
+    </td>
+  </tr>
+
+  <!-- Address Lines -->
+  <tr>
+    <td>
+      <!-- Address Line 1 (REQUIRED) -->
+      <div id="div_Q04004_ADDRESS1">
+        <label class="forInput" for="Q04004_ADDRESS1">Street Address/Route Number Line 1</label>
+        <input type="text" id="Q04004_ADDRESS1" name="Q04004_ADDRESS1" maxlength="38" aria-required="true">
+      </div>
+
+      <!-- Address Line 2 (OPTIONAL) -->
+      <div id="div_Q04005_ADDRESS2">
+        <label class="forInput" for="Q04005_ADDRESS2">Street Address/Route Number Line 2</label>
+        <input type="text" id="Q04005_ADDRESS2" name="Q04005_ADDRESS2" maxlength="38" aria-required="false">
+      </div>
+
+      <!-- Address Line 3 (OPTIONAL, HIDDEN) -->
+      <div id="div_Q04006_ADDRESS3" style="display: none;">
+        <label class="forInput" for="Q04006_ADDRESS3">Street Address/Route Number Line 3</label>
+        <input type="text" id="Q04006_ADDRESS3" name="Q04006_ADDRESS3" maxlength="256" aria-required="false">
+      </div>
+
+      <!-- Address Line 4 (OPTIONAL, HIDDEN) -->
+      <div id="div_Q04007_ADDRESS4" style="display: none;">
+        <label class="forInput" for="Q04007_ADDRESS4">Street Address/Route Number Line 4</label>
+        <input type="text" id="Q04007_ADDRESS4" name="Q04007_ADDRESS4" maxlength="256" aria-required="false">
+      </div>
+    </td>
+  </tr>
+
+  <!-- City & State (2-column layout) -->
+  <tr>
+    <td align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04008_CITY">City</label>
+    </td>
+    <td align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04009_STATE" id="Q04009_STATE_label">State/Province</label>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">
+      <input type="text" id="Q04008_CITY" name="Q04008_CITY" maxlength="25" aria-required="true" style="width: 95%;">
+    </td>
+    <td align="left" id="Q04009_STATE_control" style="display: block;">
+      <input type="text" id="Q04009_STATE" aria-required="true" role="combobox">
+      <input type="hidden" name="Q04009_STATE" value="ID">
+    </td>
+    <td align="left" id="Q04009_STATE_TXT_control" class="bottomTDInVerticalQA" style="display: none;">
+      <input type="text" id="Q04009_STATE_TXT" name="Q04009_STATE_TXT" maxlength="25" aria-required="false" disabled>
+    </td>
+  </tr>
+
+  <!-- Postal Code -->
+  <tr>
+    <td colspan="2" align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04010_POSTAL_CODE">Postal Code</label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="left" class="bottomTDInVerticalQA">
+      <input type="text" id="Q04010_POSTAL_CODE" name="Q04010_POSTAL_CODE" maxlength="10" aria-required="true">
+    </td>
+  </tr>
+
+  <!-- Colonia (HIDDEN, Mexico only) -->
+  <tr id="Q04011_COLONIA_TR1" style="display: none;">
+    <td colspan="2" align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04011_COLONIA">Colonia</label>
+    </td>
+  </tr>
+  <tr id="Q04011_COLONIA_TR2" style="display: none;">
+    <td colspan="2" align="left" class="bottomTDInVerticalQA">
+      <input type="text" id="Q04011_COLONIA" name="Q04011_COLONIA" maxlength="100" aria-required="true" disabled>
+    </td>
+  </tr>
+</table>
+
+<!-- SEPARATOR -->
+<hr>
+
+<!-- ===== SECTION 2: MAILING ADDRESS ===== -->
+<label class="pageSectionTitleLabel">Mailing Address</label>
+
+<!-- Checkbox: Same as Principal -->
+<input type="checkbox" 
+       id="mailingAddressSameAsPrincipal" 
+       name="mailingAddressSameAsPrincipal" 
+       value="Y" 
+       aria-checked="false"
+       tabindex="0">
+<label class="forInput" for="mailingAddressSameAsPrincipal">
+  Same as Principal Place of Business
+</label>
+
+<table id="mailingAddressTable">
+  <!-- Country -->
+  <tr>
+    <td colspan="2" align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04012_COUNTRY" id="Q04012_COUNTRY_label">Country</label>
+    </td>
+  </tr>
+  <tr>
+    <td align="left" class="bottomTDInVerticalQA">
+      <input type="text" id="Q04012_COUNTRY" aria-required="true" role="combobox">
+      <input type="hidden" name="Q04012_COUNTRY" value="US">
+    </td>
+  </tr>
+
+  <!-- Address Lines -->
+  <tr>
+    <td>
+      <!-- Address Line 1 (REQUIRED) -->
+      <div id="div_Q04013_ADDRESS1">
+        <label class="forInput" for="Q04013_ADDRESS1">Street Address/Route Number Line 1</label>
+        <input type="text" id="Q04013_ADDRESS1" name="Q04013_ADDRESS1" maxlength="38" aria-required="true">
+      </div>
+
+      <!-- Address Line 2 (OPTIONAL) -->
+      <div id="div_Q04014_ADDRESS2">
+        <label class="forInput" for="Q04014_ADDRESS2">Street Address/Route Number Line 2</label>
+        <input type="text" id="Q04014_ADDRESS2" name="Q04014_ADDRESS2" maxlength="38" aria-required="false">
+      </div>
+
+      <!-- Address Line 3 (OPTIONAL, HIDDEN) -->
+      <div id="div_Q04015_ADDRESS3" style="display: none;">
+        <label class="forInput" for="Q04015_ADDRESS3">Street Address/Route Number Line 3</label>
+        <input type="text" id="Q04015_ADDRESS3" name="Q04015_ADDRESS3" maxlength="256" aria-required="false">
+      </div>
+
+      <!-- Address Line 4 (OPTIONAL, HIDDEN) -->
+      <div id="div_Q04016_ADDRESS4" style="display: none;">
+        <label class="forInput" for="Q04016_ADDRESS4">Street Address/Route Number Line 4</label>
+        <input type="text" id="Q04016_ADDRESS4" name="Q04016_ADDRESS4" maxlength="256" aria-required="false">
+      </div>
+    </td>
+  </tr>
+
+  <!-- City & State (2-column layout) -->
+  <tr>
+    <td align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04017_CITY">City</label>
+    </td>
+    <td align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04018_STATE" id="Q04018_STATE_label">State/Province</label>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">
+      <input type="text" id="Q04017_CITY" name="Q04017_CITY" maxlength="25" aria-required="true" style="width: 95%;">
+    </td>
+    <td id="Q04018_STATE_control" align="left" style="display: block;">
+      <input type="text" id="Q04018_STATE" aria-required="true" role="combobox">
+      <input type="hidden" name="Q04018_STATE" value="NONE">
+    </td>
+    <td align="left" id="Q04018_STATE_TXT_control" class="bottomTDInVerticalQA" style="display: none;">
+      <input type="text" id="Q04018_STATE_TXT" name="Q04018_STATE_TXT" maxlength="256" aria-required="false" disabled>
+    </td>
+  </tr>
+
+  <!-- Postal Code -->
+  <tr>
+    <td colspan="2" align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04019_POSTAL_CODE">Postal Code</label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="left" class="bottomTDInVerticalQA">
+      <input type="text" id="Q04019_POSTAL_CODE" name="Q04019_POSTAL_CODE" maxlength="10" aria-required="true">
+    </td>
+  </tr>
+
+  <!-- Colonia (HIDDEN, Mexico only) -->
+  <tr id="Q04020_COLONIA_TR1" style="display: none;">
+    <td colspan="2" align="left" class="topTDInVerticalQA">
+      <label class="forInput" for="Q04020_COLONIA">Colonia</label>
+    </td>
+  </tr>
+  <tr id="Q04020_COLONIA_TR2" style="display: none;">
+    <td colspan="2" align="left" class="bottomTDInVerticalQA">
+      <input type="text" id="Q04020_COLONIA" name="Q04020_COLONIA" maxlength="128" aria-required="true" disabled>
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_dbAddress
+Progress: 22%
+Form height: 1855px (LARGE PAGE - lots of fields)
+
+PRINCIPAL BUSINESS ADDRESS FIELDS (Q04003-Q04011):
+- Q04003_COUNTRY - Country (dropdown, required, default=US)
+- Q04004_ADDRESS1 - Street Line 1 (text, maxlength=38, required, NO P.O. BOX)
+- Q04005_ADDRESS2 - Street Line 2 (text, maxlength=38, optional)
+- Q04006_ADDRESS3 - Street Line 3 (text, maxlength=256, optional, hidden)
+- Q04007_ADDRESS4 - Street Line 4 (text, maxlength=256, optional, hidden)
+- Q04008_CITY - City (text, maxlength=25, required)
+- Q04009_STATE - State dropdown (required) OR Q04009_STATE_TXT text (for non-US)
+- Q04010_POSTAL_CODE - Postal Code (text, maxlength=10, required)
+- Q04011_COLONIA - Colonia (text, maxlength=100, required, hidden, Mexico only)
+
+MAILING ADDRESS FIELDS (Q04012-Q04020):
+- mailingAddressSameAsPrincipal - Checkbox to copy Principal address
+- Q04012_COUNTRY - Country (dropdown, required, default=US)
+- Q04013_ADDRESS1 - Street Line 1 (text, maxlength=38, required)
+- Q04014_ADDRESS2 - Street Line 2 (text, maxlength=38, optional)
+- Q04015_ADDRESS3 - Street Line 3 (text, maxlength=256, optional, hidden)
+- Q04016_ADDRESS4 - Street Line 4 (text, maxlength=256, optional, hidden)
+- Q04017_CITY - City (text, maxlength=25, required)
+- Q04018_STATE - State dropdown (required) OR Q04018_STATE_TXT text (for non-US)
+- Q04019_POSTAL_CODE - Postal Code (text, maxlength=10, required)
+- Q04020_COLONIA - Colonia (text, maxlength=128, required, hidden, Mexico only)
+
+TOTAL FIELDS: 19 address fields (+ 1 checkbox)
+
+IMPORTANT FEATURES:
+1. P.O. Box not accepted for Principal Address
+2. Checkbox to copy Principal address to Mailing address
+3. Conditional fields based on country (Colonia for Mexico, text state for non-US)
+4. Address Lines 3-4 hidden by default (shown for international)
+5. USPS validation dialog mentioned (validates US addresses)
+
+Navigation:
+- NEXT button: DISABLED until all required fields filled
+-->
+

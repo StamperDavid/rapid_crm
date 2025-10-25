@@ -30,7 +30,48 @@ import {
   ThumbDownIcon,
   FastForwardIcon
 } from '@heroicons/react/outline';
-import type { USDOTApplicationScenario } from '../../services/training/ScenarioGenerator';
+import { USDOTFormPageService, type USDOTFormPage } from '../../services/training/USDOTFormPageService';
+
+// Scenario interface (matches database schema)
+interface USDOTApplicationScenario {
+  id: string;
+  legalBusinessName: string;
+  doingBusinessAs: string;
+  formOfBusiness: string;
+  ein: string;
+  businessPhone: string;
+  principalAddress: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  companyContact: {
+    firstName: string;
+    lastName: string;
+    title: string;
+    email: string;
+    phone: string;
+  };
+  receiveCompensationForTransport: string;
+  transportNonHazardousInterstate: string;
+  propertyType: string;
+  transportHazardousMaterials: string;
+  operationType: string;
+  vehicles: {
+    straightTrucks: { owned: number; termLeased: number };
+    truckTractors: { owned: number; termLeased: number };
+    trailers: { owned: number; termLeased: number };
+  };
+  expectedRequirements: {
+    usdotRequired: boolean;
+    mcAuthorityRequired: boolean;
+    hazmatEndorsementRequired: boolean;
+    iftaRequired: boolean;
+    stateRegistrationRequired: boolean;
+    reasoning: string;
+  };
+}
 
 interface USDOTApplicationData {
   // Step 1: 3rd Party Service Provider
@@ -278,103 +319,98 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   // Map scenario data to USDOT form format
   const mapScenarioToFormData = (scenario: USDOTApplicationScenario): Partial<USDOTApplicationData> => {
     return {
-      isThirdPartyProvider: 'No',
-      hasDunsBradstreet: scenario.hasDunsBradstreet,
-      legalBusinessName: scenario.legalBusinessName,
-      dbaName: scenario.doingBusinessAs,
-      principalAddressSame: scenario.principalAddressSameAsContact,
+      // Basic business information (using only properties that exist)
+      legalBusinessName: scenario.legalBusinessName || '',
+      dbaName: scenario.doingBusinessAs || '',
+      phone: scenario.businessPhone || '',
+      ein: scenario.ein || '',
+      formOfBusiness: scenario.formOfBusiness || '',
+      
+      // Principal address (using only properties that exist)
       principalAddress: {
-        country: scenario.principalAddress.country,
-        street: scenario.principalAddress.street,
-        city: scenario.principalAddress.city,
-        state: scenario.principalAddress.state,
-        zip: scenario.principalAddress.postalCode
+        country: 'US',
+        street: scenario.principalAddress?.street || '',
+        city: scenario.principalAddress?.city || '',
+        state: scenario.principalAddress?.state || '',
+        zip: scenario.principalAddress?.postalCode || ''
       },
-      mailingAddress: {
-        country: scenario.mailingAddress.country,
-        street: scenario.mailingAddress.street,
-        city: scenario.mailingAddress.city,
-        state: scenario.mailingAddress.state,
-        zip: scenario.mailingAddress.postalCode
-      },
-      phone: scenario.businessPhone,
-      ein: scenario.ein,
-      isGovernmentUnit: scenario.isUnitOfGovernment,
-      formOfBusiness: scenario.formOfBusiness,
-      ownershipControl: scenario.ownershipControl,
-      contactFirstName: scenario.companyContact.firstName,
-      contactMiddleName: scenario.companyContact.middleName,
-      contactLastName: scenario.companyContact.lastName,
-      contactSuffix: scenario.companyContact.suffix,
-      contactTitle: scenario.companyContact.title,
-      contactEmail: scenario.companyContact.email,
-      contactPhone: scenario.companyContact.phone,
-      contactAddress: {
-        country: scenario.companyContact.address.country,
-        street: scenario.companyContact.address.street,
-        city: scenario.companyContact.address.city,
-        state: scenario.companyContact.address.state,
-        zip: scenario.companyContact.address.postalCode
-      },
-      intermodalEquipmentProvider: scenario.operateAsIntermodalEquipmentProvider,
-      transportProperty: scenario.transportProperty,
-      receiveCompensation: scenario.receiveCompensationForTransport,
-      propertyType: scenario.propertyType,
-      interstateCommerce: scenario.transportNonHazardousInterstate,
-      transportOwnProperty: scenario.transportOwnProperty,
-      transportPassengers: scenario.transportPassengers,
-      brokerServices: scenario.provideBrokerServices,
-      freightForwarder: scenario.provideFreightForwarderServices,
-      cargoTankFacility: scenario.operateCargoTankFacility,
-      driveaway: scenario.operateAsDriveaway,
-      towaway: scenario.operateAsTowaway,
-      cargoClassifications: scenario.cargoClassifications,
-      nonCMVProperty: scenario.nonCMVProperty.toString(),
+      
+      // Contact information (using only properties that exist)
+      contactFirstName: scenario.companyContact?.firstName || '',
+      contactLastName: scenario.companyContact?.lastName || '',
+      contactTitle: scenario.companyContact?.title || '',
+      contactEmail: scenario.companyContact?.email || '',
+      contactPhone: scenario.companyContact?.phone || '',
+      
+      // Operation details (using only properties that exist)
+      receiveCompensation: scenario.receiveCompensationForTransport || 'No',
+      propertyType: scenario.propertyType || 'General Freight',
+      interstateCommerce: scenario.transportNonHazardousInterstate || 'No',
+      
+      // Vehicle information (using only properties that exist)
       ownedVehicles: {
-        straightTrucks: scenario.vehicles.straightTrucks.owned.toString(),
-        truckTractors: scenario.vehicles.truckTractors.owned.toString(),
-        trailers: scenario.vehicles.trailers.owned.toString(),
-        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.owned.toString()
+        straightTrucks: (scenario.vehicles?.straightTrucks?.owned || 0).toString(),
+        truckTractors: (scenario.vehicles?.truckTractors?.owned || 0).toString(),
+        trailers: (scenario.vehicles?.trailers?.owned || 0).toString(),
+        iepTrailerChassis: '0'
       },
       termLeasedVehicles: {
-        straightTrucks: scenario.vehicles.straightTrucks.termLeased.toString(),
-        truckTractors: scenario.vehicles.truckTractors.termLeased.toString(),
-        trailers: scenario.vehicles.trailers.termLeased.toString(),
-        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.termLeased.toString()
+        straightTrucks: (scenario.vehicles?.straightTrucks?.termLeased || 0).toString(),
+        truckTractors: (scenario.vehicles?.truckTractors?.termLeased || 0).toString(),
+        trailers: (scenario.vehicles?.trailers?.termLeased || 0).toString(),
+        iepTrailerChassis: '0'
       },
+      
+      // Default values for fields not in scenario
+      isThirdPartyProvider: 'No',
+      hasDunsBradstreet: 'No',
+      principalAddressSame: 'Yes',
+      isGovernmentUnit: 'No',
+      ownershipControl: 'Individual',
+      intermodalEquipmentProvider: 'No',
+      transportProperty: 'Yes',
+      transportOwnProperty: 'No',
+      transportPassengers: 'No',
+      brokerServices: 'No',
+      freightForwarder: 'No',
+      cargoTankFacility: 'No',
+      driveaway: 'No',
+      towaway: 'No',
+      cargoClassifications: 'General Freight',
+      nonCMVProperty: '0',
       tripLeasedVehicles: {
-        straightTrucks: scenario.vehicles.straightTrucks.tripLeased.toString(),
-        truckTractors: scenario.vehicles.truckTractors.tripLeased.toString(),
-        trailers: scenario.vehicles.trailers.tripLeased.toString(),
-        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.tripLeased.toString()
+        straightTrucks: '0',
+        truckTractors: '0',
+        trailers: '0',
+        iepTrailerChassis: '0'
       },
       towDriveawayVehicles: {
-        straightTrucks: scenario.vehicles.straightTrucks.towDriveway.toString(),
-        truckTractors: scenario.vehicles.truckTractors.towDriveway.toString(),
-        trailers: scenario.vehicles.trailers.towDriveway.toString(),
-        iepTrailerChassis: scenario.vehicles.iepTrailerChassis.towDriveway.toString()
+        straightTrucks: '0',
+        truckTractors: '0',
+        trailers: '0',
+        iepTrailerChassis: '0'
       },
-      canadaVehicles: scenario.vehiclesInCanada.toString(),
-      mexicoVehicles: scenario.vehiclesInMexico.toString(),
-      interstateVehicles: scenario.cmvInterstateOnly.toString(),
-      intrastateVehicles: scenario.cmvIntrastateOnly.toString(),
-      interstateDrivers100Mile: scenario.driversInterstate.within100Miles.toString(),
-      interstateDriversBeyond100Mile: scenario.driversInterstate.beyond100Miles.toString(),
-      intrastateDrivers100Mile: scenario.driversIntrastate.within100Miles.toString(),
-      intrastateDriversBeyond100Mile: scenario.driversIntrastate.beyond100Miles.toString(),
-      cdlDrivers: scenario.driversWithCDL.toString(),
-      canadaDrivers: scenario.driversInCanada.toString(),
-      mexicoDrivers: scenario.driversInMexico.toString(),
-      hasAffiliations: scenario.hasAffiliations,
+      canadaVehicles: '0',
+      mexicoVehicles: '0',
+      interstateVehicles: '0',
+      intrastateVehicles: '0',
+      interstateDrivers100Mile: '0',
+      interstateDriversBeyond100Mile: '0',
+      intrastateDrivers100Mile: '0',
+      intrastateDriversBeyond100Mile: '0',
+      cdlDrivers: '0',
+      canadaDrivers: '0',
+      mexicoDrivers: '0',
+      hasAffiliations: 'No',
       complianceCertifications: {
-        willingAble: scenario.certifyWillingAndAble,
-        produceDocuments: scenario.certifyProduceDocuments,
-        notDisqualified: scenario.certifyNotDisqualified,
-        processAgent: scenario.certifyUnderstandProcessAgent,
-        notSuspended: scenario.certifyNotUnderSuspension,
-        deficienciesCorrected: scenario.certifyDeficienciesCorrected
+        willingAble: 'Yes',
+        produceDocuments: 'Yes',
+        notDisqualified: 'Yes',
+        processAgent: 'Yes',
+        notSuspended: 'Yes',
+        deficienciesCorrected: 'Yes'
       },
-      electronicSignature: scenario.electronicSignature
+      electronicSignature: 'Yes'
     };
   };
 
@@ -610,7 +646,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       agentId: agentId,
       startTime: new Date(),
       currentStep: 1,
-      totalSteps: 13,
+      totalSteps: 76,
       score: 0,
       mistakes: [],
       completed: false,
@@ -755,13 +791,13 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
               USDOT Number Application
           </h2>
             <span className="text-sm text-gray-600">
-              Step {currentStep} of 13
+              Page {currentStep} of 76
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
               className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-              style={{ width: `${(currentStep / 13) * 100}%` }}
+              style={{ width: `${(currentStep / 76) * 100}%` }}
             ></div>
           </div>
         </div>
@@ -1345,46 +1381,71 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     if (!currentScenario) return null;
 
   return (
-      <div className="bg-white border-2 border-gray-300 shadow p-6 h-full overflow-y-auto">
+        <div className="bg-white border-2 border-gray-300 shadow p-6 max-h-[calc(75vh-150px)] overflow-y-auto">
         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
           <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
           Scenario Details
         </h3>
 
         <div className="space-y-4 text-sm">
+          {/* Scenario ID */}
           <div>
             <label className="font-bold text-gray-700">Scenario ID:</label>
             <p className="text-gray-900">{currentScenario.id}</p>
           </div>
 
-          <div>
-            <label className="font-bold text-gray-700">Company Name:</label>
-            <p className="text-gray-900">{currentScenario.legalBusinessName}</p>
+          {/* Business Information */}
+          <div className="border-t pt-4">
+            <label className="font-bold text-gray-700 mb-2 block">Business Information:</label>
+            <div className="space-y-2 pl-2">
+              <div><span className="font-semibold">Legal Name:</span> {currentScenario.legalBusinessName}</div>
+              <div><span className="font-semibold">DBA:</span> {currentScenario.doingBusinessAs}</div>
+              <div><span className="font-semibold">Business Type:</span> {currentScenario.formOfBusiness.replace(/_/g, ' ')}</div>
+              <div><span className="font-semibold">EIN:</span> {currentScenario.ein}</div>
+              <div><span className="font-semibold">Phone:</span> {currentScenario.businessPhone}</div>
+            </div>
           </div>
 
-          <div>
-            <label className="font-bold text-gray-700">State:</label>
-            <p className="text-gray-900">{currentScenario.principalAddress.state}</p>
+          {/* Address Information */}
+          <div className="border-t pt-4">
+            <label className="font-bold text-gray-700 mb-2 block">Principal Address:</label>
+            <div className="space-y-1 pl-2">
+              <div>{currentScenario.principalAddress.street}</div>
+              <div>{currentScenario.principalAddress.city}, {currentScenario.principalAddress.state} {currentScenario.principalAddress.postalCode}</div>
+            </div>
           </div>
 
-          <div>
-            <label className="font-bold text-gray-700">Business Type:</label>
-            <p className="text-gray-900 capitalize">{currentScenario.formOfBusiness.replace(/_/g, ' ')}</p>
+          {/* Contact Information */}
+          <div className="border-t pt-4">
+            <label className="font-bold text-gray-700 mb-2 block">Contact Person:</label>
+            <div className="space-y-2 pl-2">
+              <div><span className="font-semibold">Name:</span> {currentScenario.companyContact.firstName} {currentScenario.companyContact.lastName}</div>
+              <div><span className="font-semibold">Title:</span> {currentScenario.companyContact.title}</div>
+              <div><span className="font-semibold">Email:</span> {currentScenario.companyContact.email}</div>
+              <div><span className="font-semibold">Phone:</span> {currentScenario.companyContact.phone}</div>
+            </div>
           </div>
 
-          <div>
-            <label className="font-bold text-gray-700">Operation:</label>
-            <p className="text-gray-900">
-              {currentScenario.receiveCompensationForTransport === 'Yes' ? 'For-Hire' : 'Private'} / 
-              {currentScenario.transportNonHazardousInterstate === 'Yes' ? ' Interstate' : ' Intrastate'}
-          </p>
-        </div>
+          {/* Operation Details */}
+          <div className="border-t pt-4">
+            <label className="font-bold text-gray-700 mb-2 block">Operation Details:</label>
+            <div className="space-y-2 pl-2">
+              <div><span className="font-semibold">Type:</span> {currentScenario.receiveCompensationForTransport === 'Yes' ? 'For-Hire' : 'Private'}</div>
+              <div><span className="font-semibold">Radius:</span> {currentScenario.transportNonHazardousInterstate === 'Yes' ? 'Interstate' : 'Intrastate'}</div>
+              <div><span className="font-semibold">Property Type:</span> {currentScenario.propertyType.replace(/_/g, ' ')}</div>
+              <div><span className="font-semibold">Hazmat:</span> {currentScenario.transportHazardousMaterials}</div>
+            </div>
+          </div>
 
-          <div>
-            <label className="font-bold text-gray-700">Fleet Size:</label>
-            <p className="text-gray-900">
-              {currentScenario.vehicles.straightTrucks.owned + currentScenario.vehicles.truckTractors.owned} vehicles
-            </p>
+          {/* Fleet Details */}
+          <div className="border-t pt-4">
+            <label className="font-bold text-gray-700 mb-2 block">Fleet Details:</label>
+            <div className="space-y-2 pl-2">
+              <div><span className="font-semibold">Straight Trucks:</span> {currentScenario.vehicles?.straightTrucks?.owned || 0} owned, {currentScenario.vehicles?.straightTrucks?.termLeased || 0} leased</div>
+              <div><span className="font-semibold">Truck Tractors:</span> {currentScenario.vehicles?.truckTractors?.owned || 0} owned, {currentScenario.vehicles?.truckTractors?.termLeased || 0} leased</div>
+              <div><span className="font-semibold">Trailers:</span> {currentScenario.vehicles?.trailers?.owned || 0} owned, {currentScenario.vehicles?.trailers?.termLeased || 0} leased</div>
+              <div><span className="font-semibold">Total Vehicles:</span> {(currentScenario.vehicles?.straightTrucks?.owned || 0) + (currentScenario.vehicles?.truckTractors?.owned || 0) + (currentScenario.vehicles?.trailers?.owned || 0)}</div>
+            </div>
           </div>
 
           <div className="border-t pt-4">
@@ -1489,10 +1550,10 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                   </div>
                 </div>
 
-          {/* Split Screen Content */}
+          {/* Three Column Layout */}
           <div className="flex-1 flex overflow-hidden">
-            {/* LEFT PANEL: Complete Scenario Company Information */}
-            <div className="w-1/3 bg-white border-r-2 border-gray-300 overflow-y-auto p-6">
+            {/* LEFT PANEL: Complete Scenario Company Information (70%) */}
+            <div className="w-7/10 bg-white border-r-2 border-gray-300 overflow-y-auto p-4">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center sticky top-0 bg-white pb-2">
                 <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Scenario Company Information
@@ -1507,108 +1568,140 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Operation Classification</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">D&B Number:</span> {currentScenario.hasDunsBradstreet}</div>
+                    <div><span className="font-semibold">D&B Number:</span> No</div>
                     <div><span className="font-semibold">Legal Name:</span> {currentScenario.legalBusinessName}</div>
                     <div><span className="font-semibold">DBA:</span> {currentScenario.doingBusinessAs}</div>
-                    <div><span className="font-semibold">Address Same:</span> {currentScenario.principalAddressSameAsContact}</div>
+                    <div><span className="font-semibold">Address Same:</span> Yes</div>
                     <div><span className="font-semibold">Principal Address:</span> {currentScenario.principalAddress.street}, {currentScenario.principalAddress.city}, {currentScenario.principalAddress.state} {currentScenario.principalAddress.postalCode}</div>
-                    <div><span className="font-semibold">Mailing Address:</span> {currentScenario.mailingAddress.street}, {currentScenario.mailingAddress.city}, {currentScenario.mailingAddress.state} {currentScenario.mailingAddress.postalCode}</div>
+                    <div><span className="font-semibold">Mailing Address:</span> Same as Principal</div>
                     <div><span className="font-semibold">Phone:</span> {currentScenario.businessPhone}</div>
                     <div><span className="font-semibold">EIN:</span> {currentScenario.ein}</div>
-                    <div><span className="font-semibold">Government Unit:</span> {currentScenario.isUnitOfGovernment}</div>
+                    <div><span className="font-semibold">Government Unit:</span> No</div>
                     <div><span className="font-semibold">Business Form:</span> {currentScenario.formOfBusiness.replace(/_/g, ' ')}</div>
-                    <div><span className="font-semibold">Ownership:</span> {currentScenario.ownershipControl.replace(/_/g, ' ')}</div>
+                    <div><span className="font-semibold">Ownership:</span> Individual</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Company Contact</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Name:</span> {currentScenario.companyContact.firstName} {currentScenario.companyContact.middleName} {currentScenario.companyContact.lastName} {currentScenario.companyContact.suffix}</div>
+                    <div><span className="font-semibold">Name:</span> {currentScenario.companyContact.firstName} {currentScenario.companyContact.lastName}</div>
                     <div><span className="font-semibold">Title:</span> {currentScenario.companyContact.title}</div>
                     <div><span className="font-semibold">Email:</span> {currentScenario.companyContact.email}</div>
                     <div><span className="font-semibold">Phone:</span> {currentScenario.companyContact.phone}</div>
-                    <div><span className="font-semibold">Address:</span> {currentScenario.companyContact.address.street}, {currentScenario.companyContact.address.city}, {currentScenario.companyContact.address.state} {currentScenario.companyContact.address.postalCode}</div>
+                    <div><span className="font-semibold">Address:</span> Same as Principal Address</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Operation Type</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Intermodal Provider:</span> {currentScenario.operateAsIntermodalEquipmentProvider}</div>
-                    <div><span className="font-semibold">Transport Property:</span> {currentScenario.transportProperty}</div>
+                    <div><span className="font-semibold">Intermodal Provider:</span> No</div>
+                    <div><span className="font-semibold">Transport Property:</span> Yes</div>
                     <div><span className="font-semibold">Compensation:</span> {currentScenario.receiveCompensationForTransport}</div>
                     <div><span className="font-semibold">Property Type:</span> {currentScenario.propertyType.replace(/_/g, ' ')}</div>
                     <div><span className="font-semibold">Interstate Commerce:</span> {currentScenario.transportNonHazardousInterstate}</div>
-                    <div><span className="font-semibold">Transport Own:</span> {currentScenario.transportOwnProperty}</div>
-                    <div><span className="font-semibold">Transport Passengers:</span> {currentScenario.transportPassengers}</div>
-                    <div><span className="font-semibold">Broker Services:</span> {currentScenario.provideBrokerServices}</div>
-                    <div><span className="font-semibold">Freight Forwarder:</span> {currentScenario.provideFreightForwarderServices}</div>
-                    <div><span className="font-semibold">Cargo Tank:</span> {currentScenario.operateCargoTankFacility}</div>
-                    <div><span className="font-semibold">Driveaway:</span> {currentScenario.operateAsDriveaway}</div>
-                    <div><span className="font-semibold">Towaway:</span> {currentScenario.operateAsTowaway}</div>
-                    <div><span className="font-semibold">Cargo Classifications:</span> {currentScenario.cargoClassifications.join(', ')}</div>
+                    <div><span className="font-semibold">Transport Own:</span> No</div>
+                    <div><span className="font-semibold">Transport Passengers:</span> No</div>
+                    <div><span className="font-semibold">Broker Services:</span> No</div>
+                    <div><span className="font-semibold">Freight Forwarder:</span> No</div>
+                    <div><span className="font-semibold">Cargo Tank:</span> No</div>
+                    <div><span className="font-semibold">Driveaway:</span> No</div>
+                    <div><span className="font-semibold">Towaway:</span> No</div>
+                    <div><span className="font-semibold">Cargo Classifications:</span> General Freight</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Vehicle Summary</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Non-CMV Property:</span> {currentScenario.nonCMVProperty}</div>
-                    <div><span className="font-semibold">Straight Trucks (Owned):</span> {currentScenario.vehicles.straightTrucks.owned}</div>
-                    <div><span className="font-semibold">Truck Tractors (Owned):</span> {currentScenario.vehicles.truckTractors.owned}</div>
-                    <div><span className="font-semibold">Trailers (Owned):</span> {currentScenario.vehicles.trailers.owned}</div>
-                    <div><span className="font-semibold">IEP Chassis (Owned):</span> {currentScenario.vehicles.iepTrailerChassis.owned}</div>
-                    <div><span className="font-semibold">Canada Vehicles:</span> {currentScenario.vehiclesInCanada}</div>
-                    <div><span className="font-semibold">Mexico Vehicles:</span> {currentScenario.vehiclesInMexico}</div>
-                    <div><span className="font-semibold">Interstate CMVs:</span> {currentScenario.cmvInterstateOnly}</div>
-                    <div><span className="font-semibold">Intrastate CMVs:</span> {currentScenario.cmvIntrastateOnly}</div>
+                    <div><span className="font-semibold">Non-CMV Property:</span> 0</div>
+                    <div><span className="font-semibold">Straight Trucks (Owned):</span> {currentScenario.vehicles?.straightTrucks?.owned || 0}</div>
+                    <div><span className="font-semibold">Truck Tractors (Owned):</span> {currentScenario.vehicles?.truckTractors?.owned || 0}</div>
+                    <div><span className="font-semibold">Trailers (Owned):</span> {currentScenario.vehicles?.trailers?.owned || 0}</div>
+                    <div><span className="font-semibold">IEP Chassis (Owned):</span> 0</div>
+                    <div><span className="font-semibold">Canada Vehicles:</span> 0</div>
+                    <div><span className="font-semibold">Mexico Vehicles:</span> 0</div>
+                    <div><span className="font-semibold">Interstate CMVs:</span> 0</div>
+                    <div><span className="font-semibold">Intrastate CMVs:</span> 0</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Driver Summary</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Interstate (100mi):</span> {currentScenario.driversInterstate.within100Miles}</div>
-                    <div><span className="font-semibold">Interstate (Beyond 100mi):</span> {currentScenario.driversInterstate.beyond100Miles}</div>
-                    <div><span className="font-semibold">Intrastate (100mi):</span> {currentScenario.driversIntrastate.within100Miles}</div>
-                    <div><span className="font-semibold">Intrastate (Beyond 100mi):</span> {currentScenario.driversIntrastate.beyond100Miles}</div>
-                    <div><span className="font-semibold">Drivers with CDL:</span> {currentScenario.driversWithCDL}</div>
-                    <div><span className="font-semibold">Canada Drivers:</span> {currentScenario.driversInCanada}</div>
-                    <div><span className="font-semibold">Mexico Drivers:</span> {currentScenario.driversInMexico}</div>
+                    <div><span className="font-semibold">Interstate (100mi):</span> 0</div>
+                    <div><span className="font-semibold">Interstate (Beyond 100mi):</span> 0</div>
+                    <div><span className="font-semibold">Intrastate (100mi):</span> 0</div>
+                    <div><span className="font-semibold">Intrastate (Beyond 100mi):</span> 0</div>
+                    <div><span className="font-semibold">Drivers with CDL:</span> 0</div>
+                    <div><span className="font-semibold">Canada Drivers:</span> 0</div>
+                    <div><span className="font-semibold">Mexico Drivers:</span> 0</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Affiliation</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Has Affiliations:</span> {currentScenario.hasAffiliations}</div>
+                    <div><span className="font-semibold">Has Affiliations:</span> No</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-3">
                   <div className="font-bold text-gray-700 mb-2">Compliance Certifications</div>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Willing & Able:</span> {currentScenario.certifyWillingAndAble}</div>
-                    <div><span className="font-semibold">Produce Documents:</span> {currentScenario.certifyProduceDocuments}</div>
-                    <div><span className="font-semibold">Not Disqualified:</span> {currentScenario.certifyNotDisqualified}</div>
-                    <div><span className="font-semibold">Process Agent:</span> {currentScenario.certifyUnderstandProcessAgent}</div>
-                    <div><span className="font-semibold">Not Suspended:</span> {currentScenario.certifyNotUnderSuspension}</div>
-                    <div><span className="font-semibold">Deficiencies Corrected:</span> {currentScenario.certifyDeficienciesCorrected}</div>
+                    <div><span className="font-semibold">Willing & Able:</span> Yes</div>
+                    <div><span className="font-semibold">Produce Documents:</span> Yes</div>
+                    <div><span className="font-semibold">Not Disqualified:</span> Yes</div>
+                    <div><span className="font-semibold">Process Agent:</span> Yes</div>
+                    <div><span className="font-semibold">Not Suspended:</span> Yes</div>
+                    <div><span className="font-semibold">Deficiencies Corrected:</span> Yes</div>
                   </div>
                 </div>
 
                 <div>
                   <div className="font-bold text-gray-700 mb-2">Electronic Signature</div>
-                  <div className="text-xs">{currentScenario.electronicSignature}</div>
+                  <div className="text-xs">Yes</div>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT PANEL: All USDOT Questions with RPA Answers */}
-            <div className="flex-1 overflow-y-auto p-6">
+            {/* MIDDLE PANEL: USDOT Questions */}
+            <div className="w-1/5 bg-gray-50 border-r-2 border-gray-300 overflow-y-auto p-4">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 sticky top-0 bg-gray-50 pb-2">
+                USDOT Questions
+              </h3>
+              
+              {Object.entries(groupedFields).map(([category, fields]) => (
+                <div key={category} className="mb-6">
+                  <h4 className="text-md font-bold text-gray-800 mb-3 capitalize bg-gray-200 px-3 py-2 rounded">
+                    {category === 'operation_classification' ? 'Operation Classification Summary' :
+                     category === 'company_contact' ? 'Company Contact' :
+                     category === 'operation_type_questions' ? 'Operation Type Questions' :
+                     category === 'vehicle_summary' ? 'Vehicle Summary' :
+                     category === 'driver_summary' ? 'Driver Summary' :
+                     category === 'affiliation_with_others' ? 'Affiliation with Others Summary' :
+                     category === 'compliance_certifications' ? 'Compliance Certifications Summary' :
+                     category === 'electronic_signature' ? 'Electronic Signature' :
+                     category}
+                  </h4>
+                  <div className="space-y-3">
+                    {fields.map((field, index) => (
+                      <div key={index} className="bg-white border-2 rounded-lg p-4 border-gray-300">
+                        <div className="font-bold text-gray-900 mb-2 text-sm leading-relaxed">
+                          {field.displayName}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* RIGHT PANEL: RPA Answers Review */}
+            <div className="w-3/10 overflow-y-auto p-4">
               <h3 className="text-lg font-bold text-gray-900 mb-4 sticky top-0 bg-gray-100 pb-2">
-                USDOT Questions & RPA Answers Review
+                RPA Answers Review
               </h3>
 
               {Object.entries(groupedFields).map(([category, fields]) => (

@@ -1,0 +1,55 @@
+<!-- FMCSA USDOT Application - Page 19: Principal Address Same as Contact Question -->
+<!-- form_B0041P040081, Question Q04039 - Address matching question -->
+
+<!-- QUESTION -->
+<label class="questionDesc" id="questionDesc_Q04039">
+  Is the Applicant's Principal Place of Business Address the same as the Application Contact's Address?
+</label>
+
+<!-- ANSWER OPTIONS (Radio) -->
+<!-- Icon: icon_FMCSAPOBasContactAddress.png -->
+
+<!-- YES (DEFAULT CHECKED) -->
+<input name="questionCode_B0041P040081S04018_Q04039" 
+       type="radio" 
+       role="radio" 
+       aria-checked="true" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0041P040081S04018_Q04039_id_Y"
+       checked>
+<label for="questionCode_B0041P040081S04018_Q04039_id_Y">Yes</label>
+
+<!-- NO -->
+<input name="questionCode_B0041P040081S04018_Q04039" 
+       type="radio" 
+       role="radio" 
+       aria-checked="false" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0041P040081S04018_Q04039_id_N">
+<label for="questionCode_B0041P040081S04018_Q04039_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0041P040081
+Branch: B0041
+Page: P040081
+Section: S04018
+Question: Q04039
+Field Name: questionCode_B0041P040081S04018_Q04039
+Field Type: Radio button (Yes/No)
+Default: Yes (checked)
+Required: Yes
+Icon: icon_FMCSAPOBasContactAddress.png
+Progress: 22%
+
+This determines if the system needs to collect a separate Principal Business Address
+or if it can reuse the Application Contact address from Page 14.
+
+If YES: Skip to next business question (no address entry needed)
+If NO: Will show Principal Business Address form fields
+
+This is a BRANCHING QUESTION - affects which pages appear next.
+-->
+

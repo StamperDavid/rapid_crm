@@ -1,0 +1,367 @@
+<!-- FMCSA USDOT Application - Page 41: Cargo Classifications Multi-Select -->
+<!-- form_B0051P050391, Q05023 + Q05042 - LARGE multi-select grid with conditional field -->
+<!-- 18 cargo types in 4-column grid + "Other" text field -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION LABEL -->
+<label class="forInput" id="questionDesc_Q05023">
+  Please select all classifications of cargo that the Applicant will transport or handle.
+</label>
+
+<!-- CHECKBOX GRID (18 options in multiple rows, 4 per row) -->
+<table class="selectbuttonsTable image_on_top">
+  <!-- ROW 1: General Freight, Household Goods, Metal Sheets, Motor Vehicles -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 1. General Freight (CHECKED in example) -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_GeneralFreight.png" alt="General Freight">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="1" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_1" checked>
+      <label for="questionCode_B0051P050391S05039_Q05023_id_1">General Freight</label>
+    </td>
+    
+    <!-- 2. Household Goods -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_HouseholdGoodsFamilyFurniture.png" alt="Household Goods">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="2" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_2">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_2">Household Goods</label>
+    </td>
+    
+    <!-- 3. Metal: Sheets, Coils, Rolls -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_MetalsRollsSheetsCoils.png" alt="Metal">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="3" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_3">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_3">Metal:  Sheets, Coils, Rolls</label>
+    </td>
+    
+    <!-- 4. Motor Vehicles -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAMotorVehicles.png" alt="Motor Vehicles">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="4" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_4">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_4">Motor Vehicles</label>
+    </td>
+  </tr>
+
+  <!-- ROW 2: Drive Away, Logs/Lumber, Building Materials, Mobile Homes -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 5. Drive Away/Tow Away -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_TowawayDriveaway.png" alt="Drive/Tow Away">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="5" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_5">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_5">Drive Away/Tow Away</label>
+    </td>
+    
+    <!-- 6. Logs, Poles, Beams, Lumber -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSALumber.png" alt="Lumber">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="6" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_6">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_6">Logs, Poles, Beams, Lumber</label>
+    </td>
+    
+    <!-- 7. Building Materials -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSABuildingSupplies.png" alt="Building Materials">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="7" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_7">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_7">Building Materials</label>
+    </td>
+    
+    <!-- 8. Mobile Homes -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAMobileHome.png" alt="Mobile Homes">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="8" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_8">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_8">Mobile Homes</label>
+    </td>
+  </tr>
+
+  <!-- ROW 3: Machinery, Fresh Produce, Liquids/Gasses, Intermodal Containers -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 9. Machinery, Large Objects -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSALargeObjects.png" alt="Machinery">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="9" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_9">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_9">Machinery, Large Objects</label>
+    </td>
+    
+    <!-- 10. Fresh Produce -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAFreshProduce.png" alt="Fresh Produce">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="10" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_10">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_10">Fresh Produce</label>
+    </td>
+    
+    <!-- 11. Liquids/Gasses -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSALiquidorGas.png" alt="Liquids/Gasses">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="11" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_11">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_11">Liquids/Gasses</label>
+    </td>
+    
+    <!-- 12. Intermodal Cont. -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_IntermodalEquipmentProvider.png" alt="Intermodal">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="12" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_12">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_12">Intermodal Cont.</label>
+    </td>
+  </tr>
+
+  <!-- ROW 4: Passengers, Oil Field Equipment, Livestock, Grain/Feed/Hay -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 13. Passengers -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_PassengerCarrier.png" alt="Passengers">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="13" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_13">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_13">Passengers</label>
+    </td>
+    
+    <!-- 36. Oil Field Equipment -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAOilFieldEquipment.png" alt="Oil Field">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="36" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_36">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_36">Oil Field Equipment</label>
+    </td>
+    
+    <!-- 31. Livestock -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSALivestock.png" alt="Livestock">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="31" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_31">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_31">Livestock</label>
+    </td>
+    
+    <!-- 16. Grain, Feed, Hay -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAGrainWheat.png" alt="Grain">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="16" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_16">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_16">Grain, Feed, Hay</label>
+    </td>
+  </tr>
+
+  <!-- ROW 5: Coal/Coke, Meat, Garbage/Refuse, US Mail -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 17. Coal/Coke -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSACoalCoke.png" alt="Coal/Coke">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="17" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_17">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_17">Coal/Coke</label>
+    </td>
+    
+    <!-- 18. Meat -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAMeat.png" alt="Meat">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="18" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_18">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_18">Meat</label>
+    </td>
+    
+    <!-- 19. Garbage, Refuse, Trash -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAGarbageTrashRefuse.png" alt="Garbage">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="19" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_19">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_19">Garbage, Refuse, Trash</label>
+    </td>
+    
+    <!-- 20. US Mail -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAMail.png" alt="US Mail">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="20" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_20">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_20">US Mail</label>
+    </td>
+  </tr>
+
+  <!-- ROW 6: Chemicals, Commodities Dry Bulk, Refrigerated Food, Beverages -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 21. Chemicals -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_HazardousMaterials.png" alt="Chemicals">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="21" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_21">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_21">Chemicals</label>
+    </td>
+    
+    <!-- 22. Commodities Dry Bulk -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSADryBulk.png" alt="Dry Bulk">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="22" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_22">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_22">Commodities Dry Bulk</label>
+    </td>
+    
+    <!-- 23. Refrigerated Food -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSARefridgeratedFood.png" alt="Refrigerated Food">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="23" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_23">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_23">Refrigerated Food</label>
+    </td>
+    
+    <!-- 33. Beverages -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSABeverage.png" alt="Beverages">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="33" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_33">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_33">Beverages</label>
+    </td>
+  </tr>
+
+  <!-- ROW 7: Paper Product, Utility, Farm Supplies, Construction -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 37. Paper Product -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAPaperProduct.png" alt="Paper">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="37" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_37">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_37">Paper Product</label>
+    </td>
+    
+    <!-- 26. Utility -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAUtility.png" alt="Utility">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="26" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_26">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_26">Utility</label>
+    </td>
+    
+    <!-- 27. Farm Supplies -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAFarmSupplies.png" alt="Farm Supplies">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="27" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_27">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_27">Farm Supplies</label>
+    </td>
+    
+    <!-- 28. Construction -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAConstruction.png" alt="Construction">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="28" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_28">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_28">Construction</label>
+    </td>
+  </tr>
+
+  <!-- ROW 8: Water Well, Other (only 2 in this row) -->
+  <tr class="selectbuttonsMultiRow">
+    <!-- 29. Water Well -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAWell.png" alt="Water Well">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="29" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_29">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_29">Water Well</label>
+    </td>
+    
+    <!-- 30. Other -->
+    <td class="answerCellLeft">
+      <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAOther.png" alt="Other">
+      <input name="questionCode_B0051P050391S05039_Q05023" type="checkbox" value="30" tabindex="0" 
+             id="questionCode_B0051P050391S05039_Q05023_id_30">
+      <label for="questionCode_B0051P050391S05039_Q05023_id_30">Other</label>
+    </td>
+  </tr>
+</table>
+
+<!-- CONDITIONAL FIELD: "Other Cargo Class" text field (hidden/disabled until "Other" checked) -->
+<label for="questionCode_B0051P050391S05039_Q05042_OTHER_CARGO_id">Other Cargo Class</label>
+<input type="text" 
+       id="questionCode_B0051P050391S05039_Q05042_OTHER_CARGO_id" 
+       name="questionCode_B0051P050391S05039_Q05042_OTHER_CARGO" 
+       maxlength="256" 
+       aria-required="false" 
+       disabled 
+       tabindex="-1">
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050391
+Branch: B0051
+Page: P050391
+Section: S05039
+Questions: Q05023 (checkboxes), Q05042 (conditional text)
+Field Names: 
+  - questionCode_B0051P050391S05039_Q05023 (18 checkboxes)
+  - questionCode_B0051P050391S05039_Q05042_OTHER_CARGO (conditional text field)
+Progress: 27%
+
+LARGE MULTI-SELECT CHECKBOX GRID:
+This is the LARGEST checkbox group in the application - 18 options!
+
+LAYOUT: GRID with 4 columns, multiple rows (class="selectbuttonsMultiRow")
+- Each row class="selectbuttonsMultiRow"
+- 4 options per row (except last row has 2)
+- Images on top of each checkbox+label
+- Horizontal grid layout
+
+18 CARGO CLASSIFICATIONS (with values):
+1 = General Freight (icon_GeneralFreight.png) [CHECKED in example]
+2 = Household Goods (icon_HouseholdGoodsFamilyFurniture.png)
+3 = Metal: Sheets, Coils, Rolls (icon_MetalsRollsSheetsCoils.png)
+4 = Motor Vehicles (icon_FMCSAMotorVehicles.png)
+5 = Drive Away/Tow Away (icon_TowawayDriveaway.png)
+6 = Logs, Poles, Beams, Lumber (icon_FMCSALumber.png)
+7 = Building Materials (icon_FMCSABuildingSupplies.png)
+8 = Mobile Homes (icon_FMCSAMobileHome.png)
+9 = Machinery, Large Objects (icon_FMCSALargeObjects.png)
+10 = Fresh Produce (icon_FMCSAFreshProduce.png)
+11 = Liquids/Gasses (icon_FMCSALiquidorGas.png)
+12 = Intermodal Cont. (icon_IntermodalEquipmentProvider.png)
+13 = Passengers (icon_PassengerCarrier.png)
+16 = Grain, Feed, Hay (icon_FMCSAGrainWheat.png)
+17 = Coal/Coke (icon_FMCSACoalCoke.png)
+18 = Meat (icon_FMCSAMeat.png)
+19 = Garbage, Refuse, Trash (icon_FMCSAGarbageTrashRefuse.png)
+20 = US Mail (icon_FMCSAMail.png)
+21 = Chemicals (icon_HazardousMaterials.png)
+22 = Commodities Dry Bulk (icon_FMCSADryBulk.png)
+23 = Refrigerated Food (icon_FMCSARefridgeratedFood.png)
+26 = Utility (icon_FMCSAUtility.png)
+27 = Farm Supplies (icon_FMCSAFarmSupplies.png)
+28 = Construction (icon_FMCSAConstruction.png)
+29 = Water Well (icon_FMCSAWell.png)
+30 = Other (icon_FMCSAOther.png)
+31 = Livestock (icon_FMCSALivestock.png)
+33 = Beverages (icon_FMCSABeverage.png)
+36 = Oil Field Equipment (icon_FMCSAOilFieldEquipment.png)
+37 = Paper Product (icon_FMCSAPaperProduct.png)
+
+Note: Values are NOT sequential (1-18)! They jump (e.g., 16, 17, 18, 19, 20, 21, 22, 23, 26, 27, etc.)
+This suggests some classifications were removed/deprecated from original list.
+
+CONDITIONAL FIELD:
+Q05042_OTHER_CARGO - Text input (maxlength=256)
+- Disabled/hidden initially
+- Becomes enabled when checkbox value="30" (Other) is checked
+- Allows free-text description of cargo not in predefined list
+
+MULTI-ROW GRID PATTERN:
+- Unlike previous checkbox examples (single row)
+- This uses MULTIPLE rows (class="selectbuttonsMultiRow")
+- 4 items per row for better visual organization
+- Total 8 rows (7 full rows of 4, 1 partial row of 2)
+
+This comprehensive cargo list allows carriers to specify all types they handle.
+Multiple selections common (e.g., General Freight + Refrigerated Food + Beverages).
+
+For RPA training:
+- Must handle as array/list (18 possible values)
+- Grid layout (not linear)
+- Conditional "Other" field activation
+- Can select 1 to all 18 options
+-->
+

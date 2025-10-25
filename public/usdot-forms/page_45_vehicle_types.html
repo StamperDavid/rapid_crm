@@ -1,0 +1,273 @@
+<!-- FMCSA USDOT Application - Page 45: Vehicle Types Inventory Table -->
+<!-- form_B0061P060021 - COMPLEX DATA GRID with 20 numeric fields -->
+<!-- 4 vehicle types × 5 columns (Owned, Term Leased, Trip Leased, Tow/Driveway, Serviced) -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Vehicle Types</label>
+
+<!-- QUESTION (with tooltip on "Commercial motor vehicle(s)") -->
+<label class="pageSectionTitleLabel" id="descriptionLabel_B0061P060021">
+  What type of 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Commercial Motor Vehicle (CMV) means any self-propelled or towed motor vehicle used on a highway in interstate commerce to transport passengers or property when the vehicle - &lt;br/&gt; (1) Has a gross vehicle weight rating or gross combination weight rating, or gross vehicle weight or gross combination weight, of 4,536 kg (10,001 pounds) or more, whichever is greater; or &lt;br/&gt; (2) Is designed or used to transport more than 8 passengers (including the driver) for compensation; or &lt;br/&gt; (3) Is designed or used to transport more than 15 passengers, including the driver, and is not used to transport passengers for compensation; or &lt;br/&gt; (4) Is used in transporting material found by the Secretary of Transportation to be hazardous under 49 U.S.C. 5103 and transported in a quantity requiring placarding under regulations prescribed by the Secretary under 49 CFR, subtitle B, chapter I, subchapter C.');">
+    Commercial motor vehicle(s)
+  </span> 
+  and how many will the Applicant operate ? 
+  <br>
+  (Select all that apply and enter the number of each type. There must be a number entered in each box, even if it is '0')
+</label>
+
+<!-- VEHICLE INVENTORY TABLE (class="vehicleTypeTable") -->
+<table class="vehicleTypeTable" width="100%">
+  
+  <!-- HEADER ROW 1: Spacer -->
+  <tr class="vehiclesHeadersRow">
+    <td class="vehiclesHeaderCell">&nbsp;</td>
+  </tr>
+  
+  <!-- HEADER ROW 2: Column Headings -->
+  <tr class="vehiclesHeadersRow">
+    <td class="vehicleTypeNameCell">Type</td>
+    <td class="vehiclesHeaderCell">Owned</td>
+    <td class="vehiclesHeaderCell">Term Leased</td>
+    <td class="vehiclesHeaderCell">Trip Leased</td>
+    <td class="vehiclesHeaderCell">Tow/Driveway</td>
+    <td class="vehiclesHeaderCell" width="75px">Serviced</td>
+  </tr>
+  
+  <!-- VEHICLE TYPE 1: Straight Truck(s) -->
+  <tr class="vehicleSectionRow">
+    <td class="vehicleTypeNameCell">Straight Truck(s)</td>
+    
+    <!-- Owned -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06004_Q06001_STRAIGHT_TRUCK_OWNED_id"
+             name="questionCode_B0061P060021S06004_Q06001_STRAIGHT_TRUCK_OWNED"
+             maxlength="5" 
+             size="5"
+             aria-required="true"
+             tabindex="0"
+             style="width: 100px;"
+             class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Term Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06004_Q06002_STRAIGHT_TRUCK_TERMLEASED_id"
+             name="questionCode_B0061P060021S06004_Q06002_STRAIGHT_TRUCK_TERMLEASED"
+             maxlength="5" 
+             size="5"
+             aria-required="true"
+             tabindex="0"
+             style="width: 100px;"
+             class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Trip Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06004_Q06003_STRAIGHT_TRUCK_TRIPLEASED_id"
+             name="questionCode_B0061P060021S06004_Q06003_STRAIGHT_TRUCK_TRIPLEASED"
+             maxlength="5" 
+             size="5"
+             aria-required="true"
+             tabindex="0"
+             style="width: 100px;"
+             class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Tow/Driveway -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06004_Q06004_STRAIGHT_TRUCK_DRIVEWAY_id"
+             name="questionCode_B0061P060021S06004_Q06004_STRAIGHT_TRUCK_DRIVEWAY"
+             maxlength="5" 
+             size="5"
+             aria-required="true"
+             tabindex="0"
+             style="width: 100px;"
+             class="numberSpinnerVehicles">
+    </td>
+  </tr>
+  
+  <!-- VEHICLE TYPE 2: Truck Tractor(s) -->
+  <tr class="vehicleSectionRow">
+    <td class="vehicleTypeNameCell">Truck Tractor(s)</td>
+    
+    <!-- Owned -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06042_Q06005_TRUCK_TRACTOR_OWNED_id"
+             name="questionCode_B0061P060021S06042_Q06005_TRUCK_TRACTOR_OWNED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Term Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06042_Q06006_TRUCK_TRACTOR_TERMLEASED_id"
+             name="questionCode_B0061P060021S06042_Q06006_TRUCK_TRACTOR_TERMLEASED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Trip Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06042_Q06007_TRUCK_TRACTOR_TRIPLEASED_id"
+             name="questionCode_B0061P060021S06042_Q06007_TRUCK_TRACTOR_TRIPLEASED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Tow/Driveway -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06042_Q06008_TRUCK_TRACTOR_DRIVEWAY_id"
+             name="questionCode_B0061P060021S06042_Q06008_TRUCK_TRACTOR_DRIVEWAY"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+  </tr>
+  
+  <!-- VEHICLE TYPE 3: Trailer(s) -->
+  <tr class="vehicleSectionRow">
+    <td class="vehicleTypeNameCell">Trailer(s)</td>
+    
+    <!-- Owned -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06043_Q06009_TRAILER_OWNED_id"
+             name="questionCode_B0061P060021S06043_Q06009_TRAILER_OWNED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Term Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06043_Q06010_TRAILER_TERMLEASED_id"
+             name="questionCode_B0061P060021S06043_Q06010_TRAILER_TERMLEASED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Trip Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06043_Q06011_TRAILER_TRIPLEASED_id"
+             name="questionCode_B0061P060021S06043_Q06011_TRAILER_TRIPLEASED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Tow/Driveway -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06043_Q06012_TRAILER_DRIVEWAY_id"
+             name="questionCode_B0061P060021S06043_Q06012_TRAILER_DRIVEWAY"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+  </tr>
+  
+  <!-- VEHICLE TYPE 4: IEP Trailer Chassis Only (has SERVICED column!) -->
+  <tr class="vehicleSectionRow">
+    <td class="vehicleTypeNameCell">IEP Trailer Chassis Only</td>
+    
+    <!-- Owned -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06044_Q06013_IEP_OWNED_id"
+             name="questionCode_B0061P060021S06044_Q06013_IEP_OWNED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Term Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06044_Q06014_IEP_TERMLEASED_id"
+             name="questionCode_B0061P060021S06044_Q06014_IEP_TERMLEASED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Trip Leased -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06044_Q06015_IEP_TRIPLEASED_id"
+             name="questionCode_B0061P060021S06044_Q06015_IEP_TRIPLEASED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- Tow/Driveway -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06044_Q06016_IEP_DRIVEWAY_id"
+             name="questionCode_B0061P060021S06044_Q06016_IEP_DRIVEWAY"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+    
+    <!-- SERVICED (UNIQUE TO IEP!) -->
+    <td class="vehicleSectionCell" width="12%">
+      <input type="text" 
+             id="questionCode_B0061P060021S06044_Q06080_IEP_SERVICED_id"
+             name="questionCode_B0061P060021S06044_Q06080_IEP_SERVICED"
+             maxlength="5" size="5" aria-required="true" tabindex="0"
+             style="width: 100px;" class="numberSpinnerVehicles">
+    </td>
+  </tr>
+  
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0061P060021
+Branch: B006 (Vehicles)
+Page: P060021
+Questions: Q06001-Q06016, Q06080 (20 total fields)
+Progress: Still at 32%
+
+FIELD STRUCTURE:
+- 4 Vehicle Types (rows)
+- 5 Ownership/Lease Categories (columns) - Note: only IEP has "Serviced" column
+- All fields: maxlength=5, size=5, width=100px, aria-required=true
+- Class: numberSpinnerVehicles (Dojo ValidationTextBox)
+
+VEHICLE TYPES:
+1. Straight Truck(s) - Questions Q06001-Q06004
+2. Truck Tractor(s) - Questions Q06005-Q06008
+3. Trailer(s) - Questions Q06009-Q06012
+4. IEP Trailer Chassis Only - Questions Q06013-Q06016, Q06080
+
+LEASE/OWNERSHIP CATEGORIES:
+1. Owned
+2. Term Leased (long-term lease)
+3. Trip Leased (short-term lease per trip)
+4. Tow/Driveway (towing operation)
+5. Serviced (ONLY for IEP - Intermodal Equipment Provider)
+
+IEP = Intermodal Equipment Provider (trailer chassis without container)
+
+VALIDATION:
+- All fields required (must enter number, even if '0')
+- Numeric only
+- Max 5 digits
+- Validation class shows errors (dijitTextBoxError, dijitIncomplete, etc.)
+
+CMV DEFINITION (from tooltip):
+"Commercial Motor Vehicle (CMV) means any self-propelled or towed motor vehicle used on a highway in interstate commerce to transport passengers or property when the vehicle -
+(1) Has a GVWR/GCWR of 10,001 lbs or more; or
+(2) Is designed/used to transport >8 passengers for compensation; or
+(3) Is designed/used to transport >15 passengers (not for compensation); or
+(4) Is used to transport hazardous materials requiring placarding"
+
+TOTAL FIELDS: 20 numeric inputs
+-->
+

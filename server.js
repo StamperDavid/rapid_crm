@@ -2004,7 +2004,9 @@ const checkAndInitializeDatabase = async () => {
       const statements = trainingSchema.split(';').filter(stmt => stmt.trim().length > 0);
       for (const statement of statements) {
         if (statement.trim()) {
-          await runExecute(statement.trim());
+          // Replace INSERT with INSERT OR IGNORE to avoid constraint violations
+          const safeStatement = statement.trim().replace(/^INSERT INTO/, 'INSERT OR IGNORE INTO');
+          await runExecute(safeStatement);
         }
       }
       console.log('✅ Training environment schema loaded successfully');
@@ -2023,7 +2025,10 @@ const checkAndInitializeDatabase = async () => {
       const statements = qualifiedStatesSchema.split(';').filter(stmt => stmt.trim().length > 0);
       for (const statement of statements) {
         if (statement.trim()) {
-          await runExecute(statement.trim());
+          // Skip empty or incomplete statements
+          if (statement.trim().length > 10) {
+            await runExecute(statement.trim());
+          }
         }
       }
       console.log('✅ Qualified States schema loaded successfully');
@@ -6213,6 +6218,21 @@ app.post('/api/alex-training/generate-scenarios', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error generating scenarios:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all scenarios for training environments
+app.get('/api/alex-training/all-scenarios', async (req, res) => {
+  try {
+    if (!alexTrainingService) {
+      return res.status(500).json({ error: 'Training service not available' });
+    }
+    
+    const scenarios = alexTrainingService.getAllScenarios();
+    res.json({ scenarios });
+  } catch (error) {
+    console.error('Error getting all scenarios:', error);
     res.status(500).json({ error: error.message });
   }
 });

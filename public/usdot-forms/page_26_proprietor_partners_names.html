@@ -1,0 +1,267 @@
+<!-- FMCSA USDOT Application - Page 26: Proprietor/Partners Names and Titles -->
+<!-- form_bdTitles - DYNAMIC REPEATING SECTION with "More" button -->
+<!-- MOST COMPLEX FIELD PATTERN - Multiple contact entries, removable, with company contact radio -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Names and Titles of the Sole Proprietor, Partners, or Others</label>
+
+<!-- REPEATING CONTACT TABLE (ID: proprietorTable) -->
+<table id="proprietorTable" width="100%">
+  <!-- CONTACT ENTRY #1 (proprietorTR_1) -->
+  <tr id="proprietorTR_1" name="proprietorTR">
+    <td>
+      <table class="proprietorTable" width="100%">
+        <!-- HEADER ROW: Radio for Company Contact + Remove Button -->
+        <tr>
+          <td colspan="1" align="left">
+            <input name="radioCompanyContact" 
+                   type="radio" 
+                   value="1" 
+                   tabindex="0" 
+                   id="proprietorRadio_1">
+            <label for="proprietorRadio_1">Company Contact #1</label>
+          </td>
+          <td>
+            <button id="proprietor_1" 
+                    title="Remove this contact from list" 
+                    style="visibility: hidden;">
+              Remove
+            </button>
+          </td>
+        </tr>
+
+        <!-- FIELD 1: First Name -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorFirstName_1_id">First Name</label>
+            <input type="text" 
+                   id="proprietorFirstName_1_id" 
+                   name="proprietorFirstName_1" 
+                   maxlength="100" 
+                   aria-required="false" 
+                   tabindex="0">
+          </td>
+        </tr>
+
+        <!-- FIELD 2: Middle Name -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorMiddleName_1_id">Middle Name</label>
+            <input type="text" 
+                   id="proprietorMiddleName_1_id" 
+                   name="proprietorMiddleName_1" 
+                   maxlength="100" 
+                   aria-required="false" 
+                   tabindex="0">
+          </td>
+        </tr>
+
+        <!-- FIELD 3: Last Name -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorLastName_1_id">Last Name</label>
+            <input type="text" 
+                   id="proprietorLastName_1_id" 
+                   name="proprietorLastName_1" 
+                   maxlength="100" 
+                   aria-required="false" 
+                   tabindex="0">
+          </td>
+        </tr>
+
+        <!-- FIELD 4: Suffix (Combobox dropdown) -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorSuffix_1_id">Suffix</label>
+            <input type="text" 
+                   id="proprietorSuffix_1_id" 
+                   role="combobox" 
+                   aria-required="true" 
+                   tabindex="0" 
+                   value="Choose one">
+            <input type="hidden" name="proprietorSuffix_1" value="NONE">
+          </td>
+        </tr>
+
+        <!-- FIELD 5: Title -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorTitle_1_id">Title</label>
+            <input type="text" 
+                   id="proprietorTitle_1_id" 
+                   name="proprietorTitle_1" 
+                   maxlength="100" 
+                   aria-required="false" 
+                   tabindex="0">
+          </td>
+        </tr>
+
+        <!-- FIELD 6: Email -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorEmail_1_id">Email</label>
+            <input type="text" 
+                   id="proprietorEmail_1_id" 
+                   name="proprietorEmail_1" 
+                   maxlength="100" 
+                   aria-required="false" 
+                   tabindex="0">
+          </td>
+        </tr>
+
+        <!-- FIELD 7: Telephone Number (COMPLEX - 4 sub-fields) -->
+        <tr>
+          <td colspan="1" align="left">
+            <label for="proprietorTelephone_1">Telephone Number</label>
+            <table style="width:100%;">
+              <!-- Sub-field labels -->
+              <tr>
+                <td style="width:230px;">
+                  <label id="questionDesc_proprietorTelephone_1_ccode">Country Code</label>
+                </td>
+                <td style="width:100px;">
+                  <label id="questionDesc_proprietorTelephone_1_acode">Area Code</label>
+                </td>
+                <td style="width:250px;">
+                  <label id="questionDesc_proprietorTelephone_1_pcode">Phone Num</label>
+                </td>
+                <td style="width:150px;">
+                  <label id="questionDesc_proprietorTelephone_1_ecode">Ext</label>
+                </td>
+              </tr>
+
+              <!-- Sub-field inputs -->
+              <tr>
+                <td style="width:230px;">
+                  <!-- Country Code: Combobox -->
+                  <input type="text" 
+                         id="proprietorTelephone_1_ccode_id" 
+                         role="combobox" 
+                         aria-required="true" 
+                         tabindex="0" 
+                         value="Choose one" 
+                         style="width: 250px;">
+                  <input type="hidden" name="proprietorTelephone_1_ccode" value="NONE">
+                </td>
+                <td style="width:100px;">
+                  <!-- Area Code: Text input -->
+                  <input type="text" 
+                         id="proprietorTelephone_1_acode_id" 
+                         name="proprietorTelephone_1_acode" 
+                         maxlength="0" 
+                         aria-required="false" 
+                         tabindex="0">
+                </td>
+                <td style="width:250px;">
+                  <!-- Phone Number: Text input -->
+                  <input type="text" 
+                         id="proprietorTelephone_1_pcode_id" 
+                         name="proprietorTelephone_1_pcode" 
+                         maxlength="0" 
+                         aria-required="false" 
+                         tabindex="0">
+                </td>
+                <td style="width:150px;">
+                  <!-- Extension: Text input -->
+                  <input type="text" 
+                         id="proprietorTelephone_1_ecode_id" 
+                         name="proprietorTelephone_1_ecode" 
+                         maxlength="0" 
+                         aria-required="false" 
+                         tabindex="0">
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ADDITIONAL CONTACTS WOULD BE ADDED HERE DYNAMICALLY -->
+  <!-- When "More" button clicked, new TR with ID proprietorTR_2, proprietorTR_3, etc. -->
+</table>
+
+<!-- "MORE" BUTTON (adds another contact entry) -->
+<button id="moreProprietorButton" 
+        title="Add another contact">
+  More
+</button>
+
+<!-- METADATA -->
+<!--
+Form ID: form_bdTitles
+Dynamic Table ID: proprietorTable
+Row Name Attribute: proprietorTR
+Progress: 22%
+
+DYNAMIC REPEATING PATTERN:
+This is the MOST COMPLEX field pattern in the application!
+
+STRUCTURE:
+- Each contact is in a TR with ID pattern: proprietorTR_{N}
+- All TRs have name="proprietorTR" for easy selection
+- "More" button (moreProprietorButton) adds new entries
+- "Remove" button (proprietor_{N}) removes specific entry
+- First entry's Remove button is HIDDEN (visibility: hidden)
+- Subsequent entries' Remove buttons are VISIBLE
+
+FIELDS PER CONTACT (7 main fields, 1 complex):
+1. proprietorFirstName_{N} - Text, maxlength=100
+2. proprietorMiddleName_{N} - Text, maxlength=100
+3. proprietorLastName_{N} - Text, maxlength=100
+4. proprietorSuffix_{N} - Combobox (Jr., Sr., III, etc.), default="Choose one"
+5. proprietorTitle_{N} - Text, maxlength=100 (e.g., "CEO", "Partner")
+6. proprietorEmail_{N} - Text, maxlength=100
+7. proprietorTelephone_{N} - COMPLEX telephone with 4 sub-fields:
+   - _ccode: Country Code (Combobox)
+   - _acode: Area Code (Text)
+   - _pcode: Phone Number (Text)
+   - _ecode: Extension (Text)
+
+RADIO BUTTON FEATURE:
+- name="radioCompanyContact" (shared across all entries)
+- value={N} for entry #{N}
+- Label shows "Company Contact #{N}"
+- Allows selecting ONE contact as the designated company contact
+
+JAVASCRIPT BEHAVIOR:
+- "More" button: Clones template, increments {N}, unhides Remove button, appends to table
+- "Remove" button: Removes that TR from the table
+- First entry cannot be removed (Remove button hidden)
+
+FIELD NAMING PATTERN:
+All fields follow: proprietor{FieldName}_{N}
+All IDs follow: proprietor{FieldName}_{N}_id (except sub-fields)
+
+TELEPHONE SUB-FIELD PATTERN:
+proprietorTelephone_{N}_ccode - Country Code (Combobox)
+proprietorTelephone_{N}_acode - Area Code (maxlength=3)
+proprietorTelephone_{N}_pcode - Phone Number (maxlength=8, placeholder="###-####")
+proprietorTelephone_{N}_ecode - Extension (maxlength=20)
+
+COUNTRY CODE DROPDOWN OPTIONS (Complete List):
+- Choose one (default)
+- United States
+- Canada
+- Mexico
+- [240+ countries listed alphabetically from Afghanistan to Zimbabwe]
+Full international country list for phone number country code selection.
+
+This pattern is used for:
+- Sole Proprietors (list of owners)
+- Partnerships (list of partners)
+- Other business structures (list of key personnel)
+
+The number of contacts is unlimited (user can keep clicking "More").
+
+For RPA automation:
+1. Fill first contact (always present)
+2. If multiple contacts needed, click "More" button
+3. New row appears with incremented IDs
+4. Fill the new row
+5. Repeat as needed
+6. Select one radio button to designate company contact
+7. Use Remove buttons to delete unwanted entries (except first)
+-->
+

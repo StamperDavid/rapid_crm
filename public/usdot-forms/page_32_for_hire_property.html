@@ -1,0 +1,81 @@
+<!-- FMCSA USDOT Application - Page 32: For-Hire Property Carrier Question -->
+<!-- form_B0051P050031, Question Q05003 - Distinguishes For-Hire vs Private carrier -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "property") -->
+<label class="questionDesc" id="questionDesc_Q05003">
+  Will the Applicant receive compensation for the business of transporting the 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of general freight, hazardous materials or household goods. This category includes transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. These exemptions can be found in 49 U.S.C. chapter 135.');">
+    property
+  </span> 
+  belonging to others?
+</label>
+
+<!-- Icon: icon_TransportOtherProperty.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050031S05003_Q05003" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050031S05003_Q05003_id_Y">
+<label for="questionCode_B0051P050031S05003_Q05003_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050031S05003_Q05003" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050031S05003_Q05003_id_N">
+<label for="questionCode_B0051P050031S05003_Q05003_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050031
+Branch: B0051
+Page: P050031
+Section: S05003
+Question: Q05003
+Field Name: questionCode_B0051P050031S05003_Q05003
+Field Type: Radio button (Yes/No)
+Icon: icon_TransportOtherProperty.png
+Progress: 27%
+
+CRITICAL DISTINCTION - FOR-HIRE vs PRIVATE:
+
+This question determines the carrier classification:
+
+YES = FOR-HIRE CARRIER
+- Receives compensation for transporting property belonging to others
+- Transports goods for paying customers
+- Subject to For-Hire Motor Carrier regulations
+- Requires Operating Authority (MC Number) in addition to USDOT Number
+- More stringent insurance requirements
+
+NO = PRIVATE CARRIER
+- Transports own property/goods
+- No compensation from others for transportation
+- Does NOT require Operating Authority (MC Number)
+- Only needs USDOT Number for interstate operation
+- Different insurance requirements
+
+TOOLTIP (same as previous "property" tooltip):
+"Transportation of general freight, hazardous materials or household goods. This category includes 
+transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. 
+These exemptions can be found in 49 U.S.C. chapter 135."
+
+BRANCHING LOGIC:
+- If "Yes" (For-Hire): Leads to For-Hire specific questions (cargo types, hazmat, etc.)
+- If "No" (Private): Leads to Private carrier questions (own goods description)
+
+This is one of the MOST IMPORTANT questions in the application as it determines:
+1. Whether MC Number (Operating Authority) is required
+2. Insurance requirements
+3. Safety regulations that apply
+4. Future compliance obligations
+
+For RPA training, this must be answered correctly based on business model.
+-->
+

@@ -1,0 +1,95 @@
+<!-- FMCSA USDOT Application - Page 34: Interstate Commerce Question -->
+<!-- form_B0051P050051, Question Q05006 - Interstate vs Intrastate determination -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "Interstate") -->
+<label class="questionDesc" id="questionDesc_Q05006">
+  Will the Applicant transport Non-Hazardous Materials across state lines, otherwise known as 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of passengers or property: &lt;br/&gt;(1) across State lines, including international boundaries; or &lt;br/&gt;(2) within one State as part of a through movement that originates or terminates in another State or country.');">
+    Interstate
+  </span> 
+  Commerce?
+</label>
+
+<!-- Icon: icon_2Interstate.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050051S05005_Q05006" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050051S05005_Q05006_id_Y">
+<label for="questionCode_B0051P050051S05005_Q05006_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050051S05005_Q05006" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050051S05005_Q05006_id_N">
+<label for="questionCode_B0051P050051S05005_Q05006_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050051
+Branch: B0051
+Page: P050051
+Section: S05005
+Question: Q05006
+Field Name: questionCode_B0051P050051S05005_Q05006
+Field Type: Radio button (Yes/No)
+Icon: icon_2Interstate.png
+Progress: 27%
+
+CRITICAL DISTINCTION - INTERSTATE vs INTRASTATE:
+
+TOOLTIP DEFINITION (with HTML formatting):
+"Transportation of passengers or property:
+(1) across State lines, including international boundaries; or
+(2) within one State as part of a through movement that originates or terminates in another State or country."
+
+INTERSTATE COMMERCE INCLUDES:
+1. Movement across state lines (e.g., California to Nevada)
+2. Movement across international boundaries (e.g., US to Canada/Mexico)
+3. Movement WITHIN one state as part of interstate journey
+   - Example: Pick up in Chicago, drive through Illinois to Indiana
+   - The Illinois portion is still interstate commerce
+
+INTRASTATE COMMERCE:
+- Movement entirely within one state
+- Not part of any interstate movement
+- Subject to STATE regulations only (not federal FMCSA)
+
+REGULATORY IMPLICATIONS:
+
+YES (Interstate):
+- Subject to FMCSA federal regulations
+- Requires USDOT Number
+- Must comply with Federal Motor Carrier Safety Regulations (FMCSRs)
+- Interstate insurance requirements
+- Hours of Service federal rules apply
+
+NO (Intrastate only):
+- May not need USDOT Number (depends on cargo/weight)
+- Subject to state-level regulations
+- State insurance requirements
+- State-specific hours of service rules
+
+Note: Question specifies "Non-Hazardous Materials"
+- Hazardous materials have different rules (always require USDOT number)
+- This question is specifically for non-hazmat interstate determination
+
+This is a CRITICAL question that determines:
+1. Federal vs state jurisdiction
+2. USDOT Number requirement for non-hazmat carriers
+3. Which regulations apply
+4. Insurance requirements
+
+For RPA training, must understand:
+- Even partial interstate travel = Interstate commerce
+- Through movements count as interstate
+- International = Interstate
+-->
+

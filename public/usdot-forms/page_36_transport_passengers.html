@@ -1,0 +1,95 @@
+<!-- FMCSA USDOT Application - Page 36: Transport Passengers Question -->
+<!-- form_B0051P050111, Question Q05030 - Passenger carrier determination -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "Passengers") -->
+<label class="questionDesc" id="questionDesc_Q05030">
+  Will the Applicant transport any 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Passengers (business) - A private motor carrier engaged in the interstate transportation of passengers which is provided in the furtherance of a commercial enterprise and not available to the public at large.  Examples include companies that use buses to transport their employees without collecting a fee from them, or professional entertainers who use buses to transport themselves to or from performances. Commercial businesses that provide passenger transportation to the general public and charge a fee are not private motor carriers of passengers (business). &lt;br/&gt; Passengers (Non-Business) - A private motor carrier of passengers (nonbusiness) means a private motor carrier involved in the interstate transportation of passengers not provided in the furtherance of a commercial enterprise and not available to the public at large.');">
+    Passengers
+  </span>?
+</label>
+
+<!-- Icon: icon_PassengerCarrier.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050111S05011_Q05030" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050111S05011_Q05030_id_Y">
+<label for="questionCode_B0051P050111S05011_Q05030_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050111S05011_Q05030" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050111S05011_Q05030_id_N">
+<label for="questionCode_B0051P050111S05011_Q05030_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050111
+Branch: B0051
+Page: P050111
+Section: S05011
+Question: Q05030
+Field Name: questionCode_B0051P050111S05011_Q05030
+Field Type: Radio button (Yes/No)
+Icon: icon_PassengerCarrier.png
+Progress: 27%
+
+TOOLTIP DEFINITION (with HTML <br/> tags):
+Defines TWO types of passenger carriers:
+
+1. PASSENGERS (BUSINESS) - Private Motor Carrier:
+   - Interstate transportation of passengers
+   - In furtherance of commercial enterprise
+   - NOT available to public at large
+   - Examples:
+     * Companies using buses to transport employees (no fee)
+     * Professional entertainers transporting themselves to performances
+   - NOTE: Commercial businesses charging fees to general public are NOT private carriers
+
+2. PASSENGERS (NON-BUSINESS) - Private Motor Carrier:
+   - Interstate transportation of passengers
+   - NOT in furtherance of commercial enterprise
+   - NOT available to public at large
+   - Examples: Church groups, non-profit organizations transporting members
+
+PASSENGER CARRIER TYPES NOT COVERED BY "PRIVATE":
+- For-Hire passenger carriers (charge fees to public)
+- Charter bus services
+- Public transit
+- Taxi/rideshare services
+These would be classified differently (For-Hire Passenger Carrier)
+
+BRANCHING LOGIC:
+- If "Yes": Leads to passenger carrier questions
+  * Business vs Non-Business
+  * Vehicle types (bus, van, etc.)
+  * Seating capacity
+  * For-Hire passenger authority if applicable
+  
+- If "No": Skips all passenger carrier questions
+
+REGULATORY IMPLICATIONS:
+
+PASSENGER CARRIERS have:
+- Special safety requirements (vehicle inspections)
+- Driver qualification requirements
+- Different insurance minimums
+- Passenger-specific Hours of Service rules
+- Vehicle marking requirements
+
+This tooltip is one of the most detailed, distinguishing between:
+- For-Hire vs Private passenger carriers
+- Business vs Non-Business private passenger carriers
+- Public vs non-public availability
+
+Critical for proper classification and regulatory compliance.
+-->
+

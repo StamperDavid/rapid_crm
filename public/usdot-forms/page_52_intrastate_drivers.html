@@ -1,0 +1,95 @@
+<!-- FMCSA USDOT Application - Page 52: Intrastate Drivers by Radius -->
+<!-- form_B0071P070051, Questions Q07012, Q07003, Q07004 - Intrastate driver HOS categorization -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Drivers</label>
+
+<!-- MAIN QUESTION (with tooltip on "Intrastate") -->
+<label class="questionDesc" id="questionDesc_Q07012">
+  What is the number of drivers who will operate solely as 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'The driver transports passengers or property entirely within one State that is not part of a through movement that originates or terminates in another State or country.');">
+    Intrastate
+  </span> ?
+</label>
+
+<!-- FIELD 1: Within 100 Air-Mile Radius -->
+<table class="questionTable" width="100%">
+  <tr class="questionRow">
+    <td class="questionCell">
+      <label class="forInput" id="questionDesc_Q07003">Within a 100 Air-Mile Radius</label>
+    </td>
+  </tr>
+  <tr class="answerRow">
+    <td class="answerCell">
+      <input type="text" 
+             id="questionCode_B0071P070051S07003_Q07003_id"
+             name="questionCode_B0071P070051S07003_Q07003"
+             maxlength="5" 
+             size="5"
+             aria-required="false"
+             tabindex="0"
+             style="width: 100px;">
+    </td>
+  </tr>
+</table>
+
+<!-- FIELD 2: Beyond 100 Air-Mile Radius -->
+<table class="questionTable" width="100%">
+  <tr class="questionRow">
+    <td class="questionCell">
+      <label class="forInput" id="questionDesc_Q07004">Beyond a 100 Air-Mile Radius</label>
+    </td>
+  </tr>
+  <tr class="answerRow">
+    <td class="answerCell">
+      <input type="text" 
+             id="questionCode_B0071P070051S07003_Q07004_id"
+             name="questionCode_B0071P070051S07003_Q07004"
+             maxlength="5" 
+             size="5"
+             aria-required="false"
+             tabindex="0"
+             style="width: 100px;">
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0071P070051
+Branch: B007 (Drivers)
+Page: P070051
+Section: S07003
+Questions: Q07012 (main), Q07003 (within 100), Q07004 (beyond 100)
+Progress: Still at 36%
+
+PAGE TITLE ROW HIDDEN:
+Notice that the leafPageTitleTR has style="display: none;" - no visible page title.
+
+INTRASTATE DEFINITION (from tooltip):
+"The driver transports passengers or property entirely within one State that is not part of a through movement that originates or terminates in another State or country."
+
+DRIVER CATEGORIZATION COMPLETE (Pages 51-52):
+These two pages comprehensively categorize ALL drivers by:
+1. Interstate vs Intrastate jurisdiction
+2. Operating radius (Within vs Beyond 100 Air-Miles)
+
+Resulting in 4 driver categories:
+- Page 51: Interstate Within 100 Air-Miles
+- Page 51: Interstate Beyond 100 Air-Miles
+- Page 52: Intrastate Within 100 Air-Miles
+- Page 52: Intrastate Beyond 100 Air-Miles
+
+100 AIR-MILE RADIUS SIGNIFICANCE:
+Same regulatory distinction as vehicles - determines HOS/ELD compliance requirements.
+Intrastate drivers may also have STATE-specific HOS rules in addition to federal exemptions.
+
+FIELD DETAILS:
+- Both fields: maxlength="5", size="5", width="100px"
+- aria-required="false" (optional fields)
+- Numeric inputs
+
+TOTAL FIELDS: 2 numeric inputs (optional)
+-->
+

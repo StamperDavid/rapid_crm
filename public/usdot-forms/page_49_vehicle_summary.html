@@ -1,0 +1,213 @@
+<!-- FMCSA USDOT Application - Page 49: Vehicle Summary -->
+<!-- form_B0061P060101 - READ-ONLY SUMMARY PAGE with formatted vehicle table -->
+<!-- Completes Vehicles section (Branch B006) -->
+
+<!-- PAGE TITLE -->
+<div class="pageTitleDiv">
+  <span class="heavy">Vehicle Summary</span>
+</div>
+
+<!-- SUMMARY TABLE (class="summaryPage") -->
+<div class="summaryPage">
+  <table class="summaryTable">
+    
+    <!-- QUESTION 1: Non-CMV Property -->
+    <tr><td colspan="2"><hr class="summaryHR"></td></tr>
+    <tr class="summaryQRow">
+      <td class="summaryQTD" style="width:20px;">Q:</td>
+      <td class="summaryQuestionTD">
+        <a class="summaryQuestionLink" 
+           href="#" 
+           onclick="handleButton('goToPage','URSAPP3783998','B006','1','P06012','1','');" 
+           title="Go back and change this answer.">
+          Non-CMV Property
+        </a>
+      </td>
+    </tr>
+    <tr class="summaryARow">
+      <td class="summaryATD">A:</td>
+      <td class="summaryAnswerTD">0</td>
+    </tr>
+    
+    <!-- QUESTION 2: Vehicle Types - WITH FORMATTED TABLE IN ANSWER! -->
+    <tr><td colspan="2"><hr class="summaryHR"></td></tr>
+    <tr class="summaryQRow">
+      <td class="summaryQTD" style="width:20px;">Q:</td>
+      <td class="summaryQuestionTD">
+        <a class="summaryQuestionLink" 
+           href="#" 
+           onclick="handleButton('goToPage','URSAPP3783998','B006','1','P06002','1','');" 
+           title="Go back and change this answer.">
+          What type of motor vehicle(s) will the Company operate with a Gross Vehicle Weight Rating, 
+          Gross Combination Weight Rating, Gross Vehicle Weight or Gross Combination Weight greater 
+          than or equal to 10,001 pounds?
+        </a>
+      </td>
+    </tr>
+    <tr class="summaryARow">
+      <td class="summaryATD">A:</td>
+      <td class="summaryAnswerTD">
+        <!-- EMBEDDED VEHICLE TABLE (class="affTable") -->
+        <table class="affTable">
+          <!-- HEADER ROW -->
+          <tr>
+            <td class="ctfTitleTD" style="width:200px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td class="ctfTitleTD" style="width:100px;">Owned</td>
+            <td class="ctfTitleTD" style="width:150px;">Term Leased</td>
+            <td class="ctfTitleTD" style="width:150px;">Trip Leased</td>
+            <td class="ctfTitleTD" style="width:250;">Tow / Driveway</td>
+            <td class="ctfTitleTD" style="width:100px;">Serviced</td>
+          </tr>
+          <tr><td colspan="6"><hr></td></tr>
+          
+          <!-- VEHICLE TYPE ROWS -->
+          <tr>
+            <td class="ctfTitleValTD">Straight Truck(s)</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+          </tr>
+          <tr>
+            <td class="ctfTitleValTD">Truck Tractor(s)</td>
+            <td class="ctfTitleValTD">1</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+          </tr>
+          <tr>
+            <td class="ctfTitleValTD">Trailer(s)</td>
+            <td class="ctfTitleValTD">1</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+          </tr>
+          <tr>
+            <td class="ctfTitleValTD">IEP Trailer Chassis Only</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+            <td class="ctfTitleValTD">0</td>
+          </tr>
+          <tr><td colspan="6"><hr></td></tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- QUESTION 3: Canada/Mexico Vehicles -->
+    <tr class="summaryQRow">
+      <td class="summaryQTD" style="width:20px;">Q:</td>
+      <td class="summaryQuestionTD">
+        <a class="summaryQuestionLink" 
+           href="#" 
+           onclick="handleButton('goToPage','URSAPP3783998','B006','1','P06007','1','');" 
+           title="Go back and change this answer.">
+          Please provide the number of vehicles that the Entity will operate in Canada or Mexico with a 
+          Gross Vehicle Weight Rating, Gross Combination Weight Rating, Gross Vehicle Weight or Gross 
+          Combination Weight greater than or equal to 10,001 pounds.
+        </a>
+      </td>
+    </tr>
+    <tr class="summaryARow">
+      <td class="summaryATD">A:</td>
+      <td class="summaryAnswerTD">
+        <table>
+          <tr>
+            <td>Canada:&nbsp;&nbsp;</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>Mexico:&nbsp;&nbsp;</td>
+            <td>0</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- QUESTION 4: Interstate Only -->
+    <tr><td colspan="2"><hr class="summaryHR"></td></tr>
+    <tr class="summaryQRow">
+      <td class="summaryQTD" style="width:20px;">Q:</td>
+      <td class="summaryQuestionTD">
+        <a class="summaryQuestionLink" 
+           href="#" 
+           onclick="handleButton('goToPage','URSAPP3783998','B006','1','P06008','1','');" 
+           title="Go back and change this answer.">
+          Please provide the number of <span>Commercial Motor Vehicles</span> the Applicant will operate 
+          solely in <span>Interstate</span> Commerce.
+        </a>
+      </td>
+    </tr>
+    <tr class="summaryARow">
+      <td class="summaryATD">A:</td>
+      <td class="summaryAnswerTD">1</td>
+    </tr>
+    
+    <!-- QUESTION 5: Intrastate Only -->
+    <tr><td colspan="2"><hr class="summaryHR"></td></tr>
+    <tr class="summaryQRow">
+      <td class="summaryQTD" style="width:20px;">Q:</td>
+      <td class="summaryQuestionTD">
+        <a class="summaryQuestionLink" 
+           href="#" 
+           onclick="handleButton('goToPage','URSAPP3783998','B006','1','P06009','1','');" 
+           title="Go back and change this answer.">
+          Please provide the number of <span>Commercial Motor Vehicles</span> the Applicant will operate 
+          solely in <span>Intrastate</span> Commerce.
+        </a>
+      </td>
+    </tr>
+    <tr class="summaryARow">
+      <td class="summaryATD">A:</td>
+      <td class="summaryAnswerTD">0</td>
+    </tr>
+    
+    <tr><td colspan="2"><hr class="summaryHR"></td></tr>
+    
+  </table>
+</div>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0061P060101
+Branch: B006 (Vehicles)
+Page: P060101
+Progress: Still at 32%
+
+SUMMARY PAGE - COMPLETES VEHICLES SECTION!
+
+NAVIGATION LINKS (goToPage calls):
+1. P06012 - Non-CMV Property (Page 44)
+2. P06002 - Vehicle Types table (Page 45)
+3. P06007 - Canada/Mexico vehicles (Page 46)
+4. P06008 - Interstate only (Page 47)
+5. P06009 - Intrastate only (Page 48)
+
+SUMMARY DATA SHOWN:
+1. Non-CMV Property: 0
+2. Vehicle Types (EMBEDDED TABLE):
+   - Straight Trucks: 0 owned
+   - Truck Tractors: 1 owned
+   - Trailers: 1 owned
+   - IEP: 0
+3. Canada/Mexico: 0 each
+4. Interstate only: 1
+5. Intrastate only: 0
+
+EXAMPLE FLEET FROM SUMMARY:
+This applicant has:
+- 1 Owned Truck Tractor
+- 1 Owned Trailer
+- 1 vehicle operating solely interstate
+- No international operations
+- No intrastate-only operations
+
+NEW PATTERN: EMBEDDED TABLE IN SUMMARY!
+The vehicle type answer displays a formatted table (class="affTable") with all the breakdown data.
+This is more complex than simple text answers in other summary pages.
+
+SECTION COMPLETE: VEHICLES
+This summary completes Branch B006 (Vehicles section).
+-->
+

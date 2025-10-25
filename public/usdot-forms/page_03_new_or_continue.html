@@ -1,0 +1,126 @@
+<!-- FMCSA USDOT Application - Page 3: New Application or Continue Existing -->
+<!-- User chooses between starting new or continuing saved application -->
+
+<!-- PAGE TITLE -->
+<div class="mainRegTopDiv">
+  <div id="landingDiv" class="pageTitleDiv">
+    <span class="heavy">Are you submitting a new application or continuing with an existing application?</span>
+  </div>
+</div>
+
+<!-- FORM CONTENT -->
+<form class="wizardPaneContentDivForm" id="form_welcome" enctype="multipart/form-data">
+  
+  <table width="100%">
+    <tr>
+      <td align="center">
+        <table class="forInput" style="margin-bottom:0em; width:100%;">
+          <tr>
+            <!-- NEW APPLICATION OPTION -->
+            <td colspan="1" align="left">
+              <label class="selectableImage dijitFocusedLabel" id="applicantNEWImgLabel" for="applicantNEW">
+                <img style="max-width:100%" 
+                     id="applicantNEWImg" 
+                     src="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/img/NewApplicant.png" 
+                     alt="New Applicant Img">
+              </label>
+              <br>
+            </td>
+
+            <!-- CONTINUE SAVED APPLICATION OPTION -->
+            <td colspan="1" align="left">
+              <label class="selectableImage" id="applicantOLDImgLabel" for="applicantOLD">
+                <img style="max-width:100%" 
+                     id="applicantOLDImg" 
+                     src="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/img/ReturningApplicant.png" 
+                     alt="Returning Applicant Img">
+              </label>
+              <br>
+            </td>
+          </tr>
+          
+          <tr>
+            <!-- NEW APPLICATION RADIO BUTTON -->
+            <td align="left" colspan="1">
+              <input name="landingUserType" 
+                     type="radio" 
+                     role="radio" 
+                     aria-checked="false" 
+                     tabindex="0" 
+                     id="applicantNEW" 
+                     value="NEW">
+              <label for="applicantNEW" class="preRegIconChoiceLabel dijitFocusedLabel">
+                New Application
+              </label>
+            </td>
+
+            <!-- CONTINUE SAVED APPLICATION RADIO BUTTON -->
+            <td align="left" colspan="1">
+              <input name="landingUserType" 
+                     type="radio" 
+                     role="radio" 
+                     aria-checked="false" 
+                     tabindex="0" 
+                     id="applicantOLD" 
+                     value="OLD">
+              <label for="applicantOLD" class="preRegIconChoiceLabel">
+                Continue Saved Application
+              </label>
+            </td>
+          </tr>
+          
+          <!-- TERMS & CONDITIONS ACKNOWLEDGMENT -->
+          <tr>
+            <td align="left" colspan="1">
+              <p style="font-style: italic;">
+                By clicking NEXT, I understand and have reviewed <br>
+                <a href="https://www.fmcsa.dot.gov/registration/fmcsa-terms-conditions-identity-verification" 
+                   target="fmcsaterms" 
+                   rel="noopener noreferrer">
+                  FMCSA Terms &amp; Conditions
+                </a>.
+              </p>
+            </td>
+            <td align="left" colspan="1"></td>
+          </tr>
+          
+          <!-- RECAPTCHA PLACEHOLDER -->
+          <tr>
+            <td>
+              <div id="captchaDiv2"></div><br>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</form>
+
+<!-- FORM METADATA -->
+<!--
+Form ID: form_welcome
+Field Name: landingUserType
+Field Type: Radio button
+Options:
+  - NEW (New Application)
+  - OLD (Continue Saved Application)
+Required: Yes (must select one to enable NEXT button)
+Default: None selected
+Progress: 5% complete
+
+Visual Elements:
+- Two large images representing each option
+- Radio buttons with labels
+- Terms & Conditions link (opens in new tab)
+- reCAPTCHA (may be conditional)
+
+Navigation State:
+- NEXT button: Disabled until selection made
+- PREVIOUS button: Disabled (first real page)
+- SAVE button: Disabled
+- MENU button: Available
+- LOGOUT button: Available
+-->
+

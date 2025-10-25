@@ -1,0 +1,521 @@
+<!-- FMCSA USDOT Application - Page 14: Applicant Contact (ACTUAL FORM FIELDS) -->
+<!-- form_applicationContact, Branch B0031, Page P030021 -->
+<!-- THIS IS THE FIRST PAGE WITH ACTUAL DATA ENTRY FIELDS -->
+
+<!-- PAGE TITLE -->
+<div class="mainRegTopDiv">
+  <div id="landingDiv" class="pageTitleDiv">
+    <span class="heavy">Applicant Contact</span>
+  </div>
+</div>
+
+<!-- FORM FIELDS -->
+<form class="wizardPaneContentDivForm" 
+      id="form_applicationContact" 
+      enctype="multipart/form-data">
+
+  <table class="mainRegTable">
+    <tr>
+      <td align="left">
+        <table class="forInput" style="margin-bottom:0em;">
+
+          <!-- 1. Application Contact Type (REQUIRED DROPDOWN) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03001_APP_CONTACT_TYPE" id="Q03001_APP_CONTACT_TYPE_label">
+                Application Contact Type
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text" 
+                     id="Q03001_APP_CONTACT_TYPE" 
+                     name="Q03001_APP_CONTACT_TYPE"
+                     aria-required="true"
+                     role="combobox"
+                     aria-labelledby="Q03001_APP_CONTACT_TYPE_label">
+              <input type="hidden" name="Q03001_APP_CONTACT_TYPE" value="NONE">
+            </td>
+          </tr>
+
+          <!-- 2. First Name (REQUIRED TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03002_APP_CONT_FIRST_NAME">
+                Application Contact First Name
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03002_APP_CONT_FIRST_NAME"
+                     name="Q03002_APP_CONT_FIRST_NAME"
+                     maxlength="64"
+                     aria-required="true">
+            </td>
+          </tr>
+
+          <!-- 3. Middle Name (OPTIONAL TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03022_APP_CONT_MIDDLE_NAME">
+                Application Contact Middle Name
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03022_APP_CONT_MIDDLE_NAME"
+                     name="Q03022_APP_CONT_MIDDLE_NAME"
+                     maxlength="64"
+                     aria-required="false">
+            </td>
+          </tr>
+
+          <!-- 4. Last Name (REQUIRED TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03003_APP_CONT_LAST_NAME">
+                Application Contact Last Name
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03003_APP_CONT_LAST_NAME"
+                     name="Q03003_APP_CONT_LAST_NAME"
+                     maxlength="128"
+                     aria-required="true">
+            </td>
+          </tr>
+
+          <!-- 5. Suffix (REQUIRED DROPDOWN) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03023_APP_CONT_SUFFIX" id="Q03023_APP_CONT_SUFFIX_label">
+                Application Contact Suffix
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03023_APP_CONT_SUFFIX"
+                     name="Q03023_APP_CONT_SUFFIX"
+                     aria-required="true"
+                     role="combobox">
+              <input type="hidden" name="Q03023_APP_CONT_SUFFIX" value="NONE">
+            </td>
+          </tr>
+
+          <!-- 6. Title (OPTIONAL TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03021_APP_CONT_TITLE">
+                Application Contact Title
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03021_APP_CONT_TITLE"
+                     name="Q03021_APP_CONT_TITLE"
+                     maxlength="64"
+                     aria-required="false">
+            </td>
+          </tr>
+
+          <!-- 7. Country (REQUIRED DROPDOWN, defaults to US) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03011_APP_CONT_COUNTRY" id="Q03011_APP_CONT_COUNTRY_label">
+                Application Contact Country
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03011_APP_CONT_COUNTRY"
+                     name="Q03011_APP_CONT_COUNTRY"
+                     aria-required="true"
+                     role="combobox">
+              <input type="hidden" name="Q03011_APP_CONT_COUNTRY" value="US">
+            </td>
+          </tr>
+
+          <!-- 8. Street Address Line 1 (REQUIRED TEXT) -->
+          <tr>
+            <td>
+              <div id="div_Q03004_APP_CONT_ADDR1">
+                <label class="forInput" for="Q03004_APP_CONT_ADDR1">
+                  Application Contact Street Address Line 1
+                </label>
+                <input type="text"
+                       id="Q03004_APP_CONT_ADDR1"
+                       name="Q03004_APP_CONT_ADDR1"
+                       maxlength="38"
+                       aria-required="true">
+              </div>
+
+              <!-- 9. Street Address Line 2 (OPTIONAL TEXT) -->
+              <div id="div_Q03005_APP_CONT_ADDR2">
+                <label class="forInput" for="Q03005_APP_CONT_ADDR2">
+                  Application Contact Street Address Line 2
+                </label>
+                <input type="text"
+                       id="Q03005_APP_CONT_ADDR2"
+                       name="Q03005_APP_CONT_ADDR2"
+                       maxlength="38"
+                       aria-required="false">
+              </div>
+
+              <!-- 10. Street Address Line 3 (OPTIONAL, HIDDEN by default) -->
+              <div id="div_Q03006_APP_CONT_ADDR3" style="display: none;">
+                <label class="forInput" for="Q03006_APP_CONT_ADDR3">
+                  Application Contact Street Address Line 3
+                </label>
+                <input type="text"
+                       id="Q03006_APP_CONT_ADDR3"
+                       name="Q03006_APP_CONT_ADDR3"
+                       maxlength="256"
+                       aria-required="false">
+              </div>
+
+              <!-- 11. Street Address Line 4 (OPTIONAL, HIDDEN by default) -->
+              <div id="div_Q03007_APP_CONT_ADDR4" style="display: none;">
+                <label class="forInput" for="Q03007_APP_CONT_ADDR4">
+                  Application Contact Street Address Line 4
+                </label>
+                <input type="text"
+                       id="Q03007_APP_CONT_ADDR4"
+                       name="Q03007_APP_CONT_ADDR4"
+                       maxlength="256"
+                       aria-required="false">
+              </div>
+            </td>
+          </tr>
+
+          <!-- 12. City (REQUIRED TEXT, auto-populated from postal code) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03008_APP_CONT_CITY">
+                Application Contact City
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left">
+              <input type="text"
+                     id="Q03008_APP_CONT_CITY"
+                     name="Q03008_APP_CONT_CITY"
+                     maxlength="25"
+                     aria-required="true"
+                     placeholder="May automatically get set from postal code below">
+            </td>
+          </tr>
+
+          <!-- 13. State/Province (REQUIRED DROPDOWN or TEXT based on country) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03009_APP_CONT_STATE" id="Q03009_APP_CONT_STATE_label">
+                Application Contact State/Province
+              </label>
+            </td>
+          </tr>
+          <tr id="Q03009_APP_CONT_STATE_control" style="display: block;">
+            <td align="left">
+              <input type="text"
+                     id="Q03009_APP_CONT_STATE"
+                     name="Q03009_APP_CONT_STATE"
+                     aria-required="true"
+                     role="combobox">
+              <input type="hidden" name="Q03009_APP_CONT_STATE" value="NONE">
+            </td>
+          </tr>
+          <tr id="Q03009_APP_CONT_STATE_TXT_control" style="display: none;">
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03009_APP_CONT_STATE_TXT"
+                     name="Q03009_APP_CONT_STATE_TXT"
+                     maxlength="256"
+                     aria-required="false"
+                     disabled>
+            </td>
+          </tr>
+
+          <!-- 14. Postal Code (REQUIRED TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03010_APP_CONT_POSTAL_CODE">
+                Application Contact Postal Code
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03010_APP_CONT_POSTAL_CODE"
+                     name="Q03010_APP_CONT_POSTAL_CODE"
+                     maxlength="10"
+                     aria-required="true">
+            </td>
+          </tr>
+
+          <!-- 15. Colonia (HIDDEN, for Mexico only) -->
+          <tr id="Q03020_APP_CONT_COLONIA_TR1" style="display: none;">
+            <td colspan="2" align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03020_APP_CONT_COLONIA">Colonia</label>
+            </td>
+          </tr>
+          <tr id="Q03020_APP_CONT_COLONIA_TR2" style="display: none;">
+            <td colspan="2" align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03020_APP_CONT_COLONIA"
+                     name="Q03020_APP_CONT_COLONIA"
+                     maxlength="128"
+                     aria-required="true"
+                     disabled>
+            </td>
+          </tr>
+
+          <!-- 16. Telephone Number (REQUIRED - 4 parts: Country Code, Area Code, Phone, Ext) -->
+          <tr id="placeholder_Q03012_APP_CONT_TEL_NUM">
+            <td colspan="2">
+              <table id="table_Q03012_APP_CONT_TEL_NUM" class="mainRegTable">
+                <tr class="questionRow">
+                  <td class="questionCell">
+                    <label class="forInput" id="questionDesc_Q03012_APP_CONT_TEL_NUM">
+                      Application Contact Telephone Number
+                    </label>
+                  </td>
+                </tr>
+                <tr class="answersRow">
+                  <td class="answerPhoneCell" style="width:230px;">
+                    <label class="questionPhoneDesc">Country Code</label>
+                    <input type="text"
+                           id="Q03012_APP_CONT_TEL_NUM_ccode_id"
+                           role="combobox"
+                           aria-required="true"
+                           value="Choose one">
+                    <input type="hidden" name="Q03012_APP_CONT_TEL_NUM_ccode" value="NONE">
+                  </td>
+                  <td class="answerPhoneCell" style="width:100px;">
+                    <label class="questionPhoneDesc">Area Code</label>
+                    <input type="text"
+                           id="Q03012_APP_CONT_TEL_NUM_acode_id"
+                           name="Q03012_APP_CONT_TEL_NUM_acode"
+                           aria-required="false">
+                  </td>
+                  <td class="answerPhoneWideCell" style="width:250px;">
+                    <label class="questionPhoneDesc">Phone Num</label>
+                    <input type="text"
+                           id="Q03012_APP_CONT_TEL_NUM_pcode_id"
+                           name="Q03012_APP_CONT_TEL_NUM_pcode"
+                           aria-required="false">
+                  </td>
+                  <td class="answerPhoneCell" style="width:150px;">
+                    <label class="questionPhoneDesc">Ext</label>
+                    <input type="text"
+                           id="Q03012_APP_CONT_TEL_NUM_ecode_id"
+                           name="Q03012_APP_CONT_TEL_NUM_ecode"
+                           aria-required="false">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 17. Fax Number (OPTIONAL - 3 parts: Country Code, Area Code, Phone) -->
+          <tr id="placeholder_Q03013_APP_CONT_FAX_NUM">
+            <td colspan="2">
+              <table id="table_Q03013_APP_CONT_FAX_NUM" class="mainRegTable">
+                <tr class="questionRow">
+                  <td class="questionCell">
+                    <label class="forInput" id="questionDesc_Q03013_APP_CONT_FAX_NUM">
+                      Application Contact Fax Number
+                    </label>
+                  </td>
+                </tr>
+                <tr class="answersRow">
+                  <td class="answerPhoneCell" style="width:230px;">
+                    <label class="questionPhoneDesc">Country Code</label>
+                    <input type="text"
+                           id="Q03013_APP_CONT_FAX_NUM_ccode_id"
+                           role="combobox"
+                           aria-required="true"
+                           value="Choose one">
+                    <input type="hidden" name="Q03013_APP_CONT_FAX_NUM_ccode" value="NONE">
+                  </td>
+                  <td class="answerPhoneCell" style="width:100px;">
+                    <label class="questionPhoneDesc">Area Code</label>
+                    <input type="text"
+                           id="Q03013_APP_CONT_FAX_NUM_acode_id"
+                           name="Q03013_APP_CONT_FAX_NUM_acode"
+                           aria-required="false">
+                  </td>
+                  <td class="answerPhoneWideCell" style="width:250px;">
+                    <label class="questionPhoneDesc">Phone Num</label>
+                    <input type="text"
+                           id="Q03013_APP_CONT_FAX_NUM_pcode_id"
+                           name="Q03013_APP_CONT_FAX_NUM_pcode"
+                           aria-required="false">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 18. Cell Phone Number (OPTIONAL - 3 parts: Country Code, Area Code, Phone) -->
+          <tr id="placeholder_Q03014_APP_CONT_CELL_NUM">
+            <td colspan="2">
+              <table id="table_Q03014_APP_CONT_CELL_NUM" class="mainRegTable">
+                <tr class="questionRow">
+                  <td class="questionCell">
+                    <label class="forInput" id="questionDesc_Q03014_APP_CONT_CELL_NUM">
+                      Application Contact Cell Phone Number
+                    </label>
+                  </td>
+                </tr>
+                <tr class="answersRow">
+                  <td class="answerPhoneCell" style="width:230px;">
+                    <label class="questionPhoneDesc">Country Code</label>
+                    <input type="text"
+                           id="Q03014_APP_CONT_CELL_NUM_ccode_id"
+                           role="combobox"
+                           aria-required="true"
+                           value="Choose one">
+                    <input type="hidden" name="Q03014_APP_CONT_CELL_NUM_ccode" value="NONE">
+                  </td>
+                  <td class="answerPhoneCell" style="width:100px;">
+                    <label class="questionPhoneDesc">Area Code</label>
+                    <input type="text"
+                           id="Q03014_APP_CONT_CELL_NUM_acode_id"
+                           name="Q03014_APP_CONT_CELL_NUM_acode"
+                           aria-required="false">
+                  </td>
+                  <td class="answerPhoneWideCell" style="width:250px;">
+                    <label class="questionPhoneDesc">Phone Num</label>
+                    <input type="text"
+                           id="Q03014_APP_CONT_CELL_NUM_pcode_id"
+                           name="Q03014_APP_CONT_CELL_NUM_pcode"
+                           aria-required="false">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 19. Email Address (OPTIONAL TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03015_APP_CONT_EMAIL">
+                Application Contact Email Address
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03015_APP_CONT_EMAIL"
+                     name="Q03015_APP_CONT_EMAIL"
+                     maxlength="256"
+                     aria-required="false">
+            </td>
+          </tr>
+
+          <!-- 20. Confirm Email Address (OPTIONAL TEXT) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03016_APP_CONT_EMAIL_CONFIRM">
+                Confirm Email Address
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class="bottomTDInVerticalQA">
+              <input type="text"
+                     id="Q03016_APP_CONT_EMAIL_CONFIRM"
+                     name="Q03016_APP_CONT_EMAIL_CONFIRM"
+                     maxlength="256"
+                     aria-required="false">
+            </td>
+          </tr>
+
+          <!-- 21. Preferred Contact Method (REQUIRED DROPDOWN) -->
+          <tr>
+            <td align="left" class="topTDInVerticalQA">
+              <label class="forInput" for="Q03018_APP_CONT_PREF_METHOD" id="Q03018_APP_CONT_PREF_METHOD_label">
+                Application Contact Preferred Contact Method
+              </label>
+            </td>
+          </tr>
+          <tr>
+            <td align="left">
+              <input type="text"
+                     id="Q03018_APP_CONT_PREF_METHOD"
+                     name="Q03018_APP_CONT_PREF_METHOD"
+                     aria-required="true"
+                     role="combobox">
+              <input type="hidden" name="Q03018_APP_CONT_PREF_METHOD" value="NONE">
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</form>
+
+<!-- FORM METADATA -->
+<!--
+Form ID: form_applicationContact
+Branch Code: B0031
+Page Code: P030021
+Progress: 18%
+
+FIELDS (21 total):
+1. Q03001_APP_CONTACT_TYPE - Contact Type (dropdown, required)
+2. Q03002_APP_CONT_FIRST_NAME - First Name (text, maxlength=64, required)
+3. Q03022_APP_CONT_MIDDLE_NAME - Middle Name (text, maxlength=64, optional)
+4. Q03003_APP_CONT_LAST_NAME - Last Name (text, maxlength=128, required)
+5. Q03023_APP_CONT_SUFFIX - Suffix (dropdown, required)
+6. Q03021_APP_CONT_TITLE - Title (text, maxlength=64, optional)
+7. Q03011_APP_CONT_COUNTRY - Country (dropdown, required, default=US)
+8. Q03004_APP_CONT_ADDR1 - Address Line 1 (text, maxlength=38, required)
+9. Q03005_APP_CONT_ADDR2 - Address Line 2 (text, maxlength=38, optional)
+10. Q03006_APP_CONT_ADDR3 - Address Line 3 (text, maxlength=256, optional, hidden)
+11. Q03007_APP_CONT_ADDR4 - Address Line 4 (text, maxlength=256, optional, hidden)
+12. Q03008_APP_CONT_CITY - City (text, maxlength=25, required, auto-fill from zip)
+13. Q03009_APP_CONT_STATE - State (dropdown, required)
+14. Q03009_APP_CONT_STATE_TXT - State text (text, maxlength=256, optional, hidden, for non-US)
+15. Q03010_APP_CONT_POSTAL_CODE - Postal Code (text, maxlength=10, required)
+16. Q03020_APP_CONT_COLONIA - Colonia (text, maxlength=128, required, hidden, Mexico only)
+17-20. Q03012_APP_CONT_TEL_NUM - Telephone (4 parts: ccode, acode, pcode, ecode)
+21-23. Q03013_APP_CONT_FAX_NUM - Fax (3 parts: ccode, acode, pcode)
+24-26. Q03014_APP_CONT_CELL_NUM - Cell (3 parts: ccode, acode, pcode)
+27. Q03015_APP_CONT_EMAIL - Email (text, maxlength=256, optional)
+28. Q03016_APP_CONT_EMAIL_CONFIRM - Confirm Email (text, maxlength=256, optional)
+29. Q03018_APP_CONT_PREF_METHOD - Preferred Contact Method (dropdown, required)
+
+Navigation State:
+- NEXT button: DISABLED until required fields filled
+- PREVIOUS button: ENABLED
+- SAVE button: ENABLED
+- UPLOAD FILE button: ENABLED
+
+Conditional Display:
+- Address Lines 3-4: Hidden unless needed for international
+- State text field: Shows only for non-US countries
+- Colonia: Shows only for Mexico
+
+Phone Number Format:
+- All phone fields split into: Country Code (dropdown) + Area Code + Number + Ext (phone only)
+-->
+

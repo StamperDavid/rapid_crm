@@ -83,8 +83,19 @@ export class AlexTrainingService {
   public async generateTrainingScenarios(): Promise<{ success: boolean; count: number; session: TrainingSession }> {
     if (!this.db) throw new Error('Database not initialized');
 
-    console.log('🎯 Generating training scenarios...');
+    console.log('🎯 Generating 918 transportation compliance training scenarios...');
+    console.log('🗑️  Deleting old scenarios...');
+    
+    // Delete all existing scenarios
+    this.db.prepare('DELETE FROM alex_training_scenarios').run();
+    this.db.prepare('DELETE FROM alex_test_results').run();
+    this.db.prepare('DELETE FROM alex_training_sessions').run();
+    
+    console.log('✅ Old scenarios deleted');
+    console.log('🎯 Generating new 918 scenarios...');
+    
     const scenarios = await scenarioGenerator.generateAllScenarios();
+    console.log(`📊 Generated ${scenarios.length} scenarios`);
     
     // Store scenarios in database
     const insertScenario = this.db.prepare(`
@@ -474,6 +485,7 @@ export class AlexTrainingService {
 }
 
 export const alexTrainingService = AlexTrainingService.getInstance();
+
 
 
 

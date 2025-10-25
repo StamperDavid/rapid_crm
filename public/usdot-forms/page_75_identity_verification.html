@@ -1,0 +1,220 @@
+<!-- FMCSA USDOT Application - Page 75: Identity Verification (IDEMIA) -->
+<!-- form_welcome - QR CODE IDENTITY VERIFICATION PAGE -->
+<!-- NEW PAGE TYPE: Biometric identity verification with QR code -->
+<!-- PROGRESS: 99% - ALMOST COMPLETE! -->
+
+<!-- PAGE TITLE -->
+<div class="pageTitleDiv">
+  <span class="heavy">IDENTITY VERIFICATION</span>
+</div>
+
+<!-- MAIN CONTENT TABLE -->
+<table width="100%">
+  <tr>
+    <td align="center" colspan="2">
+      <p>
+        To strengthen the security of your information within our systems, the Federal Motor Carrier Safety 
+        Administration (FMCSA) has implemented a new identity verification process. This is designed to protect 
+        your data and ensure secure access to your company information.
+      </p>
+      <br>
+    </td>
+  </tr>
+
+  <tr>
+    <!-- LEFT COLUMN: Instructions -->
+    <td style="vertical-align:top;">
+      <p>
+        <u><span style="color:red; font-weight: bold;">Action Required:</span></u> 
+        To continue with your application, you must complete the identity verification process.
+        <br><br>
+        <u><span style="color:red; font-weight: bold;">Please Note:</span></u> 
+        If you have already completed identity verification using your Login.gov credentials to register an 
+        application in URS, you are not required to complete verification again. Please click the 
+        <span style="font-weight: bold;">'Click Here to Proceed'</span> button below to continue your current 
+        application or another application.
+        <br><br>
+        Please follow these steps:
+        <br>
+      </p>
+      <br>
+      
+      <!-- INSTRUCTIONS LIST -->
+      <dl>
+        <!-- Step 1: Scan QR Code -->
+        <dt><span style="font-weight: bold;">1. Scan the QR Code on Screen</span></dt>
+        <dd style="padding-left:20px;">
+          Use your mobile device's camera to scan the QR code displayed on your screen.
+        </dd>
+        <br>
+        
+        <!-- Step 2: Follow Instructions OR Visit Enrollment Center -->
+        <dt><span style="font-weight: bold;">2. Follow the On-Screen Instructions:</span></dt>
+        <dd style="padding-left:20px;">
+          Once scanned, follow the prompts to securely verify your identity.
+          <br>
+          OR
+          <br>
+          Visit an Enrollment Center to complete the identity verification process.
+          <br><br>
+          <a href="https://www.fmcsa.dot.gov/registration/identity-verification-enrollment-center-locations" 
+             target="fmcsaidemiaenroll" 
+             rel="noopener noreferrer">
+            Click Here
+          </a> 
+          to view a complete list of Enrollment Centers.
+        </dd>
+        <br>
+        
+        <!-- Step 3: Confirm Verification -->
+        <dt><span style="font-weight: bold;">3. Confirm Verification</span></dt>
+        <dd style="padding-left:20px;">
+          Once your identity has been verified, please 
+          <span class="idemia">
+            <a href="#" 
+               onclick="handleButton('idemia');" 
+               style="text-decoration:none;color:white;font-size:large;">
+              Click Here to Proceed
+            </a>
+          </span>
+        </dd>
+      </dl>
+      <br>
+      
+      <!-- Contact Info -->
+      <p>
+        If you encounter issues with the Identity Verification process, please call the Contact Center 
+        at (1-800-832-5660) for assistance.
+      </p>
+      <br>
+      
+      <!-- Thank You -->
+      <p>
+        Thank you for your cooperation in helping us maintain the highest standards of security and 
+        protection of your data.
+      </p>
+    </td>
+
+    <!-- RIGHT COLUMN: QR Code -->
+    <td style="vertical-align:middle;">
+      <table>
+        <tr>
+          <td>
+            <!-- QR CODE (Base64 embedded image, 250×250px) -->
+            <div id="qrcode">
+              <img width="250" 
+                   height="250" 
+                   src="data:image/jpg;base64, iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0AQAAAADjreInAAADoElEQVR4Xu2aMXIjIRREUSlQ6CPMUeZoo6PpKHMEhQpUZuluwGNs1xbrWkHQnfC3+e8r+VB/8Ib4K91D6/TJfOv0yXzr9Ml86/TJfOv0yXzr9Ml86/TJfOv0yXzr9Mk8l2coWmK8vuXNZ9jie1gfyT4XtyZezJufh9+EhCWVenvn9h6KC10F4Qegm3nIPJcJ+HvdRuaKTj+n/VOM6n+ENyTgrDA0b34+Xv2/PkLcz7XpA8ITMs2bn5qHeej0oFK6yqtr3vxkPFdub7q0K5Ty4UZOJfwBuOYh81zG80WZv6nTvwmLzJufhv+inLkhfgQ2/Z1TdSPzrSOZfymf+7+09wmXNnwMzSi1KOStnkZpDNjmzU/DRz4Pp0xsZxHSp+Dh/YK5oR4F8znb/Eg+9b94QoGKe+DQkRPyn0J0Vmop8+Yn4BGdyqUdNWmo6YP6X6NIhr67v82bH8szq/Q/IUwa3JPL+UP6rv/Nmx/F4/7OPY2bOnc6Hi0yUEtxQNEBgcxzMT+cR08H9j+V+/+j0yPej1UKfGj737z5wXwOMTQD2s9yUqlFR2HVVIKjkKuaNz8Fv0V67HBsY5TOpwJfhU9d8CqVXfPmp+GhNbLp0d5RQzMu7YMLCKdCRwEyz8X8WD7rwTIHbXLLD4SL8u41NF9YyHyjTe5/53F/87/3QNdQ27sMzQtT9arx6SnOPBfzw3n1NPc1acQdIbfBX4Pe35aaa978NDy0pghQGZq5z0wOHRqaOYpoKjFvfg4+ajxmlYD3i5g6PZzV9KX/pRJezJufh0d7R0zK0k3bbPpcVQMKqh4SzBfC/EC+ft4pMwLiTX3o/zKK/Dx/mDc/igeUwwAo3d9LrfrX+cO8+Sl45Jf23nUU4C7ofz5l8AcQXrhjnov5kjmMP7R34KcgS+n9jf2fH+hS1YBZ27z5mXgsj6DxWFBSnj8E0ZXkRvPmuYzmD6pHISz45/tH0yvMCVnmS1RkfgCfJ+Wk5cmjcEOMo6Bw0VFgVSTkUubNT8IDipqUk8nPuz3xOAq5qk6Fcs2bn4zXR1/JjHhKrl96cD8plzJvfj6+QtwvR+Ga3DUN2Cz1df4wb34SfkvGLbX3nhz80UNHAS6US4Wf+9+8+dfz2i39v5ZR5DB/8AfAQ/gB7JuHzG9cx/FFzBRE8aZGqStC3N8Iw5f+LzJv/vX8P8t86/TJfOv0yXzr9Ml86/TJfOv0yXzr9Ml86/TJfOv0yXzr9OnX/B+G9ksZOfrqyAAAAABJRU5ErkJggg==">
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Most smartphones, tablets, and modern browsers are supported. 
+            <a href="https://www.fmcsa.dot.gov/faq/what-are-minimum-user-technical-requirements-id-verification-process" 
+               target="fmcsaidemiatech" 
+               rel="noopener noreferrer">
+              Click Here
+            </a> 
+            for full requirements.
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_welcome
+Progress: 99% (JUMPED from 95% - up 4 percentage points!)
+
+NEW PAGE TYPE: IDENTITY VERIFICATION PAGE
+
+IDEMIA BIOMETRIC SYSTEM:
+- Third-party identity verification provider
+- Mobile-first biometric verification
+- QR code links to IDEMIA mobile app/website
+- Verifies government-issued ID + facial recognition
+
+TWO VERIFICATION OPTIONS:
+
+OPTION 1: MOBILE QR CODE SCAN
+- Scan QR code with smartphone/tablet camera
+- Redirects to IDEMIA verification portal
+- Follow prompts to:
+  1. Photograph government-issued ID (driver's license, passport, etc.)
+  2. Take selfie for facial recognition
+  3. Complete liveness detection (anti-spoofing)
+  4. Verify identity documents
+
+OPTION 2: IN-PERSON ENROLLMENT CENTER
+- Visit physical enrollment center location
+- In-person biometric capture
+- Link: https://www.fmcsa.dot.gov/registration/identity-verification-enrollment-center-locations
+
+QR CODE DETAILS:
+- Element ID: "qrcode"
+- Image: 250×250 pixels
+- Format: Base64-encoded JPG embedded in src attribute
+- data:image/jpg;base64, iVBORw0KGgo...
+- QR code is unique per application/session
+
+BUTTON TO PROCEED:
+- Class: "idemia" (styled button - blue background, white text, rounded corners)
+- onclick: handleButton('idemia')
+- Text: "Click Here to Proceed"
+- Only click AFTER completing verification
+
+TECHNICAL REQUIREMENTS LINK:
+- https://www.fmcsa.dot.gov/faq/what-are-minimum-user-technical-requirements-id-verification-process
+- Target: "fmcsaidemiatech"
+- Opens in new window
+
+SKIP LOGIC:
+"If you have already completed identity verification using your Login.gov credentials to register 
+an application in URS, you are not required to complete verification again."
+- One-time verification per user account
+- Subsequent applications can skip this step
+- Click "Click Here to Proceed" to continue
+
+MENU BUTTON STATUS:
+- PREVIOUS: NOW DISABLED! (dijitMenuItemDisabled dijitDisabled, aria-disabled="true")
+  - Cannot go back from identity verification
+  - Must complete verification or logout
+- NEXT: Still disabled (verification not complete yet)
+
+SECURITY FEATURES:
+1. Government system warning (footer)
+2. Privacy Act notice (footer)
+3. Third-party biometric verification (IDEMIA)
+4. No PII collected on this page
+5. QR code session-specific
+
+REGULATORY COMPLIANCE:
+- Login.gov integration mentioned (government identity system)
+- FMCSA-mandated identity verification
+- Prevents fraudulent applications
+- Enhances data security
+
+CONTACT CENTER:
+Phone: 1-800-832-5660
+For assistance with identity verification issues
+
+FORM DIMENSIONS:
+width: 1690px; height: 768px
+(Shorter than oath page - no long legal text)
+
+PROGRESS:
+99% complete! Only 1% remaining!
+This is likely the FINAL or SECOND-TO-LAST page before 100%!
+
+CRITICAL IMPLEMENTATION NOTE:
+The training system will need to:
+1. Generate/display QR codes (or simulate the process)
+2. Handle IDEMIA integration OR simulate verification completion
+3. Track verification status per user
+4. Enable "Click Here to Proceed" button after verification
+5. Allow skip for previously verified users
+-->
+

@@ -1,0 +1,86 @@
+<!-- FMCSA USDOT Application - Page 35: Transport Own Property (Private Carrier) -->
+<!-- form_B0051P050071, Question Q05008 - Private carrier confirmation -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "property") -->
+<label class="questionDesc" id="questionDesc_Q05008">
+  Will the Applicant transport their own 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of general freight, hazardous materials or household goods. This category includes transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. These exemptions can be found in 49 U.S.C. chapter 135.');">
+    property
+  </span>?
+</label>
+
+<!-- Icon: icon_TransportOwnProperty.png -->
+
+<!-- ANSWER OPTIONS (Radio) -->
+<input name="questionCode_B0051P050071S05007_Q05008" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="questionCode_B0051P050071S05007_Q05008_id_Y">
+<label for="questionCode_B0051P050071S05007_Q05008_id_Y">Yes</label>
+
+<input name="questionCode_B0051P050071S05007_Q05008" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="questionCode_B0051P050071S05007_Q05008_id_N">
+<label for="questionCode_B0051P050071S05007_Q05008_id_N">No</label>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0051P050071
+Branch: B0051
+Page: P050071
+Section: S05007
+Question: Q05008
+Field Name: questionCode_B0051P050071S05007_Q05008
+Field Type: Radio button (Yes/No)
+Icon: icon_TransportOwnProperty.png
+Progress: 27%
+
+CONTEXT - PRIVATE CARRIER:
+This question appears when user answered "No" to Q05003 (For-Hire question).
+It confirms they are operating as a PRIVATE CARRIER.
+
+PRIVATE CARRIER DEFINITION:
+YES = Transports own property
+- Company transports goods it owns/produces
+- No compensation from others for transportation service
+- Example: Manufacturer transporting own products to customers
+- Example: Retailer moving own inventory between stores
+- Does NOT need MC Number (Operating Authority)
+- Still needs USDOT Number if meets interstate/weight thresholds
+
+NO = Neither For-Hire nor Private
+- Unusual situation
+- May indicate broker, freight forwarder, or other non-carrier role
+- Or applicant only operates as passenger carrier
+
+REGULATORY DIFFERENCE:
+PRIVATE CARRIER (Yes):
+- USDOT Number required (if interstate + meets weight threshold)
+- NO MC Number required
+- Subject to FMCSRs (safety regulations)
+- Private carrier insurance requirements
+- No economic regulation
+
+FOR-HIRE CARRIER (would have answered Yes to Q05003):
+- USDOT Number required
+- MC Number (Operating Authority) required
+- Subject to FMCSRs + economic regulations
+- For-hire insurance requirements (higher minimums)
+- Public liability for cargo
+
+TOOLTIP (same property definition):
+"Transportation of general freight, hazardous materials or household goods. This category includes 
+transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. 
+These exemptions can be found in 49 U.S.C. chapter 135."
+
+This question distinguishes between different business models that both transport property
+but under very different regulatory frameworks.
+-->
+

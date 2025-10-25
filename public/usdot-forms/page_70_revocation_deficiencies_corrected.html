@@ -1,0 +1,132 @@
+<!-- FMCSA USDOT Application - Page 70: Revocation Deficiencies Corrected Certification -->
+<!-- form_B0161P160081, Question Q16008 - CONDITIONAL certification for revoked carriers -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Compliance Certifications</label>
+
+<!-- QUESTION (CONDITIONAL - only applies if previously revoked) -->
+<label class="questionDesc" id="questionDesc_Q16008">
+  If the Applicant's registration is currently revoked, does the Applicant certify the deficiencies cited 
+  in the revocation proceeding have been corrected?
+</label>
+
+<!-- ANSWER (CHECKBOX) -->
+<table class="selectbuttonsTable">
+  <!-- SHARED IMAGE ROW -->
+  <tr class="selectbuttonsSharedImageRow">
+    <td class="selectbuttonsSharedImageCell">
+      <label for="">
+        <img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_Yes.png" 
+             alt="image" 
+             border="0">
+      </label>
+    </td>
+    <td class="answersTD">
+      <table class="answersTable">
+        <tr class="answerRow">
+          <td class="answerCellLeft">
+            <table class="answerMiniTable">
+              <tr class="answerMiniTableButtonLabelRow">
+                <td class="answerValueCell">
+                  <div class="dijit dijitReset dijitInline dijitCheckBox" 
+                       role="presentation" 
+                       widgetid="questionCode_B0161P160081S16008_Q16008_id_Y">
+                    <input name="questionCode_B0161P160081S16008_Q16008" 
+                           type="checkbox" 
+                           role="checkbox" 
+                           aria-checked="false" 
+                           class="dijitReset dijitCheckBoxInput" 
+                           value="Y" 
+                           tabindex="0" 
+                           id="questionCode_B0161P160081S16008_Q16008_id_Y">
+                  </div>
+                </td>
+                <td class="answerLabelCell">
+                  <label class="answerLabel" 
+                         for="questionCode_B0161P160081S16008_Q16008_id_Y" 
+                         id="ansLbl_B0161P160081S16008_Q16008_id_Y">
+                    Yes, I Certify
+                  </label>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- METADATA -->
+<!--
+Form ID: form_B0161P160081
+Branch: B016 (Compliance Certifications)
+Page: P160081
+Section: S16008
+Question: Q16008
+Progress: 90%
+
+FIELD TYPE: Single checkbox (not radio!)
+
+CONDITIONAL CERTIFICATION:
+"IF registration is currently revoked, deficiencies have been corrected"
+
+IMPORTANT: This is CONDITIONAL logic!
+- The question starts with "If the Applicant's registration is currently revoked..."
+- This means it applies ONLY to carriers with current revocations
+- May be combined with Page 69's 30-day waiting period requirement
+
+CONTEXT FROM PAGE 69:
+Page 69 (Q16006) asked if carrier is NOT prohibited from filing because:
+  - Registration currently under suspension, OR
+  - Revoked < 30 days ago
+
+This page (Q16008) addresses the scenario where:
+  - Registration WAS revoked > 30 days ago (so 30-day period has passed)
+  - Revocation may still be technically active
+  - Carrier must certify deficiencies are CORRECTED to proceed
+
+REVOCATION DEFICIENCIES COULD INCLUDE:
+- Unsafe driving practices
+- Inadequate driver qualification procedures
+- Hours of service violations
+- Vehicle maintenance failures
+- Insurance lapses
+- Drug/alcohol testing program failures
+- Hazmat violations
+- Failed safety audit
+- Unfit safety rating
+
+CERTIFICATION REQUIREMENTS:
+Must demonstrate correction through:
+1. Documentation of corrective actions
+2. New safety management systems
+3. Compliance with applicable regulations
+4. Remediation of identified deficiencies
+5. Possible safety audit or review
+
+REGULATORY AUTHORITY:
+- 49 CFR Part 385 - Safety Fitness Procedures
+- 49 CFR § 385.13 - Administrative review
+- 49 U.S.C. § 13905 - Registration requirements
+
+CONDITIONAL LOGIC:
+- IF never revoked → This certification may not apply (checkbox may be optional or auto-pass)
+- IF revoked > 30 days ago → MUST certify deficiencies corrected
+- IF revoked < 30 days ago → Cannot file (prohibited by Page 69/Q16006)
+
+ENFORCEMENT:
+- False certification = grounds for denial
+- FMCSA may require proof of corrections before granting registration
+- May trigger compliance review or safety audit
+- Criminal penalties under 18 U.S.C. § 1001
+
+VALIDATION:
+- Checkbox must be checked to proceed (if applicable)
+- May trigger additional review by FMCSA safety staff
+
+NEXT BUTTON STATUS:
+- Currently DISABLED (nextMenu_disabled class)
+- Will enable when checkbox is checked
+-->
+

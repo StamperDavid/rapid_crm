@@ -1,0 +1,86 @@
+<!-- FMCSA USDOT Application - Page 18: DBA Names (Doing Business As) -->
+<!-- form_dba - DYNAMIC/REPEATING FIELD PATTERN -->
+
+<!-- PAGE TITLE -->
+<div class="mainRegTopDiv">
+  <div id="landingDiv" class="pageTitleDiv">
+    <span class="heavy">Business Description</span>
+  </div>
+</div>
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">
+  Doing Business As Name(s) (if different from Legal Business Name)
+</label>
+
+<!-- DYNAMIC DBA TABLE (Can add multiple entries) -->
+<table id="dbaTable" width="100%">
+  <!-- DBA Entry #1 (always visible) -->
+  <tr id="dbaTR_1" name="dbaTR">
+    <td>
+      <table class="dbaTable" width="100%">
+        <tr>
+          <td colspan="1" align="left">
+            <label class="forInput" for="dbaName_1_id">DBA Name #1</label>
+          </td>
+          <td>
+            <!-- Remove button (hidden for first entry) -->
+            <button id="dba_1" 
+                    title="Remove this name from list" 
+                    style="visibility: hidden;">
+              Remove
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="1" align="left">
+            <input type="text"
+                   id="dbaName_1_id"
+                   name="dbaName_1"
+                   maxlength="100"
+                   aria-required="false"
+                   autocomplete="off"
+                   tabindex="0">
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  
+  <!-- Additional DBA entries added dynamically by "More" button -->
+  <!-- Pattern: dbaTR_2, dbaTR_3, etc. with corresponding dbaName_2, dbaName_3 -->
+  
+</table>
+
+<!-- "MORE" button to add additional DBA names -->
+<button id="moreDbaButton" 
+        title="Add another DBA name" 
+        tabindex="0">
+  More
+</button>
+
+<!-- METADATA -->
+<!--
+Form ID: form_dba
+Progress: 22%
+
+FIELD PATTERN (Dynamic/Repeating):
+- First DBA field always present: dbaName_1
+- Click "More" button to add dbaName_2, dbaName_3, etc.
+- Each entry has its own Remove button (except first)
+- Row IDs: dbaTR_1, dbaTR_2, dbaTR_3...
+- Field IDs: dbaName_1_id, dbaName_2_id, dbaName_3_id...
+- Field Names: dbaName_1, dbaName_2, dbaName_3...
+- Maxlength: 100 per DBA name
+- All DBA names are optional (aria-required="false")
+
+This is a DYNAMIC FORM PATTERN - important for RPA training!
+The RPA needs to know:
+1. How to add multiple entries (click "More")
+2. How to fill each dynamically created field
+3. How to remove entries if needed
+
+Navigation:
+- NEXT button: ENABLED (can proceed even with empty DBA fields)
+-->
+
