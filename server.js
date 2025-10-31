@@ -2066,70 +2066,9 @@ const checkAndInitializeDatabase = async () => {
   try {
     await initDatabase();
     
-    // Load SEO automation schema
-    try {
-      const fs = require('fs');
-      const seoSchemaPath = path.join(__dirname, 'src', 'database', 'seo_automation_schema.sql');
-      const seoSchema = fs.readFileSync(seoSchemaPath, 'utf8');
-      
-      // Split the schema into individual statements and execute them
-      const statements = seoSchema.split(';').filter(stmt => stmt.trim().length > 0);
-      for (const statement of statements) {
-        if (statement.trim()) {
-          await runExecute(statement.trim());
-        }
-      }
-      console.log('✅ SEO automation schema loaded successfully');
-    } catch (seoError) {
-      console.warn('⚠️  SEO automation schema loading failed:', seoError.message);
-      console.warn('⚠️  SEO features may not be available');
-    }
-    
-    // Load Training Environment schema
-    try {
-      const fs = require('fs');
-      const trainingSchemaPath = path.join(__dirname, 'src', 'database', 'training_environment_schema.sql');
-      const trainingSchema = fs.readFileSync(trainingSchemaPath, 'utf8');
-      
-      // Split the schema into individual statements and execute them
-      const statements = trainingSchema.split(';').filter(stmt => stmt.trim().length > 0);
-      for (const statement of statements) {
-        if (statement.trim()) {
-          // Replace INSERT with INSERT OR IGNORE to avoid constraint violations
-          const safeStatement = statement.trim().replace(/^INSERT INTO/, 'INSERT OR IGNORE INTO');
-          await runExecute(safeStatement);
-        }
-      }
-      console.log('✅ Training environment schema loaded successfully');
-    } catch (trainingError) {
-      console.warn('⚠️  Training environment schema loading failed:', trainingError.message);
-      console.warn('⚠️  Training features may not be available');
-    }
-    
-    // Load Qualified States schema
-    try {
-      const fs = require('fs');
-      const qualifiedStatesSchemaPath = path.join(__dirname, 'src', 'database', 'qualified_states_schema.sql');
-      const qualifiedStatesSchema = fs.readFileSync(qualifiedStatesSchemaPath, 'utf8');
-      
-      // Split the schema into individual statements and execute them
-      const statements = qualifiedStatesSchema.split(';').filter(stmt => stmt.trim().length > 0);
-      for (const statement of statements) {
-        if (statement.trim()) {
-          // Skip empty or incomplete statements
-          if (statement.trim().length > 10) {
-            await runExecute(statement.trim());
-          }
-        }
-      }
-      console.log('✅ Qualified States schema loaded successfully');
-    } catch (qualifiedStatesError) {
-      console.warn('⚠️  Qualified States schema loading failed:', qualifiedStatesError.message);
-      console.warn('⚠️  Qualified States features may not be available');
-    }
-    
-    // ELD service migration - REMOVED
-    // Module no longer exists - see archive/full-feature-set-v1.0 branch
+    // Non-core feature schemas (SEO, ELD, IFTA) removed during strategic refactor
+    // Training and qualified states tables are part of main schema.sql
+    console.log('✅ Using core schema only - non-essential features removed');
   } catch (error) {
     console.error('❌ Failed to initialize database:', error);
     throw error;
