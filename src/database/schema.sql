@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
 -- Vehicles Table
@@ -152,8 +152,8 @@ CREATE TABLE IF NOT EXISTS vehicles (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
-    -- FOREIGN KEY (current_driver_id) REFERENCES drivers(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    FOREIGN KEY (current_driver_id) REFERENCES drivers(id) ON DELETE SET NULL
 );
 
 -- Drivers Table
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS drivers (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
 -- Services Table
@@ -280,8 +280,8 @@ CREATE TABLE IF NOT EXISTS deal_services (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     
-    -- FOREIGN KEY (deal_id) REFERENCES deals(id) -- Temporarily disabled for initialization
-    -- FOREIGN KEY (service_id) REFERENCES services(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS deals (
@@ -309,9 +309,9 @@ CREATE TABLE IF NOT EXISTS deals (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
-    -- FOREIGN KEY (contact_id) REFERENCES contacts(id) -- Temporarily disabled for initialization
-    -- FOREIGN KEY (service_id) REFERENCES services(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE SET NULL
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL
 );
 
 -- Invoices Table
@@ -344,8 +344,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
     
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
-    -- FOREIGN KEY (contact_id) REFERENCES contacts(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE SET NULL
 );
 
 -- Campaigns Table
@@ -428,7 +428,7 @@ CREATE TABLE IF NOT EXISTS leads (
     FOREIGN KEY (campaign_id) REFERENCES campaigns(id),
     FOREIGN KEY (converted_contact_id) REFERENCES contacts(id),
     FOREIGN KEY (converted_deal_id) REFERENCES deals(id)
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
 -- AI Agents Table
@@ -581,7 +581,7 @@ CREATE TABLE IF NOT EXISTS usdot_applications (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     is_read_only TEXT DEFAULT 'Yes' -- Always read-only after creation
-    -- FOREIGN KEY (company_id) REFERENCES companies(id) -- Temporarily disabled for initialization
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
 -- Agent Memory Banks Table

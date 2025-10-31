@@ -5,10 +5,9 @@ const express = require('express');
 const path = require('path');
 
 // Import modular components
-const { setupDatabase } = require('./server/database');
-const { setupMiddleware } = require('./server/middleware');
-const { setupRoutes } = require('./server/routes');
+const asyncHandler = require('./server/middleware/async-handler');
 const { setupErrorHandling } = require('./server/error-handling');
+const { validateCompanyData, validateContactData, sanitizeInput } = require('./server/middleware/validation');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -198,6 +197,15 @@ const rateLimiter = getRateLimiter();
 // Legacy database connection for backward compatibility
 const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
 const db = new sqlite3.Database(dbPath);
+
+// Enable foreign key constraints for data integrity
+db.run('PRAGMA foreign_keys = ON;', (err) => {
+  if (err) {
+    console.error('❌ Failed to enable foreign key constraints:', err);
+  } else {
+    console.log('✅ Foreign key constraints enabled');
+  }
+});
 
 // Ensure critical tables exist
 db.serialize(() => {
@@ -736,75 +744,74 @@ const runExecute = (sql, params = []) => {
   });
 };
 
-// API Routes
+// Setup error handling middleware
+setupErrorHandling(app);
+
+// Add input sanitization to all routes
+app.use(sanitizeInput);
+
+// Mount modular API routes
+const apiRoutes = require('./server/routes');
+app.use('/api', apiRoutes);
+
+// Legacy API Routes (to be migrated to modular structure)
+// TODO: Gradually migrate these to separate route files
 
 
-// Companies
-app.get('/api/companies', async (req, res) => {
-  try {
-    const companies = await runQuery('SELECT * FROM companies');
-    const transformedCompanies = companies.map(transformCompany).filter(Boolean);
-    res.json(transformedCompanies);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+// Legacy Companies routes (will be removed after full migration)
+app.get('/api/companies', asyncHandler(async (req, res) => {
+  const companies = await runQuery('SELECT * FROM companies');
+  const transformedCompanies = companies.map(transformCompany).filter(Boolean);
+  res.json(transformedCompanies);
+}));
+
+app.get('/api/companies/:id', asyncHandler(async (req, res) => {
+  const company = await runQueryOne('SELECT * FROM companies WHERE id = ?', [req.params.id]);
+  if (!company) {
+    return res.status(404).json({ error: 'Company not found' });
   }
-});
+  res.json(transformCompany(company));
+}));
 
-app.get('/api/companies/:id', async (req, res) => {
-  try {
-    const company = await runQueryOne('SELECT * FROM companies WHERE id = ?', [req.params.id]);
-    if (!company) {
-      return res.status(404).json({ error: 'Company not found' });
-    }
-    res.json(transformCompany(company));
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+app.post('/api/companies', validateCompanyData, asyncHandler(async (req, res) => {
+  const {
+    physicalStreetAddress, physicalSuiteApt, physicalCity, physicalState, physicalCountry, physicalZip,
+    isMailingAddressSame, mailingStreetAddress, mailingSuiteApt, mailingCity, mailingState, mailingCountry, mailingZip,
+    legalBusinessName, hasDba, dbaName, businessType, ein, businessStarted,
+    classification, operationType, interstateIntrastate, usdotNumber, operationClass,
+    fleetType, numberOfVehicles, numberOfDrivers, gvwr, vehicleTypes,
+    cargoTypes, hazmatRequired, phmsaWork, regulatoryDetails,
+    hasDunsBradstreetNumber, dunsBradstreetNumber
+  } = req.body;
 
-app.post('/api/companies', async (req, res) => {
-  try {
-    const {
-      physicalStreetAddress, physicalSuiteApt, physicalCity, physicalState, physicalCountry, physicalZip,
+  const id = Date.now().toString();
+  const now = new Date().toISOString();
+
+  await runExecute(
+    `INSERT INTO companies (
+      id, physical_street_address, physical_suite_apt, physical_city, physical_state,
+      physical_country, physical_zip, is_mailing_address_same, mailing_street_address,
+      mailing_suite_apt, mailing_city, mailing_state, mailing_country, mailing_zip,
+      legal_business_name, has_dba, dba_name, business_type, ein, business_started,
+      classification, operation_type, interstate_intrastate, usdot_number, operation_class,
+      fleet_type, number_of_vehicles, number_of_drivers, gvwr, vehicle_types,
+      cargo_types, hazmat_required, phmsa_work, regulatory_details,
+      has_duns_bradstreet_number, duns_bradstreet_number, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id, physicalStreetAddress, physicalSuiteApt, physicalCity, physicalState, physicalCountry, physicalZip,
       isMailingAddressSame, mailingStreetAddress, mailingSuiteApt, mailingCity, mailingState, mailingCountry, mailingZip,
       legalBusinessName, hasDba, dbaName, businessType, ein, businessStarted,
       classification, operationType, interstateIntrastate, usdotNumber, operationClass,
       fleetType, numberOfVehicles, numberOfDrivers, gvwr, vehicleTypes,
       cargoTypes, hazmatRequired, phmsaWork, regulatoryDetails,
-      hasDunsBradstreetNumber, dunsBradstreetNumber
-    } = req.body;
-    
-    const id = Date.now().toString();
-    const now = new Date().toISOString();
-    
-    await runExecute(
-      `INSERT INTO companies (
-        id, physical_street_address, physical_suite_apt, physical_city, physical_state, 
-        physical_country, physical_zip, is_mailing_address_same, mailing_street_address, 
-        mailing_suite_apt, mailing_city, mailing_state, mailing_country, mailing_zip, 
-        legal_business_name, has_dba, dba_name, business_type, ein, business_started, 
-        classification, operation_type, interstate_intrastate, usdot_number, operation_class, 
-        fleet_type, number_of_vehicles, number_of_drivers, gvwr, vehicle_types, 
-        cargo_types, hazmat_required, phmsa_work, regulatory_details, 
-        has_duns_bradstreet_number, duns_bradstreet_number, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id, physicalStreetAddress, physicalSuiteApt, physicalCity, physicalState, physicalCountry, physicalZip,
-        isMailingAddressSame, mailingStreetAddress, mailingSuiteApt, mailingCity, mailingState, mailingCountry, mailingZip,
-        legalBusinessName, hasDba, dbaName, businessType, ein, businessStarted,
-        classification, operationType, interstateIntrastate, usdotNumber, operationClass,
-        fleetType, numberOfVehicles, numberOfDrivers, gvwr, vehicleTypes,
-        cargoTypes, hazmatRequired, phmsaWork, regulatoryDetails,
-        hasDunsBradstreetNumber, dunsBradstreetNumber, now, now
-      ]
-    );
-    
-    const company = await runQueryOne('SELECT * FROM companies WHERE id = ?', [id]);
-    res.status(201).json(transformCompany(company));
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+      hasDunsBradstreetNumber, dunsBradstreetNumber, now, now
+    ]
+  );
+
+  const company = await runQueryOne('SELECT * FROM companies WHERE id = ?', [id]);
+  res.status(201).json(transformCompany(company));
+}));
 
 app.put('/api/companies/:id', async (req, res) => {
   try {
