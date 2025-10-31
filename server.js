@@ -2,12 +2,25 @@
 require('dotenv').config();
 
 const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+// Import AI Persona Manager
+const aiPersonaManager = require('./src/services/ai/AIPersonaManager.js');
 
 // Import modular components
 const asyncHandler = require('./server/middleware/async-handler');
 const { setupErrorHandling } = require('./server/error-handling');
 const { validateCompanyData, validateContactData, sanitizeInput } = require('./server/middleware/validation');
+
+// NOTE: API Key Service - using direct database access for security
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -744,21 +757,13 @@ const runExecute = (sql, params = []) => {
   });
 };
 
-// Setup error handling middleware
-setupErrorHandling(app);
-
 // Add input sanitization to all routes
 app.use(sanitizeInput);
 
-// Mount modular API routes
-const apiRoutes = require('./server/routes');
-app.use('/api', apiRoutes);
-
-// Legacy API Routes (to be migrated to modular structure)
-// TODO: Gradually migrate these to separate route files
+// API Routes
 
 
-// Legacy Companies routes (will be removed after full migration)
+// Companies
 app.get('/api/companies', asyncHandler(async (req, res) => {
   const companies = await runQuery('SELECT * FROM companies');
   const transformedCompanies = companies.map(transformCompany).filter(Boolean);
@@ -3485,9 +3490,8 @@ setInterval(() => {
 }, 30 * 60 * 1000); // Run every 30 minutes
 
 // AI Chat endpoint - Using Persistent TrulyIntelligentAgent for continuous chat
-app.post('/api/ai/chat', async (req, res) => {
-  try {
-    const { message, voice, model, userId } = req.body;
+app.post('/api/ai/chat', asyncHandler(async (req, res) => {
+  const { message, voice, model, userId } = req.body;
     
     // Determine user identity - use provided userId or extract from session/auth
     let currentUserId = userId || 'default_user';
@@ -3585,14 +3589,7 @@ app.post('/api/ai/chat', async (req, res) => {
       });
     }
     
-  } catch (error) {
-    console.error('❌ Error in AI chat:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to process chat message' 
-    });
-  }
-});
+}));
 
 // AI Collaboration endpoints - Basic implementation
 app.post('/api/ai/collaborate/send', async (req, res) => {
@@ -6933,6 +6930,9 @@ app.post('/api/qualified-states/upload', upload.single('file'), async (req, res)
   }
 });
 
+// Setup error handling middleware - MUST BE LAST
+setupErrorHandling(app);
+
 // Initialize database and start server
 validateDatabase()
   .then(() => checkAndInitializeDatabase())
@@ -6941,6 +6941,9 @@ validateDatabase()
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📊 API available at http://localhost:${PORT}/api`);
+      console.log('✅ Error handling middleware active');
+      console.log('✅ Foreign key constraints enabled');
+      console.log('✅ Input sanitization active');
     });
   })
   .catch((error) => {
