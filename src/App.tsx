@@ -36,7 +36,6 @@ import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIControlCenter from './components/AIControlCenter';
 import RegulationTrainingDashboard from './components/training/RegulationTrainingDashboard';
 import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
-import USDOTFormTrainingEnvironment from './components/training/USDOTFormTrainingEnvironment';
 import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
 import CriticalPathTestCenter from './components/training/CriticalPathTestCenter';
 import AlexTrainingCenter from './components/training/AlexTrainingCenter';
@@ -134,7 +133,6 @@ function App() {
                         <Route path="/training" element={<RegulationTrainingDashboard />} />
                         <Route path="/training/alex" element={<AlexTrainingCenter />} />
                         <Route path="/training/usdot" element={<USDOTRegistrationTrainingCenter />} />
-                        <Route path="/training/usdot-forms" element={<USDOTFormTrainingEnvironment />} />
                         <Route path="/training/monitoring" element={<AgentPerformanceMonitoringDashboard />} />
                         <Route path="/training/critical-path" element={<CriticalPathTestCenter />} />
                         

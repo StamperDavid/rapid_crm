@@ -207,6 +207,110 @@ const rateLimiter = getRateLimiter();
 const dbPath = path.join(__dirname, 'instance', 'rapid_crm.db');
 const db = new sqlite3.Database(dbPath);
 
+// Ensure critical tables exist
+db.serialize(() => {
+  // Create theme_settings table if it doesn't exist
+  db.run(`
+    CREATE TABLE IF NOT EXISTS theme_settings (
+      id TEXT PRIMARY KEY,
+      theme TEXT NOT NULL DEFAULT 'dark',
+      custom_theme TEXT,
+      logo_url TEXT,
+      company_name TEXT,
+      company_info TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `, (err) => {
+    if (err) {
+      console.error('❌ Error creating theme_settings table:', err);
+    } else {
+      console.log('✅ theme_settings table ready');
+    }
+  });
+
+  // Create alex_training tables if they don't exist
+  db.run(`
+    CREATE TABLE IF NOT EXISTS alex_training_scenarios (
+      id TEXT PRIMARY KEY,
+      scenario_data TEXT NOT NULL,
+      state TEXT NOT NULL,
+      operation_type TEXT NOT NULL,
+      operation_radius TEXT NOT NULL,
+      business_type TEXT NOT NULL,
+      has_hazmat INTEGER NOT NULL DEFAULT 0,
+      fleet_size TEXT NOT NULL,
+      expected_usdot_required INTEGER NOT NULL,
+      expected_mc_authority_required INTEGER NOT NULL,
+      expected_hazmat_required INTEGER NOT NULL,
+      expected_ifta_required INTEGER NOT NULL,
+      expected_state_registration_required INTEGER NOT NULL,
+      expected_reasoning TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1
+    )
+  `, (err) => {
+    if (err) {
+      console.error('❌ Error creating alex_training_scenarios table:', err);
+    } else {
+      console.log('✅ alex_training_scenarios table ready');
+    }
+  });
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS alex_test_results (
+      id TEXT PRIMARY KEY,
+      scenario_id TEXT NOT NULL,
+      test_session_id TEXT NOT NULL,
+      alex_usdot_required INTEGER,
+      alex_mc_authority_required INTEGER,
+      alex_hazmat_required INTEGER,
+      alex_ifta_required INTEGER,
+      alex_state_registration_required INTEGER,
+      alex_reasoning TEXT,
+      alex_full_response TEXT,
+      is_correct INTEGER,
+      mistakes TEXT,
+      reviewer_feedback TEXT,
+      correct_answer TEXT,
+      reviewed_by TEXT,
+      reviewed_at TEXT,
+      tested_at TEXT NOT NULL,
+      response_time_ms INTEGER
+    )
+  `, (err) => {
+    if (err) {
+      console.error('❌ Error creating alex_test_results table:', err);
+    } else {
+      console.log('✅ alex_test_results table ready');
+    }
+  });
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS alex_training_sessions (
+      id TEXT PRIMARY KEY,
+      session_name TEXT,
+      started_at TEXT NOT NULL,
+      completed_at TEXT,
+      total_scenarios INTEGER NOT NULL DEFAULT 0,
+      scenarios_completed INTEGER NOT NULL DEFAULT 0,
+      scenarios_correct INTEGER NOT NULL DEFAULT 0,
+      scenarios_incorrect INTEGER NOT NULL DEFAULT 0,
+      scenarios_pending_review INTEGER NOT NULL DEFAULT 0,
+      accuracy_percentage REAL,
+      average_response_time_ms INTEGER,
+      status TEXT NOT NULL DEFAULT 'in_progress',
+      notes TEXT
+    )
+  `, (err) => {
+    if (err) {
+      console.error('❌ Error creating alex_training_sessions table:', err);
+    } else {
+      console.log('✅ alex_training_sessions table ready');
+    }
+  });
+});
+
 // Initialize Video Creation Service - REMOVED
 // const videoCreationService = new VideoCreationService();
 // console.log('🎬 Video Creation Service initialized');
@@ -6431,6 +6535,52 @@ app.post('/api/alex-training/submit-feedback', async (req, res) => {
 // ===================================
 // USDOT RPA TRAINING CENTER ROUTES
 // ===================================
+
+// Call the ACTUAL RPA agent to fill a scenario
+app.post('/api/usdot-rpa-training/fill-scenario', async (req, res) => {
+  try {
+    const { scenario } = req.body;
+    
+    console.log(`🤖 Calling USDOT RPA Agent to fill scenario: ${scenario.id}`);
+    
+    // Dynamically import the TypeScript agent
+    const { usdotFormFillerAgent } = await import('./src/services/rpa/USDOTFormFillerAgent.ts');
+    
+    // Agent analyzes scenario and fills all form fields
+    const filledPages = await usdotFormFillerAgent.fillApplication(scenario);
+    
+    console.log(`✅ Agent filled ${filledPages.length} pages`);
+    
+    res.json({
+      success: true,
+      filledPages,
+      agentKnowledge: usdotFormFillerAgent.getKnowledgeBase()
+    });
+    
+  } catch (error) {
+    console.error('Error calling RPA agent:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Submit correction to RPA agent
+app.post('/api/usdot-rpa-training/submit-correction', async (req, res) => {
+  try {
+    const { fieldName, correctValue, explanation, scenarioContext } = req.body;
+    
+    console.log(`📚 Saving correction for ${fieldName}`);
+    
+    // Import agent and apply correction
+    const { usdotFormFillerAgent } = await import('./src/services/rpa/USDOTFormFillerAgent.ts');
+    usdotFormFillerAgent.learnFromCorrection(fieldName, correctValue, explanation, scenarioContext);
+    
+    res.json({ success: true, message: 'Agent learned from correction' });
+    
+  } catch (error) {
+    console.error('Error saving correction:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get RPA training stats
 app.get('/api/usdot-rpa-training/stats', async (req, res) => {

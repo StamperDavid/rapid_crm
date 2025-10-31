@@ -47,12 +47,12 @@ class AlexTrainingService {
     this.db.prepare('DELETE FROM alex_training_sessions').run();
     
     console.log('✅ Old scenarios deleted');
-    console.log('🎯 Generating new scenarios using ScenarioGenerator...');
+    console.log('⚠️  ScenarioGenerator removed - scenarios are pre-written');
+    console.log('💡 Use the existing 918 scenarios in the database instead');
     
-    // Use the TypeScript ScenarioGenerator via dynamic import
-    const { scenarioGenerator } = await import('./ScenarioGenerator.ts');
-    const scenarios = await scenarioGenerator.generateAllScenarios();
-    console.log(`📊 Generated ${scenarios.length} scenarios`);
+    // Scenarios are pre-written and should already be in database
+    // This endpoint should not be called - scenarios exist already
+    throw new Error('Scenario generation disabled - 918 scenarios already exist in database');
     
     // Store scenarios in database
     const insertScenario = this.db.prepare(`

@@ -1,0 +1,289 @@
+/**
+ * FMCSA URS Website Styles
+ * Recreates the styling from the real FMCSA USDOT application
+ */
+
+/* Question Table Styling */
+.questionTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.questionRow {
+  background-color: #f5f5f5;
+}
+
+.questionCell {
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+}
+
+.questionDesc {
+  font-weight: bold;
+  font-size: 16px;
+  color: #003366;
+  display: block;
+}
+
+/* Answer Row Styling */
+.answersRow {
+  background-color: #ffffff;
+}
+
+.answersCell {
+  padding: 15px;
+  border: 1px solid #ccc;
+}
+
+.selectbuttonsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.selectbuttonsSharedImageRow {
+  
+}
+
+.selectbuttonsSharedImageCell {
+  width: 100px;
+  text-align: center;
+  vertical-align: top;
+  padding-right: 20px;
+}
+
+.answersTable {
+  width: 100%;
+}
+
+.answerRow {
+  margin-bottom: 10px;
+}
+
+.answerCellLeft {
+  padding: 8px 0;
+}
+
+.answerMiniTable {
+  width: 100%;
+}
+
+.answerMiniTableButtonLabelRow {
+  
+}
+
+.answerValueCell {
+  width: 30px;
+  padding-right: 10px;
+}
+
+.answerValueCell input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.answerLabelCell {
+  
+}
+
+.answerLabel {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.answerLabel:hover {
+  color: #003366;
+}
+
+/* Form Input Styling */
+.mainRegTopDiv {
+  background-color: #003366;
+  color: white;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.pageTitleDiv {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.heavy {
+  font-weight: 700;
+}
+
+.mainRegTable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.forInput {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.forInput label {
+  font-weight: 600;
+  color: #003366;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.forInput input[type="text"],
+.forInput input[type="tel"],
+.forInput input[type="email"],
+.forInput select,
+.forInput textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #999;
+  border-radius: 3px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.forInput input[type="text"]:focus,
+.forInput input[type="tel"]:focus,
+.forInput input[type="email"]:focus,
+.forInput select:focus,
+.forInput textarea:focus {
+  outline: none;
+  border-color: #003366;
+  box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+}
+
+.topTDInVerticalQA {
+  padding-top: 15px;
+  padding-bottom: 5px;
+}
+
+.bottomTDInVerticalQA {
+  padding-bottom: 15px;
+}
+
+/* Wizard Pane */
+.wizardPaneContentDivForm {
+  background-color: white;
+  padding: 20px;
+}
+
+/* Required Field Marker */
+.required::after {
+  content: " *";
+  color: red;
+  font-weight: bold;
+}
+
+/* FMCSA Blue Theme */
+.usdot-form-content {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Table Borders */
+.usdot-form-content table {
+  border-collapse: collapse;
+}
+
+.usdot-form-content td {
+  padding: 8px;
+}
+
+/* Images */
+.usdot-form-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Buttons */
+.usdot-form-content button,
+.usdot-form-content input[type="button"],
+.usdot-form-content input[type="submit"] {
+  background-color: #003366;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.usdot-form-content button:hover {
+  background-color: #004488;
+}
+
+/* Error/Warning Messages */
+.errorMessage {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+/* Success Messages */
+.successMessage {
+  background-color: #d4edda;
+  border: 1px solid #28a745;
+  color: #155724;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+/* Help Text */
+.helpText {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+/* Section Headers */
+.sectionHeader {
+  background-color: #003366;
+  color: white;
+  padding: 10px 15px;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 20px 0 10px 0;
+  border-radius: 3px;
+}
+
+/* Field Groups */
+.fieldGroup {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .questionTable,
+  .answersTable,
+  .selectbuttonsTable {
+    font-size: 13px;
+  }
+  
+  .answerValueCell input[type="radio"] {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+
+
+
+
+
+

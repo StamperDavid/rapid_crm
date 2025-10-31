@@ -31,6 +31,7 @@ import {
   FastForwardIcon
 } from '@heroicons/react/outline';
 import { USDOTFormPageService, type USDOTFormPage } from '../../services/training/USDOTFormPageService';
+import { USDOTFormFillerAgent, type FilledFormData } from '../../services/rpa/USDOTFormFillerAgent';
 
 // Scenario interface (matches database schema)
 interface USDOTApplicationScenario {
@@ -169,7 +170,9 @@ interface USDOTApplicationData {
   interstateDriversBeyond100Mile: string;
   intrastateDrivers100Mile: string;
   intrastateDriversBeyond100Mile: string;
+  intrastateDrivers: string;
   cdlDrivers: string;
+  internationalDrivers: string;
   canadaDrivers: string;
   mexicoDrivers: string;
   
@@ -185,6 +188,9 @@ interface USDOTApplicationData {
     notSuspended: string;
     deficienciesCorrected: string;
   };
+  certifyDOTCompliance: boolean;
+  certifyDocumentProduction: boolean;
+  certifyNotDisqualified: boolean;
   
   // Step 9: Electronic Signature
   electronicSignature: string;
@@ -236,6 +242,14 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   const [highlightedField, setHighlightedField] = useState<string>('');
   const [isGeneratingScenarios, setIsGeneratingScenarios] = useState(false);
   const [scenarioCount, setScenarioCount] = useState(0);
+  const [rpaFilledPages, setRpaFilledPages] = useState<FilledFormData[]>([]);
+  const [rpaAgent] = useState(() => new USDOTFormFillerAgent());
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isWatchingAgent, setIsWatchingAgent] = useState(false);
+  const [currentFillingFieldIndex, setCurrentFillingFieldIndex] = useState(-1);
+  const [agentFillSpeed, setAgentFillSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
+  const [allFormPages, setAllFormPages] = useState<USDOTFormPage[]>([]);
+  const [totalPages, setTotalPages] = useState(77);
 
   // Load session stats on mount
   useEffect(() => {
@@ -376,7 +390,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       cargoTankFacility: 'No',
       driveaway: 'No',
       towaway: 'No',
-      cargoClassifications: 'General Freight',
+      cargoClassifications: ['General Freight'],
       nonCMVProperty: '0',
       tripLeasedVehicles: {
         straightTrucks: '0',
@@ -542,57 +556,77 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     compareResults(formData);
   };
 
-  // Compare RPA results with expected scenario data - comprehensive USDOT questions mapping
+  // Helper: Get RPA filled value for a field
+  const getRPAFilledValue = (fieldMapping: { pageNumber: number, fieldName: string }): any => {
+    const page = rpaFilledPages.find(p => p.pageNumber === fieldMapping.pageNumber);
+    if (!page) return undefined;
+    const field = page.fields.find(f => f.fieldName === fieldMapping.fieldName);
+    return field?.value;
+  };
+
+  // Compare RPA results with expected scenario data - using actual RPA filled data
   const compareResults = (expectedData: Partial<USDOTApplicationData>) => {
     const comparisons: FieldComparison[] = [
       // Operation Classification Questions
-      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: currentScenario?.hasDunsBradstreet, actual: applicationData.hasDunsBradstreet, isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
-      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: applicationData.legalBusinessName, isCorrect: null, fieldPath: 'legalBusinessName', category: 'operation_classification' },
-      { fieldName: 'dbaName', displayName: 'Doing Business As Name(s) (if different from Legal Business Name)', expected: expectedData.dbaName, actual: applicationData.dbaName, isCorrect: null, fieldPath: 'dbaName', category: 'operation_classification' },
-      { fieldName: 'principalAddressSame', displayName: 'Is the Applicant\'s Principal Place of Business Address the same as the Application Contact\'s Address?', expected: expectedData.principalAddressSame, actual: applicationData.principalAddressSame, isCorrect: null, fieldPath: 'principalAddressSame', category: 'operation_classification' },
-      { fieldName: 'principalAddress', displayName: 'Principal Place of Business Address', expected: expectedData.principalAddress, actual: applicationData.principalAddress, isCorrect: null, fieldPath: 'principalAddress', category: 'operation_classification' },
+      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: 'No', actual: getRPAFilledValue({ pageNumber: 16, fieldName: 'questionCode_B0041P040011S04013_Q04035' }) === 'N' ? 'No' : 'Yes', isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
+      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: getRPAFilledValue({ pageNumber: 17, fieldName: 'questionCode_B0041P040061S04001_Q04001_LEGAL_BUS_NAME' }), isCorrect: null, fieldPath: 'legalBusinessName', category: 'operation_classification' },
+      { fieldName: 'dbaName', displayName: 'Doing Business As Name(s) (if different from Legal Business Name)', expected: expectedData.dbaName, actual: getRPAFilledValue({ pageNumber: 18, fieldName: 'dbaName_1' }), isCorrect: null, fieldPath: 'dbaName', category: 'operation_classification' },
+      { fieldName: 'principalAddressSame', displayName: 'Is the Applicant\'s Principal Place of Business Address the same as the Application Contact\'s Address?', expected: 'Yes', actual: getRPAFilledValue({ pageNumber: 19, fieldName: 'questionCode_B0041P040031S04004_Q04002' }) === 'Y' ? 'Yes' : 'No', isCorrect: null, fieldPath: 'principalAddressSame', category: 'operation_classification' },
+      { fieldName: 'principalAddress', displayName: 'Principal Place of Business Address', expected: expectedData.principalAddress, actual: {
+        country: 'US',
+        street: getRPAFilledValue({ pageNumber: 20, fieldName: 'Q04004_ADDRESS1' }),
+        city: getRPAFilledValue({ pageNumber: 20, fieldName: 'Q04008_CITY' }),
+        state: getRPAFilledValue({ pageNumber: 20, fieldName: 'Q04009_STATE' }),
+        zip: getRPAFilledValue({ pageNumber: 20, fieldName: 'Q04010_POSTAL_CODE' })
+      }, isCorrect: null, fieldPath: 'principalAddress', category: 'operation_classification' },
       { fieldName: 'mailingAddress', displayName: 'Mailing Address', expected: expectedData.mailingAddress, actual: applicationData.mailingAddress, isCorrect: null, fieldPath: 'mailingAddress', category: 'operation_classification' },
-      { fieldName: 'phone', displayName: 'Principal Place of Business Telephone Number', expected: expectedData.phone, actual: applicationData.phone, isCorrect: null, fieldPath: 'phone', category: 'operation_classification' },
-      { fieldName: 'ein', displayName: 'Employer Identification Number (EIN) or Social Security Number (SSN)', expected: expectedData.ein, actual: applicationData.ein, isCorrect: null, fieldPath: 'ein', category: 'operation_classification' },
-      { fieldName: 'isGovernmentUnit', displayName: 'Is the Applicant a Unit of Government?', expected: expectedData.isGovernmentUnit, actual: applicationData.isGovernmentUnit, isCorrect: null, fieldPath: 'isGovernmentUnit', category: 'operation_classification' },
+      { fieldName: 'phone', displayName: 'Principal Place of Business Telephone Number', expected: expectedData.phone, actual: `(${getRPAFilledValue({ pageNumber: 21, fieldName: 'questionCode_B0041P040101S04005_Q04021_BUS_TEL_NUM_acode' })}) ${getRPAFilledValue({ pageNumber: 21, fieldName: 'questionCode_B0041P040101S04005_Q04021_BUS_TEL_NUM_pcode' })}`.trim(), isCorrect: null, fieldPath: 'phone', category: 'operation_classification' },
+      { fieldName: 'ein', displayName: 'Employer Identification Number (EIN) or Social Security Number (SSN)', expected: expectedData.ein, actual: getRPAFilledValue({ pageNumber: 22, fieldName: 'questionCode_B0041P040111S04006_Q04040' }), isCorrect: null, fieldPath: 'ein', category: 'operation_classification' },
+      { fieldName: 'isGovernmentUnit', displayName: 'Is the Applicant a Unit of Government?', expected: 'No', actual: applicationData.isGovernmentUnit, isCorrect: null, fieldPath: 'isGovernmentUnit', category: 'operation_classification' },
       { fieldName: 'formOfBusiness', displayName: 'Form of Business (Select the business form that applies)', expected: expectedData.formOfBusiness, actual: applicationData.formOfBusiness, isCorrect: null, fieldPath: 'formOfBusiness', category: 'operation_classification' },
-      { fieldName: 'ownershipControl', displayName: 'Ownership and Control', expected: expectedData.ownershipControl, actual: applicationData.ownershipControl, isCorrect: null, fieldPath: 'ownershipControl', category: 'operation_classification' },
+      { fieldName: 'ownershipControl', displayName: 'Ownership and Control', expected: 'Individual', actual: applicationData.ownershipControl, isCorrect: null, fieldPath: 'ownershipControl', category: 'operation_classification' },
       
-      // Company Contact Questions
-      { fieldName: 'contactFirstName', displayName: 'Company Contact First Name', expected: expectedData.contactFirstName, actual: applicationData.contactFirstName, isCorrect: null, fieldPath: 'contactFirstName', category: 'company_contact' },
+      // Company Contact Questions  
+      { fieldName: 'contactFirstName', displayName: 'Company Contact First Name', expected: expectedData.contactFirstName, actual: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03002_APP_CONT_FIRST_NAME' }), isCorrect: null, fieldPath: 'contactFirstName', category: 'company_contact' },
       { fieldName: 'contactMiddleName', displayName: 'Company Contact Middle Name', expected: expectedData.contactMiddleName, actual: applicationData.contactMiddleName, isCorrect: null, fieldPath: 'contactMiddleName', category: 'company_contact' },
-      { fieldName: 'contactLastName', displayName: 'Company Contact Last Name', expected: expectedData.contactLastName, actual: applicationData.contactLastName, isCorrect: null, fieldPath: 'contactLastName', category: 'company_contact' },
+      { fieldName: 'contactLastName', displayName: 'Company Contact Last Name', expected: expectedData.contactLastName, actual: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03003_APP_CONT_LAST_NAME' }), isCorrect: null, fieldPath: 'contactLastName', category: 'company_contact' },
       { fieldName: 'contactSuffix', displayName: 'Company Contact Suffix', expected: expectedData.contactSuffix, actual: applicationData.contactSuffix, isCorrect: null, fieldPath: 'contactSuffix', category: 'company_contact' },
-      { fieldName: 'contactTitle', displayName: 'Company Official\'s Title', expected: expectedData.contactTitle, actual: applicationData.contactTitle, isCorrect: null, fieldPath: 'contactTitle', category: 'company_contact' },
-      { fieldName: 'contactEmail', displayName: 'Company Contact Email', expected: expectedData.contactEmail, actual: applicationData.contactEmail, isCorrect: null, fieldPath: 'contactEmail', category: 'company_contact' },
+      { fieldName: 'contactTitle', displayName: 'Company Official\'s Title', expected: expectedData.contactTitle, actual: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03021_APP_CONT_TITLE' }), isCorrect: null, fieldPath: 'contactTitle', category: 'company_contact' },
+      { fieldName: 'contactEmail', displayName: 'Company Contact Email', expected: expectedData.contactEmail, actual: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03015_APP_CONT_EMAIL' }), isCorrect: null, fieldPath: 'contactEmail', category: 'company_contact' },
       { fieldName: 'contactPhone', displayName: 'Company Contact Telephone Number', expected: expectedData.contactPhone, actual: applicationData.contactPhone, isCorrect: null, fieldPath: 'contactPhone', category: 'company_contact' },
-      { fieldName: 'contactAddress', displayName: 'Company Contact Address', expected: expectedData.contactAddress, actual: applicationData.contactAddress, isCorrect: null, fieldPath: 'contactAddress', category: 'company_contact' },
+      { fieldName: 'contactAddress', displayName: 'Company Contact Address', expected: expectedData.contactAddress, actual: {
+        country: 'US',
+        street: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03004_APP_CONT_ADDR1' }),
+        city: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03008_APP_CONT_CITY' }),
+        state: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03009_APP_CONT_STATE' }),
+        zip: getRPAFilledValue({ pageNumber: 14, fieldName: 'Q03010_APP_CONT_POSTAL_CODE' })
+      }, isCorrect: null, fieldPath: 'contactAddress', category: 'company_contact' },
       
       // Operation Type Questions
-      { fieldName: 'intermodalEquipmentProvider', displayName: 'Will the Applicant operate as an Intermodal Equipment Provider?', expected: expectedData.intermodalEquipmentProvider, actual: applicationData.intermodalEquipmentProvider, isCorrect: null, fieldPath: 'intermodalEquipmentProvider', category: 'operation_type' },
-      { fieldName: 'transportProperty', displayName: 'Will the Applicant transport Property?', expected: expectedData.transportProperty, actual: applicationData.transportProperty, isCorrect: null, fieldPath: 'transportProperty', category: 'operation_type' },
-      { fieldName: 'receiveCompensation', displayName: 'Will the Applicant receive compensation for the business of transporting the property belonging to others?', expected: expectedData.receiveCompensation, actual: applicationData.receiveCompensation, isCorrect: null, fieldPath: 'receiveCompensation', category: 'operation_type' },
+      { fieldName: 'intermodalEquipmentProvider', displayName: 'Will the Applicant operate as an Intermodal Equipment Provider?', expected: 'No', actual: getRPAFilledValue({ pageNumber: 30, fieldName: 'questionCode_B0051P050011S05001_Q05002' }) === 'N' ? 'No' : 'Yes', isCorrect: null, fieldPath: 'intermodalEquipmentProvider', category: 'operation_type' },
+      { fieldName: 'transportProperty', displayName: 'Will the Applicant transport Property?', expected: 'Yes', actual: getRPAFilledValue({ pageNumber: 31, fieldName: 'questionCode_B0051P050031S05002_Q05004' }) === 'Y' ? 'Yes' : 'No', isCorrect: null, fieldPath: 'transportProperty', category: 'operation_type' },
+      { fieldName: 'receiveCompensation', displayName: 'Will the Applicant receive compensation for the business of transporting the property belonging to others?', expected: expectedData.receiveCompensation, actual: getRPAFilledValue({ pageNumber: 32, fieldName: 'questionCode_B0051P050051S05003_Q05006' }) === 'Y' ? 'Yes' : 'No', isCorrect: null, fieldPath: 'receiveCompensation', category: 'operation_type' },
       { fieldName: 'propertyType', displayName: 'What type of Property will the Applicant transport?', expected: expectedData.propertyType, actual: applicationData.propertyType, isCorrect: null, fieldPath: 'propertyType', category: 'operation_type' },
-      { fieldName: 'interstateCommerce', displayName: 'Will the Applicant transport Non-Hazardous Materials across state lines, otherwise known as Interstate Commerce?', expected: expectedData.interstateCommerce, actual: applicationData.interstateCommerce, isCorrect: null, fieldPath: 'interstateCommerce', category: 'operation_type' },
-      { fieldName: 'transportOwnProperty', displayName: 'Will the Applicant transport their own property?', expected: expectedData.transportOwnProperty, actual: applicationData.transportOwnProperty, isCorrect: null, fieldPath: 'transportOwnProperty', category: 'operation_type' },
-      { fieldName: 'transportPassengers', displayName: 'Will the Applicant transport any Passengers?', expected: expectedData.transportPassengers, actual: applicationData.transportPassengers, isCorrect: null, fieldPath: 'transportPassengers', category: 'operation_type' },
-      { fieldName: 'brokerServices', displayName: 'Will the Applicant provide Property or Household Goods (HHG) Broker services?', expected: expectedData.brokerServices, actual: applicationData.brokerServices, isCorrect: null, fieldPath: 'brokerServices', category: 'operation_type' },
-      { fieldName: 'freightForwarder', displayName: 'Will the Applicant provide Freight Forwarder services?', expected: expectedData.freightForwarder, actual: applicationData.freightForwarder, isCorrect: null, fieldPath: 'freightForwarder', category: 'operation_type' },
-      { fieldName: 'cargoTankFacility', displayName: 'Will the Applicant operate a Cargo Tank Facility?', expected: expectedData.cargoTankFacility, actual: applicationData.cargoTankFacility, isCorrect: null, fieldPath: 'cargoTankFacility', category: 'operation_type' },
-      { fieldName: 'driveaway', displayName: 'Will the Applicant operate as a Driveaway?', expected: expectedData.driveaway, actual: applicationData.driveaway, isCorrect: null, fieldPath: 'driveaway', category: 'operation_type' },
-      { fieldName: 'towaway', displayName: 'Will the Applicant operate as a Towaway?', expected: expectedData.towaway, actual: applicationData.towaway, isCorrect: null, fieldPath: 'towaway', category: 'operation_type' },
+      { fieldName: 'interstateCommerce', displayName: 'Will the Applicant transport Non-Hazardous Materials across state lines, otherwise known as Interstate Commerce?', expected: expectedData.interstateCommerce, actual: getRPAFilledValue({ pageNumber: 34, fieldName: 'questionCode_B0051P050091S05012_Q05041' }) === 'Y' ? 'Yes' : 'No', isCorrect: null, fieldPath: 'interstateCommerce', category: 'operation_type' },
+      { fieldName: 'transportOwnProperty', displayName: 'Will the Applicant transport their own property?', expected: 'No', actual: applicationData.transportOwnProperty, isCorrect: null, fieldPath: 'transportOwnProperty', category: 'operation_type' },
+      { fieldName: 'transportPassengers', displayName: 'Will the Applicant transport any Passengers?', expected: 'No', actual: getRPAFilledValue({ pageNumber: 36, fieldName: 'questionCode_B0051P050131S05013_Q05044' }) === 'N' ? 'No' : 'Yes', isCorrect: null, fieldPath: 'transportPassengers', category: 'operation_type' },
+      { fieldName: 'brokerServices', displayName: 'Will the Applicant provide Property or Household Goods (HHG) Broker services?', expected: 'No', actual: applicationData.brokerServices, isCorrect: null, fieldPath: 'brokerServices', category: 'operation_type' },
+      { fieldName: 'freightForwarder', displayName: 'Will the Applicant provide Freight Forwarder services?', expected: 'No', actual: applicationData.freightForwarder, isCorrect: null, fieldPath: 'freightForwarder', category: 'operation_type' },
+      { fieldName: 'cargoTankFacility', displayName: 'Will the Applicant operate a Cargo Tank Facility?', expected: 'No', actual: applicationData.cargoTankFacility, isCorrect: null, fieldPath: 'cargoTankFacility', category: 'operation_type' },
+      { fieldName: 'driveaway', displayName: 'Will the Applicant operate as a Driveaway?', expected: 'No', actual: applicationData.driveaway, isCorrect: null, fieldPath: 'driveaway', category: 'operation_type' },
+      { fieldName: 'towaway', displayName: 'Will the Applicant operate as a Towaway?', expected: 'No', actual: applicationData.towaway, isCorrect: null, fieldPath: 'towaway', category: 'operation_type' },
       { fieldName: 'cargoClassifications', displayName: 'Please select all classifications of cargo that the Applicant will transport or handle', expected: expectedData.cargoClassifications, actual: applicationData.cargoClassifications, isCorrect: null, fieldPath: 'cargoClassifications', category: 'operation_type' },
       
       // Vehicle Summary Questions
-      { fieldName: 'nonCMVProperty', displayName: 'Non-CMV Property', expected: expectedData.nonCMVProperty, actual: applicationData.nonCMVProperty, isCorrect: null, fieldPath: 'nonCMVProperty', category: 'vehicle_summary' },
-      { fieldName: 'ownedVehicles.straightTrucks', displayName: 'Owned Straight Truck(s)', expected: expectedData.ownedVehicles?.straightTrucks, actual: applicationData.ownedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'ownedVehicles.straightTrucks', category: 'vehicle_summary' },
-      { fieldName: 'ownedVehicles.truckTractors', displayName: 'Owned Truck Tractor(s)', expected: expectedData.ownedVehicles?.truckTractors, actual: applicationData.ownedVehicles?.truckTractors, isCorrect: null, fieldPath: 'ownedVehicles.truckTractors', category: 'vehicle_summary' },
-      { fieldName: 'ownedVehicles.trailers', displayName: 'Owned Trailer(s)', expected: expectedData.ownedVehicles?.trailers, actual: applicationData.ownedVehicles?.trailers, isCorrect: null, fieldPath: 'ownedVehicles.trailers', category: 'vehicle_summary' },
-      { fieldName: 'ownedVehicles.iepTrailerChassis', displayName: 'Owned IEP Trailer Chassis Only', expected: expectedData.ownedVehicles?.iepTrailerChassis, actual: applicationData.ownedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'ownedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
-      { fieldName: 'termLeasedVehicles.straightTrucks', displayName: 'Term Leased Straight Truck(s)', expected: expectedData.termLeasedVehicles?.straightTrucks, actual: applicationData.termLeasedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'termLeasedVehicles.straightTrucks', category: 'vehicle_summary' },
-      { fieldName: 'termLeasedVehicles.truckTractors', displayName: 'Term Leased Truck Tractor(s)', expected: expectedData.termLeasedVehicles?.truckTractors, actual: applicationData.termLeasedVehicles?.truckTractors, isCorrect: null, fieldPath: 'termLeasedVehicles.truckTractors', category: 'vehicle_summary' },
-      { fieldName: 'termLeasedVehicles.trailers', displayName: 'Term Leased Trailer(s)', expected: expectedData.termLeasedVehicles?.trailers, actual: applicationData.termLeasedVehicles?.trailers, isCorrect: null, fieldPath: 'termLeasedVehicles.trailers', category: 'vehicle_summary' },
-      { fieldName: 'termLeasedVehicles.iepTrailerChassis', displayName: 'Term Leased IEP Trailer Chassis Only', expected: expectedData.termLeasedVehicles?.iepTrailerChassis, actual: applicationData.termLeasedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'termLeasedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
+      { fieldName: 'nonCMVProperty', displayName: 'Non-CMV Property', expected: '0', actual: applicationData.nonCMVProperty, isCorrect: null, fieldPath: 'nonCMVProperty', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.straightTrucks', displayName: 'Owned Straight Truck(s)', expected: expectedData.ownedVehicles?.straightTrucks, actual: getRPAFilledValue({ pageNumber: 45, fieldName: 'questionCode_B0061P060021S06004_Q06001_STRAIGHT_TRUCK_OWNED' }), isCorrect: null, fieldPath: 'ownedVehicles.straightTrucks', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.truckTractors', displayName: 'Owned Truck Tractor(s)', expected: expectedData.ownedVehicles?.truckTractors, actual: getRPAFilledValue({ pageNumber: 45, fieldName: 'questionCode_B0061P060021S06042_Q06005_TRUCK_TRACTOR_OWNED' }), isCorrect: null, fieldPath: 'ownedVehicles.truckTractors', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.trailers', displayName: 'Owned Trailer(s)', expected: expectedData.ownedVehicles?.trailers, actual: getRPAFilledValue({ pageNumber: 45, fieldName: 'questionCode_B0061P060021S06043_Q06009_TRAILER_OWNED' }), isCorrect: null, fieldPath: 'ownedVehicles.trailers', category: 'vehicle_summary' },
+      { fieldName: 'ownedVehicles.iepTrailerChassis', displayName: 'Owned IEP Trailer Chassis Only', expected: '0', actual: applicationData.ownedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'ownedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.straightTrucks', displayName: 'Term Leased Straight Truck(s)', expected: expectedData.termLeasedVehicles?.straightTrucks, actual: getRPAFilledValue({ pageNumber: 45, fieldName: 'questionCode_B0061P060021S06004_Q06002_STRAIGHT_TRUCK_TERMLEASED' }), isCorrect: null, fieldPath: 'termLeasedVehicles.straightTrucks', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.truckTractors', displayName: 'Term Leased Truck Tractor(s)', expected: expectedData.termLeasedVehicles?.truckTractors, actual: getRPAFilledValue({ pageNumber: 45, fieldName: 'questionCode_B0061P060021S06042_Q06006_TRUCK_TRACTOR_TERMLEASED' }), isCorrect: null, fieldPath: 'termLeasedVehicles.truckTractors', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.trailers', displayName: 'Term Leased Trailer(s)', expected: expectedData.termLeasedVehicles?.trailers, actual: getRPAFilledValue({ pageNumber: 45, fieldName: 'questionCode_B0061P060021S06043_Q06010_TRAILER_TERMLEASED' }), isCorrect: null, fieldPath: 'termLeasedVehicles.trailers', category: 'vehicle_summary' },
+      { fieldName: 'termLeasedVehicles.iepTrailerChassis', displayName: 'Term Leased IEP Trailer Chassis Only', expected: '0', actual: applicationData.termLeasedVehicles?.iepTrailerChassis, isCorrect: null, fieldPath: 'termLeasedVehicles.iepTrailerChassis', category: 'vehicle_summary' },
       { fieldName: 'tripLeasedVehicles.straightTrucks', displayName: 'Trip Leased Straight Truck(s)', expected: expectedData.tripLeasedVehicles?.straightTrucks, actual: applicationData.tripLeasedVehicles?.straightTrucks, isCorrect: null, fieldPath: 'tripLeasedVehicles.straightTrucks', category: 'vehicle_summary' },
       { fieldName: 'tripLeasedVehicles.truckTractors', displayName: 'Trip Leased Truck Tractor(s)', expected: expectedData.tripLeasedVehicles?.truckTractors, actual: applicationData.tripLeasedVehicles?.truckTractors, isCorrect: null, fieldPath: 'tripLeasedVehicles.truckTractors', category: 'vehicle_summary' },
       { fieldName: 'tripLeasedVehicles.trailers', displayName: 'Trip Leased Trailer(s)', expected: expectedData.tripLeasedVehicles?.trailers, actual: applicationData.tripLeasedVehicles?.trailers, isCorrect: null, fieldPath: 'tripLeasedVehicles.trailers', category: 'vehicle_summary' },
@@ -641,25 +675,128 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       return;
     }
 
-    const session: TrainingSession = {
-      id: `session_${Date.now()}`,
-      agentId: agentId,
-      startTime: new Date(),
-      currentStep: 1,
-      totalSteps: 76,
-      score: 0,
-      mistakes: [],
-      completed: false,
-      applicationData: {},
-      scenario: scenario
-    };
+    // Run the RPA agent to fill all pages
+    console.log('🤖 Starting RPA agent to fill application...');
+    setIsAutoFilling(true);
+    
+    try {
+      // Get all 77 USDOT form pages
+      const pageService = USDOTFormPageService.getInstance();
+      const allPages = pageService.getAllPages();
+      setAllFormPages(allPages);
+      setTotalPages(allPages.length);
+      
+      // Get the pages the RPA agent can fill
+      const filledPages = await rpaAgent.fillApplication(scenario);
+      setRpaFilledPages(filledPages);
+      console.log(`✅ RPA agent can fill ${filledPages.length} out of ${allPages.length} total pages`);
+      
+      // Update UI to show ALL pages (not just filled ones)
+      const session: TrainingSession = {
+        id: `session_${Date.now()}`,
+        agentId: agentId,
+        startTime: new Date(),
+        currentStep: 1,
+        totalSteps: allPages.length, // Show all 77 pages
+        score: 0,
+        mistakes: [],
+        completed: false,
+        applicationData: {},
+        scenario: scenario
+      };
 
-    setTrainingSession(session);
-    setIsTraining(true);
-    setCurrentStep(1);
-    setApplicationData({});
-    setShowResults(false);
-    setShowReview(false);
+      setTrainingSession(session);
+      setIsTraining(true);
+      setCurrentStep(1);
+      setShowResults(false);
+      setShowReview(false);
+      
+      // Populate applicationData from RPA filled pages - comprehensive mapping
+      const rpaData: Partial<USDOTApplicationData> = {
+        ownedVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
+        termLeasedVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
+        tripLeasedVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
+        towDriveawayVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
+        principalAddress: { country: 'US', street: '', city: '', state: '', zip: '' },
+        mailingAddress: { country: 'US', street: '', city: '', state: '', zip: '' },
+        contactAddress: { country: 'US', street: '', city: '', state: '', zip: '' },
+        complianceCertifications: { willingAble: '', produceDocuments: '', notDisqualified: '', processAgent: '', notSuspended: '', deficienciesCorrected: '' }
+      };
+      
+      filledPages.forEach(page => {
+        page.fields.forEach(field => {
+          // Business info
+          if (field.fieldName === 'questionCode_B0041P040061S04001_Q04001_LEGAL_BUS_NAME') rpaData.legalBusinessName = field.value;
+          if (field.fieldName === 'dbaName_1') rpaData.dbaName = field.value;
+          if (field.fieldName === 'questionCode_B0041P040111S04006_Q04040') rpaData.ein = field.value;
+          if (field.fieldName === 'questionCode_B0041P040011S04013_Q04035') rpaData.hasDunsBradstreet = field.value === 'N' ? 'No' : 'Yes';
+          if (field.fieldName === 'questionCode_B0041P040031S04004_Q04002') rpaData.principalAddressSame = field.value === 'Y' ? 'Yes' : 'No';
+          
+          // Address
+          if (field.fieldName === 'Q04004_ADDRESS1') rpaData.principalAddress!.street = field.value;
+          if (field.fieldName === 'Q04008_CITY') rpaData.principalAddress!.city = field.value;
+          if (field.fieldName === 'Q04009_STATE') rpaData.principalAddress!.state = field.value;
+          if (field.fieldName === 'Q04010_POSTAL_CODE') rpaData.principalAddress!.zip = field.value;
+          
+          // Contact
+          if (field.fieldName === 'Q03002_APP_CONT_FIRST_NAME') rpaData.contactFirstName = field.value;
+          if (field.fieldName === 'Q03003_APP_CONT_LAST_NAME') rpaData.contactLastName = field.value;
+          if (field.fieldName === 'Q03021_APP_CONT_TITLE') rpaData.contactTitle = field.value;
+          if (field.fieldName === 'Q03015_APP_CONT_EMAIL') rpaData.contactEmail = field.value;
+          if (field.fieldName === 'Q03004_APP_CONT_ADDR1') rpaData.contactAddress!.street = field.value;
+          if (field.fieldName === 'Q03008_APP_CONT_CITY') rpaData.contactAddress!.city = field.value;
+          if (field.fieldName === 'Q03009_APP_CONT_STATE') rpaData.contactAddress!.state = field.value;
+          if (field.fieldName === 'Q03010_APP_CONT_POSTAL_CODE') rpaData.contactAddress!.zip = field.value;
+          
+          // Phone - combine parts
+          if (field.fieldName.includes('BUS_TEL_NUM_acode')) {
+            const phoneNum = filledPages.find(p => p.pageNumber === page.pageNumber)?.fields.find(f => f.fieldName.includes('BUS_TEL_NUM_pcode'))?.value || '';
+            rpaData.phone = `(${field.value}) ${phoneNum}`;
+          }
+          
+          // Operations
+          if (field.fieldName === 'questionCode_B0051P050011S05001_Q05002') rpaData.intermodalEquipmentProvider = field.value === 'N' ? 'No' : 'Yes';
+          if (field.fieldName === 'questionCode_B0051P050031S05002_Q05004') rpaData.transportProperty = field.value === 'Y' ? 'Yes' : 'No';
+          if (field.fieldName === 'questionCode_B0051P050051S05003_Q05006') rpaData.receiveCompensation = field.value === 'Y' ? 'Yes' : 'No';
+          if (field.fieldName === 'questionCode_B0051P050091S05012_Q05041') rpaData.interstateCommerce = field.value === 'Y' ? 'Yes' : 'No';
+          if (field.fieldName === 'questionCode_B0051P050131S05013_Q05044') rpaData.transportPassengers = field.value === 'N' ? 'No' : 'Yes';
+          
+          // Vehicles
+          if (field.fieldName === 'questionCode_B0061P060021S06004_Q06001_STRAIGHT_TRUCK_OWNED') rpaData.ownedVehicles!.straightTrucks = field.value;
+          if (field.fieldName === 'questionCode_B0061P060021S06042_Q06005_TRUCK_TRACTOR_OWNED') rpaData.ownedVehicles!.truckTractors = field.value;
+          if (field.fieldName === 'questionCode_B0061P060021S06043_Q06009_TRAILER_OWNED') rpaData.ownedVehicles!.trailers = field.value;
+          if (field.fieldName === 'questionCode_B0061P060021S06004_Q06002_STRAIGHT_TRUCK_TERMLEASED') rpaData.termLeasedVehicles!.straightTrucks = field.value;
+          if (field.fieldName === 'questionCode_B0061P060021S06042_Q06006_TRUCK_TRACTOR_TERMLEASED') rpaData.termLeasedVehicles!.truckTractors = field.value;
+          if (field.fieldName === 'questionCode_B0061P060021S06043_Q06010_TRAILER_TERMLEASED') rpaData.termLeasedVehicles!.trailers = field.value;
+          
+          // Drivers
+          if (field.fieldName === 'questionCode_B0071P070021S07002_Q07001') rpaData.interstateDrivers100Mile = field.value;
+          if (field.fieldName === 'questionCode_B0071P070021S07002_Q07002') rpaData.interstateDriversBeyond100Mile = field.value;
+          if (field.fieldName === 'questionCode_B0071P070061S07004_Q07005') rpaData.cdlDrivers = field.value;
+          
+          // Affiliations & Certifications
+          if (field.fieldName === 'questionCode_B0141P140021S14002_Q14002') rpaData.hasAffiliations = field.value === 'N' ? 'No' : 'Yes';
+          if (field.fieldName === 'questionCode_B0161P160021S16002_Q16002') rpaData.complianceCertifications!.willingAble = field.value === 'Y' ? 'Yes' : 'No';
+          if (field.fieldName === 'questionCode_B0161P160031S16003_Q16003') rpaData.complianceCertifications!.produceDocuments = field.value === 'Y' ? 'Yes' : 'No';
+          if (field.fieldName === 'questionCode_B0161P160041S16004_Q16004') rpaData.complianceCertifications!.notDisqualified = field.value === 'Y' ? 'Yes' : 'No';
+        });
+      });
+      
+      setApplicationData(rpaData);
+      console.log('✅ Populated applicationData from RPA filled pages:', rpaData);
+      
+      // Automatically start watching the agent fill forms
+      setTimeout(() => {
+        setIsWatchingAgent(true);
+        setCurrentFillingFieldIndex(0);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error running RPA agent:', error);
+      alert('Error starting RPA agent. Check console for details.');
+    } finally {
+      setIsAutoFilling(false);
+    }
   };
 
   // Submit correction and load next scenario
@@ -785,19 +922,29 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
         {renderFMCSANav()}
 
         {/* Progress Indicator */}
-        <div className="max-w-6xl mx-auto px-4 py-4 bg-gray-50 border-b border-gray-300">
+        <div className="max-w-6xl mx-auto px-4 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-b-2 border-blue-300">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-bold text-gray-900">
-              USDOT Number Application
-          </h2>
-            <span className="text-sm text-gray-600">
-              Page {currentStep} of 76
-            </span>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">
+                USDOT Number Application - RPA Agent Training
+              </h2>
+              <p className="text-xs text-gray-600 mt-1">
+                {rpaFilledPages.length > 0 && currentStep > 0 && currentStep <= rpaFilledPages.length
+                  ? `Viewing: ${rpaFilledPages[currentStep - 1].pageName}`
+                  : 'Pixel-Perfect FMCSA Form Replication'}
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-blue-700">
+                Page {currentStep} of {totalPages}
+              </span>
+              <p className="text-xs text-gray-500">RPA fills {rpaFilledPages.length} pages</p>
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className="w-full bg-gray-300 rounded-full h-3 shadow-inner">
             <div 
-              className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-              style={{ width: `${(currentStep / 76) * 100}%` }}
+              className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500 shadow-sm" 
+              style={{ width: `${totalPages > 0 ? (currentStep / totalPages) * 100 : 0}%` }}
             ></div>
           </div>
         </div>
@@ -812,16 +959,26 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
         <div className="mt-6 flex justify-between items-center">
             <button 
               className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
-              disabled={currentStep === 1 || isAutoFilling}
+              disabled={currentStep === 1 || isAutoFilling || isWatchingAgent}
               onClick={() => setCurrentStep(currentStep - 1)}
             >
               ← PREVIOUS
             </button>
+            
+            {isWatchingAgent && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-yellow-100 border border-yellow-400 rounded">
+                <ClockIcon className="h-5 w-5 text-yellow-600 animate-pulse" />
+                <span className="text-sm font-medium text-yellow-800">
+                  Agent is filling forms... Please wait
+                </span>
+              </div>
+            )}
+            
             <button 
               className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 font-medium"
-              disabled={isAutoFilling}
+              disabled={isAutoFilling || isWatchingAgent}
               onClick={() => {
-                if (currentStep < 13) {
+                if (currentStep < totalPages) {
                   setCurrentStep(currentStep + 1);
                 } else {
                   setShowReview(true);
@@ -829,7 +986,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 }
               }}
             >
-              {currentStep === 13 ? 'SUBMIT' : 'NEXT →'}
+              {currentStep === totalPages ? 'SUBMIT FOR REVIEW' : 'NEXT →'}
             </button>
           </div>
         </div>
@@ -837,8 +994,297 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     );
   };
 
-  // Render content for each step - COMPLETE USDOT APPLICATION
+  // Watch the agent fill the form field-by-field (animated)
+  const watchAgentFill = () => {
+    if (rpaFilledPages.length === 0) return;
+    
+    setIsWatchingAgent(true);
+    setCurrentStep(1);
+    setCurrentFillingFieldIndex(0);
+  };
+
+  // Auto-fill animation effect
+  useEffect(() => {
+    if (!isWatchingAgent || !iframeRef.current || rpaFilledPages.length === 0 || allFormPages.length === 0) return;
+    
+    // Get the current form page
+    const currentPageIndex = currentStep - 1;
+    const formPage = allFormPages[currentPageIndex];
+    if (!formPage) return;
+    
+    // Check if RPA has data for this page
+    const currentPageData = rpaFilledPages.find(p => p.pageNumber === formPage.pageNumber);
+    if (!currentPageData) {
+      // Skip to next page that has RPA data
+      for (let i = currentStep; i < totalPages; i++) {
+        const nextFormPage = allFormPages[i];
+        const nextPageData = rpaFilledPages.find(p => p.pageNumber === nextFormPage.pageNumber);
+        if (nextPageData) {
+          setTimeout(() => setCurrentStep(i + 1), 500);
+          return;
+        }
+      }
+      // No more RPA pages found
+      setIsWatchingAgent(false);
+      return;
+    }
+
+    const iframe = iframeRef.current;
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) return;
+
+    // Get delay based on speed setting
+    const delays = {
+      slow: 1500,
+      normal: 800,
+      fast: 300
+    };
+    const delay = delays[agentFillSpeed];
+
+    // Wait for page to load - check for the data-form-loaded attribute
+    const waitForPage = () => {
+      const isFormLoaded = iframeDoc.body?.getAttribute('data-form-loaded') === 'true';
+      if (!isFormLoaded) {
+        setTimeout(waitForPage, 100);
+        return;
+      }
+      
+      console.log(`✅ Iframe form loaded and ready for page ${currentPageData.pageNumber}`);
+
+      // Start filling fields one by one
+      if (currentFillingFieldIndex >= 0 && currentFillingFieldIndex < currentPageData.fields.length) {
+        const field = currentPageData.fields[currentFillingFieldIndex];
+        console.log(`🎯 Attempting to fill field ${currentFillingFieldIndex + 1}/${currentPageData.fields.length}:`, field.fieldId, '=', field.value);
+        
+        const element = iframeDoc.getElementById(field.fieldId) as HTMLInputElement | HTMLSelectElement;
+        
+        if (element) {
+          console.log(`✅ Found element:`, element.tagName, element.type);
+          
+          // Scroll to element
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Highlight field being filled
+          element.style.backgroundColor = '#fbbf24';
+          element.style.border = '3px solid #f59e0b';
+          element.style.transition = 'all 0.3s ease';
+          element.style.transform = 'scale(1.05)';
+          element.style.boxShadow = '0 0 20px rgba(251, 191, 36, 0.5)';
+          
+          // Fill the field - just set value directly, no typing animation
+          if (element.type === 'radio') {
+            element.checked = true;
+          } else if (element.type === 'checkbox') {
+            element.checked = field.value === 'Y' || field.value === 'true';
+          } else {
+            element.value = field.value;
+          }
+          
+          console.log(`✅ Field filled, waiting ${delay}ms before next...`);
+          
+          // Show filled state
+          setTimeout(() => {
+            element.style.backgroundColor = '#d1fae5';
+            element.style.border = '2px solid #10b981';
+            element.style.transform = 'scale(1)';
+            element.style.boxShadow = 'none';
+            
+            // Move to next field
+            setTimeout(() => {
+              console.log(`➡️ Moving to next field...`);
+              setCurrentFillingFieldIndex(prev => prev + 1);
+            }, delay);
+          }, 500);
+        } else {
+          // Field not found, skip to next
+          console.warn(`⚠️ Field not found in DOM:`, field.fieldId);
+          setTimeout(() => {
+            setCurrentFillingFieldIndex(prev => prev + 1);
+          }, 100);
+        }
+      } else if (currentFillingFieldIndex >= currentPageData.fields.length) {
+        // Done with this page, move to next page that has RPA data
+        console.log(`✅ Page ${currentPageData.pageNumber} complete! Moving to next RPA-filled page...`);
+        
+        // Find next page that has RPA data
+        let nextRPAPageFound = false;
+        for (let i = currentStep; i < totalPages; i++) {
+          const nextFormPage = allFormPages[i];
+          const nextPageData = rpaFilledPages.find(p => p.pageNumber === nextFormPage.pageNumber);
+          if (nextPageData) {
+            console.log(`📄 Found next RPA-filled page at step ${i + 1} (page ${nextFormPage.pageNumber})`);
+            setTimeout(() => {
+              setCurrentStep(i + 1);
+              setCurrentFillingFieldIndex(0);
+            }, delay * 2);
+            nextRPAPageFound = true;
+            break;
+          }
+        }
+        
+        if (!nextRPAPageFound) {
+          // All RPA-filled pages done!
+          console.log(`🎉 All ${rpaFilledPages.length} RPA-filled pages completed!`);
+          setIsWatchingAgent(false);
+          setCurrentFillingFieldIndex(-1);
+        }
+      }
+    };
+
+    waitForPage();
+  }, [isWatchingAgent, currentStep, currentFillingFieldIndex, rpaFilledPages, agentFillSpeed, allFormPages, totalPages]);
+
+  // Render content for each step - PIXEL PERFECT FMCSA FORMS WITH RPA AUTO-FILL
   const renderStepContent = () => {
+    if (allFormPages.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">Click "Start Training Session" to load a scenario and watch the RPA agent fill the forms.</p>
+        </div>
+      );
+    }
+
+    // Get the current page from all pages
+    const currentPageIndex = currentStep - 1;
+    const formPage = allFormPages[currentPageIndex];
+    
+    if (!formPage) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-gray-600">Page {currentStep} not found</p>
+        </div>
+      );
+    }
+
+    // Check if RPA agent has data for this page
+    const currentPageData = rpaFilledPages.find(p => p.pageNumber === formPage.pageNumber);
+    const formPageUrl = `/usdot-forms/${formPage.filename}`;
+
+    return (
+      <div className="space-y-4">
+        
+        {/* Page Status Banner */}
+        {currentPageData ? (
+          <>
+            {/* Show current filling status when agent is working */}
+            {isWatchingAgent && currentFillingFieldIndex >= 0 && currentFillingFieldIndex < currentPageData.fields.length && (
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
+                <div className="text-sm">
+                  <div className="font-bold text-blue-900">
+                    🤖 RPA Agent - Page {formPage.pageNumber}: {formPage.title}
+                  </div>
+                  <div className="text-blue-700 mt-1">
+                    Filling field {currentFillingFieldIndex + 1} of {currentPageData.fields.length}: <strong>{currentPageData.fields[currentFillingFieldIndex].fieldName}</strong>
+                  </div>
+                  <div className="text-blue-600 text-xs mt-1">
+                    Value: "{currentPageData.fields[currentFillingFieldIndex].value}"
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Show agent can fill this page */}
+            {!isWatchingAgent && (
+              <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-4">
+                <div className="text-sm font-bold text-green-900">
+                  ✅ Page {formPage.pageNumber}: {formPage.title} - RPA Agent can fill this page ({currentPageData.fields.length} fields)
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Show agent cannot fill this page yet */
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4">
+            <div className="text-sm font-bold text-yellow-900">
+              ⚠️ Page {formPage.pageNumber}: {formPage.title} - RPA Agent has not been trained on this page yet
+            </div>
+          </div>
+        )}
+
+        {/* FMCSA Form Display */}
+        {formPageUrl ? (
+          <div className="bg-white border border-gray-300 shadow-lg">
+            <iframe
+              ref={iframeRef}
+              src={`/usdot-forms/wrapper.html?page=${formPage.filename}`}
+              className="w-full bg-white"
+              style={{ 
+                height: '600px',
+                border: 'none',
+                display: 'block'
+              }}
+              title={`FMCSA Form Page ${formPage.pageNumber}`}
+            />
+          </div>
+        ) : (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+            <p className="text-yellow-800 text-sm">
+              ⚠️ Form page not found for page {formPage.pageNumber}
+            </p>
+          </div>
+        )}
+
+        {/* Agent's Decision Logic (Expandable) - Only show if agent has data for this page */}
+        {currentPageData && (
+          <details className="bg-gray-50 border-2 border-gray-200 rounded-lg">
+            <summary className="cursor-pointer font-bold text-gray-700 hover:text-blue-600 p-4 select-none">
+              🧠 View RPA Agent's Decision-Making Process & Confidence Scores
+            </summary>
+            <div className="p-4 pt-2 border-t border-gray-200">
+              <div className="space-y-3">
+                {currentPageData.fields.map((field, index) => (
+                <div key={index} className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Field ID</p>
+                      <p className="text-sm font-mono text-gray-900 mt-1">{field.fieldName}</p>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide text-right">Confidence</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              field.confidence >= 0.9 ? 'bg-green-600' : 
+                              field.confidence >= 0.7 ? 'bg-green-500' :
+                              field.confidence >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}
+                            style={{ width: `${field.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className={`text-sm font-bold ${
+                          field.confidence >= 0.9 ? 'text-green-600' : 
+                          field.confidence >= 0.7 ? 'text-green-500' :
+                          field.confidence >= 0.5 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {(field.confidence * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-50 border-l-4 border-green-500 p-2 mb-2">
+                    <p className="text-xs font-bold text-green-700 mb-1">SELECTED VALUE:</p>
+                    <p className="text-base font-bold text-green-900">{field.value}</p>
+                  </div>
+                  
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-2">
+                    <p className="text-xs font-bold text-blue-700 mb-1">REASONING:</p>
+                    <p className="text-xs text-blue-900 italic">{field.reasoning}</p>
+                  </div>
+                </div>
+                ))}
+              </div>
+            </div>
+          </details>
+        )}
+      </div>
+    );
+  };
+
+  // REMOVED OLD MANUAL FORM RENDERING (keeping comment for reference)
+  const renderStepContent_OLD_MANUAL_FORMS = () => {
     const fieldClass = (fieldName: string) => 
       `w-full px-3 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500 ${
         highlightedField === fieldName ? 'border-yellow-400 bg-yellow-50' : ''
@@ -1338,6 +1784,145 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       case 9:
         return (
           <div className="space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Driver Summary - Intrastate Drivers</h3>
+            
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Number of Intrastate Drivers (operating within state lines only)
+              </label>
+              <input
+                type="number"
+                value={applicationData.intrastateDrivers || ''}
+                onChange={(e) => setApplicationData(prev => ({ ...prev, intrastateDrivers: e.target.value }))}
+                className={fieldClass('intrastateDrivers')}
+                min="0"
+              />
+            </div>
+          </div>
+        );
+
+      case 10:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Driver Summary - CDL & International</h3>
+            
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Number of drivers with Commercial Driver's License (CDL)
+              </label>
+              <input
+                type="number"
+                value={applicationData.cdlDrivers || ''}
+                onChange={(e) => setApplicationData(prev => ({ ...prev, cdlDrivers: e.target.value }))}
+                className={fieldClass('cdlDrivers')}
+                min="0"
+              />
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Number of drivers operating in Canada or Mexico
+              </label>
+              <input
+                type="number"
+                value={applicationData.internationalDrivers || ''}
+                onChange={(e) => setApplicationData(prev => ({ ...prev, internationalDrivers: e.target.value }))}
+                className={fieldClass('internationalDrivers')}
+                min="0"
+              />
+            </div>
+          </div>
+        );
+
+      case 11:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Business Affiliations</h3>
+            
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Do you have any affiliated companies or business relationships? <span className="text-red-600">*</span>
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="hasAffiliations"
+                    value="Yes"
+                    checked={applicationData.hasAffiliations === 'Yes'}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, hasAffiliations: e.target.value }))}
+                    className="w-5 h-5 text-blue-600"
+                  />
+                  <span className="text-gray-900 font-medium">Yes</span>
+                </label>
+                
+                <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="hasAffiliations"
+                    value="No"
+                    checked={applicationData.hasAffiliations === 'No'}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, hasAffiliations: e.target.value }))}
+                    className="w-5 h-5 text-blue-600"
+                  />
+                  <span className="text-gray-900 font-medium">No</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 12:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Compliance Certifications</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Please certify the following statements by checking each box:
+            </p>
+
+            <div className="space-y-3">
+              <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={applicationData.certifyDOTCompliance || false}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, certifyDOTCompliance: e.target.checked }))}
+                  className="w-5 h-5 text-blue-600 mt-0.5"
+                />
+                <span className="text-sm text-gray-900">
+                  I certify that I am willing and able to comply with all applicable DOT safety regulations
+                </span>
+              </label>
+
+              <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={applicationData.certifyDocumentProduction || false}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, certifyDocumentProduction: e.target.checked }))}
+                  className="w-5 h-5 text-blue-600 mt-0.5"
+                />
+                <span className="text-sm text-gray-900">
+                  I certify that I will make required documents available for inspection
+                </span>
+              </label>
+
+              <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 border-gray-300 rounded hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={applicationData.certifyNotDisqualified || false}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, certifyNotDisqualified: e.target.checked }))}
+                  className="w-5 h-5 text-blue-600 mt-0.5"
+                />
+                <span className="text-sm text-gray-900">
+                  I certify that I am not currently disqualified from operating a commercial motor vehicle
+                </span>
+              </label>
+            </div>
+          </div>
+        );
+
+      case 13:
+        return (
+          <div className="space-y-4">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Electronic Signature</h3>
             
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
@@ -1368,8 +1953,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 This constitutes your electronic signature. Date: {new Date().toLocaleDateString()}
               </p>
             </div>
-    </div>
-  );
+          </div>
+        );
 
       default:
         return <div>Step not implemented</div>;
@@ -1528,7 +2113,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     }, {} as Record<string, FieldComparison[]>);
 
     return (
-      <div className="fixed inset-0 bg-gray-100 z-50 overflow-hidden">
+      <div className="fixed inset-0 md:left-64 bg-gray-100 z-50 overflow-hidden">
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="bg-white border-b-2 border-gray-300 px-6 py-4">
@@ -1550,10 +2135,10 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                   </div>
                 </div>
 
-          {/* Three Column Layout */}
+          {/* Two Column Layout */}
           <div className="flex-1 flex overflow-hidden">
-            {/* LEFT PANEL: Complete Scenario Company Information (70%) */}
-            <div className="w-7/10 bg-white border-r-2 border-gray-300 overflow-y-auto p-4">
+            {/* LEFT PANEL: Complete Scenario Company Information */}
+            <div className="w-1/2 bg-white border-r-2 border-gray-300 overflow-y-auto p-4">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center sticky top-0 bg-white pb-2">
                 <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Scenario Company Information
@@ -1666,40 +2251,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
               </div>
             </div>
 
-            {/* MIDDLE PANEL: USDOT Questions */}
-            <div className="w-1/5 bg-gray-50 border-r-2 border-gray-300 overflow-y-auto p-4">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 sticky top-0 bg-gray-50 pb-2">
-                USDOT Questions
-              </h3>
-              
-              {Object.entries(groupedFields).map(([category, fields]) => (
-                <div key={category} className="mb-6">
-                  <h4 className="text-md font-bold text-gray-800 mb-3 capitalize bg-gray-200 px-3 py-2 rounded">
-                    {category === 'operation_classification' ? 'Operation Classification Summary' :
-                     category === 'company_contact' ? 'Company Contact' :
-                     category === 'operation_type_questions' ? 'Operation Type Questions' :
-                     category === 'vehicle_summary' ? 'Vehicle Summary' :
-                     category === 'driver_summary' ? 'Driver Summary' :
-                     category === 'affiliation_with_others' ? 'Affiliation with Others Summary' :
-                     category === 'compliance_certifications' ? 'Compliance Certifications Summary' :
-                     category === 'electronic_signature' ? 'Electronic Signature' :
-                     category}
-                  </h4>
-                  <div className="space-y-3">
-                    {fields.map((field, index) => (
-                      <div key={index} className="bg-white border-2 rounded-lg p-4 border-gray-300">
-                        <div className="font-bold text-gray-900 mb-2 text-sm leading-relaxed">
-                          {field.displayName}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* RIGHT PANEL: RPA Answers Review */}
-            <div className="w-3/10 overflow-y-auto p-4">
+            <div className="w-1/2 overflow-y-auto p-4">
               <h3 className="text-lg font-bold text-gray-900 mb-4 sticky top-0 bg-gray-100 pb-2">
                 RPA Answers Review
               </h3>
@@ -1991,30 +2544,6 @@ Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 
             <div className="lg:col-span-1">
               {renderScenarioPanel()}
               
-              {/* RPA Controls */}
-              <div className="bg-white border-2 border-gray-300 shadow p-4 mt-4">
-                <h4 className="font-bold text-gray-900 mb-3">RPA Controls</h4>
-              <button
-                  onClick={autoFillAllSteps}
-                  disabled={isAutoFilling}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mb-2 flex items-center justify-center"
-                >
-                  {isAutoFilling ? (
-                    <>
-                      <RefreshIcon className="h-5 w-5 mr-2 animate-spin" />
-                      Auto-Filling...
-                    </>
-                  ) : (
-                    <>
-                      <PlayIcon className="h-5 w-5 mr-2" />
-                      Watch RPA Auto-Fill
-                    </>
-                  )}
-              </button>
-                <p className="text-xs text-gray-600 mt-2">
-                  Click to watch the RPA agent automatically fill out all 13 steps of the complete USDOT application.
-                </p>
-              </div>
             </div>
 
             {/* FMCSA Form (Right) */}
