@@ -34,6 +34,7 @@ import SchemaManagement from './pages/SchemaManagement';
 import ClientPortalDesigner from './modules/CRM/pages/ClientPortalDesigner';
 import ThemeCustomizer from './modules/CRM/pages/ThemeCustomizer';
 import AIControlCenter from './components/AIControlCenter';
+import AIAdminPage from './pages/AIAdminPage';
 import RegulationTrainingDashboard from './components/training/RegulationTrainingDashboard';
 import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
 import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
@@ -128,6 +129,7 @@ function App() {
                         
                         {/* AI Administration - Admin access only */}
                         <Route path="/admin/ai-control" element={<AIControlCenter />} />
+                        <Route path="/ai-admin" element={<AIAdminPage />} />
                         
                         {/* Training Environment Routes - Admin/Trainer access only */}
                         <Route path="/training" element={<RegulationTrainingDashboard />} />

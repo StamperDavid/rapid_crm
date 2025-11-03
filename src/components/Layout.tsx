@@ -336,14 +336,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         
       {/* Floating AI Chat Button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <Tooltip content="Open AI chat assistant. Get help with transportation compliance questions, business guidance, and system assistance.">
-          <button
-            onClick={() => setAiChatOpen(!aiChatOpen)}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-          >
-            <ChatIcon className="h-6 w-6" />
-          </button>
-        </Tooltip>
+        <button
+          onClick={() => setAiChatOpen(!aiChatOpen)}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+        >
+          <ChatIcon className="h-6 w-6" />
+        </button>
       </div>
       
       {/* AI Chat Modal */}

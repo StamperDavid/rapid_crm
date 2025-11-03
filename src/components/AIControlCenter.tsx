@@ -408,13 +408,16 @@ const AIControlCenter: React.FC = () => {
             </p>
           </Link>
 
-          <button className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6 hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl text-left">
+          <Link
+            to="/ai-admin"
+            className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6 hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl block"
+          >
             <CogIcon className="h-8 w-8 mb-3" />
             <h3 className="text-lg font-semibold mb-2">Configure Agents</h3>
             <p className="text-sm text-purple-100">
               Manage agent settings and behavior
             </p>
-          </button>
+          </Link>
         </div>
       </div>
 

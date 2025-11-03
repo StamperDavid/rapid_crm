@@ -3247,107 +3247,6 @@ app.post('/api/ai/persona/personality', (req, res) => {
   }
 });
 
-// Client Portal API Endpoints
-
-// Get client portal settings
-app.get('/api/client-portal/settings', (req, res) => {
-  try {
-    const settings = {
-      portal_name: 'Rapid CRM Client Portal',
-      theme: 'dark',
-      features: {
-        voice_assistant: true,
-        compliance_tracking: true,
-        document_access: true,
-        messaging: true
-      },
-      branding: {
-        logo_url: '/uploads/logo_1757827373384.png',
-        primary_color: '#3b82f6',
-        secondary_color: '#8b5cf6'
-      }
-    };
-    
-    res.json({
-      success: true,
-      settings: settings
-    });
-  } catch (error) {
-    console.error('❌ Error getting client portal settings:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// Create client portal session
-app.post('/api/client-portal/session', async (req, res) => {
-  try {
-    const { company_id, client_name, client_email, ip_address, user_agent } = req.body;
-    
-    // Generate session ID
-    const sessionId = `client_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Store session in database (for now, just return the session ID)
-    // In a real implementation, you'd store this in a sessions table
-    console.log('🔐 Client portal session created:', {
-      sessionId,
-      company_id,
-      client_name,
-      client_email,
-      ip_address,
-      user_agent: user_agent?.substring(0, 100) + '...'
-    });
-    
-    res.json({
-      success: true,
-      sessionId: sessionId,
-      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
-    });
-  } catch (error) {
-    console.error('❌ Error creating client portal session:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// Save client portal message
-app.post('/api/client-portal/message', async (req, res) => {
-  try {
-    const { session_id, message_type, content, metadata } = req.body;
-    
-    // Store message in database
-    const messageId = Date.now().toString();
-    const timestamp = new Date().toISOString();
-    
-    // For now, just log the message
-    // In a real implementation, you'd store this in a client_messages table
-    console.log('💬 Client portal message saved:', {
-      messageId,
-      session_id,
-      message_type,
-      content: content?.substring(0, 100) + '...',
-      metadata,
-      timestamp
-    });
-    
-    res.json({
-      success: true,
-      messageId: messageId,
-      timestamp: timestamp
-    });
-  } catch (error) {
-    console.error('❌ Error saving client portal message:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
 // Test endpoint to check TrulyIntelligentAgent loading
 app.get('/api/test-agent', async (req, res) => {
   try {
@@ -3940,8 +3839,8 @@ app.post('/api/ai/testing/run-suite', async (req, res) => {
     const { aiAgentTestingFramework } = require('./src/services/ai/AIAgentTestingFrameworkCommonJS.js');
     
     // Use truly intelligent agent for testing
-    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgent.js');
-    const trulyIntelligentAgent = createTrulyIntelligentAgent(agentId);
+    const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const trulyIntelligentAgent = new TrulyIntelligentAgent(agentId, 'test-user');
     
     const trulyIntelligentFunction = async (input) => {
       // Use the truly intelligent agent to process the question
@@ -4198,8 +4097,8 @@ app.post('/api/ai/agents/ask', async (req, res) => {
   try {
     const { agentId, question, context } = req.body;
     
-    const { createTrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgent.js');
-    const trulyIntelligentAgent = createTrulyIntelligentAgent(agentId || 'default-agent');
+    const { TrulyIntelligentAgent } = require('./src/services/ai/TrulyIntelligentAgentCommonJS.js');
+    const trulyIntelligentAgent = new TrulyIntelligentAgent(agentId || 'default-agent', 'api-user');
     
     const response = await trulyIntelligentAgent.processQuestion(question, context || {});
     
@@ -4220,10 +4119,16 @@ app.get('/api/ai/agents/:agentId/capabilities', async (req, res) => {
   try {
     const { agentId } = req.params;
     
-    const { createRealIntelligentAgent } = require('./src/services/ai/RealIntelligentAgentCommonJS.js');
-    const realAgent = createRealIntelligentAgent(agentId);
+    const { RealAIServiceNode } = require('./src/services/ai/RealAIServiceNode.js');
+    const realAgent = new RealAIServiceNode();
     
-    const capabilities = realAgent.getCapabilities();
+    // Return basic capabilities since this service doesn't have getCapabilities method
+    const capabilities = {
+      reasoning: true,
+      contextAwareness: true,
+      naturalLanguage: true,
+      agentId: agentId
+    };
     
     res.json({
       success: true,
@@ -4706,8 +4611,309 @@ app.get('/api/ai/conversation-history/:userId', async (req, res) => {
   }
 });
 
-// Client Portal API Endpoints
-// Create client session
+// ===================================================================
+// CLIENT PORTAL API ENDPOINTS
+// ===================================================================
+
+// Import Client Authentication Service
+const ClientAuthService = require('./src/services/auth/ClientAuthService');
+const clientAuthService = new ClientAuthService(db);
+
+// Import Workflow Services
+const { workflowEvents } = require('./src/services/workflows/WorkflowEventEmitter');
+const WorkflowQueue = require('./src/services/workflows/WorkflowQueue');
+const WorkflowDispatcher = require('./src/services/workflows/WorkflowDispatcher');
+
+// Import Onboarding Services
+const OnboardingFlowEngine = require('./src/services/onboarding/OnboardingFlowEngine');
+const StateQualificationEngine = require('./src/services/compliance/StateQualificationEngine');
+
+// Import Notification Services
+const EmailService = require('./src/services/notifications/EmailService');
+const SMSService = require('./src/services/notifications/SMSService');
+
+// Import Document Services
+const DocumentGenerationService = require('./src/services/documents/DocumentGenerationService');
+
+// Initialize workflow services
+const workflowQueue = new WorkflowQueue(db);
+const workflowDispatcher = new WorkflowDispatcher(db);
+
+// Initialize onboarding services
+const onboardingEngine = new OnboardingFlowEngine(db);
+const stateQualificationEngine = new StateQualificationEngine(db);
+
+// Initialize notification services
+const emailService = new EmailService();
+const smsService = new SMSService();
+
+// Initialize document services
+const documentService = new DocumentGenerationService(db);
+
+// Setup workflow event listeners
+workflowEvents.on('payment.completed', async (data) => {
+  console.log('💳 Payment completed event received, creating workflow...', data);
+  
+  try {
+    // Get the deal to see what services were purchased
+    db.get('SELECT * FROM deals WHERE id = ?', [data.dealId], async (err, deal) => {
+      if (err || !deal) {
+        console.error('❌ Deal not found for payment:', data.dealId);
+        return;
+      }
+
+      // Get company data
+      db.get('SELECT * FROM companies WHERE id = ?', [deal.company_id], async (err, company) => {
+        if (err || !company) {
+          console.error('❌ Company not found:', deal.company_id);
+          return;
+        }
+
+        // Send payment confirmation email
+        try {
+          await emailService.sendPaymentConfirmation({
+            customerEmail: deal.contact_email || company.email || company.first_name,
+            customerName: deal.contact_name || `${company.first_name} ${company.last_name}`,
+            amount: data.amount,
+            services: data.services || [],
+            dealId: data.dealId
+          });
+          console.log('✅ Payment confirmation email sent');
+        } catch (error) {
+          console.error('⚠️  Failed to send payment confirmation email:', error);
+        }
+
+        // Send payment confirmation SMS (if phone available)
+        if (deal.contact_phone || company.phone) {
+          try {
+            await smsService.sendPaymentConfirmationSMS({
+              phone: deal.contact_phone || company.phone,
+              customerName: deal.contact_name || company.first_name,
+              amount: data.amount,
+              services: data.services || []
+            });
+            console.log('✅ Payment confirmation SMS sent');
+          } catch (error) {
+            console.error('⚠️  Failed to send payment confirmation SMS:', error);
+          }
+        }
+
+        // Determine which workflows to create based on services
+        const services = data.services || [];
+        
+        // Check if USDOT service was purchased
+        const hasUSDOT = services.some(s => 
+          s.toLowerCase().includes('usdot') || 
+          s.toLowerCase().includes('dot number')
+        );
+
+        if (hasUSDOT) {
+          await workflowQueue.addWorkflow({
+            workflowType: 'usdot_filing',
+            companyId: company.id,
+            dealId: data.dealId,
+            paymentTransactionId: data.paymentId,
+            inputData: company,
+            priority: 'high',
+            assignedAgent: 'usdot_rpa'
+          });
+          console.log('✅ USDOT filing workflow created');
+        }
+
+        // Check if MC Number service was purchased
+        const hasMC = services.some(s => 
+          s.toLowerCase().includes('mc') || 
+          s.toLowerCase().includes('operating authority')
+        );
+
+        if (hasMC) {
+          await workflowQueue.addWorkflow({
+            workflowType: 'mc_filing',
+            companyId: company.id,
+            dealId: data.dealId,
+            paymentTransactionId: data.paymentId,
+            inputData: company,
+            priority: 'high',
+            assignedAgent: 'mc_rpa'
+          });
+          console.log('✅ MC filing workflow created');
+        }
+      });
+    });
+  } catch (error) {
+    console.error('❌ Error creating workflow from payment event:', error);
+  }
+});
+
+// Listen for workflow completion to send notifications
+workflowEvents.on('workflow.completed', async (data) => {
+  console.log('✅ Workflow completed, sending notifications...', data.workflowId);
+  
+  try {
+    // Get company/deal data
+    db.get('SELECT * FROM deals WHERE id = ?', [data.dealId], async (err, deal) => {
+      if (err || !deal) {
+        console.log('⚠️  Deal not found for notification');
+        return;
+      }
+
+      db.get('SELECT * FROM companies WHERE id = ?', [data.companyId], async (err, company) => {
+        if (err || !company) {
+          console.log('⚠️  Company not found for notification');
+          return;
+        }
+
+        // Send completion email
+        try {
+          await emailService.sendWorkflowCompletionNotification({
+            customerEmail: deal.contact_email || company.email,
+            customerName: deal.contact_name || company.first_name,
+            workflowType: data.workflowType,
+            result: data.result || {}
+          });
+          console.log('✅ Workflow completion email sent');
+        } catch (error) {
+          console.error('⚠️  Failed to send completion email:', error);
+        }
+
+        // Send completion SMS
+        if (deal.contact_phone || company.phone) {
+          try {
+            await smsService.sendWorkflowCompletionSMS({
+              phone: deal.contact_phone || company.phone,
+              customerName: deal.contact_name || company.first_name,
+              workflowType: data.workflowType,
+              result: data.result || {}
+            });
+            console.log('✅ Workflow completion SMS sent');
+          } catch (error) {
+            console.error('⚠️  Failed to send completion SMS:', error);
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error('❌ Error sending workflow completion notifications:', error);
+  }
+});
+
+// Client Portal Login
+app.post('/api/client-portal/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required'
+      });
+    }
+
+    // Authenticate user
+    const result = await clientAuthService.authenticate(email, password, ipAddress);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        client: result.client,
+        sessionToken: result.sessionToken
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error in client portal login:', error);
+    res.status(500).json({
+      success: false,
+      error: 'An error occurred during login. Please try again.'
+    });
+  }
+});
+
+// Client Portal Logout
+app.post('/api/client-portal/logout', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+    
+    if (sessionToken) {
+      await clientAuthService.logout(sessionToken);
+    }
+    
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('❌ Error in client portal logout:', error);
+    res.status(500).json({ success: false, error: 'Logout failed' });
+  }
+});
+
+// Validate Session (for protected routes)
+app.post('/api/client-portal/validate-session', async (req, res) => {
+  try {
+    const { sessionToken } = req.body;
+    
+    if (!sessionToken) {
+      return res.status(401).json({ success: false, error: 'No session token provided' });
+    }
+    
+    const user = await clientAuthService.validateSession(sessionToken);
+    
+    if (user) {
+      res.json({ success: true, valid: true, user });
+    } else {
+      res.status(401).json({ success: false, valid: false, error: 'Invalid or expired session' });
+    }
+  } catch (error) {
+    console.error('❌ Error validating session:', error);
+    res.status(500).json({ success: false, error: 'Session validation failed' });
+  }
+});
+
+// Create Client User (Admin only - for setting up client portal access)
+app.post('/api/client-portal/users', async (req, res) => {
+  try {
+    const { companyId, email, password, firstName, lastName, phone, contactId } = req.body;
+    
+    // TODO: Add admin authentication check
+    
+    if (!companyId || !email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const userId = await clientAuthService.createUser({
+      companyId,
+      email,
+      password,
+      firstName,
+      lastName,
+      phone,
+      contactId,
+      role: 'client',
+      createdBy: 'admin' // TODO: Get from session
+    });
+    
+    res.json({
+      success: true,
+      userId,
+      message: 'Client user created successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error creating client user:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to create client user'
+    });
+  }
+});
+
+// Create client session (for chat widget / anonymous users)
 app.post('/api/client-portal/session', async (req, res) => {
   try {
     const { company_id, client_name, client_email, ip_address, user_agent } = req.body;
@@ -4901,7 +5107,656 @@ app.post('/api/client-portal/login-config', (req, res) => {
   }
 });
 
-// Integration API endpoints
+// ===================================================================
+// PAYMENT API ENDPOINTS
+// ===================================================================
+
+// Import and initialize PaymentService
+const { initializePaymentService } = require('./src/services/payments/PaymentService.js');
+let paymentService;
+
+// Initialize payment service after database is ready
+setTimeout(() => {
+  try {
+    paymentService = initializePaymentService(db);
+    console.log('💳 Payment service initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize payment service:', error);
+  }
+}, 1000);
+
+// Get available payment providers
+app.get('/api/payments/providers', (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).json({ error: 'Payment service not initialized' });
+    }
+
+    const providers = paymentService.getAvailableProviders();
+    const activeProvider = paymentService.getActiveProvider();
+
+    res.json({
+      providers,
+      active: activeProvider.name,
+      configured: providers.filter(p => p.configured).length,
+      total: providers.length
+    });
+  } catch (error) {
+    console.error('❌ Error getting payment providers:', error);
+    res.status(500).json({ error: 'Failed to get payment providers' });
+  }
+});
+
+// Set active payment provider
+app.post('/api/payments/providers/active', async (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).json({ error: 'Payment service not initialized' });
+    }
+
+    const { provider } = req.body;
+
+    if (!provider) {
+      return res.status(400).json({ error: 'Provider name is required' });
+    }
+
+    await paymentService.setActiveProvider(provider);
+
+    res.json({
+      success: true,
+      activeProvider: provider,
+      message: `Switched to ${provider}`
+    });
+  } catch (error) {
+    console.error('❌ Error setting active provider:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Test provider connection
+app.post('/api/payments/providers/:provider/test', async (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).json({ error: 'Payment service not initialized' });
+    }
+
+    const { provider } = req.params;
+    const success = await paymentService.testProviderConnection(provider);
+
+    res.json({
+      success,
+      provider,
+      message: success ? `${provider} connection successful` : `${provider} connection failed`
+    });
+  } catch (error) {
+    console.error('❌ Error testing provider:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create checkout session
+app.post('/api/payments/checkout', async (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).json({ error: 'Payment service not initialized' });
+    }
+
+    const { dealId, companyId, services, amount, currency, customerEmail, description } = req.body;
+
+    // Validate required fields
+    if (!dealId || !amount || !customerEmail) {
+      return res.status(400).json({
+        error: 'Missing required fields: dealId, amount, customerEmail'
+      });
+    }
+
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+
+    const session = await paymentService.createCheckoutSession({
+      dealId,
+      companyId,
+      services: services || [],
+      amount,
+      currency: currency || 'USD',
+      customerEmail,
+      description: description || `Payment for services: ${services?.join(', ')}`,
+      successUrl: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${baseUrl}/payment/cancel`,
+      metadata: {
+        dealId,
+        companyId,
+        source: 'rapid_crm'
+      }
+    });
+
+    // Save transaction to database
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    db.run(
+      `INSERT INTO payment_transactions (
+        id, provider, provider_session_id, deal_id, company_id,
+        amount, currency, description, status, customer_email,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        transactionId,
+        paymentService.getActiveProvider().name.toLowerCase(),
+        session.sessionId,
+        dealId,
+        companyId,
+        amount,
+        currency || 'USD',
+        description || 'Payment for services',
+        'pending',
+        customerEmail,
+        now,
+        now
+      ],
+      function(err) {
+        if (err) {
+          console.error('Failed to save transaction:', err);
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      session,
+      transactionId
+    });
+  } catch (error) {
+    console.error('❌ Error creating checkout session:', error);
+    res.status(500).json({ error: error.message || 'Failed to create checkout session' });
+  }
+});
+
+// Webhook endpoint (handles all providers)
+app.post('/api/payments/webhook/:provider', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).send('Payment service not initialized');
+    }
+
+    const { provider } = req.params;
+    
+    // Verify webhook signature
+    const isValid = await paymentService.verifyWebhookSignature(provider, {
+      body: req.body,
+      headers: req.headers,
+      rawBody: req.body
+    });
+
+    if (!isValid) {
+      console.error(`❌ Invalid webhook signature from ${provider}`);
+      return res.status(401).send('Invalid signature');
+    }
+
+    // Handle webhook
+    const result = await paymentService.handleWebhook(provider, {
+      body: req.body,
+      headers: req.headers,
+      rawBody: req.body
+    });
+
+    // Log webhook
+    const webhookId = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    db.run(
+      `INSERT INTO payment_webhooks (id, provider, event_type, event_id, verified, payload, received_at)
+       VALUES (?, ?, ?, ?, 1, ?, datetime('now'))`,
+      [webhookId, provider, result.eventType, result.paymentId || '', JSON.stringify(req.body)]
+    );
+
+    // Handle payment completion
+    if (result.eventType === 'payment.completed' || result.eventType === 'payment.succeeded') {
+      // Update transaction status
+      db.run(
+        `UPDATE payment_transactions 
+         SET status = 'succeeded', 
+             provider_payment_id = ?,
+             paid_at = datetime('now'),
+             updated_at = datetime('now'),
+             metadata = ?
+         WHERE provider_session_id = ? OR provider_payment_id = ?`,
+        [result.paymentId, JSON.stringify(result.metadata || {}), result.sessionId, result.paymentId],
+        (err) => {
+          if (err) {
+            console.error('❌ Error updating payment transaction:', err);
+            return;
+          }
+
+          console.log(`✅ Payment completed: ${result.paymentId}`);
+          console.log(`   Deal ID: ${result.metadata?.dealId}`);
+          console.log(`   Amount: ${result.amount} ${result.currency}`);
+
+          // 🎯 TRIGGER WORKFLOW AUTOMATION
+          workflowEvents.emitPaymentCompleted({
+            paymentId: result.paymentId,
+            dealId: result.metadata?.dealId,
+            companyId: result.metadata?.companyId,
+            amount: result.amount,
+            currency: result.currency,
+            services: result.metadata?.services?.split(',') || []
+          });
+        }
+      );
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('❌ Error handling webhook:', error);
+    res.status(500).send('Webhook handling failed');
+  }
+});
+
+// Get payment status
+app.get('/api/payments/:paymentId/status', async (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).json({ error: 'Payment service not initialized' });
+    }
+
+    const { paymentId } = req.params;
+    const status = await paymentService.getPaymentStatus(paymentId);
+
+    res.json({ success: true, status });
+  } catch (error) {
+    console.error('❌ Error getting payment status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Refund payment
+app.post('/api/payments/:paymentId/refund', async (req, res) => {
+  try {
+    if (!paymentService) {
+      return res.status(503).json({ error: 'Payment service not initialized' });
+    }
+
+    const { paymentId } = req.params;
+    const { amount, reason } = req.body;
+
+    const result = await paymentService.refundPayment({
+      paymentId,
+      amount,
+      reason
+    });
+
+    if (result.success) {
+      // Save refund to database
+      const refundId = `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      db.run(
+        `INSERT INTO payment_refunds (id, transaction_id, provider_refund_id, amount, currency, reason, status, created_at, updated_at)
+         SELECT ?, id, ?, ?, currency, ?, ?, datetime('now'), datetime('now')
+         FROM payment_transactions WHERE provider_payment_id = ?`,
+        [refundId, result.refundId, result.amount, reason, result.status, paymentId]
+      );
+
+      // Update transaction
+      db.run(
+        `UPDATE payment_transactions 
+         SET status = 'refunded', refunded_at = datetime('now'), updated_at = datetime('now')
+         WHERE provider_payment_id = ?`,
+        [paymentId]
+      );
+    }
+
+    res.json({ success: result.success, result });
+  } catch (error) {
+    console.error('❌ Error refunding payment:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get payment transactions
+app.get('/api/payments/transactions', async (req, res) => {
+  try {
+    const { dealId, companyId, status } = req.query;
+    let query = 'SELECT * FROM payment_transactions WHERE 1=1';
+    const params = [];
+
+    if (dealId) {
+      query += ' AND deal_id = ?';
+      params.push(dealId);
+    }
+
+    if (companyId) {
+      query += ' AND company_id = ?';
+      params.push(companyId);
+    }
+
+    if (status) {
+      query += ' AND status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT 100';
+
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching transactions:', err);
+        return res.status(500).json({ error: 'Failed to fetch transactions' });
+      }
+
+      res.json({ transactions: rows });
+    });
+  } catch (error) {
+    console.error('❌ Error fetching transactions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================================================
+// ONBOARDING AGENT API ENDPOINTS
+// ===================================================================
+
+// Start onboarding session
+app.post('/api/onboarding/start', async (req, res) => {
+  try {
+    const { initialData = {} } = req.body;
+    const sessionId = `onboarding_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const session = await onboardingEngine.startSession(sessionId, initialData);
+    const firstQuestion = onboardingEngine.getNextQuestion('greeting');
+    
+    res.json({
+      success: true,
+      sessionId,
+      question: firstQuestion.question,
+      type: firstQuestion.type,
+      progress: 0
+    });
+  } catch (error) {
+    console.error('❌ Error starting onboarding:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Process onboarding response
+app.post('/api/onboarding/respond', async (req, res) => {
+  try {
+    const { sessionId, response } = req.body;
+    
+    if (!sessionId || response === undefined) {
+      return res.status(400).json({ error: 'Missing sessionId or response' });
+    }
+    
+    const nextStep = await onboardingEngine.processResponse(sessionId, response);
+    
+    res.json({
+      success: true,
+      ...nextStep
+    });
+  } catch (error) {
+    console.error('❌ Error processing onboarding response:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get onboarding session status
+app.get('/api/onboarding/session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const progress = await onboardingEngine.getSessionProgress(sessionId);
+    
+    if (!progress) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    res.json({ success: true, progress });
+  } catch (error) {
+    console.error('❌ Error getting session status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Analyze business requirements (direct API)
+app.post('/api/onboarding/analyze', async (req, res) => {
+  try {
+    const businessData = req.body;
+    
+    // Validate data
+    const validation = stateQualificationEngine.validateBusinessData(businessData);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: 'Incomplete business data',
+        missingFields: validation.missingFields,
+        warnings: validation.warnings
+      });
+    }
+    
+    // Analyze requirements
+    const analysis = await stateQualificationEngine.analyzeBusinessRequirements(businessData);
+    
+    res.json({
+      success: true,
+      ...analysis
+    });
+  } catch (error) {
+    console.error('❌ Error analyzing requirements:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Calculate compliance cost
+app.post('/api/onboarding/calculate-cost', async (req, res) => {
+  try {
+    const businessData = req.body;
+    const costAnalysis = await stateQualificationEngine.calculateComplianceCost(businessData);
+    
+    res.json({
+      success: true,
+      ...costAnalysis
+    });
+  } catch (error) {
+    console.error('❌ Error calculating cost:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================================================
+// WORKFLOW API ENDPOINTS
+// ===================================================================
+
+// Get workflow queue status
+app.get('/api/workflows/queue', async (req, res) => {
+  try {
+    const { status, limit = 50 } = req.query;
+    
+    let workflows;
+    if (status) {
+      workflows = await workflowQueue.getWorkflowsByStatus(status, parseInt(limit));
+    } else {
+      workflows = await workflowQueue.getPendingWorkflows(parseInt(limit));
+    }
+    
+    res.json({ workflows, count: workflows.length });
+  } catch (error) {
+    console.error('❌ Error getting workflow queue:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get workflow by ID
+app.get('/api/workflows/:workflowId', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    const workflow = await workflowQueue.getWorkflow(workflowId);
+    
+    if (!workflow) {
+      return res.status(404).json({ error: 'Workflow not found' });
+    }
+    
+    // Get execution history
+    const history = await workflowQueue.getExecutionHistory(workflowId);
+    
+    res.json({ workflow, history });
+  } catch (error) {
+    console.error('❌ Error getting workflow:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get workflows requiring intervention
+app.get('/api/workflows/intervention-required', async (req, res) => {
+  try {
+    const workflows = await workflowQueue.getInterventionRequired();
+    res.json({ workflows, count: workflows.length });
+  } catch (error) {
+    console.error('❌ Error getting intervention workflows:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get queue statistics
+app.get('/api/workflows/stats', async (req, res) => {
+  try {
+    const stats = await workflowQueue.getQueueStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('❌ Error getting queue stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Manually add workflow to queue
+app.post('/api/workflows/queue', async (req, res) => {
+  try {
+    const { workflowType, companyId, dealId, inputData, priority, assignedAgent } = req.body;
+    
+    if (!workflowType || !companyId || !inputData) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const workflowId = await workflowQueue.addWorkflow({
+      workflowType,
+      companyId,
+      dealId,
+      inputData,
+      priority: priority || 'medium',
+      assignedAgent
+    });
+    
+    res.json({ success: true, workflowId });
+  } catch (error) {
+    console.error('❌ Error adding workflow:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Cancel workflow
+app.post('/api/workflows/:workflowId/cancel', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    const { reason } = req.body;
+    
+    await workflowQueue.cancelWorkflow(workflowId, reason);
+    
+    res.json({ success: true, message: 'Workflow canceled' });
+  } catch (error) {
+    console.error('❌ Error canceling workflow:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Retry failed workflow
+app.post('/api/workflows/:workflowId/retry', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    // Reset workflow to pending
+    await workflowQueue.updateWorkflowStatus(workflowId, 'pending');
+    
+    res.json({ success: true, message: 'Workflow will be retried' });
+  } catch (error) {
+    console.error('❌ Error retrying workflow:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================================================
+// DOCUMENT GENERATION API ENDPOINTS
+// ===================================================================
+
+// Generate USDOT application PDF
+app.get('/api/documents/usdot-application/:applicationId', async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const doc = await documentService.generateUSDOTApplicationPDF(applicationId);
+    
+    res.json({ success: true, document: doc });
+  } catch (error) {
+    console.error('❌ Error generating USDOT application PDF:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate invoice PDF
+app.get('/api/documents/invoice/:invoiceId', async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    const doc = await documentService.generateInvoicePDF(invoiceId);
+    
+    res.json({ success: true, document: doc });
+  } catch (error) {
+    console.error('❌ Error generating invoice PDF:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate compliance certificate
+app.get('/api/documents/certificate/:companyId/:serviceName', async (req, res) => {
+  try {
+    const { companyId, serviceName } = req.params;
+    const doc = await documentService.generateComplianceCertificate(companyId, serviceName);
+    
+    res.json({ success: true, document: doc });
+  } catch (error) {
+    console.error('❌ Error generating certificate:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================================================
+// NOTIFICATION API ENDPOINTS
+// ===================================================================
+
+// Send test email
+app.post('/api/notifications/email/test', async (req, res) => {
+  try {
+    const { to, subject = 'Test Email', message = 'This is a test email from Rapid CRM' } = req.body;
+    
+    const result = await emailService.sendEmail({
+      to,
+      subject,
+      html: `<p>${message}</p>`,
+      text: message
+    });
+    
+    res.json({ success: result.success, result });
+  } catch (error) {
+    console.error('❌ Error sending test email:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Send test SMS
+app.post('/api/notifications/sms/test', async (req, res) => {
+  try {
+    const { to, message = 'Test SMS from Rapid CRM' } = req.body;
+    
+    const result = await smsService.sendSMS({ to, message });
+    
+    res.json({ success: result.success, result });
+  } catch (error) {
+    console.error('❌ Error sending test SMS:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ===================================================================
+// INTEGRATION API ENDPOINTS
+// ===================================================================
 app.get('/api/integrations', async (req, res) => {
   try {
     const integrations = await runQuery('SELECT * FROM integrations ORDER BY created_at DESC');
@@ -6883,6 +7738,12 @@ validateDatabase()
       console.log('✅ Error handling middleware active');
       console.log('✅ Foreign key constraints enabled');
       console.log('✅ Input sanitization active');
+      
+      // Start workflow dispatcher
+      setTimeout(() => {
+        workflowDispatcher.start();
+        console.log('✅ Workflow automation system started');
+      }, 2000); // Wait 2 seconds for everything to initialize
     });
   })
   .catch((error) => {

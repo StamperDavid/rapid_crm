@@ -26,6 +26,48 @@ const AIAdminPage: React.FC = () => {
   const [alerts, setAlerts] = useState<Array<{
     resolved: boolean;
   }>>([]);
+  
+  // NEW: Real-time business data
+  const [workflowStats, setWorkflowStats] = useState<any>(null);
+  const [paymentTransactions, setPaymentTransactions] = useState<any[]>([]);
+  const [paymentProviders, setPaymentProviders] = useState<any>(null);
+  const [onboardingSessions, setOnboardingSessions] = useState<any[]>([]);
+
+  // Load real-time business data
+  useEffect(() => {
+    const loadBusinessData = async () => {
+      try {
+        // Load workflow statistics
+        const workflowRes = await fetch('http://localhost:3001/api/workflows/stats');
+        if (workflowRes.ok) {
+          const workflowData = await workflowRes.json();
+          setWorkflowStats(workflowData);
+        }
+
+        // Load recent payment transactions
+        const paymentsRes = await fetch('http://localhost:3001/api/payments/transactions?limit=10');
+        if (paymentsRes.ok) {
+          const paymentsData = await paymentsRes.json();
+          setPaymentTransactions(paymentsData.transactions || []);
+        }
+
+        // Load payment providers
+        const providersRes = await fetch('http://localhost:3001/api/payments/providers');
+        if (providersRes.ok) {
+          const providersData = await providersRes.json();
+          setPaymentProviders(providersData);
+        }
+      } catch (error) {
+        console.error('Error loading business data:', error);
+      }
+    };
+
+    loadBusinessData();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(loadBusinessData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const tabs = [
     { id: 'overview', name: 'AI Overview', icon: ChartBarIcon },
@@ -423,6 +465,146 @@ const AIAdminPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* JASPER BUSINESS OPERATIONS MONITOR */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg p-6 border-2 border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                    <SparklesIcon className="h-5 w-5 mr-2 text-purple-600" />
+                    Jasper's Business Operations Monitor
+                  </h3>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Real-time • Updates every 30s</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  {/* Workflow Queue Status */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">📋 Workflow Queue</h4>
+                    {workflowStats ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Pending:</span>
+                          <span className="font-semibold text-yellow-600">{workflowStats.byStatus?.pending || 0}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">In Progress:</span>
+                          <span className="font-semibold text-blue-600">{workflowStats.byStatus?.in_progress || 0}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Completed:</span>
+                          <span className="font-semibold text-green-600">{workflowStats.byStatus?.completed || 0}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Failed:</span>
+                          <span className="font-semibold text-red-600">{workflowStats.byStatus?.failed || 0}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Loading...</p>
+                    )}
+                  </div>
+
+                  {/* Payment System Status */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">💳 Payment System</h4>
+                    {paymentProviders ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Active Provider:</span>
+                          <span className="font-semibold text-blue-600">{paymentProviders.active}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Configured:</span>
+                          <span className="font-semibold text-green-600">{paymentProviders.configured}/{paymentProviders.total}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Recent Trans:</span>
+                          <span className="font-semibold">{paymentTransactions.length}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Total Revenue:</span>
+                          <span className="font-semibold text-green-600">
+                            ${paymentTransactions.filter(t => t.status === 'succeeded').reduce((sum, t) => sum + (t.amount || 0), 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Loading...</p>
+                    )}
+                  </div>
+
+                  {/* Automation Status */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">🤖 Automation Status</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">USDOT RPA:</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          <CheckCircleIcon className="h-3 w-3 mr-1" />
+                          Active
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Workflow Dispatcher:</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          <CheckCircleIcon className="h-3 w-3 mr-1" />
+                          Running
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Email Service:</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                          <ClockIcon className="h-3 w-3 mr-1" />
+                          Standby
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Onboarding Agent:</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          <CheckCircleIcon className="h-3 w-3 mr-1" />
+                          Ready
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions for Jasper */}
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <a 
+                    href="http://localhost:3001/api/workflows/queue" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center text-sm font-medium"
+                  >
+                    View Workflows
+                  </a>
+                  <a 
+                    href="http://localhost:3001/api/payments/transactions" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center text-sm font-medium"
+                  >
+                    View Payments
+                  </a>
+                  <a 
+                    href="http://localhost:3001/api/workflows/stats" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-center text-sm font-medium"
+                  >
+                    Queue Stats
+                  </a>
+                  <a 
+                    href="http://localhost:3001/api/workflows/intervention-required" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center text-sm font-medium"
+                  >
+                    Needs Attention
+                  </a>
                 </div>
               </div>
 

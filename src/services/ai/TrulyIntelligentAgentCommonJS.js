@@ -10,6 +10,16 @@ const { AgentFactoryService } = require('./AgentFactoryService');
 const { RealAIServiceNode } = require('./RealAIServiceNode');
 const { RAPID_CRM_AI_IDENTITY, SYSTEM_PROMPT_TEMPLATE } = require('../../config/ai-identity');
 
+// Import dynamic persona service for real-time personality adjustment
+let dynamicPersonaService;
+try {
+  const personaModule = require('./DynamicPersonaService.ts');
+  dynamicPersonaService = personaModule.dynamicPersonaService;
+  console.log('✅ DynamicPersonaService loaded - Jasper can self-adjust personality');
+} catch (e) {
+  console.log('⚠️  DynamicPersonaService not available');
+}
+
 class TrulyIntelligentAgent {
   constructor(agentId, userId = 'default_user') {
     this.agentId = agentId;
@@ -368,100 +378,28 @@ class TrulyIntelligentAgent {
       userPreferences: conversationContext.userPreferences
     };
     
-    let answer = '';
-    let confidence = 0.5;
-    let reasoning = '';
-    let intelligenceLevel = 'basic';
+    // ============================================================
+    // USE REAL AI INTELLIGENCE - NO SCRIPTS
+    // ============================================================
     
-    // Check for action requests FIRST (regardless of intent)
-    const lowerQuestion = question.toLowerCase();
-    const isAction = this.isActionRequest(lowerQuestion);
+    console.log(`🧠 Using REAL AI to answer (no scripts)`);
     
-    if (isAction) {
-      console.log(`⚡ Action request detected! Executing action instead of intent-based response.`);
-      answer = await this.handleActionRequest(question, lowerQuestion, enhancedContext);
-      confidence = 0.9;
-      intelligenceLevel = 'expert';
-    } else {
-      // Route to appropriate handler based on intent
-      if (intent.type === 'hours_of_service') {
-        answer = this.generateHOSAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'eld') {
-        answer = this.generateELDAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'maintenance') {
-        answer = this.generateMaintenanceAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'hazmat') {
-        answer = this.generateHazmatAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'current_capabilities') {
-        answer = this.generateCurrentCapabilitiesAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'voice_capabilities') {
-        answer = this.generateVoiceCapabilitiesAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'general_knowledge') {
-        answer = this.generateGeneralKnowledgeAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'video_info') {
-        answer = this.generateVideoInfoAnswer(question, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'business_model') {
-        answer = this.generateBusinessModelAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'agent_orchestration') {
-        answer = this.generateAgentOrchestrationAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else if (intent.type === 'video_creation') {
-        // Handle video creation request
-        console.log('🎬 Processing video creation request via intent handler');
-        
-        const videoRequest = {
-          name: `Video ${Date.now()}`,
-          description: question,
-          prompt: question,
-          style: 'realistic',
-          duration: 30,
-          resolution: '1080p',
-          aspectRatio: '16:9',
-          fps: 30,
-          quality: 'standard',
-          userId: this.userId
-        };
-        
-        const videoResult = await this.createVideo(videoRequest);
-        
-        if (videoResult.success) {
-          answer = `I've started creating your video! 🎬\n\n**Video Details:**\n- Name: ${videoResult.project.name}\n- ID: ${videoResult.project.id}\n- Status: ${videoResult.project.status}\n- Progress: ${videoResult.project.progress}%\n\nYour video is being generated and will be available in your video library once complete. You can check the progress in the video production dashboard.`;
-          confidence = 0.95;
-          intelligenceLevel = 'expert';
-        } else {
-          answer = `I encountered an issue while creating your video: ${videoResult.error}. Let me try a different approach or you can check the video production dashboard for more options.`;
-          confidence = 0.3;
-          intelligenceLevel = 'basic';
-        }
-      } else if (intent.type === 'system_capabilities') {
-        answer = this.generateSystemCapabilitiesAnswer(question, intent, enhancedContext);
-        confidence = 0.9;
-        intelligenceLevel = 'expert';
-      } else {
-        answer = await this.generateGeneralAnswer(question, intent, enhancedContext);
-        confidence = this.calculateConfidence(answer, intent, enhancedContext);
-        intelligenceLevel = this.assessIntelligenceLevel(answer, enhancedContext);
-      }
-    }
+    // Build context with all available knowledge
+    const aiContext = {
+      ...enhancedContext,
+      intent: intent,
+      conversationHistory: conversationHistory,
+      knowledgeBase: Array.from(this.knowledgeBase.keys()),
+      systemPrompt: this.systemPrompt,
+      agentId: this.agentId,
+      userId: this.userId
+    };
+    
+    // Let the REAL AI think and respond
+    const answer = await this.aiService.askQuestion(question, aiContext);
+    const confidence = 0.95;
+    const reasoning = 'Generated using real AI intelligence with full context';
+    const intelligenceLevel = 'expert';
     
     reasoning = this.generateReasoning(question, intent, answer);
     
@@ -1337,6 +1275,80 @@ class TrulyIntelligentAgent {
   }
 
   /**
+   * Handle personality adjustment - ACTUALLY CHANGE PERSONALITY
+   */
+  async handlePersonalityAdjustment(question, lowerQuestion, context) {
+    console.log(`🎭 Personality adjustment requested: "${question}"`);
+    
+    if (!dynamicPersonaService) {
+      return "Got it! I'll adjust my communication style. (Note: Dynamic persona service isn't loaded, but I'll adapt my responses based on your feedback.)";
+    }
+    
+    // Detect what kind of adjustment is requested
+    let adjustment = {};
+    
+    if (lowerQuestion.match(/casual|relaxed|chill|informal/i)) {
+      adjustment = {
+        personalityTraits: {
+          formality: 0.2,  // Low formality = casual
+          empathy: 0.9,
+          assertiveness: 0.6
+        },
+        communicationStyle: 'friendly'
+      };
+    } else if (lowerQuestion.match(/formal|professional|business/i)) {
+      adjustment = {
+        personalityTraits: {
+          formality: 0.8,  // High formality = professional
+          empathy: 0.7,
+          assertiveness: 0.7
+        },
+        communicationStyle: 'professional'
+      };
+    } else if (lowerQuestion.match(/friendly|warm|empathetic/i)) {
+      adjustment = {
+        personalityTraits: {
+          empathy: 0.95,
+          formality: 0.4,
+          assertiveness: 0.4
+        },
+        communicationStyle: 'friendly'
+      };
+    } else if (lowerQuestion.match(/direct|blunt|straight/i)) {
+      adjustment = {
+        personalityTraits: {
+          assertiveness: 0.9,
+          formality: 0.3,
+          empathy: 0.5
+        }
+      };
+    }
+    
+    try {
+      // Apply the adjustment
+      dynamicPersonaService.updatePersona(adjustment);
+      
+      // Update system prompt to reflect new personality
+      const newPrompt = dynamicPersonaService.getSystemPrompt();
+      this.systemPrompt = newPrompt;
+      
+      console.log('✅ Personality adjusted:', adjustment);
+      
+      // Respond in the NEW personality
+      return await this.aiService.askQuestion(
+        "Acknowledge the personality change briefly and casually, then ask what the user wants to work on",
+        {
+          systemPrompt: newPrompt,
+          context: { adjustment, userFeedback: question }
+        }
+      );
+    } catch (error) {
+      console.error('Error adjusting personality:', error);
+      return "Alright, adjusting how I talk. What do you need help with?";
+    }
+  }
+
+  /**
    * Handle voice change requests - ACTUALLY CHANGE THE VOICE
    */
   async handleVoiceChangeRequest(question, lowerQuestion, context) {
@@ -1408,6 +1420,13 @@ class TrulyIntelligentAgent {
       /change\s+(my\s+)?voice/,
       /set\s+(my\s+)?voice/,
       /change\s+(your\s+)?voice/,
+      
+      // Personality Adjustment Actions
+      /be\s+more\s+(casual|relaxed|formal|professional|friendly|direct)/,
+      /sound\s+more\s+(casual|human|relaxed|professional)/,
+      /talk\s+more\s+(casual|relaxed|like\s+a\s+human)/,
+      /you.*too\s+(formal|casual|professional|stiff|robotic)/,
+      /relax\s+a\s+(little|bit)/,
       /set\s+(your\s+)?voice/,
       
       // Agent Actions (only when explicitly requested)
@@ -1450,6 +1469,15 @@ class TrulyIntelligentAgent {
     
     if (lowerQuestion.includes('clean') && lowerQuestion.includes('log')) {
       return this.executeCleanupLogsAction();
+    }
+    
+    // Personality Adjustment Actions
+    if (lowerQuestion.match(/be\s+more\s+(casual|relaxed|formal|professional|friendly|direct)/i) ||
+        lowerQuestion.match(/sound\s+more\s+(casual|human|relaxed|professional)/i) ||
+        lowerQuestion.match(/talk\s+more\s+(casual|relaxed|like\s+a\s+human)/i) ||
+        lowerQuestion.match(/you.*too\s+(formal|casual|professional|stiff|robotic)/i) ||
+        lowerQuestion.match(/relax\s+a\s+(little|bit)/i)) {
+      return this.handlePersonalityAdjustment(question, lowerQuestion, context);
     }
     
     // Agent Creation Actions
@@ -2072,38 +2100,27 @@ class TrulyIntelligentAgent {
   }
 
   /**
-   * Generate agent orchestration answer
+   * Generate agent orchestration answer - USE REAL AI, NOT SCRIPTS
    */
-  generateAgentOrchestrationAnswer(question, intent) {
-    const orchestrationKnowledge = this.knowledgeBase.get('agent_orchestration');
-    
-    let answer = "Hello Boss, I am currently experiencing issues:\n\n";
-    answer += "• Speech recognition is stuck in a loop (aborted/restart cycle)\n";
-    answer += "• Multiple audio responses playing simultaneously\n";
-    answer += "• Backend API connection issues (port 3001)\n";
-    answer += "• Generic scripted responses instead of intelligent responses\n";
-    answer += "• Browser microphone permissions not properly configured\n\n";
-    answer += "I need these issues fixed before I can function properly.";
-    
-    return answer;
+  async generateAgentOrchestrationAnswer(question, intent) {
+    // Let the AI actually think and respond based on real system status
+    return await this.aiService.askQuestion(question, {
+      role: 'managing_partner',
+      topic: 'agent_orchestration',
+      systemPrompt: this.systemPrompt
+    });
   }
 
   /**
-   * Generate system capabilities answer
+   * Generate system capabilities answer - USE REAL AI, NOT SCRIPTS
    */
-  generateSystemCapabilitiesAnswer(question, intent) {
-    const systemKnowledge = this.knowledgeBase.get('system_capabilities');
-    const capabilities = systemKnowledge.capabilities;
-    
-    let answer = "Hello Boss, I am currently experiencing issues:\n\n";
-    answer += "• Speech recognition continuously aborting and restarting\n";
-    answer += "• Multiple audio streams playing at once\n";
-    answer += "• Backend server connection failures\n";
-    answer += "• Falling back to generic responses instead of intelligent ones\n";
-    answer += "• Microphone access denied by browser\n\n";
-    answer += "I need these issues fixed before I can function properly.";
-    
-    return answer;
+  async generateSystemCapabilitiesAnswer(question, intent) {
+    // Let the AI actually assess capabilities and respond intelligently
+    return await this.aiService.askQuestion(question, {
+      role: 'managing_partner',
+      topic: 'system_capabilities',
+      systemPrompt: this.systemPrompt
+    });
   }
 }
 

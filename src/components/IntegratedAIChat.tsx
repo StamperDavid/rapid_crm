@@ -35,7 +35,7 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isContinuousMode, setIsContinuousMode] = useState(false); // Disable continuous mode
+  const [isContinuousMode, setIsContinuousMode] = useState(false); // DISABLED - too buggy, use push-to-talk only
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const recognitionStateRef = useRef<'idle' | 'starting' | 'listening' | 'stopping'>('idle');
@@ -83,50 +83,16 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   };
 
   const scheduleRestart = (delay: number = 2000) => {
-    // Prevent multiple simultaneous restarts
-    if (restartTimerRef.current) {
-      console.log('🔄 Restart already scheduled, skipping duplicate');
-      return;
-    }
+    // DISABLED: Continuous mode is too buggy - only allow manual start
+    console.log('⏸️ Auto-restart disabled - use push-to-talk only');
+    return;
     
-    clearRestartTimer();
-    
-    // Check minimum restart interval
-    const now = Date.now();
-    const timeSinceLastRestart = now - lastRestartTimeRef.current;
-    
-    if (timeSinceLastRestart < minRestartInterval) {
-      const adjustedDelay = minRestartInterval - timeSinceLastRestart + delay;
-      console.log(`🔄 Cooldown active, adjusting delay to ${adjustedDelay}ms`);
-      delay = adjustedDelay;
-    }
-    
-    if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle' && !isLoading) {
-      console.log(`🔄 Scheduling restart in ${delay}ms`);
-      restartTimerRef.current = setTimeout(() => {
-        console.log('🔄 Scheduled restart executing...');
-        lastRestartTimeRef.current = Date.now();
-        if (isContinuousModeRef.current && !isSpeakingRef.current && recognitionStateRef.current === 'idle' && !isLoading) {
-          startListening();
-        } else {
-          console.log('⚠️ Restart cancelled - conditions not met:', {
-            continuousMode: isContinuousModeRef.current,
-            speaking: isSpeakingRef.current,
-            recognitionState: recognitionStateRef.current,
-            loading: isLoading
-          });
-        }
-        restartTimerRef.current = null;
-      }, delay);
-    } else {
-      console.log('⚠️ Restart not scheduled - conditions not met:', {
-        continuousMode: isContinuousModeRef.current,
-        speaking: isSpeakingRef.current,
-        recognitionState: recognitionStateRef.current,
-        loading: isLoading,
-        timeSinceLastRestart
-      });
-    }
+    // Original logic commented out to prevent loops
+    // if (restartTimerRef.current) {
+    //   console.log('🔄 Restart already scheduled, skipping duplicate');
+    //   return;
+    // }
+    // ... rest of restart logic
   };
 
   const handleSpeechRecognitionError = (error: any) => {
@@ -173,15 +139,14 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     errorCountRef.current = 0;
   };
 
-  // Auto-start continuous mode when chat opens (like Gemini)
-  useEffect(() => {
-    if (isOpen && isContinuousMode) {
-      console.log('🎤 Chat opened - auto-starting continuous mode like Gemini');
-      resetErrorCount(); // Reset error count when opening chat
-      // Start listening after a short delay to ensure everything is initialized
-      scheduleRestart(500);
-    }
-  }, [isOpen, isContinuousMode]);
+  // DISABLED: Auto-start continuous mode (too buggy)
+  // useEffect(() => {
+  //   if (isOpen && isContinuousMode) {
+  //     console.log('🎤 Chat opened - auto-starting continuous mode');
+  //     resetErrorCount();
+  //     scheduleRestart(500);
+  //   }
+  // }, [isOpen, isContinuousMode]);
 
   useEffect(() => {
     isSpeakingRef.current = isSpeaking;
@@ -561,20 +526,41 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
   // Removed handleMicrophoneClick - using only continuous chat mode now
 
   const stopSpeaking = () => {
-    console.log('🛑 Stopping current speech');
+    console.log('🛑 FORCE STOPPING ALL AUDIO');
     
-    // Stop any ongoing audio playback
+    // Stop current audio aggressively
     if (currentAudioRef.current) {
-      currentAudioRef.current.pause();
-      currentAudioRef.current.currentTime = 0;
-      currentAudioRef.current.src = '';
-      currentAudioRef.current.load(); // Reset the audio element
-      currentAudioRef.current = null;
+      try {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current.src = '';
+        currentAudioRef.current.load();
+        currentAudioRef.current.remove(); // Remove from DOM
+        currentAudioRef.current = null;
+      } catch (e) {
+        console.log('Error stopping audio (already stopped):', e);
+      }
     }
     
-    // Also stop browser TTS if it's running
-    speechSynthesis.cancel();
+    // Stop ALL audio elements on page (aggressive cleanup)
+    const audioElements = document.querySelectorAll('audio');
+    audioElements.forEach(audio => {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = '';
+      } catch (e) {
+        // Ignore errors from already stopped audio
+      }
+    });
+    
+    // Stop browser TTS
+    if (typeof speechSynthesis !== 'undefined') {
+      speechSynthesis.cancel();
+    }
+    
     setIsSpeaking(false);
+    isSpeakingRef.current = false;
     
     // Schedule restart after speech interruption in continuous mode
     if (isContinuousModeRef.current && !isLoading) {
@@ -594,8 +580,8 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
     console.log('🛑 STOPPING ALL CURRENT SPEECH');
     stopSpeaking();
     
-    // Wait a moment to ensure all speech is stopped
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait longer to ensure all audio is FULLY stopped and cleaned up
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     console.log('🚀 Starting speakText with:', {
       textLength: text.length,
@@ -804,14 +790,12 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
               </select>
             </div>
             
-            <Tooltip content="Close the AI chat window. Your conversation history will be saved.">
-              <button
-                onClick={handleClose}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                <XIcon className="h-4 w-4" />
-              </button>
-            </Tooltip>
+            <button
+              onClick={handleClose}
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
@@ -882,25 +866,23 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
             </div>
             
             {/* Microphone Button */}
-            <Tooltip content={isListening ? "Stop voice recording. Click to end your voice message." : "Start voice input. Click and speak to send a voice message to the AI."}>
-              <button
-                onClick={() => {
-                  if (isListening) {
-                    stopListening();
-                  } else {
-                    startListening();
-                  }
-                }}
-                disabled={isLoading}
-                className={`relative p-3 rounded-full transition-all duration-300 ${
-                  isListening
-                    ? 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                <MicrophoneIcon className="h-6 w-6" />
-              </button>
-            </Tooltip>
+            <button
+              onClick={() => {
+                if (isListening) {
+                  stopListening();
+                } else {
+                  startListening();
+                }
+              }}
+              disabled={isLoading}
+              className={`relative p-3 rounded-full transition-all duration-300 ${
+                isListening
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <MicrophoneIcon className="h-6 w-6" />
+            </button>
             
             {/* Stop Speaking Button - only show when AI is speaking */}
             {isSpeaking && (
@@ -916,26 +898,22 @@ const IntegratedAIChat: React.FC<IntegratedAIChatProps> = ({ isOpen, onClose }) 
             )}
 
             {/* Send Button */}
-            <Tooltip content="Send your message to the AI assistant. The AI will respond with helpful information about transportation compliance.">
-              <button
-                onClick={() => sendMessage()}
-                disabled={!inputMessage.trim() || isLoading}
-                className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <PaperAirplaneIcon className="h-5 w-5" />
-              </button>
-            </Tooltip>
+            <button
+              onClick={() => sendMessage()}
+              disabled={!inputMessage.trim() || isLoading}
+              className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <PaperAirplaneIcon className="h-5 w-5" />
+            </button>
 
             {/* Clear Messages Button */}
-            <Tooltip content="Clear all chat messages. This will remove the conversation history but won't affect saved data.">
-              <button
-                onClick={clearMessages}
-                disabled={messages.length === 0}
-                className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </Tooltip>
+            <button
+              onClick={clearMessages}
+              disabled={messages.length === 0}
+              className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
           </div>
           
           {/* Instructions */}
