@@ -396,9 +396,10 @@ class TrulyIntelligentAgent {
     };
     
     // Let the REAL AI think and respond
-    const answer = await this.aiService.askQuestion(question, aiContext);
-    const confidence = 0.95;
-    const reasoning = 'Generated using real AI intelligence with full context';
+    const aiServiceResponse = await this.aiService.askQuestion(question, aiContext);
+    const answer = typeof aiServiceResponse === 'string' ? aiServiceResponse : aiServiceResponse.answer;
+    const confidence = aiServiceResponse.confidence || 0.95;
+    let reasoning = aiServiceResponse.reasoning || 'Generated using real AI intelligence with full context';
     const intelligenceLevel = 'expert';
     
     reasoning = this.generateReasoning(question, intent, answer);

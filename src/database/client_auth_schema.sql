@@ -68,3 +68,5 @@ CREATE INDEX IF NOT EXISTS idx_client_sessions_token ON client_user_sessions(ses
 CREATE INDEX IF NOT EXISTS idx_client_sessions_user ON client_user_sessions(client_user_id);
 CREATE INDEX IF NOT EXISTS idx_client_sessions_expires ON client_user_sessions(expires_at);
 
+
+

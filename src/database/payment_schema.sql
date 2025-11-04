@@ -108,3 +108,5 @@ CREATE INDEX IF NOT EXISTS idx_payment_webhooks_processed ON payment_webhooks(pr
 INSERT OR IGNORE INTO system_settings (key, value, updated_at) 
 VALUES ('active_payment_provider', 'stripe', datetime('now'));
 
+
+

@@ -135,3 +135,5 @@ INSERT OR IGNORE INTO workflow_triggers (id, trigger_type, workflow_type, condit
 ('trigger_mc', 'payment.completed', 'mc_filing', '{"services": ["MC", "mc", "MC Number", "Operating Authority"]}', 1, datetime('now'), datetime('now')),
 ('trigger_renewal', 'renewal.due', 'renewal_reminder', '{"days_before": [90, 60, 30, 7]}', 1, datetime('now'), datetime('now'));
 
+
+

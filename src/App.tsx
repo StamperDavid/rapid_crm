@@ -24,6 +24,10 @@ import Deals from './modules/CRM/pages/Deals';
 import UserManagement from './modules/CRM/pages/UserManagement';
 import Tasks from './modules/CRM/pages/Tasks';
 import Conversations from './modules/CRM/pages/ConversationsScalable';
+import Contacts from './modules/CRM/pages/Contacts';
+import Drivers from './modules/CRM/pages/Drivers';
+import Vehicles from './modules/CRM/pages/Vehicles';
+import Invoices from './modules/CRM/pages/Invoices';
 import ApiKeys from './modules/CRM/pages/ApiKeys';
 import DatabaseManagement from './modules/CRM/pages/DatabaseManagement';
 import SystemMonitoringModule from './modules/SystemMonitoring/index';
@@ -110,6 +114,10 @@ function App() {
                         <Route path="/deals" element={<Deals />} />
                         <Route path="/services" element={<Services />} />
                         <Route path="/services/edit/:id" element={<EditService />} />
+                        <Route path="/contacts" element={<Contacts />} />
+                        <Route path="/drivers" element={<Drivers />} />
+                        <Route path="/vehicles" element={<Vehicles />} />
+                        <Route path="/invoices" element={<Invoices />} />
                         <Route path="/compliance" element={<ComplianceModule />} />
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/conversations" element={<Conversations />} />

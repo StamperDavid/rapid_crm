@@ -346,3 +346,5 @@ This will give Jasper real visibility and control over:
 
 **This is what Jasper needs to actually BE your managing partner!**
 
+
+

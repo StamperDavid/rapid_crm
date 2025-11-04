@@ -378,3 +378,5 @@ class StripeProvider {
 
 module.exports = StripeProvider;
 
+
+

@@ -3374,11 +3374,19 @@ app.post('/api/ai/chat', asyncHandler(async (req, res) => {
       console.log('🧠 askQuestion completed successfully');
       
       // Extract the answer from the response object
-      const aiResponse = aiResponseObj.answer || aiResponseObj;
+      let aiResponse;
+      if (typeof aiResponseObj === 'string') {
+        aiResponse = aiResponseObj;
+      } else if (typeof aiResponseObj === 'object' && aiResponseObj.answer) {
+        // Extract the string answer from the object
+        aiResponse = typeof aiResponseObj.answer === 'string' ? aiResponseObj.answer : String(aiResponseObj.answer);
+      } else {
+        aiResponse = String(aiResponseObj);
+      }
       
       console.log('🧠 TrulyIntelligentAgent response received:', {
         hasResponse: !!aiResponse,
-        responseLength: aiResponse?.length,
+        responseLength: typeof aiResponse === 'string' ? aiResponse.length : 'N/A',
         confidence: aiResponseObj.confidence,
         reasoning: aiResponseObj.reasoning,
         processingTime: aiResponseObj.processingTime,
@@ -3386,7 +3394,8 @@ app.post('/api/ai/chat', asyncHandler(async (req, res) => {
         conversationId: aiResponseObj.conversationId
       });
       
-      console.log(`🧠 TrulyIntelligentAgent response for user ${currentUserId}:`, aiResponse.substring(0, 100) + '...');
+      const preview = typeof aiResponse === 'string' ? aiResponse.substring(0, 100) + '...' : JSON.stringify(aiResponse).substring(0, 100) + '...';
+      console.log(`🧠 TrulyIntelligentAgent response for user ${currentUserId}:`, preview);
       
       // Return the AI response with rate limit headers
       res.set({

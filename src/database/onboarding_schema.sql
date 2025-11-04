@@ -115,3 +115,5 @@ CREATE INDEX IF NOT EXISTS idx_onboarding_sessions_payment ON onboarding_session
 CREATE INDEX IF NOT EXISTS idx_onboarding_analytics_session ON onboarding_analytics(session_id);
 CREATE INDEX IF NOT EXISTS idx_service_recommendation_session ON service_recommendation_log(session_id);
 
+
+
