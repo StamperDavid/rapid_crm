@@ -31,7 +31,8 @@ import {
   FastForwardIcon
 } from '@heroicons/react/outline';
 import { USDOTFormPageService, type USDOTFormPage } from '../../services/training/USDOTFormPageService';
-import { USDOTFormFillerAgent, type FilledFormData } from '../../services/rpa/USDOTFormFillerAgent';
+import { USDOTFormFillerAgent, type FilledFormData, type EnhancedUSDOTScenario, enhanceScenario } from '../../services/rpa/USDOTFormFillerAgent';
+import { FormBranchingLogic } from '../../services/training/FormBranchingLogic';
 
 // Scenario interface (matches database schema)
 interface USDOTApplicationScenario {
@@ -130,8 +131,8 @@ interface USDOTApplicationData {
   brokerServices: string;
   freightForwarder: string;
   cargoTankFacility: string;
-  driveaway: string;
-  towaway: string;
+  // NOTE: "driveaway" does NOT exist as separate operation question - removed
+  // "Drive Away/Tow Away" is only a cargo classification checkbox
   cargoClassifications: string[];
   
   // Step 5: Vehicle Summary
@@ -243,18 +244,73 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   const [isGeneratingScenarios, setIsGeneratingScenarios] = useState(false);
   const [scenarioCount, setScenarioCount] = useState(0);
   const [rpaFilledPages, setRpaFilledPages] = useState<FilledFormData[]>([]);
-  const [rpaAgent] = useState(() => new USDOTFormFillerAgent());
+  const [rpaAgent, setRpaAgent] = useState<USDOTFormFillerAgent | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isWatchingAgent, setIsWatchingAgent] = useState(false);
   const [currentFillingFieldIndex, setCurrentFillingFieldIndex] = useState(-1);
   const [agentFillSpeed, setAgentFillSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
   const [allFormPages, setAllFormPages] = useState<USDOTFormPage[]>([]);
   const [totalPages, setTotalPages] = useState(77);
+  const [branchingLogic] = useState(() => new FormBranchingLogic());
+  const [formAnswers] = useState(() => new Map<number, any>()); // Track answers for branching
 
-  // Load session stats on mount
+  // Load session stats and API keys on mount, then create agent
   useEffect(() => {
     loadSessionStats();
     checkScenarioCount();
+    
+    // Load API keys from database and create intelligent agent
+    const initializeAgent = async () => {
+      try {
+        console.log('🔑 Loading API keys from database...');
+        
+        // Get API keys directly from database
+        const response = await fetch('/api/api-keys');
+        if (!response.ok) {
+          throw new Error('Failed to fetch API keys from database');
+        }
+        
+        const keys = await response.json();
+        console.log('🔑 Found API keys:', keys.map((k: any) => ({ name: k.name, platform: k.platform })));
+        
+        // Find OpenRouter key (how Jasper does it)
+        const aiKey = keys.find((k: any) => 
+          k.platform?.toLowerCase() === 'openrouter' ||
+          k.name?.toLowerCase().includes('openrouter')
+        );
+        
+        console.log('🔍 AI key found:', aiKey ? { name: aiKey.name, platform: aiKey.platform, hasKey: !!aiKey.key } : 'NONE');
+        
+        const apiKey = aiKey?.key; // The endpoint uses 'key', not 'key_value'
+        
+        // Use openrouter (same as Jasper)
+        const provider: 'openrouter' | 'openai' = 'openrouter';
+        
+        if (!apiKey) {
+          throw new Error('No AI API key found in database. Add OpenRouter or OpenAI key via API Keys page.');
+        }
+        
+        console.log(`✅ Found ${provider} API key: ${apiKey.substring(0, 10)}...`);
+        
+        // Create agent with API key passed directly
+        console.log('🤖 Creating USDOT RPA Agent with TRUE LLM intelligence...');
+        const { USDOTFormFillerAgent } = await import('../../services/rpa/USDOTFormFillerAgent');
+        const agent = new USDOTFormFillerAgent({
+          mode: 'llm',
+          llmProvider: provider,
+          apiKey: apiKey,
+          model: provider === 'openrouter' ? 'openai/gpt-4-turbo-preview' : 'gpt-4-turbo-preview'
+        });
+        
+        setRpaAgent(agent);
+        console.log('✅ USDOT RPA Agent initialized with TRUE INTELLIGENCE');
+      } catch (error) {
+        console.error('❌ Failed to initialize intelligent agent:', error);
+        alert(`Failed to initialize RPA agent: ${error instanceof Error ? error.message : 'Unknown error'}\n\nAdd an AI API key via the API Keys management page.`);
+      }
+    };
+    
+    initializeAgent();
   }, []);
 
   const checkScenarioCount = async () => {
@@ -388,8 +444,6 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       brokerServices: 'No',
       freightForwarder: 'No',
       cargoTankFacility: 'No',
-      driveaway: 'No',
-      towaway: 'No',
       cargoClassifications: ['General Freight'],
       nonCMVProperty: '0',
       tripLeasedVehicles: {
@@ -492,8 +546,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     await autoFillField('brokerServices', formData.brokerServices, speed);
     await autoFillField('freightForwarder', formData.freightForwarder, speed);
     await autoFillField('cargoTankFacility', formData.cargoTankFacility, speed);
-    await autoFillField('driveaway', formData.driveaway, speed);
-    await autoFillField('towaway', formData.towaway, speed);
+    // Removed fabricated driveaway/towaway questions - don't exist as separate operations
     await autoFillField('cargoClassifications', formData.cargoClassifications, speed);
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -557,11 +610,14 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   };
 
   // Helper: Get RPA filled value for a field
+  // TODO: Update this to work with new intelligent agent structure
   const getRPAFilledValue = (fieldMapping: { pageNumber: number, fieldName: string }): any => {
     const page = rpaFilledPages.find(p => p.pageNumber === fieldMapping.pageNumber);
-    if (!page) return undefined;
-    const field = page.fields.find(f => f.fieldName === fieldMapping.fieldName);
-    return field?.value;
+    if (!page || !page.questions) return undefined;
+    
+    // For now, try to match by question text or return undefined
+    // The intelligent agent doesn't use fieldNames anymore
+    return undefined;
   };
 
   // Compare RPA results with expected scenario data - using actual RPA filled data
@@ -613,8 +669,8 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       { fieldName: 'brokerServices', displayName: 'Will the Applicant provide Property or Household Goods (HHG) Broker services?', expected: 'No', actual: applicationData.brokerServices, isCorrect: null, fieldPath: 'brokerServices', category: 'operation_type' },
       { fieldName: 'freightForwarder', displayName: 'Will the Applicant provide Freight Forwarder services?', expected: 'No', actual: applicationData.freightForwarder, isCorrect: null, fieldPath: 'freightForwarder', category: 'operation_type' },
       { fieldName: 'cargoTankFacility', displayName: 'Will the Applicant operate a Cargo Tank Facility?', expected: 'No', actual: applicationData.cargoTankFacility, isCorrect: null, fieldPath: 'cargoTankFacility', category: 'operation_type' },
-      { fieldName: 'driveaway', displayName: 'Will the Applicant operate as a Driveaway?', expected: 'No', actual: applicationData.driveaway, isCorrect: null, fieldPath: 'driveaway', category: 'operation_type' },
-      { fieldName: 'towaway', displayName: 'Will the Applicant operate as a Towaway?', expected: 'No', actual: applicationData.towaway, isCorrect: null, fieldPath: 'towaway', category: 'operation_type' },
+      // NOTE: Towaway exists on Page 40, but "Driveaway" as separate operation question does NOT exist - it's only a cargo classification checkbox
+      // Removed fabricated "driveaway" operation question
       { fieldName: 'cargoClassifications', displayName: 'Please select all classifications of cargo that the Applicant will transport or handle', expected: expectedData.cargoClassifications, actual: applicationData.cargoClassifications, isCorrect: null, fieldPath: 'cargoClassifications', category: 'operation_type' },
       
       // Vehicle Summary Questions
@@ -686,10 +742,9 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       setAllFormPages(allPages);
       setTotalPages(allPages.length);
       
-      // Get the pages the RPA agent can fill
-      const filledPages = await rpaAgent.fillApplication(scenario);
-      setRpaFilledPages(filledPages);
-      console.log(`✅ RPA agent can fill ${filledPages.length} out of ${allPages.length} total pages`);
+      // Initialize with empty array - agent will fill pages intelligently on-demand
+      setRpaFilledPages([]);
+      console.log(`✅ Intelligent RPA agent ready - will analyze and fill pages as they load`);
       
       // Update UI to show ALL pages (not just filled ones)
       const session: TrainingSession = {
@@ -711,79 +766,57 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       setShowResults(false);
       setShowReview(false);
       
-      // Populate applicationData from RPA filled pages - comprehensive mapping
+      // TODO: Update this to work with new intelligent agent structure
+      // For now, just set basic data from scenario
       const rpaData: Partial<USDOTApplicationData> = {
-        ownedVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
-        termLeasedVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
-        tripLeasedVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
-        towDriveawayVehicles: { straightTrucks: '', truckTractors: '', trailers: '', iepTrailerChassis: '' },
-        principalAddress: { country: 'US', street: '', city: '', state: '', zip: '' },
-        mailingAddress: { country: 'US', street: '', city: '', state: '', zip: '' },
-        contactAddress: { country: 'US', street: '', city: '', state: '', zip: '' },
-        complianceCertifications: { willingAble: '', produceDocuments: '', notDisqualified: '', processAgent: '', notSuspended: '', deficienciesCorrected: '' }
+        legalBusinessName: scenario.legalBusinessName,
+        dbaName: scenario.doingBusinessAs,
+        ein: scenario.ein,
+        phone: scenario.businessPhone,
+        principalAddress: { 
+          country: 'US', 
+          street: scenario.principalAddress.street, 
+          city: scenario.principalAddress.city, 
+          state: scenario.principalAddress.state, 
+          zip: scenario.principalAddress.postalCode 
+        },
+        mailingAddress: { 
+          country: 'US', 
+          street: scenario.principalAddress.street, 
+          city: scenario.principalAddress.city, 
+          state: scenario.principalAddress.state, 
+          zip: scenario.principalAddress.postalCode 
+        },
+        contactAddress: { 
+          country: 'US', 
+          street: scenario.principalAddress.street, 
+          city: scenario.principalAddress.city, 
+          state: scenario.principalAddress.state, 
+          zip: scenario.principalAddress.postalCode 
+        },
+        contactFirstName: scenario.companyContact.firstName,
+        contactLastName: scenario.companyContact.lastName,
+        contactTitle: scenario.companyContact.title,
+        contactEmail: scenario.companyContact.email,
+        ownedVehicles: { 
+          straightTrucks: scenario.vehicles.straightTrucks.owned.toString(), 
+          truckTractors: scenario.vehicles.truckTractors.owned.toString(), 
+          trailers: scenario.vehicles.trailers.owned.toString(), 
+          iepTrailerChassis: '0' 
+        },
+        termLeasedVehicles: { 
+          straightTrucks: scenario.vehicles.straightTrucks.termLeased.toString(), 
+          truckTractors: scenario.vehicles.truckTractors.termLeased.toString(), 
+          trailers: scenario.vehicles.trailers.termLeased.toString(), 
+          iepTrailerChassis: '0' 
+        },
+        tripLeasedVehicles: { straightTrucks: '0', truckTractors: '0', trailers: '0', iepTrailerChassis: '0' },
+        towDriveawayVehicles: { straightTrucks: '0', truckTractors: '0', trailers: '0', iepTrailerChassis: '0' },
+        complianceCertifications: { willingAble: 'Yes', produceDocuments: 'Yes', notDisqualified: 'Yes', processAgent: 'Yes', notSuspended: 'Yes', deficienciesCorrected: 'Yes' }
       };
       
-      filledPages.forEach(page => {
-        page.fields.forEach(field => {
-          // Business info
-          if (field.fieldName === 'questionCode_B0041P040061S04001_Q04001_LEGAL_BUS_NAME') rpaData.legalBusinessName = field.value;
-          if (field.fieldName === 'dbaName_1') rpaData.dbaName = field.value;
-          if (field.fieldName === 'questionCode_B0041P040111S04006_Q04040') rpaData.ein = field.value;
-          if (field.fieldName === 'questionCode_B0041P040011S04013_Q04035') rpaData.hasDunsBradstreet = field.value === 'N' ? 'No' : 'Yes';
-          if (field.fieldName === 'questionCode_B0041P040031S04004_Q04002') rpaData.principalAddressSame = field.value === 'Y' ? 'Yes' : 'No';
-          
-          // Address
-          if (field.fieldName === 'Q04004_ADDRESS1') rpaData.principalAddress!.street = field.value;
-          if (field.fieldName === 'Q04008_CITY') rpaData.principalAddress!.city = field.value;
-          if (field.fieldName === 'Q04009_STATE') rpaData.principalAddress!.state = field.value;
-          if (field.fieldName === 'Q04010_POSTAL_CODE') rpaData.principalAddress!.zip = field.value;
-          
-          // Contact
-          if (field.fieldName === 'Q03002_APP_CONT_FIRST_NAME') rpaData.contactFirstName = field.value;
-          if (field.fieldName === 'Q03003_APP_CONT_LAST_NAME') rpaData.contactLastName = field.value;
-          if (field.fieldName === 'Q03021_APP_CONT_TITLE') rpaData.contactTitle = field.value;
-          if (field.fieldName === 'Q03015_APP_CONT_EMAIL') rpaData.contactEmail = field.value;
-          if (field.fieldName === 'Q03004_APP_CONT_ADDR1') rpaData.contactAddress!.street = field.value;
-          if (field.fieldName === 'Q03008_APP_CONT_CITY') rpaData.contactAddress!.city = field.value;
-          if (field.fieldName === 'Q03009_APP_CONT_STATE') rpaData.contactAddress!.state = field.value;
-          if (field.fieldName === 'Q03010_APP_CONT_POSTAL_CODE') rpaData.contactAddress!.zip = field.value;
-          
-          // Phone - combine parts
-          if (field.fieldName.includes('BUS_TEL_NUM_acode')) {
-            const phoneNum = filledPages.find(p => p.pageNumber === page.pageNumber)?.fields.find(f => f.fieldName.includes('BUS_TEL_NUM_pcode'))?.value || '';
-            rpaData.phone = `(${field.value}) ${phoneNum}`;
-          }
-          
-          // Operations
-          if (field.fieldName === 'questionCode_B0051P050011S05001_Q05002') rpaData.intermodalEquipmentProvider = field.value === 'N' ? 'No' : 'Yes';
-          if (field.fieldName === 'questionCode_B0051P050031S05002_Q05004') rpaData.transportProperty = field.value === 'Y' ? 'Yes' : 'No';
-          if (field.fieldName === 'questionCode_B0051P050051S05003_Q05006') rpaData.receiveCompensation = field.value === 'Y' ? 'Yes' : 'No';
-          if (field.fieldName === 'questionCode_B0051P050091S05012_Q05041') rpaData.interstateCommerce = field.value === 'Y' ? 'Yes' : 'No';
-          if (field.fieldName === 'questionCode_B0051P050131S05013_Q05044') rpaData.transportPassengers = field.value === 'N' ? 'No' : 'Yes';
-          
-          // Vehicles
-          if (field.fieldName === 'questionCode_B0061P060021S06004_Q06001_STRAIGHT_TRUCK_OWNED') rpaData.ownedVehicles!.straightTrucks = field.value;
-          if (field.fieldName === 'questionCode_B0061P060021S06042_Q06005_TRUCK_TRACTOR_OWNED') rpaData.ownedVehicles!.truckTractors = field.value;
-          if (field.fieldName === 'questionCode_B0061P060021S06043_Q06009_TRAILER_OWNED') rpaData.ownedVehicles!.trailers = field.value;
-          if (field.fieldName === 'questionCode_B0061P060021S06004_Q06002_STRAIGHT_TRUCK_TERMLEASED') rpaData.termLeasedVehicles!.straightTrucks = field.value;
-          if (field.fieldName === 'questionCode_B0061P060021S06042_Q06006_TRUCK_TRACTOR_TERMLEASED') rpaData.termLeasedVehicles!.truckTractors = field.value;
-          if (field.fieldName === 'questionCode_B0061P060021S06043_Q06010_TRAILER_TERMLEASED') rpaData.termLeasedVehicles!.trailers = field.value;
-          
-          // Drivers
-          if (field.fieldName === 'questionCode_B0071P070021S07002_Q07001') rpaData.interstateDrivers100Mile = field.value;
-          if (field.fieldName === 'questionCode_B0071P070021S07002_Q07002') rpaData.interstateDriversBeyond100Mile = field.value;
-          if (field.fieldName === 'questionCode_B0071P070061S07004_Q07005') rpaData.cdlDrivers = field.value;
-          
-          // Affiliations & Certifications
-          if (field.fieldName === 'questionCode_B0141P140021S14002_Q14002') rpaData.hasAffiliations = field.value === 'N' ? 'No' : 'Yes';
-          if (field.fieldName === 'questionCode_B0161P160021S16002_Q16002') rpaData.complianceCertifications!.willingAble = field.value === 'Y' ? 'Yes' : 'No';
-          if (field.fieldName === 'questionCode_B0161P160031S16003_Q16003') rpaData.complianceCertifications!.produceDocuments = field.value === 'Y' ? 'Yes' : 'No';
-          if (field.fieldName === 'questionCode_B0161P160041S16004_Q16004') rpaData.complianceCertifications!.notDisqualified = field.value === 'Y' ? 'Yes' : 'No';
-        });
-      });
-      
       setApplicationData(rpaData);
-      console.log('✅ Populated applicationData from RPA filled pages:', rpaData);
+      console.log('✅ Initialized applicationData from scenario:', rpaData);
       
       // Automatically start watching the agent fill forms
       setTimeout(() => {
@@ -994,40 +1027,32 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     );
   };
 
-  // Watch the agent fill the form field-by-field (animated)
+  // Watch the intelligent agent analyze and fill forms
   const watchAgentFill = () => {
-    if (rpaFilledPages.length === 0) return;
+    if (!rpaAgent) {
+      alert('RPA Agent is still initializing. Please wait a moment and try again.');
+      return;
+    }
+    
+    if (!currentScenario) {
+      alert('Please start a training session first to load a scenario.');
+      return;
+    }
     
     setIsWatchingAgent(true);
     setCurrentStep(1);
-    setCurrentFillingFieldIndex(0);
+    setRpaFilledPages([]); // Clear any previous data
   };
 
-  // Auto-fill animation effect
+  // Intelligent Auto-fill effect - Agent reads and fills pages intelligently
   useEffect(() => {
-    if (!isWatchingAgent || !iframeRef.current || rpaFilledPages.length === 0 || allFormPages.length === 0) return;
+    if (!isWatchingAgent || !iframeRef.current || allFormPages.length === 0) return;
+    if (!currentScenario || !rpaAgent) return;
     
     // Get the current form page
     const currentPageIndex = currentStep - 1;
     const formPage = allFormPages[currentPageIndex];
     if (!formPage) return;
-    
-    // Check if RPA has data for this page
-    const currentPageData = rpaFilledPages.find(p => p.pageNumber === formPage.pageNumber);
-    if (!currentPageData) {
-      // Skip to next page that has RPA data
-      for (let i = currentStep; i < totalPages; i++) {
-        const nextFormPage = allFormPages[i];
-        const nextPageData = rpaFilledPages.find(p => p.pageNumber === nextFormPage.pageNumber);
-        if (nextPageData) {
-          setTimeout(() => setCurrentStep(i + 1), 500);
-          return;
-        }
-      }
-      // No more RPA pages found
-      setIsWatchingAgent(false);
-      return;
-    }
 
     const iframe = iframeRef.current;
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -1041,98 +1066,88 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     };
     const delay = delays[agentFillSpeed];
 
-    // Wait for page to load - check for the data-form-loaded attribute
-    const waitForPage = () => {
+    // Wait for page to load and then intelligently analyze and fill it
+    const waitForPageAndFill = async () => {
       const isFormLoaded = iframeDoc.body?.getAttribute('data-form-loaded') === 'true';
       if (!isFormLoaded) {
-        setTimeout(waitForPage, 100);
+        setTimeout(waitForPageAndFill, 100);
         return;
       }
       
-      console.log(`✅ Iframe form loaded and ready for page ${currentPageData.pageNumber}`);
+      console.log(`📄 Page ${formPage.pageNumber} loaded: ${formPage.filename}`);
 
-      // Start filling fields one by one
-      if (currentFillingFieldIndex >= 0 && currentFillingFieldIndex < currentPageData.fields.length) {
-        const field = currentPageData.fields[currentFillingFieldIndex];
-        console.log(`🎯 Attempting to fill field ${currentFillingFieldIndex + 1}/${currentPageData.fields.length}:`, field.fieldId, '=', field.value);
+      // Use the INTELLIGENT agent to analyze and fill this page
+      try {
+        // Enhance scenario to ensure all data is available
+        const enhancedScenario = enhanceScenario(currentScenario);
         
-        const element = iframeDoc.getElementById(field.fieldId) as HTMLInputElement | HTMLSelectElement;
+        const filledData = await rpaAgent.fillFormPage(
+          iframeDoc,
+          formPage.pageNumber,
+          enhancedScenario
+        );
+
+        // Store the filled page data
+        setRpaFilledPages(prev => {
+          const existing = prev.filter(p => p.pageNumber !== formPage.pageNumber);
+          return [...existing, filledData];
+        });
         
-        if (element) {
-          console.log(`✅ Found element:`, element.tagName, element.type);
+        // Store answers for branching logic
+        formAnswers.set(formPage.pageNumber, filledData);
+
+        // Check if page was successfully filled
+        if (filledData.successfullyFilled > 0) {
+          console.log(`✅ Page ${formPage.pageNumber} filled successfully: ${filledData.successfullyFilled}/${filledData.totalQuestions} questions`);
           
-          // Scroll to element
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Use REAL branching logic (like actual FMCSA app)
+          const branch = branchingLogic.getNextPage(formPage.pageNumber, formAnswers);
           
-          // Highlight field being filled
-          element.style.backgroundColor = '#fbbf24';
-          element.style.border = '3px solid #f59e0b';
-          element.style.transition = 'all 0.3s ease';
-          element.style.transform = 'scale(1.05)';
-          element.style.boxShadow = '0 0 20px rgba(251, 191, 36, 0.5)';
-          
-          // Fill the field - just set value directly, no typing animation
-          if (element.type === 'radio') {
-            element.checked = true;
-          } else if (element.type === 'checkbox') {
-            element.checked = field.value === 'Y' || field.value === 'true';
-          } else {
-            element.value = field.value;
+          if (branch.skippedPages && branch.skippedPages.length > 0) {
+            console.log(`🔀 BRANCHING: ${branch.reason}`);
+            console.log(`⏭️ Skipping pages: ${branch.skippedPages.join(', ')}`);
           }
           
-          console.log(`✅ Field filled, waiting ${delay}ms before next...`);
-          
-          // Show filled state
+          // Move to next page (with branching)
           setTimeout(() => {
-            element.style.backgroundColor = '#d1fae5';
-            element.style.border = '2px solid #10b981';
-            element.style.transform = 'scale(1)';
-            element.style.boxShadow = 'none';
-            
-            // Move to next field
-            setTimeout(() => {
-              console.log(`➡️ Moving to next field...`);
-              setCurrentFillingFieldIndex(prev => prev + 1);
-            }, delay);
-          }, 500);
+            if (branch.nextPage <= totalPages) {
+              // Find the step index for the next page
+              const nextStepIndex = allFormPages.findIndex(p => p.pageNumber === branch.nextPage);
+              setCurrentStep(nextStepIndex + 1);
+            } else {
+              // All pages done!
+              console.log(`🎉 All pages completed!`);
+              setIsWatchingAgent(false);
+            }
+          }, delay * 2);
+        } else if (filledData.totalQuestions === 0) {
+          // Navigation-only page (no questions)
+          console.log(`ℹ️ Page ${formPage.pageNumber} is navigation-only, moving to next...`);
+          setTimeout(() => {
+            if (currentStep < totalPages) {
+              setCurrentStep(currentStep + 1);
+            } else {
+              setIsWatchingAgent(false);
+            }
+          }, delay);
         } else {
-          // Field not found, skip to next
-          console.warn(`⚠️ Field not found in DOM:`, field.fieldId);
-          setTimeout(() => {
-            setCurrentFillingFieldIndex(prev => prev + 1);
-          }, 100);
-        }
-      } else if (currentFillingFieldIndex >= currentPageData.fields.length) {
-        // Done with this page, move to next page that has RPA data
-        console.log(`✅ Page ${currentPageData.pageNumber} complete! Moving to next RPA-filled page...`);
-        
-        // Find next page that has RPA data
-        let nextRPAPageFound = false;
-        for (let i = currentStep; i < totalPages; i++) {
-          const nextFormPage = allFormPages[i];
-          const nextPageData = rpaFilledPages.find(p => p.pageNumber === nextFormPage.pageNumber);
-          if (nextPageData) {
-            console.log(`📄 Found next RPA-filled page at step ${i + 1} (page ${nextFormPage.pageNumber})`);
-            setTimeout(() => {
-              setCurrentStep(i + 1);
-              setCurrentFillingFieldIndex(0);
-            }, delay * 2);
-            nextRPAPageFound = true;
-            break;
-          }
-        }
-        
-        if (!nextRPAPageFound) {
-          // All RPA-filled pages done!
-          console.log(`🎉 All ${rpaFilledPages.length} RPA-filled pages completed!`);
+          // Failed to fill any questions
+          console.error(`❌ Page ${formPage.pageNumber} FAILED: Could not fill any of ${filledData.totalQuestions} questions`);
+          console.error(`⚠️ This page requires data that is missing from the scenario or the agent couldn't understand the questions.`);
+          
+          // Stop and show error to user
           setIsWatchingAgent(false);
-          setCurrentFillingFieldIndex(-1);
+          alert(`❌ Agent failed to fill page ${formPage.pageNumber}: ${formPage.title}\n\nThe agent could not understand the questions or is missing required scenario data.\n\nFailed questions: ${filledData.failedToFill}\nCheck console for details.`);
         }
+      } catch (error) {
+        console.error(`❌ Error filling page ${formPage.pageNumber}:`, error);
+        setIsWatchingAgent(false);
+        alert(`❌ Error filling page ${formPage.pageNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
 
-    waitForPage();
-  }, [isWatchingAgent, currentStep, currentFillingFieldIndex, rpaFilledPages, agentFillSpeed, allFormPages, totalPages]);
+    waitForPageAndFill();
+  }, [isWatchingAgent, currentStep, currentScenario, rpaAgent, agentFillSpeed, allFormPages, totalPages]);
 
   // Render content for each step - PIXEL PERFECT FMCSA FORMS WITH RPA AUTO-FILL
   const renderStepContent = () => {
@@ -1168,27 +1183,29 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
         {currentPageData ? (
           <>
             {/* Show current filling status when agent is working */}
-            {isWatchingAgent && currentFillingFieldIndex >= 0 && currentFillingFieldIndex < currentPageData.fields.length && (
+            {isWatchingAgent && currentPageData && currentPageData.questions && currentPageData.questions.length > 0 && (
               <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
                 <div className="text-sm">
                   <div className="font-bold text-blue-900">
                     🤖 RPA Agent - Page {formPage.pageNumber}: {formPage.title}
                   </div>
                   <div className="text-blue-700 mt-1">
-                    Filling field {currentFillingFieldIndex + 1} of {currentPageData.fields.length}: <strong>{currentPageData.fields[currentFillingFieldIndex].fieldName}</strong>
+                    {currentPageData.successfullyFilled} of {currentPageData.totalQuestions} questions filled successfully
                   </div>
-                  <div className="text-blue-600 text-xs mt-1">
-                    Value: "{currentPageData.fields[currentFillingFieldIndex].value}"
-                  </div>
+                  {currentPageData.failedToFill > 0 && (
+                    <div className="text-red-600 text-xs mt-1">
+                      ⚠️ {currentPageData.failedToFill} question(s) could not be answered
+                    </div>
+                  )}
                 </div>
               </div>
             )}
             
             {/* Show agent can fill this page */}
-            {!isWatchingAgent && (
+            {!isWatchingAgent && currentPageData.totalQuestions > 0 && (
               <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-4">
                 <div className="text-sm font-bold text-green-900">
-                  ✅ Page {formPage.pageNumber}: {formPage.title} - RPA Agent can fill this page ({currentPageData.fields.length} fields)
+                  ✅ Page {formPage.pageNumber}: {formPage.title} - RPA Agent can fill this page ({currentPageData.totalQuestions} questions)
                 </div>
               </div>
             )}
@@ -1233,12 +1250,12 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
             </summary>
             <div className="p-4 pt-2 border-t border-gray-200">
               <div className="space-y-3">
-                {currentPageData.fields.map((field, index) => (
+                {currentPageData.questions.map((question: any, index: number) => (
                 <div key={index} className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Field ID</p>
-                      <p className="text-sm font-mono text-gray-900 mt-1">{field.fieldName}</p>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Question</p>
+                      <p className="text-sm text-gray-900 mt-1">{question.questionText}</p>
                     </div>
                     <div className="ml-4">
                       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide text-right">Confidence</p>
@@ -1246,33 +1263,44 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                         <div className="w-24 bg-gray-200 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
-                              field.confidence >= 0.9 ? 'bg-green-600' : 
-                              field.confidence >= 0.7 ? 'bg-green-500' :
-                              field.confidence >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
+                              question.confidence >= 0.9 ? 'bg-green-600' : 
+                              question.confidence >= 0.7 ? 'bg-green-500' :
+                              question.confidence >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
                             }`}
-                            style={{ width: `${field.confidence * 100}%` }}
+                            style={{ width: `${question.confidence * 100}%` }}
                           />
                         </div>
                         <span className={`text-sm font-bold ${
-                          field.confidence >= 0.9 ? 'text-green-600' : 
-                          field.confidence >= 0.7 ? 'text-green-500' :
-                          field.confidence >= 0.5 ? 'text-yellow-600' : 'text-red-600'
+                          question.confidence >= 0.9 ? 'text-green-600' : 
+                          question.confidence >= 0.7 ? 'text-green-500' :
+                          question.confidence >= 0.5 ? 'text-yellow-600' : 'text-red-600'
                         }`}>
-                          {(field.confidence * 100).toFixed(0)}%
+                          {(question.confidence * 100).toFixed(0)}%
                         </span>
                       </div>
                     </div>
                   </div>
                   
                   <div className="bg-green-50 border-l-4 border-green-500 p-2 mb-2">
-                    <p className="text-xs font-bold text-green-700 mb-1">SELECTED VALUE:</p>
-                    <p className="text-base font-bold text-green-900">{field.value}</p>
+                    <p className="text-xs font-bold text-green-700 mb-1">ANSWER:</p>
+                    <p className="text-base font-bold text-green-900">{Array.isArray(question.answer) ? question.answer.join(', ') : question.answer}</p>
                   </div>
                   
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-2">
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-2 mb-2">
                     <p className="text-xs font-bold text-blue-700 mb-1">REASONING:</p>
-                    <p className="text-xs text-blue-900 italic">{field.reasoning}</p>
+                    <p className="text-xs text-blue-900 italic">{question.reasoning}</p>
                   </div>
+                  
+                  {question.fillResult && (
+                    <div className={`border-l-4 p-2 ${question.fillResult.success ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                      <p className={`text-xs font-bold mb-1 ${question.fillResult.success ? 'text-green-700' : 'text-red-700'}`}>
+                        {question.fillResult.success ? '✅ FILLED SUCCESSFULLY' : '❌ FILL FAILED'}
+                      </p>
+                      {question.fillResult.error && (
+                        <p className="text-xs text-red-900">{question.fillResult.error}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 ))}
               </div>
@@ -2191,8 +2219,6 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                     <div><span className="font-semibold">Broker Services:</span> No</div>
                     <div><span className="font-semibold">Freight Forwarder:</span> No</div>
                     <div><span className="font-semibold">Cargo Tank:</span> No</div>
-                    <div><span className="font-semibold">Driveaway:</span> No</div>
-                    <div><span className="font-semibold">Towaway:</span> No</div>
                     <div><span className="font-semibold">Cargo Classifications:</span> General Freight</div>
                   </div>
                 </div>

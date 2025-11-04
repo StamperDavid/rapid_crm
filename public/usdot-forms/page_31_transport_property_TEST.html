@@ -1,0 +1,55 @@
+<!-- FMCSA USDOT Application - Page 31: Transport Property Question -->
+<!-- TEST VERSION - COMPLETELY DIFFERENT FIELD IDs TO TEST AGENT INTELLIGENCE -->
+
+<!-- SECTION TITLE -->
+<label class="pageSectionTitleLabel">Operation Classification</label>
+
+<!-- QUESTION (with tooltip on "Property") -->
+<label class="questionDesc" id="questionDesc_Q05002">
+  Will the Applicant transport 
+  <span class="wizardTooltip" 
+        onmouseover="globalUrsRegWizardController.showHelp(this, 'Transportation of general freight, hazardous materials or household goods. This category includes transportation exempt from the commercial registration requirements in Title 49 U.S.C. chapter 139. These exemptions can be found in 49 U.S.C. chapter 135.');">
+    Property
+  </span>?
+</label>
+
+<!-- Icon: icon_Property.png -->
+
+<!-- ANSWER OPTIONS (Radio) - COMPLETELY DIFFERENT IDs! -->
+<input name="transport_property_question_2025" 
+       type="radio" 
+       value="Y" 
+       tabindex="0" 
+       id="answer_yes_12345">
+<label for="answer_yes_12345">Yes</label>
+
+<input name="transport_property_question_2025" 
+       type="radio" 
+       value="N" 
+       tabindex="0" 
+       id="answer_no_67890">
+<label for="answer_no_67890">No</label>
+
+<!-- METADATA -->
+<!--
+TEST FILE - FIELD IDs CHANGED TO VERIFY AGENT INTELLIGENCE
+
+Original IDs:
+- questionCode_B0051P050021S05002_Q05002_id_Y
+- questionCode_B0051P050021S05002_Q05002_id_N
+
+Test IDs (completely different):
+- answer_yes_12345  
+- answer_no_67890
+
+The intelligent agent should still be able to:
+1. Read the question: "Will the Applicant transport Property?"
+2. Understand it's asking about property transportation
+3. Check client data: operations.transportProperty
+4. Find the "Yes" radio button by its label text
+5. Fill it correctly
+
+This proves the agent doesn't rely on field IDs!
+-->
+
+

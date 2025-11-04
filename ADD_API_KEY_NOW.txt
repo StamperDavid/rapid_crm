@@ -1,0 +1,34 @@
+======================================
+ADD YOUR OPENAI API KEY - DO THIS NOW
+======================================
+
+1. Get key from: https://platform.openai.com/api-keys
+   - Sign in
+   - Click "Create new secret key"
+   - Copy the key (starts with sk-...)
+
+2. In Rapid CRM:
+   - Go to API Keys management page
+   - Click "Add New API Key"
+   - Name: "OpenAI"
+   - Provider: "openai"
+   - Key Value: Paste your sk-... key
+   - Click Save
+
+3. Restart both servers:
+   Backend:  cd C:\Users\David\PycharmProjects\Rapid_CRM && node server.js
+   Frontend: cd C:\Users\David\PycharmProjects\Rapid_CRM && npm run dev
+
+4. Go to: http://localhost:3000/training/usdot
+
+5. You'll see: "✅ TRUE INTELLIGENCE ENABLED: Using OPENAI gpt-4-turbo-preview"
+
+======================================
+
+WITHOUT the API key = Agent FAILS (correct behavior)
+WITH the API key = Agent uses GPT-4 TRUE intelligence
+
+Once this works, ALL 50+ other agents will be updated to use LLM.
+
+======================================
+
