@@ -182,6 +182,16 @@ class AlexTrainingService {
       };
     }
 
+    // No session exists - check if scenarios exist and create session
+    console.log('📊 No session found, checking for existing scenarios...');
+    const scenarioCount = this.db.prepare('SELECT COUNT(*) as count FROM alex_training_scenarios WHERE is_active = 1').get();
+    
+    if (scenarioCount && scenarioCount.count > 0) {
+      console.log(`✅ Found ${scenarioCount.count} existing scenarios, creating session...`);
+      return this.createNewSession(scenarioCount.count);
+    }
+
+    console.log('⚠️ No scenarios found in database');
     return null;
   }
 
@@ -239,6 +249,64 @@ class AlexTrainingService {
 
     console.log('⚠️ No untested scenarios found');
     return null;
+  }
+
+  /**
+   * Test Alex with a scenario - simulates Alex's determination logic
+   */
+  async testAlexWithScenario(scenario) {
+    const startTime = Date.now();
+    
+    // Simulate Alex's regulatory determination logic
+    const isInterstate = scenario.transportNonHazardousInterstate === 'Yes';
+    const isForHire = scenario.receiveCompensationForTransport === 'Yes';
+    const hasHazmat = scenario.transportHazardousMaterials === 'Yes';
+    const totalVehicles = (scenario.cmvInterstateOnly || 0) + (scenario.cmvIntrastateOnly || 0);
+    
+    let reasoning = '';
+    let usdotRequired = false;
+    let mcAuthorityRequired = false;
+    let hazmatRequired = false;
+    let iftaRequired = false;
+    let stateRegistrationRequired = false;
+    
+    // Alex's determination logic
+    if (isInterstate) {
+      usdotRequired = true;
+      reasoning += 'Interstate commerce detected. USDOT required for CMVs over 10,001 lbs. ';
+      
+      if (isForHire) {
+        mcAuthorityRequired = true;
+        reasoning += 'For-hire operation requires MC Authority. ';
+      }
+      
+      if (totalVehicles >= 2) {
+        iftaRequired = true;
+        reasoning += `IFTA required for interstate fuel tax reporting with ${totalVehicles} vehicles. `;
+      }
+    } else {
+      reasoning += `Intrastate operation in ${scenario.principalAddress.state}. `;
+      usdotRequired = true;
+      stateRegistrationRequired = true;
+      reasoning += 'State-specific thresholds apply. ';
+    }
+    
+    if (hasHazmat) {
+      hazmatRequired = true;
+      reasoning += 'Hazmat endorsement required for transporting hazardous materials. ';
+    }
+    
+    const responseTime = Date.now() - startTime;
+    
+    return {
+      usdotRequired,
+      mcAuthorityRequired,
+      hazmatRequired,
+      iftaRequired,
+      stateRegistrationRequired,
+      reasoning,
+      confidence: 0.85
+    };
   }
 }
 

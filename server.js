@@ -6807,11 +6807,18 @@ app.post('/api/alex-training/run-conversation', async (req, res) => {
   try {
     const { scenario } = req.body;
     
+    if (!scenario) {
+      return res.status(400).json({ error: 'No scenario provided' });
+    }
+    
+    console.log('🎯 Running conversation for scenario:', scenario.id);
+    console.log('📋 Scenario keys:', Object.keys(scenario));
+    
     // Simulate a realistic onboarding conversation with varied client responses
     const isInterstate = scenario.transportNonHazardousInterstate === 'Yes';
     const isForHire = scenario.receiveCompensationForTransport === 'Yes';
-    const totalTrucks = scenario.cmvInterstateOnly + scenario.cmvIntrastateOnly;
-    const hasHazmat = scenario.cargoClassifications.includes('hazmat');
+    const totalTrucks = (scenario.cmvInterstateOnly || 0) + (scenario.cmvIntrastateOnly || 0);
+    const hasHazmat = scenario.cargoClassifications ? scenario.cargoClassifications.includes('hazmat') : (scenario.transportHazardousMaterials === 'Yes');
     
     // Realistic varied client responses
     const interstateResponses = [
@@ -6885,7 +6892,7 @@ app.post('/api/alex-training/run-conversation', async (req, res) => {
         triggers: (isInterstate && totalTrucks >= 2) ? ['IFTA'] : []
       },
       { sender: 'alex', content: 'How many drivers?' },
-      { sender: 'client', content: `${scenario.driversWithCDL} drivers with CDLs.` },
+      { sender: 'client', content: `${scenario.driversWithCDL || scenario.cdlDrivers || totalTrucks} drivers with CDLs.` },
       
       // Additional questions
       { sender: 'alex', content: 'Do you operate as an Intermodal Equipment Provider, freight broker, or freight forwarder?' },
@@ -6903,8 +6910,9 @@ app.post('/api/alex-training/run-conversation', async (req, res) => {
       determination
     });
   } catch (error) {
-    console.error('Error running conversation:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error running conversation:', error);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: error.message, stack: error.stack });
   }
 });
 

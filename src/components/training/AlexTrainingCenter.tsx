@@ -47,7 +47,10 @@ interface USDOTApplicationScenario {
     truckTractors: { owned: number; termLeased: number };
     trailers: { owned: number; termLeased: number };
   };
-  complianceRequirements: {
+  cmvInterstateOnly: number;
+  cmvIntrastateOnly: number;
+  cargoClassifications: string[];
+  expectedRequirements: {
     usdotRequired: boolean;
     mcAuthorityRequired: boolean;
     hazmatEndorsementRequired: boolean;
@@ -261,6 +264,107 @@ const AlexTrainingCenter: React.FC = () => {
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
+  };
+
+  const renderScenarioDetails = () => {
+    if (!currentScenario) {
+      return (
+        <div className="h-full flex items-center justify-center bg-white dark:bg-gray-800">
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <ClipboardCheckIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No scenario loaded</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="h-full flex flex-col bg-white dark:bg-gray-800">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+            <ClipboardCheckIcon className="h-5 w-5 mr-2" />
+            Client Scenario
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Complete application details
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm">
+          {/* Company Info */}
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Company Information</h3>
+            <div className="space-y-1 text-gray-700 dark:text-gray-300">
+              <div><span className="font-medium">Legal Name:</span> {currentScenario.legalBusinessName}</div>
+              <div><span className="font-medium">DBA:</span> {currentScenario.doingBusinessAs || 'N/A'}</div>
+              <div><span className="font-medium">Business Type:</span> {currentScenario.formOfBusiness.replace(/_/g, ' ')}</div>
+              <div><span className="font-medium">EIN:</span> {currentScenario.ein}</div>
+              <div><span className="font-medium">Phone:</span> {currentScenario.businessPhone}</div>
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Principal Address</h3>
+            <div className="text-gray-700 dark:text-gray-300">
+              <div>{currentScenario.principalAddress.street}</div>
+              <div>{currentScenario.principalAddress.city}, {currentScenario.principalAddress.state} {currentScenario.principalAddress.postalCode}</div>
+            </div>
+          </div>
+
+          {/* Contact Person */}
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Contact Person</h3>
+            <div className="space-y-1 text-gray-700 dark:text-gray-300">
+              <div>{currentScenario.companyContact.firstName} {currentScenario.companyContact.lastName}</div>
+              <div>{currentScenario.companyContact.title}</div>
+              <div>{currentScenario.companyContact.email}</div>
+              <div>{currentScenario.companyContact.phone}</div>
+            </div>
+          </div>
+
+          {/* Operations */}
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Operations</h3>
+            <div className="space-y-1 text-gray-700 dark:text-gray-300">
+              <div><span className="font-medium">Compensation:</span> {currentScenario.receiveCompensationForTransport}</div>
+              <div><span className="font-medium">Interstate:</span> {currentScenario.transportNonHazardousInterstate}</div>
+              <div><span className="font-medium">Property Type:</span> {currentScenario.propertyType}</div>
+              <div><span className="font-medium">Hazmat:</span> {currentScenario.transportHazardousMaterials}</div>
+              <div><span className="font-medium">Operation Type:</span> {currentScenario.operationType}</div>
+            </div>
+          </div>
+
+          {/* Vehicles */}
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Fleet</h3>
+            <div className="space-y-1 text-gray-700 dark:text-gray-300">
+              <div><span className="font-medium">Straight Trucks:</span> {currentScenario.vehicles?.straightTrucks?.owned || 0} owned, {currentScenario.vehicles?.straightTrucks?.termLeased || 0} leased</div>
+              <div><span className="font-medium">Truck Tractors:</span> {currentScenario.vehicles?.truckTractors?.owned || 0} owned, {currentScenario.vehicles?.truckTractors?.termLeased || 0} leased</div>
+              <div><span className="font-medium">Trailers:</span> {currentScenario.vehicles?.trailers?.owned || 0} owned, {currentScenario.vehicles?.trailers?.termLeased || 0} leased</div>
+              <div><span className="font-medium">Interstate CMVs:</span> {currentScenario.cmvInterstateOnly || 0}</div>
+              <div><span className="font-medium">Intrastate CMVs:</span> {currentScenario.cmvIntrastateOnly || 0}</div>
+            </div>
+          </div>
+
+          {/* Cargo */}
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Cargo Classifications</h3>
+            <div className="flex flex-wrap gap-1">
+              {currentScenario.cargoClassifications && currentScenario.cargoClassifications.length > 0 ? (
+                currentScenario.cargoClassifications.map((cargo, idx) => (
+                  <span key={idx} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+                    {cargo}
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500 dark:text-gray-400 text-xs">No cargo classifications specified</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderConversation = () => {
@@ -534,9 +638,14 @@ const AlexTrainingCenter: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Split Screen: Conversation | Determination */}
-          <div className="grid grid-cols-2 gap-4 p-4" style={{ height: 'calc(100vh - 280px)' }}>
-            {/* Left: Conversation */}
+          {/* 3-Column Layout: Scenario Details | Conversation | Determination */}
+          <div className="grid grid-cols-3 gap-4 p-4" style={{ height: 'calc(100vh - 280px)' }}>
+            {/* Left: Scenario Details */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+              {renderScenarioDetails()}
+            </div>
+
+            {/* Middle: Conversation */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               {renderConversation()}
             </div>
