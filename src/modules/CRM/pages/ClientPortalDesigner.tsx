@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   EyeIcon,
@@ -551,18 +552,22 @@ const ClientPortalDesigner: React.FC = () => {
                   
                   {/* Element Controls */}
                   {selectedElement === element.id && (
-                    <div className="absolute -top-8 left-0 flex items-center space-x-1">
+                    <div className="absolute -top-8 left-0 flex items-center space-x-1 z-50">
                       <button
+                        type="button"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           handleElementDelete(element.id);
                         }}
-                        className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        className="p-1.5 bg-red-500 text-white rounded shadow-lg hover:bg-red-600 transition-colors cursor-pointer"
                       >
-                        <TrashIcon className="h-3 w-3" />
+                        <TrashIcon className="h-3.5 w-3.5" />
                       </button>
                       <button
+                        type="button"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           // Duplicate element
                           const newElement = {
@@ -572,9 +577,9 @@ const ClientPortalDesigner: React.FC = () => {
                           };
                           setPortalElements(prev => [...prev, newElement]);
                         }}
-                        className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        className="p-1.5 bg-blue-500 text-white rounded shadow-lg hover:bg-blue-600 transition-colors cursor-pointer"
                       >
-                        <DuplicateIcon className="h-3 w-3" />
+                        <DuplicateIcon className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   )}

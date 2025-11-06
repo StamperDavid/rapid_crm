@@ -14,7 +14,8 @@ import {
   ChatIcon,
   ClipboardCheckIcon,
   LightningBoltIcon,
-  PlayIcon
+  PlayIcon,
+  UploadIcon
 } from '@heroicons/react/outline';
 // Scenario interface (matches database schema)
 interface USDOTApplicationScenario {
@@ -75,6 +76,7 @@ interface AlexDetermination {
   iftaRequired: boolean;
   stateRegistrationRequired: boolean;
   reasoning: string;
+  regulations?: string[];
   confidence: number;
 }
 
@@ -84,6 +86,22 @@ interface RequirementReview {
   hazmat: boolean | null;
   ifta: boolean | null;
   stateRegistration: boolean | null;
+}
+
+interface ConversationQuality {
+  askedRightQuestions: boolean | null;
+  askedInGoodOrder: boolean | null;
+  explainedClearly: boolean | null;
+  builtRapport: boolean | null;
+  handledObjections: boolean | null;
+}
+
+interface SalesEffectiveness {
+  presentedValue: boolean | null;
+  handledPricing: boolean | null;
+  createdUrgency: boolean | null;
+  closedEffectively: boolean | null;
+  overallSalesQuality: number | null; // 1-5 rating
 }
 
 interface TrainingSession {
@@ -97,6 +115,7 @@ interface TrainingSession {
 const AlexTrainingCenter: React.FC = () => {
   const [currentScenario, setCurrentScenario] = useState<USDOTApplicationScenario | null>(null);
   const [conversation, setConversation] = useState<Message[]>([]);
+  const conversationEndRef = React.useRef<HTMLDivElement>(null);
   const [alexDetermination, setAlexDetermination] = useState<AlexDetermination | null>(null);
   const [isConversationComplete, setIsConversationComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -110,14 +129,55 @@ const AlexTrainingCenter: React.FC = () => {
     ifta: null,
     stateRegistration: null
   });
+  const [conversationQuality, setConversationQuality] = useState<ConversationQuality>({
+    askedRightQuestions: null,
+    askedInGoodOrder: null,
+    explainedClearly: null,
+    builtRapport: null,
+    handledObjections: null
+  });
+  const [salesEffectiveness, setSalesEffectiveness] = useState<SalesEffectiveness>({
+    presentedValue: null,
+    handledPricing: null,
+    createdUrgency: null,
+    closedEffectively: null,
+    overallSalesQuality: null
+  });
+  const [qualifiedStatesCount, setQualifiedStatesCount] = useState(0);
+  const [qualifiedStatesLastUpdated, setQualifiedStatesLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
     initializeTraining();
+    loadQualifiedStatesInfo();
   }, []);
+
+  // Auto-scroll conversation to bottom when new messages appear
+  useEffect(() => {
+    conversationEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversation]);
 
   const initializeTraining = async () => {
     await loadSession();
     await loadNextScenario();
+  };
+
+  const loadQualifiedStatesInfo = async () => {
+    try {
+      const response = await fetch('/api/qualified-states');
+      if (response.ok) {
+        const data = await response.json();
+        setQualifiedStatesCount(data.states?.length || 0);
+        if (data.states && data.states.length > 0) {
+          // Get most recent update date
+          const mostRecent = data.states.reduce((latest: any, state: any) => {
+            return new Date(state.last_updated) > new Date(latest.last_updated) ? state : latest;
+          }, data.states[0]);
+          setQualifiedStatesLastUpdated(mostRecent.last_updated);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading qualified states info:', error);
+    }
   };
 
   const loadSession = async () => {
@@ -170,6 +230,20 @@ const AlexTrainingCenter: React.FC = () => {
           ifta: null,
           stateRegistration: null
         });
+        setConversationQuality({
+          askedRightQuestions: null,
+          askedInGoodOrder: null,
+          explainedClearly: null,
+          builtRapport: null,
+          handledObjections: null
+        });
+        setSalesEffectiveness({
+          presentedValue: null,
+          handledPricing: null,
+          createdUrgency: null,
+          closedEffectively: null,
+          overallSalesQuality: null
+        });
         
         // Start the conversation
         await startConversation(data.scenario);
@@ -182,26 +256,147 @@ const AlexTrainingCenter: React.FC = () => {
   };
 
   const startConversation = async (scenario: USDOTApplicationScenario) => {
-    // Client initiates conversation
-    const clientGreeting: Message = {
-      id: 'msg_1',
-      sender: 'client',
-      content: `Hi, I need help getting a USDOT number for my ${scenario.formOfBusiness.replace(/_/g, ' ')} business.`,
-      timestamp: new Date()
-    };
-    
-    setConversation([clientGreeting]);
-    
-    // Simulate the full onboarding conversation
-    await simulateOnboardingConversation(scenario);
-  };
-
-  const simulateOnboardingConversation = async (scenario: USDOTApplicationScenario) => {
     setIsProcessing(true);
+    setConversation([]);
     
     try {
-      // Call backend to run Alex through the full conversation
-      const response = await fetch('/api/alex-training/run-conversation', {
+      // Step 1: Get client greeting
+      console.log('👋 Getting client greeting...');
+      const greetingResponse = await fetch('/api/alex-training/start-conversation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario })
+      });
+      
+      const greeting = await greetingResponse.json();
+      
+      const clientMessage: Message = {
+        id: `msg_0`,
+        sender: 'client',
+        content: greeting.message,
+        timestamp: new Date()
+      };
+      
+      setConversation([clientMessage]);
+      
+      // Continue conversation turn by turn
+      await continueConversation(scenario, [clientMessage]);
+      
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      setIsProcessing(false);
+    }
+  };
+
+  const continueConversation = async (scenario: USDOTApplicationScenario, currentConversation: Message[]) => {
+    const maxTurns = 30; // Safety limit to prevent infinite loops
+    let messages = [...currentConversation];
+    
+    for (let turn = 0; turn < maxTurns; turn++) {
+      // Show "Alex is thinking..."
+      setIsProcessing(true);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Delay to show it's processing
+      
+      // Get Alex's response
+      try {
+        const alexResponse = await fetch('/api/alex-training/alex-response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            scenario,
+            conversationHistory: messages.map(m => ({ sender: m.sender, content: m.content }))
+          })
+        });
+        
+        const alexData = await alexResponse.json();
+        
+        if (!alexData || !alexData.message) {
+          console.error('Invalid Alex response:', alexData);
+          break;
+        }
+        
+        const alexMessage: Message = {
+          id: `msg_${messages.length}`,
+          sender: 'alex',
+          content: alexData.message,
+          timestamp: new Date()
+        };
+        
+        messages.push(alexMessage);
+        setConversation([...messages]);
+        
+        // Check if Alex signals conversation is complete
+        const lowerMessage = alexData.message.toLowerCase();
+        const alexIsClosing = 
+          lowerMessage.includes('let me determine') ||
+          lowerMessage.includes('let me analyze') ||
+          lowerMessage.includes('let me prepare your registration') ||
+          lowerMessage.includes('i\'ll get started on your') ||
+          lowerMessage.includes('welcome aboard') ||
+          lowerMessage.includes('i\'ll begin processing') ||
+          lowerMessage.includes('thank you for choosing');
+        
+        if (alexIsClosing) {
+          console.log('✅ Alex is closing conversation naturally');
+          await finalizeConversation(scenario);
+          return;
+        }
+        
+        // Show "Client is typing..."
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Get client's response
+        const clientResponse = await fetch('/api/alex-training/client-response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            scenario,
+            alexMessage: alexData.message
+          })
+        });
+        
+        const clientData = await clientResponse.json();
+        
+        const clientMessage: Message = {
+          id: `msg_${messages.length}`,
+          sender: 'client',
+          content: clientData.message,
+          timestamp: new Date(),
+          triggers: clientData.revealsInfo?.map((info: any) => info.field) || []
+        };
+        
+        messages.push(clientMessage);
+        setConversation([...messages]);
+        
+        // Check if client accepted or declined services
+        const clientLower = clientData.message.toLowerCase();
+        if (clientLower.includes('yes') && clientLower.includes('started') ||
+            clientLower.includes('let\'s do it') ||
+            clientLower.includes('sounds good') ||
+            clientLower.includes('i\'m in') ||
+            clientLower.includes('no thanks') ||
+            clientLower.includes('not interested') ||
+            clientLower.includes('too expensive')) {
+          // Client made decision - one more Alex response then end
+          console.log('💰 Client made purchase decision, getting final Alex response...');
+        }
+        
+      } catch (error) {
+        console.error('Error in conversation turn:', error);
+        break;
+      }
+    }
+    
+    // If we get here, finalize conversation
+    await finalizeConversation(scenario);
+  };
+
+  const finalizeConversation = async (scenario: USDOTApplicationScenario) => {
+    console.log('🎯 Getting final determination...');
+    
+    try {
+      // Call determination service
+      const response = await fetch('/api/alex-training/test-scenario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scenario })
@@ -209,25 +404,12 @@ const AlexTrainingCenter: React.FC = () => {
       
       const data = await response.json();
       
-      if (data.conversation && data.determination) {
-        // Convert conversation to Message format with unique IDs and trigger detection
-        const messages: Message[] = data.conversation.map((msg: any, index: number) => ({
-          id: `${scenario.id}_msg_${index}`,
-          sender: msg.sender,
-          content: msg.content,
-          timestamp: new Date(),
-          triggers: msg.triggers || []
-        }));
-        
-        // Display all messages at once (no animation to avoid duplicates)
-        setConversation(messages);
-        
-        // Show final determination
-        setAlexDetermination(data.determination);
+      if (data.response) {
+        setAlexDetermination(data.response);
         setIsConversationComplete(true);
       }
     } catch (error) {
-      console.error('Error running conversation:', error);
+      console.error('Error getting determination:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -255,7 +437,9 @@ const AlexTrainingCenter: React.FC = () => {
           feedback,
           conversation,
           determination: alexDetermination,
-          individualReviews: requirementReview
+          individualReviews: requirementReview,
+          conversationQuality,
+          salesEffectiveness
         })
       });
       
@@ -422,16 +606,25 @@ const AlexTrainingCenter: React.FC = () => {
             ))
           )}
           
-          {isProcessing && !isConversationComplete && (
-            <div className="flex justify-end">
-              <div className="bg-blue-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
+          {isProcessing && !isConversationComplete && conversation.length > 0 && (
+            <div className={`flex ${conversation[conversation.length - 1].sender === 'client' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                conversation[conversation.length - 1].sender === 'client' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }`}>
                 <div className="flex items-center space-x-2">
                   <RefreshIcon className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Alex is typing...</span>
+                  <span className="text-sm">
+                    {conversation[conversation.length - 1].sender === 'client' 
+                      ? 'Alex is thinking...' 
+                      : 'Client is typing...'}
+                  </span>
                 </div>
               </div>
             </div>
           )}
+          <div ref={conversationEndRef} />
         </div>
       </div>
     );
@@ -488,6 +681,18 @@ const AlexTrainingCenter: React.FC = () => {
           <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
             <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Alex's Reasoning</h3>
             <p className="text-sm text-blue-800 dark:text-blue-200">{alexDetermination.reasoning}</p>
+            {alexDetermination.regulations && alexDetermination.regulations.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                <div className="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">Regulatory Citations:</div>
+                <div className="flex flex-wrap gap-1">
+                  {alexDetermination.regulations.map((reg, idx) => (
+                    <span key={idx} className="text-xs px-2 py-0.5 bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100 rounded">
+                      {reg}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
               Confidence: {(alexDetermination.confidence * 100).toFixed(0)}%
             </div>
@@ -583,7 +788,30 @@ const AlexTrainingCenter: React.FC = () => {
               Train Alex with live onboarding conversations
             </p>
           </div>
-          {session && session.totalScenarios > 0 && (
+          
+          <div className="flex items-center space-x-4">
+            {/* Qualified States Indicator */}
+            <a
+              href="/training/qualified-states"
+              className="bg-purple-50 dark:bg-purple-900 px-4 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors"
+            >
+              <div className="text-xs text-purple-600 dark:text-purple-300 font-medium">
+                Qualified States List
+              </div>
+              <div className="text-sm font-bold text-purple-900 dark:text-purple-100">
+                {qualifiedStatesCount} states loaded
+              </div>
+              {qualifiedStatesLastUpdated && (
+                <div className="text-xs text-purple-500 dark:text-purple-400">
+                  Updated: {new Date(qualifiedStatesLastUpdated).toLocaleDateString()}
+                </div>
+              )}
+              <div className="text-xs text-purple-600 dark:text-purple-300 mt-1">
+                Click to manage →
+              </div>
+            </a>
+            
+            {session && session.totalScenarios > 0 && (
             <div className="text-right">
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {session.completed} / {session.totalScenarios}
@@ -592,51 +820,33 @@ const AlexTrainingCenter: React.FC = () => {
                 {session.correct} correct • {session.incorrect} incorrect
               </div>
               {session.correct + session.incorrect > 0 && (
-                <div className="text-sm font-medium text-blue-600">
-                  Accuracy: {((session.correct / (session.correct + session.incorrect)) * 100).toFixed(1)}%
+                <div className={`text-lg font-bold ${
+                  ((session.correct / (session.correct + session.incorrect)) * 100) >= 95 
+                    ? 'text-green-600' 
+                    : ((session.correct / (session.correct + session.incorrect)) * 100) >= 80 
+                      ? 'text-blue-600' 
+                      : 'text-orange-600'
+                }`}>
+                  {((session.correct / (session.correct + session.incorrect)) * 100).toFixed(1)}% Accuracy
+                </div>
+              )}
+              {session.correct + session.incorrect > 0 && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {session.correct + session.incorrect >= 100 && ((session.correct / (session.correct + session.incorrect)) * 100) >= 95 
+                    ? '✅ Production Ready!' 
+                    : session.correct + session.incorrect >= 50 
+                      ? `${100 - (session.correct + session.incorrect)} more tests to evaluate` 
+                      : 'Keep training...'}
                 </div>
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      {!session || session.totalScenarios === 0 || session.totalScenarios < 918 ? (
-        <div className="max-w-2xl mx-auto mt-20 p-8 bg-white dark:bg-gray-800 rounded-lg shadow">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            {session && session.totalScenarios > 0 ? 'Regenerate Training Scenarios (918 Total)' : 'Generate Training Scenarios'}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {session && session.totalScenarios > 0 ? (
-              <>
-                Current: {session.totalScenarios} scenarios. Click below to regenerate with all 918 transportation compliance scenarios (51 states × 6 operation types × 3 fleet sizes).
-              </>
-            ) : (
-              <>
-                Click below to generate all 918 training scenarios for transportation compliance. This will create complete USDOT applications that will be stored permanently for training.
-              </>
-            )}
-          </p>
-          <button
-            onClick={generateScenarios}
-            disabled={isGenerating}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshIcon className="h-5 w-5 mr-2 animate-spin" />
-                Generating 918 Scenarios...
-              </>
-            ) : (
-              <>
-                <PlayIcon className="h-5 w-5 mr-2" />
-                {session && session.totalScenarios > 0 ? 'Regenerate All 918 Training Scenarios' : 'Generate All 918 Training Scenarios'}
-              </>
-            )}
-          </button>
-        </div>
-      ) : (
+      {session && session.totalScenarios > 0 ? (
         <>
           {/* 3-Column Layout: Scenario Details | Conversation | Determination */}
           <div className="grid grid-cols-3 gap-4 p-4" style={{ height: 'calc(100vh - 280px)' }}>
@@ -657,15 +867,98 @@ const AlexTrainingCenter: React.FC = () => {
           </div>
 
           {/* Bottom: Feedback Window */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg" style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <div className="max-w-7xl mx-auto">
+              {/* Tabs for different review sections */}
+              <div className="flex space-x-4 mb-3 border-b border-gray-200 dark:border-gray-700">
+                <button className="px-3 py-1 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                  Determination
+                </button>
+                <button className="px-3 py-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                  Conversation Quality
+                </button>
+                <button className="px-3 py-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                  Sales Effectiveness
+                </button>
+              </div>
+
+              {/* Conversation Quality Review */}
+              <div className="grid grid-cols-5 gap-2 mb-3">
+                <div className="text-center">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Right Questions?</div>
+                  <div className="flex justify-center space-x-1">
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, askedRightQuestions: true }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.askedRightQuestions === true ? 'bg-green-600 text-white' : 'bg-gray-200 hover:bg-green-100'}`}
+                    >✓</button>
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, askedRightQuestions: false }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.askedRightQuestions === false ? 'bg-red-600 text-white' : 'bg-gray-200 hover:bg-red-100'}`}
+                    >✗</button>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Good Order?</div>
+                  <div className="flex justify-center space-x-1">
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, askedInGoodOrder: true }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.askedInGoodOrder === true ? 'bg-green-600 text-white' : 'bg-gray-200 hover:bg-green-100'}`}
+                    >✓</button>
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, askedInGoodOrder: false }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.askedInGoodOrder === false ? 'bg-red-600 text-white' : 'bg-gray-200 hover:bg-red-100'}`}
+                    >✗</button>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Explained Clearly?</div>
+                  <div className="flex justify-center space-x-1">
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, explainedClearly: true }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.explainedClearly === true ? 'bg-green-600 text-white' : 'bg-gray-200 hover:bg-green-100'}`}
+                    >✓</button>
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, explainedClearly: false }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.explainedClearly === false ? 'bg-red-600 text-white' : 'bg-gray-200 hover:bg-red-100'}`}
+                    >✗</button>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Built Rapport?</div>
+                  <div className="flex justify-center space-x-1">
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, builtRapport: true }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.builtRapport === true ? 'bg-green-600 text-white' : 'bg-gray-200 hover:bg-green-100'}`}
+                    >✓</button>
+                    <button
+                      onClick={() => setConversationQuality(prev => ({ ...prev, builtRapport: false }))}
+                      className={`px-2 py-1 text-xs rounded ${conversationQuality.builtRapport === false ? 'bg-red-600 text-white' : 'bg-gray-200 hover:bg-red-100'}`}
+                    >✗</button>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Sales Quality (1-5)</div>
+                  <div className="flex justify-center space-x-1">
+                    {[1, 2, 3, 4, 5].map(rating => (
+                      <button
+                        key={rating}
+                        onClick={() => setSalesEffectiveness(prev => ({ ...prev, overallSalesQuality: rating }))}
+                        className={`px-2 py-1 text-xs rounded ${salesEffectiveness.overallSalesQuality === rating ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-blue-100'}`}
+                      >
+                        {rating}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <h3 className="font-medium text-gray-900 dark:text-white mb-2">
                 Your Feedback & Corrections
               </h3>
               <textarea
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Explain what Alex did right or wrong in the conversation and/or determination. Example: 'Alex should have asked about interstate vs intrastate earlier. The IFTA determination is wrong because...'"
+                placeholder="Provide detailed feedback on conversation quality, sales approach, and regulatory determinations. Example: 'Alex should have explained IFTA more clearly - clients don't know what that acronym means. Sales approach was too pushy. IFTA determination is wrong because...'"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
                 rows={2}
               />
@@ -676,7 +969,7 @@ const AlexTrainingCenter: React.FC = () => {
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center"
                 >
                   <CheckCircleIcon className="h-5 w-5 mr-2" />
-                  Submit Review
+                  Submit Full Review
                 </button>
                 <button
                   onClick={loadNextScenario}
@@ -690,6 +983,15 @@ const AlexTrainingCenter: React.FC = () => {
             </div>
           </div>
         </>
+      ) : (
+        <div className="max-w-2xl mx-auto mt-20 p-8 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            No Training Session Found
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            The training system is loading scenarios from the database. If this persists, check the server console for errors.
+          </p>
+        </div>
       )}
     </div>
   );

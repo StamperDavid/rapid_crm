@@ -20,8 +20,25 @@ const UniversalTooltip: React.FC<UniversalTooltipProps> = ({
   className = '',
   showIcon = false,
   iconPosition = 'after',
-  trigger = 'hover'
+  trigger = 'click'
 }) => {
+  const [isVisible, setIsVisible] = React.useState(false);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+  // Close tooltip when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsVisible(false);
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isVisible]);
+
   if (showIcon) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
@@ -45,9 +62,15 @@ const UniversalTooltip: React.FC<UniversalTooltipProps> = ({
   }
 
   return (
-    <div className={`relative group ${className}`}>
+    <div 
+      ref={wrapperRef}
+      className={`relative ${className}`}
+      onClick={() => setIsVisible(!isVisible)}
+    >
       {children}
-      <div className={`absolute z-50 bg-gray-900 text-white rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+      <div className={`absolute z-50 bg-gray-900 text-white rounded-lg p-3 pointer-events-none transition-opacity duration-200 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      } ${
         size === 'sm' ? 'w-48 text-xs' : 
         size === 'md' ? 'w-64 text-sm' : 
         size === 'lg' ? 'w-80 text-sm' : 

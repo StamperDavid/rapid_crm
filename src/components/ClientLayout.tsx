@@ -1,12 +1,13 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import Logo from './Logo';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
 const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
-  const { theme, customTheme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex flex-col">
@@ -15,23 +16,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                {customTheme?.logoUrl ? (
-                  <img 
-                    src={customTheme.logoUrl} 
-                    alt="Rapid CRM Logo"
-                    style={{ 
-                      height: `${customTheme.logoHeight || 32}px`,
-                      maxWidth: '200px'
-                    }}
-                    className="object-contain"
-                  />
-                ) : (
-                  <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">RC</span>
-                  </div>
-                )}
-              </div>
+              <Logo variant={theme} />
               <div className="ml-4">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Rapid CRM Client Portal

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import Avatar from './Avatar';
 import { EyeIcon, UserIcon, ChatIcon } from '@heroicons/react/outline';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface AvatarPreviewProps {
   onSelectAvatar: (avatarConfig: any) => void;
 }
 
 const AvatarPreview: React.FC<AvatarPreviewProps> = ({ onSelectAvatar }) => {
+  const { customTheme } = useTheme();
   const [selectedStyle, setSelectedStyle] = useState('professional');
   const [selectedSize, setSelectedSize] = useState('md');
   const [uploadedImage, setUploadedImage] = useState<string>('');
@@ -15,17 +17,17 @@ const AvatarPreview: React.FC<AvatarPreviewProps> = ({ onSelectAvatar }) => {
   const avatarConfigs = {
     professional: {
       name: 'David',
-      src: uploadedImage || '/uploads/logo_1757827373384.png', // Using existing logo as fallback
+      src: uploadedImage || customTheme?.logoUrl || '/uploads/logo_1757827373384.png',
       description: 'Professional headshot style - builds trust and authority'
     },
     illustrated: {
       name: 'David',
-      src: uploadedImage || '/uploads/logo_1757827373384.png', // Using existing logo as fallback
+      src: uploadedImage || customTheme?.logoUrl || '/uploads/logo_1757827373384.png',
       description: 'Illustrated/cartoon style - friendly and approachable'
     },
     business: {
       name: 'David',
-      src: uploadedImage || '/uploads/logo_1757827373384.png', // Using existing logo as fallback
+      src: uploadedImage || customTheme?.logoUrl || '/uploads/logo_1757827373384.png',
       description: 'Business context - with transportation elements'
     }
   };

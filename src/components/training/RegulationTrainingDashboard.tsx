@@ -376,6 +376,26 @@ const RegulationTrainingDashboard: React.FC = () => {
             <ArrowRightIcon className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Qualified States List */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow border-2 border-purple-200 dark:border-purple-700">
+          <div className="flex items-center mb-4">
+            <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Qualified States List
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Manage state-specific GVWR and passenger thresholds. Supersedes federal regulations for intrastate operations.
+          </p>
+          <button
+            onClick={() => window.location.href = '/training/qualified-states'}
+            className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center justify-center space-x-2"
+          >
+            <span>Manage States List</span>
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* System Overview */}

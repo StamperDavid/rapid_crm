@@ -143,6 +143,7 @@ function App() {
                         <Route path="/training" element={<RegulationTrainingDashboard />} />
                         <Route path="/training/alex" element={<AlexTrainingCenter />} />
                         <Route path="/training/usdot" element={<USDOTRegistrationTrainingCenter />} />
+                        <Route path="/training/qualified-states" element={<QualifiedStatesManagement />} />
                         <Route path="/training/monitoring" element={<AgentPerformanceMonitoringDashboard />} />
                         <Route path="/training/critical-path" element={<CriticalPathTestCenter />} />
                         

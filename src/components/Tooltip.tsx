@@ -19,48 +19,52 @@ const Tooltip: React.FC<TooltipProps> = ({
   delay = 200
 }) => {
   const [isVisible, setIsVisible] = React.useState(false);
-  const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
   const [tooltipPosition, setTooltipPosition] = React.useState({ top: 0, left: 0 });
   const triggerRef = React.useRef<HTMLDivElement>(null);
 
-  const showTooltip = () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    const id = setTimeout(() => {
-      if (triggerRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        let top = 0;
-        let left = 0;
-        
-        switch (position) {
-          case 'top':
-            top = rect.top - 10;
-            left = rect.left + rect.width / 2;
-            break;
-          case 'bottom':
-            top = rect.bottom + 10;
-            left = rect.left + rect.width / 2;
-            break;
-          case 'left':
-            top = rect.top + rect.height / 2;
-            left = rect.left - 10;
-            break;
-          case 'right':
-            top = rect.top + rect.height / 2;
-            left = rect.right + 10;
-            break;
-        }
-        
-        setTooltipPosition({ top, left });
+  const toggleTooltip = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      let top = 0;
+      let left = 0;
+      
+      switch (position) {
+        case 'top':
+          top = rect.top - 10;
+          left = rect.left + rect.width / 2;
+          break;
+        case 'bottom':
+          top = rect.bottom + 10;
+          left = rect.left + rect.width / 2;
+          break;
+        case 'left':
+          top = rect.top + rect.height / 2;
+          left = rect.left - 10;
+          break;
+        case 'right':
+          top = rect.top + rect.height / 2;
+          left = rect.right + 10;
+          break;
       }
-      setIsVisible(true);
-    }, delay);
-    setTimeoutId(id);
+      
+      setTooltipPosition({ top, left });
+    }
+    setIsVisible(!isVisible);
   };
 
-  const hideTooltip = () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    setIsVisible(false);
-  };
+  // Close tooltip when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setIsVisible(false);
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isVisible]);
 
   const sizeClasses = {
     sm: 'w-48 text-xs',
@@ -94,9 +98,8 @@ const Tooltip: React.FC<TooltipProps> = ({
     <>
       <div 
         ref={triggerRef}
-        className={`relative inline-block ${className}`}
-        onMouseEnter={showTooltip}
-        onMouseLeave={hideTooltip}
+        className={`relative inline-block cursor-pointer ${className}`}
+        onClick={toggleTooltip}
       >
         {children}
       </div>

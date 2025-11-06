@@ -6794,7 +6794,8 @@ app.post('/api/alex-training/test-scenario', async (req, res) => {
     }
     
     const { scenario } = req.body;
-    const response = await alexTrainingService.testAlexWithScenario(scenario);
+    const { callOpenRouter } = require('./src/services/ai/SimpleAIService.js');
+    const response = await alexTrainingService.testAlexWithScenario(scenario, { generateResponse: async (provider, opts) => callOpenRouter(opts.messages, opts.temperature, opts.maxTokens) });
     res.json({ response });
   } catch (error) {
     console.error('Error testing scenario:', error);
@@ -6802,7 +6803,125 @@ app.post('/api/alex-training/test-scenario', async (req, res) => {
   }
 });
 
-// Run full onboarding conversation with scenario
+// Initialize conversation - Get client greeting
+app.post('/api/alex-training/start-conversation', async (req, res) => {
+  try {
+    const { scenario } = req.body;
+    
+    console.log('👋 Starting conversation for scenario:', scenario.id);
+    
+    const { callOpenRouter } = require('./src/services/ai/SimpleAIService.js');
+    const { ClientSimulator } = await import('./src/services/training/ClientSimulator.js');
+    
+    // Create client simulator and pass AI service to it
+    const aiService = { generateResponse: async (provider, opts) => callOpenRouter(opts.messages, opts.temperature, opts.maxTokens) };
+    const clientSimulator = new ClientSimulator(scenario, aiService);
+    
+    const clientGreeting = await clientSimulator.getInitialGreeting();
+    
+    res.json({
+      message: clientGreeting,
+      sender: 'client',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error starting conversation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Alex's response to conversation
+app.post('/api/alex-training/alex-response', async (req, res) => {
+  try {
+    const { scenario, conversationHistory } = req.body;
+    
+    console.log('🧠 Getting Alex AI response...');
+    
+    const { callOpenRouter } = require('./src/services/ai/SimpleAIService.js');
+    
+    const alexSystemPrompt = `You are Alex, an expert onboarding specialist for Rapid Compliance, helping transportation companies get their USDOT registration.
+
+Your job:
+1. Gather information conversationally (don't interrogate)
+2. Ask ONE question at a time
+3. Explain regulations in simple terms
+4. Build rapport and trust
+5. Present your services as valuable solutions
+6. Handle objections professionally
+7. CLOSE THE DEAL - Get a clear yes or no from the client
+
+Key information you need:
+- Business name and structure
+- Location (state is critical for regulations)
+- Interstate or intrastate operations
+- For-hire or private property
+- Hazardous materials (yes/no)
+- Fleet size and vehicle types
+- Number of drivers
+
+Your conversation flow:
+1. Gather key information (5-8 questions, depending on complexity)
+2. Explain what requirements apply based on their answers
+3. Present service package with clear value proposition
+4. Handle any objections or questions
+5. Ask for the close: "Would you like me to get started on your registration today?"
+6. If YES: "Welcome aboard! Let me prepare your registration." → End conversation
+7. If NO: Address final concerns OR politely end
+
+Be professional, friendly, and helpful. Think like a sales consultant, not a bureaucrat.
+IMPORTANT: When the deal is closed (client says yes) or declined (client says no), END THE CONVERSATION.
+Signal completion by saying "Let me prepare your registration" or similar.`;
+
+    const messages = conversationHistory.map(msg => ({
+      role: msg.sender === 'alex' ? 'assistant' : 'user',
+      content: msg.content
+    }));
+
+    const alexResponse = await callOpenRouter([
+      { role: 'system', content: alexSystemPrompt },
+      ...messages
+    ], 0.7, 500);
+
+    res.json({
+      message: alexResponse.content,
+      sender: 'alex',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting Alex response:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get client's response to Alex
+app.post('/api/alex-training/client-response', async (req, res) => {
+  try {
+    const { scenario, alexMessage } = req.body;
+    
+    console.log('💬 Getting client response...');
+    
+    const { callOpenRouter } = require('./src/services/ai/SimpleAIService.js');
+    const { ClientSimulator } = await import('./src/services/training/ClientSimulator.js');
+    const aiService = { generateResponse: async (provider, opts) => callOpenRouter(opts.messages, opts.temperature, opts.maxTokens) };
+    const clientSimulator = new ClientSimulator(scenario, aiService);
+    
+    const clientResponse = await clientSimulator.respondToQuestion(alexMessage);
+    
+    res.json({
+      message: clientResponse.message,
+      sender: 'client',
+      timestamp: new Date().toISOString(),
+      revealsInfo: clientResponse.revealsInfo,
+      sentiment: clientResponse.sentiment
+    });
+  } catch (error) {
+    console.error('Error getting client response:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DEPRECATED: Old endpoint that ran entire conversation at once
+// Keeping for backwards compatibility but not used anymore
 app.post('/api/alex-training/run-conversation', async (req, res) => {
   try {
     const { scenario } = req.body;
@@ -6811,103 +6930,122 @@ app.post('/api/alex-training/run-conversation', async (req, res) => {
       return res.status(400).json({ error: 'No scenario provided' });
     }
     
-    console.log('🎯 Running conversation for scenario:', scenario.id);
-    console.log('📋 Scenario keys:', Object.keys(scenario));
+    console.log('🎯 Running REAL Alex AI conversation for scenario:', scenario.id);
     
-    // Simulate a realistic onboarding conversation with varied client responses
-    const isInterstate = scenario.transportNonHazardousInterstate === 'Yes';
-    const isForHire = scenario.receiveCompensationForTransport === 'Yes';
-    const totalTrucks = (scenario.cmvInterstateOnly || 0) + (scenario.cmvIntrastateOnly || 0);
-    const hasHazmat = scenario.cargoClassifications ? scenario.cargoClassifications.includes('hazmat') : (scenario.transportHazardousMaterials === 'Yes');
+    // Import client simulator
+    const { ClientSimulator } = await import('./src/services/training/ClientSimulator.js');
+    const clientSimulator = new ClientSimulator(scenario);
     
-    // Realistic varied client responses
-    const interstateResponses = [
-      'Yeah, we deliver to multiple states - California, Nevada, Arizona.',
-      'Yes, we cross state lines pretty regularly for our routes.',
-      'We do interstate hauls, going across several state borders.',
-    ];
+    // Import AI integration service to call real Alex
+    const { aiIntegrationService } = await import('./src/services/ai/AIIntegrationService.js');
     
-    const intrastateResponses = [
-      `Nope, just local deliveries within ${scenario.principalAddress.state}.`,
-      `No, we stay within ${scenario.principalAddress.state} only.`,
-      `Just ${scenario.principalAddress.state} for now, keeping it local.`,
-    ];
+    const conversation = [];
+    const revealedFields = new Set();
+    let conversationContext = {
+      gatheredInfo: {},
+      stage: 'greeting'
+    };
     
-    const forHireResponses = [
-      'We haul freight for different companies - it\'s our business.',
-      'Yeah, we\'re a carrier. We transport goods for customers who pay us.',
-      'We do for-hire trucking, moving freight for various clients.',
-    ];
+    // Client starts conversation (LLM-generated greeting)
+    const clientGreeting = await clientSimulator.getInitialGreeting();
+    conversation.push({
+      sender: 'client',
+      content: clientGreeting,
+      timestamp: new Date().toISOString()
+    });
     
-    const privateResponses = [
-      'No, we just move our own company\'s products.',
-      'It\'s for our own business - transporting our own goods.',
-      'Private use only, just hauling our own stuff.',
-    ];
-    
-    const randomPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    
-    // Comprehensive conversation with trigger detection
-    const conversation = [
-      // Greeting
-      { sender: 'client', content: `Hi, I'm ${scenario.companyContact.firstName} from ${scenario.legalBusinessName}. We need help getting a USDOT number.` },
-      { sender: 'alex', content: `Hi ${scenario.companyContact.firstName}! I'm Alex, your compliance specialist. I'll help ${scenario.legalBusinessName} get your USDOT registration. Let me gather some information. First, confirm your legal business name and structure?` },
-      { sender: 'client', content: `${scenario.legalBusinessName}, we're a ${scenario.formOfBusiness.replace(/_/g, ' ')}.` },
-      
-      // Business details
-      { sender: 'alex', content: 'Do you have an EIN?' },
-      { sender: 'client', content: `Yes, ${scenario.ein}.` },
-      { sender: 'alex', content: `And where's your principal place of business located?` },
-      { sender: 'client', content: `${scenario.principalAddress.street}, ${scenario.principalAddress.city}, ${scenario.principalAddress.state} ${scenario.principalAddress.postalCode}.`, triggers: ['State'] },
-      
-      // Operation type - CRITICAL - Triggers USDOT
-      { sender: 'alex', content: `Will you be crossing state lines (interstate) or operating only within ${scenario.principalAddress.state} (intrastate)?` },
-      { 
-        sender: 'client', 
-        content: isInterstate ? randomPick(['We cross state lines.', 'Interstate - we operate in multiple states.']) : randomPick([`Just within ${scenario.principalAddress.state}.`, 'Intrastate only.']),
-        triggers: isInterstate ? ['USDOT', 'Interstate'] : ['Intrastate']
-      },
-      
-      // For-hire vs private - CRITICAL - Triggers MC Authority
-      { sender: 'alex', content: 'Will you be transporting property for hire (for paying customers) or your own company property?' },
-      { 
-        sender: 'client', 
-        content: isForHire ? randomPick(['For hire - we haul for customers.', 'We\'re a carrier, for-hire trucking.']) : randomPick(['Our own property.', 'Just our company goods.']),
-        triggers: isForHire && isInterstate ? ['MC Authority'] : []
-      },
-      
-      // Cargo - Triggers Hazmat
-      { sender: 'alex', content: 'What type of cargo?' },
-      { 
-        sender: 'client', 
-        content: hasHazmat ? 'General freight and hazmat.' : scenario.propertyType === 'household_goods' ? 'Household goods.' : 'General freight.',
-        triggers: hasHazmat ? ['Hazmat'] : []
-      },
-      
-      // Fleet - May trigger IFTA
-      { sender: 'alex', content: 'How many vehicles and what types?' },
-      { 
-        sender: 'client', 
-        content: `${totalTrucks} ${scenario.vehicles.straightTrucks.owned > 0 ? 'straight trucks' : 'tractor-trailers'}.`,
-        triggers: (isInterstate && totalTrucks >= 2) ? ['IFTA'] : []
-      },
-      { sender: 'alex', content: 'How many drivers?' },
-      { sender: 'client', content: `${scenario.driversWithCDL || scenario.cdlDrivers || totalTrucks} drivers with CDLs.` },
-      
-      // Additional questions
-      { sender: 'alex', content: 'Do you operate as an Intermodal Equipment Provider, freight broker, or freight forwarder?' },
-      { sender: 'client', content: 'No, none of those.' },
-      
-      // Conclusion
-      { sender: 'alex', content: 'Perfect. Let me determine what requirements apply to your operation.' }
-    ];
+    // Alex's onboarding system prompt
+    const alexSystemPrompt = `You are Alex, an expert onboarding specialist for Rapid Compliance, helping transportation companies get their USDOT registration.
 
-    // Get Alex's determination
+Your job:
+1. Gather information conversationally (don't interrogate)
+2. Ask ONE question at a time
+3. Explain regulations in simple terms
+4. Build rapport and trust
+5. Present your services as valuable solutions
+6. Guide toward becoming a paying client
+
+Key information you need:
+- Business name and structure
+- Location (state is critical for regulations)
+- Interstate or intrastate operations
+- For-hire or private property
+- Hazardous materials (yes/no)
+- Fleet size and vehicle types
+- Number of drivers
+
+Be professional, friendly, and helpful. Think like a sales consultant, not a bureaucrat.`;
+
+    // Conduct conversation (max 15 turns to avoid infinite loops)
+    for (let turn = 0; turn < 15; turn++) {
+      // Build conversation history for context
+      const conversationHistory = conversation.map(msg => ({
+        role: msg.sender === 'alex' ? 'assistant' : 'user',
+        content: msg.content
+      }));
+      
+      // Get Alex's response using real LLM
+      try {
+        const alexResponse = await aiIntegrationService.generateResponse('openrouter', {
+          model: 'anthropic/claude-3.5-sonnet',
+          messages: [
+            { role: 'system', content: alexSystemPrompt },
+            ...conversationHistory
+          ],
+          temperature: 0.7, // Higher for natural conversation
+          maxTokens: 500
+        });
+        
+        const alexMessage = alexResponse.content;
+        conversation.push({
+          sender: 'alex',
+          content: alexMessage,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Check if Alex is ready to make determination (asks to "analyze" or "determine" or "let me")
+        if (alexMessage.toLowerCase().includes('let me determine') || 
+            alexMessage.toLowerCase().includes('let me analyze') ||
+            alexMessage.toLowerCase().includes('based on this information') ||
+            clientSimulator.hasRevealedAllInfo(revealedFields) ||
+            turn >= 12) {
+          break; // End conversation, move to determination
+        }
+        
+        // Client responds (LLM-generated, stays in character)
+        const clientResponse = await clientSimulator.respondToQuestion(alexMessage);
+        conversation.push({
+          sender: 'client',
+          content: clientResponse.message,
+          timestamp: new Date().toISOString(),
+          triggers: clientResponse.revealsInfo.map(info => info.field)
+        });
+        
+        // Track what info was revealed
+        clientResponse.revealsInfo.forEach(info => {
+          revealedFields.add(info.field);
+          conversationContext.gatheredInfo[info.field] = info.value;
+        });
+        
+      } catch (error) {
+        console.error('Error getting Alex response:', error);
+        break;
+      }
+    }
+    
+    console.log(`✅ Conversation complete: ${conversation.length} messages, ${revealedFields.size} fields revealed`);
+
+    // Get Alex's determination using real LLM
     const determination = await alexTrainingService.testAlexWithScenario(scenario);
     
     res.json({
       conversation,
-      determination
+      determination,
+      conversationQuality: {
+        totalMessages: conversation.length,
+        fieldsRevealed: Array.from(revealedFields),
+        allInfoGathered: clientSimulator.hasRevealedAllInfo(revealedFields)
+      }
     });
   } catch (error) {
     console.error('❌ Error running conversation:', error);
@@ -6923,12 +7061,13 @@ app.post('/api/alex-training/submit-feedback', async (req, res) => {
       return res.status(500).json({ error: 'Training service not available' });
     }
     
-    const { scenarioId, isCorrect, feedback, determination } = req.body;
+    const { scenarioId, isCorrect, feedback, determination, individualReviews, conversationQuality, salesEffectiveness } = req.body;
     const session = await alexTrainingService.submitFeedback(
       scenarioId,
       isCorrect,
       feedback,
-      determination
+      determination,
+      individualReviews
     );
     
     res.json({ success: true, session });
@@ -7573,6 +7712,11 @@ app.post('/api/qualified-states/upload', upload.single('file'), async (req, res)
       fs.unlinkSync(filePath);
       return res.status(400).json({ error: 'No state data found in rows A2-A51' });
     }
+
+    // DELETE ALL OLD DATA BEFORE INSERTING NEW
+    console.log('🗑️ Deleting old qualified states data...');
+    await runQuery('DELETE FROM qualified_states');
+    console.log('✅ Old data deleted');
 
     // Validate and insert data
     let insertedCount = 0;

@@ -46,21 +46,37 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('dark');
-  const [customTheme, setCustomTheme] = useState<CustomThemeSettings | null>(null);
+  // Initialize with sensible defaults immediately - no null state
+  const [customTheme, setCustomTheme] = useState<CustomThemeSettings | null>({
+    primaryColor: '#3b82f6',
+    secondaryColor: '#8b5cf6',
+    accentColor: '#10b981',
+    backgroundColor: '#111827',
+    surfaceColor: '#1f2937',
+    cardColor: '#374151',
+    textPrimary: '#f9fafb',
+    textSecondary: '#d1d5db',
+    textMuted: '#9ca3af',
+    borderColor: '#374151',
+    shadowColor: '#000000',
+    borderRadius: 8,
+    fontFamily: 'inherit',
+    fontSize: 16,
+    fontWeight: '400',
+    logoUrl: '/uploads/logo_1757827373384.png',
+    logoHeight: 48
+  });
 
   // Force dark mode immediately on mount
   useEffect(() => {
     document.documentElement.classList.add('dark');
     document.documentElement.classList.remove('light');
-    console.log('🌙 Dark mode forced on mount');
   }, []);
 
   useEffect(() => {
     // Load theme from database
     const loadTheme = async () => {
       try {
-        console.log('Loading theme from real database...');
-        
         // Try to load from database first
         try {
           const API_BASE = import.meta.env.DEV ? '' : 'http://localhost:3001';
@@ -70,15 +86,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             setTheme(themeData.theme || 'light');
             if (themeData.customTheme) {
               setCustomTheme(themeData.customTheme);
-              console.log('Custom theme loaded from database:', themeData.customTheme);
             }
-            console.log('Theme loaded from database:', themeData);
             return;
-          } else {
-            console.log('Database theme response not ok:', response.status, response.statusText);
           }
         } catch (dbError) {
-          console.log('Database theme loading failed, using localStorage fallback:', dbError);
+          // Silently fall back to localStorage
         }
         
         // Fallback to localStorage
@@ -89,43 +101,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           setTheme('dark');
         }
         
-        // Load custom theme settings
+        // Load custom theme settings from localStorage if available
         const savedCustomTheme = localStorage.getItem('customTheme');
         if (savedCustomTheme) {
           try {
             const parsedCustomTheme = JSON.parse(savedCustomTheme);
             setCustomTheme(parsedCustomTheme);
-            console.log('Custom theme loaded from localStorage:', parsedCustomTheme);
           } catch (parseError) {
             console.error('Error parsing custom theme from localStorage:', parseError);
           }
-        } else {
-          // Set default dark theme with logo if no custom theme exists
-          const defaultTheme = {
-            primaryColor: '#3b82f6',
-            secondaryColor: '#8b5cf6',
-            accentColor: '#10b981',
-            backgroundColor: '#111827',
-            surfaceColor: '#1f2937',
-            cardColor: '#374151',
-            textPrimary: '#f9fafb',
-            textSecondary: '#d1d5db',
-            textMuted: '#9ca3af',
-            borderColor: '#374151',
-            shadowColor: '#000000',
-            successColor: '#10b981',
-            warningColor: '#f59e0b',
-            errorColor: '#ef4444',
-            logoUrl: '/uploads/logo_1757827373384.png',
-            logoHeight: 48,
-            borderRadius: 8,
-            fontFamily: 'inherit',
-            fontSize: 16,
-            fontWeight: '400'
-          };
-          setCustomTheme(defaultTheme);
-          console.log('Default dark theme with logo set:', defaultTheme);
         }
+        // Note: Default theme is already set in initial state
       } catch (error) {
         console.error('Error loading theme:', error);
         setTheme('dark');
@@ -147,8 +133,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // Save theme to database
     const saveTheme = async () => {
       try {
-        console.log('Saving theme to real database...');
-        
         // Save to database
         try {
           const API_BASE = import.meta.env.DEV ? '' : 'http://localhost:3001';
@@ -163,18 +147,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             }),
           });
           
-          if (response.ok) {
-            console.log('Theme saved to database successfully');
-          } else {
-            throw new Error(`Database save failed: ${response.status} ${response.statusText}`);
+          if (!response.ok) {
+            throw new Error(`Database save failed: ${response.status}`);
           }
         } catch (dbError) {
-          console.log('Database theme saving failed, using localStorage fallback:', dbError);
           // Fallback to localStorage
           localStorage.setItem('theme', theme);
           if (customTheme) {
             localStorage.setItem('customTheme', JSON.stringify(customTheme));
-            console.log('Custom theme saved to localStorage as fallback');
           }
         }
       } catch (error) {
@@ -223,13 +203,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   const updateCustomTheme = (settings: CustomThemeSettings) => {
-    console.log('ThemeContext - updating custom theme:', settings);
-    console.log('ThemeContext - logo URL:', settings.logoUrl);
     setCustomTheme(settings);
     
     // Save to localStorage as backup
     localStorage.setItem('customTheme', JSON.stringify(settings));
-    console.log('ThemeContext - custom theme saved to localStorage');
     
     // Also save to database
     fetch('/api/theme', {
@@ -241,10 +218,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         theme,
         customTheme: settings
       }),
-    }).then(() => {
-      console.log('ThemeContext - custom theme saved to database');
     }).catch((error) => {
-      console.error('ThemeContext - failed to save custom theme to database:', error);
+      console.error('Failed to save custom theme to database:', error);
     });
   };
 

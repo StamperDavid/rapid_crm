@@ -8,37 +8,9 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ variant, className = '' }) => {
   const { customTheme } = useTheme();
-  const [isThemeLoaded, setIsThemeLoaded] = React.useState(false);
-
-  // Debug logging
-  console.log('Logo component - customTheme:', customTheme);
-  console.log('Logo component - logoUrl:', customTheme?.logoUrl);
-  console.log('Logo component - logoHeight:', customTheme?.logoHeight);
-
-  // Wait for theme to load
-  React.useEffect(() => {
-    if (customTheme !== null) {
-      setIsThemeLoaded(true);
-    }
-  }, [customTheme]);
-
-  // Show loading state while theme is loading
-  if (!isThemeLoaded) {
-    return (
-      <div className={`flex items-center ${className}`}>
-        <div className="flex-shrink-0">
-          <div className="h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-        </div>
-        <div className="ml-2">
-          <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
 
   // If custom logo is set, use it
   if (customTheme?.logoUrl) {
-    console.log('Using custom logo:', customTheme.logoUrl);
     return (
       <div className={`flex items-center ${className}`}>
         <div className="flex-shrink-0">
@@ -50,15 +22,6 @@ const Logo: React.FC<LogoProps> = ({ variant, className = '' }) => {
               maxWidth: '200px'
             }}
             className="object-contain"
-            onError={(e) => {
-              console.error('Logo image failed to load:', customTheme.logoUrl);
-              console.error('Error event:', e);
-              // Fall back to default logo on error
-              e.currentTarget.style.display = 'none';
-            }}
-            onLoad={() => {
-              console.log('Logo image loaded successfully:', customTheme.logoUrl);
-            }}
           />
         </div>
       </div>
