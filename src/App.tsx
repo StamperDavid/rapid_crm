@@ -48,6 +48,7 @@ import ClientPortal from './pages/ClientPortal';
 import ClientLogin from './pages/ClientLogin';
 import OnboardingAgent from './pages/OnboardingAgent';
 import QualifiedStatesManagement from './pages/QualifiedStatesManagement';
+import ProjectOverview from './pages/ProjectOverview';
 import ClaudeEventListener from './components/ClaudeEventListener';
 // import CursorAICollaborationPanel from './components/CursorAICollaborationPanel'; // Component not found
 import WorkflowOptimizationDemo from './components/WorkflowOptimizationDemo';
@@ -106,6 +107,7 @@ function App() {
                         {/* Core Dashboard - Always loaded */}
                         <Route path="/" element={<DashboardModule />} />
                         <Route path="/tooltip-test" element={<TooltipTest />} />
+                        <Route path="/project-overview" element={<ProjectOverview />} />
                         
                         {/* CRM Pages - Direct routing like HubSpot/Salesforce */}
                         <Route path="/companies" element={<Companies />} />

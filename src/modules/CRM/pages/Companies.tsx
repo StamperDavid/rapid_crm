@@ -18,15 +18,8 @@ import HelpIcon from '../../../components/HelpIcon';
 import Tooltip from '../../../components/Tooltip';
 
 const Companies: React.FC = () => {
-  const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, deleteCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
+  const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, updateCompany, deleteCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
   const navigate = useNavigate();
-  
-  // Debug logging
-  console.log('[Companies] Received companies data:', companies);
-  console.log('[Companies] Companies count:', companies.length);
-  if (companies.length > 0) {
-    console.log('[Companies] First company structure:', companies[0]);
-  }
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -304,9 +297,8 @@ const Companies: React.FC = () => {
       {/* Create/Edit Company Modal */}
       {showCreateModal && (
         <ComprehensiveCompanyForm
-          onSave={editingCompany ? (data) => {
-            // TODO: Implement updateCompany function
-            alert('Update functionality coming soon!');
+          onSave={editingCompany ? async (data) => {
+            await updateCompany(editingCompany.id, data);
             setShowCreateModal(false);
             setEditingCompany(null);
           } : handleCreateCompany}

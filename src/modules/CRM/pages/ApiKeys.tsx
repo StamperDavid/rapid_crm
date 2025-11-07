@@ -456,10 +456,7 @@ const ApiKeys: React.FC = () => {
   // Handle creating a new API key
   const handleCreateKey = async (keyData: Omit<ApiKey, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      console.log('handleCreateKey called with:', keyData);
-      console.log('createApiKey function:', createApiKey);
       const result = await createApiKey(keyData);
-      console.log('API key created successfully:', result);
       setShowCreateModal(false);
       // Refresh AI providers with new API key
       await refreshProviders();
@@ -473,9 +470,7 @@ const ApiKeys: React.FC = () => {
   // Handle updating an API key
   const handleUpdateKey = async (id: string, updates: Partial<ApiKey>) => {
     try {
-      console.log('handleUpdateKey called with id:', id, 'updates:', updates);
       const result = await updateApiKey(id, updates);
-      console.log('API key updated successfully:', result);
       setEditingKey(null);
       // Refresh AI providers with updated API key
       await refreshProviders();
@@ -671,10 +666,8 @@ const ApiKeys: React.FC = () => {
             </label>
             <button
               onClick={() => {
-                console.log('Add API Key button clicked, clearing editingKey');
                 setEditingKey(null);
                 setShowCreateModal(true);
-                console.log('editingKey should now be null');
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
@@ -853,13 +846,8 @@ const ApiKeys: React.FC = () => {
                 {editingKey ? 'Edit API Key' : 'Add New API Key'}
               </h3>
               
-              <form onSubmit={(e) => {
+              <form               onSubmit={(e) => {
                 e.preventDefault();
-                console.log('Form submitted!');
-                console.log('Current editingKey state:', editingKey);
-                console.log('editingKey type:', typeof editingKey);
-                console.log('editingKey is null:', editingKey === null);
-                console.log('editingKey is undefined:', editingKey === undefined);
                 const formData = new FormData(e.target as HTMLFormElement);
                 const keyData = {
                   name: formData.get('name') as string,
@@ -873,20 +861,15 @@ const ApiKeys: React.FC = () => {
                   usageCount: 0
                 };
                 
-                console.log('Key data:', keyData);
-                
                 if (editingKey) {
-                  console.log('Updating API key:', editingKey.id);
                   // Check if this is a template key (starts with 'template-')
                   if (editingKey.id.startsWith('template-')) {
-                    console.log('Template key detected, creating new API key instead of updating');
                     handleCreateKey(keyData);
                   } else {
                     updateApiKey(editingKey.id, keyData);
                   }
                   setEditingKey(null);
                 } else {
-                  console.log('Creating new API key');
                   handleCreateKey(keyData);
                 }
               }}>

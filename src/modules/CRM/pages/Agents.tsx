@@ -119,17 +119,14 @@ const Agents: React.FC = () => {
   };
 
   const handleEditAgent = (agent: Agent) => {
-    console.log('Edit agent clicked:', agent);
     setEditingAgent(agent);
     setShowAdvancedBuilder(true);
   };
 
   const handleDeleteAgent = async (agentId: string) => {
-    console.log('Delete agent clicked:', agentId);
     if (confirm('Are you sure you want to delete this agent?')) {
       try {
         await deleteAgent(agentId);
-        console.log('Agent deleted successfully');
       } catch (error) {
         console.error('Failed to delete agent:', error);
       }
@@ -355,20 +352,14 @@ const Agents: React.FC = () => {
                 </div>
                 <div className="flex space-x-1">
                   <button
-                    onClick={() => {
-                      console.log('EDIT BUTTON CLICKED!');
-                      alert('EDIT BUTTON CLICKED!');
-                    }}
+                    onClick={() => handleEditAgent(agent)}
                     className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     style={{ zIndex: 9999, position: 'relative' }}
                   >
                     EDIT
                   </button>
                   <button
-                    onClick={() => {
-                      console.log('DELETE BUTTON CLICKED!');
-                      alert('DELETE BUTTON CLICKED!');
-                    }}
+                    onClick={() => handleDeleteAgent(agent.id)}
                     className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
                     style={{ zIndex: 9999, position: 'relative' }}
                   >

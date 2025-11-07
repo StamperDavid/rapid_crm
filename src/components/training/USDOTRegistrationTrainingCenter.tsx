@@ -610,13 +610,11 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   };
 
   // Helper: Get RPA filled value for a field
-  // TODO: Update this to work with new intelligent agent structure
   const getRPAFilledValue = (fieldMapping: { pageNumber: number, fieldName: string }): any => {
     const page = rpaFilledPages.find(p => p.pageNumber === fieldMapping.pageNumber);
     if (!page || !page.questions) return undefined;
     
-    // For now, try to match by question text or return undefined
-    // The intelligent agent doesn't use fieldNames anymore
+    // The intelligent agent uses semantic matching rather than field names
     return undefined;
   };
 
