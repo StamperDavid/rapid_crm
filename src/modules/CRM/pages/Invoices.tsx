@@ -12,54 +12,13 @@ import {
   CalendarIcon
 } from '@heroicons/react/outline';
 import { Invoice } from '../../../types/schema';
+import { useCRM } from '../../../contexts/CRMContext';
 
 const Invoices: React.FC = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([
-    {
-      id: '1',
-      invoiceNumber: 'INV-2024-001',
-      clientName: 'Acme Corporation',
-      clientEmail: 'billing@acme.com',
-      amount: 2500.00,
-      status: 'paid',
-      dueDate: '2024-01-15',
-      createdDate: '2024-01-01',
-      description: 'Website Development Services'
-    },
-    {
-      id: '2',
-      invoiceNumber: 'INV-2024-002',
-      clientName: 'Global Shipping Co',
-      clientEmail: 'finance@globalshipping.com',
-      amount: 1800.00,
-      status: 'sent',
-      dueDate: '2024-01-25',
-      createdDate: '2024-01-10',
-      description: 'CRM Implementation'
-    },
-    {
-      id: '3',
-      invoiceNumber: 'INV-2024-003',
-      clientName: 'Tech Solutions Inc',
-      clientEmail: 'accounts@techsolutions.com',
-      amount: 3200.00,
-      status: 'overdue',
-      dueDate: '2024-01-10',
-      createdDate: '2023-12-20',
-      description: 'Mobile App Development'
-    },
-    {
-      id: '4',
-      invoiceNumber: 'INV-2024-004',
-      clientName: 'StartupXYZ',
-      clientEmail: 'hello@startupxyz.com',
-      amount: 950.00,
-      status: 'draft',
-      dueDate: '2024-02-01',
-      createdDate: '2024-01-18',
-      description: 'Consulting Services'
-    }
-  ]);
+  const { invoices } = useCRM();
+  
+  // Using real invoices from database via CRMContext
+  // Mock data removed - now using real database data
 
   const [filter, setFilter] = useState<'all' | 'draft' | 'sent' | 'paid' | 'overdue'>('all');
 

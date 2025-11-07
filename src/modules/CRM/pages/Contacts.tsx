@@ -16,77 +16,19 @@ import {
   PencilIcon
 } from '@heroicons/react/outline';
 import { Person, SELECT_OPTIONS } from '../../../types/schema';
+import { useCRM } from '../../../contexts/CRMContext';
 
 const Contacts: React.FC = () => {
+  const { contacts, createContact, updateContact, deleteContact } = useCRM();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Person | null>(null);
   const [editingContact, setEditingContact] = useState<Person | null>(null);
 
-  // Mock contact data using comprehensive transportation Person schema
-  const [contacts, setContacts] = useState<Person[]>([
-    {
-      id: '1',
-      companyId: '1',
-      firstName: 'John',
-      lastName: 'Smith',
-      email: 'john.smith@acmetrans.com',
-      phone: '(555) 123-4567',
-      preferredContactMethod: 'Phone',
-      isPrimaryContact: true,
-      isCompanyOwner: true,
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-20'
-    },
-    {
-      id: '2',
-      companyId: '2',
-      firstName: 'Sarah',
-      lastName: 'Johnson',
-      email: 'sarah.johnson@midwestfreight.com',
-      phone: '(555) 987-6543',
-      preferredContactMethod: 'Email',
-      isPrimaryContact: true,
-      isCompanyOwner: false,
-      companyOwnerFirstName: 'Mike',
-      companyOwnerLastName: 'Johnson',
-      companyOwnerPhone: '(555) 987-6544',
-      companyOwnerEmail: 'mike.johnson@midwestfreight.com',
-      createdAt: '2024-01-10',
-      updatedAt: '2024-01-18'
-    },
-    {
-      id: '3',
-      companyId: '3',
-      firstName: 'Robert',
-      lastName: 'Davis',
-      email: 'robert.davis@logisticspro.com',
-      phone: '(555) 456-7890',
-      preferredContactMethod: 'Text',
-      isPrimaryContact: true,
-      isCompanyOwner: true,
-      createdAt: '2024-01-12',
-      updatedAt: '2024-01-16'
-    },
-    {
-      id: '4',
-      companyId: '4',
-      firstName: 'Lisa',
-      lastName: 'Wilson',
-      email: 'lisa.wilson@freightmasters.com',
-      phone: '(555) 321-9876',
-      preferredContactMethod: 'Phone',
-      isPrimaryContact: true,
-      isCompanyOwner: false,
-      companyOwnerFirstName: 'David',
-      companyOwnerLastName: 'Wilson',
-      companyOwnerPhone: '(555) 321-9877',
-      companyOwnerEmail: 'david.wilson@freightmasters.com',
-      createdAt: '2024-01-08',
-      updatedAt: '2024-01-14'
-    }
-  ]);
+  // Using real contacts from database via CRMContext
+  // Mock data removed - now using real database data
 
   const [newContact, setNewContact] = useState<Partial<Person>>({
     firstName: '',
@@ -113,41 +55,52 @@ const Contacts: React.FC = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleCreateContact = () => {
+  const handleCreateContact = async () => {
     if (newContact.firstName && newContact.lastName && newContact.email && newContact.phone) {
-      const contact: Person = {
-        id: (contacts.length + 1).toString(),
-        companyId: '1', // Default company ID
-        firstName: newContact.firstName,
-        lastName: newContact.lastName,
-        email: newContact.email,
-        phone: newContact.phone,
-        preferredContactMethod: newContact.preferredContactMethod!,
-        isPrimaryContact: newContact.isPrimaryContact || true,
-        isCompanyOwner: newContact.isCompanyOwner,
-        companyOwnerFirstName: newContact.companyOwnerFirstName,
-        companyOwnerLastName: newContact.companyOwnerLastName,
-        companyOwnerPhone: newContact.companyOwnerPhone,
-        companyOwnerEmail: newContact.companyOwnerEmail,
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0]
-      };
-      setContacts([...contacts, contact]);
-      setNewContact({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        preferredContactMethod: 'Phone',
-        isCompanyOwner: true,
-        isPrimaryContact: true
-      });
-      setShowCreateModal(false);
+      try {
+        await createContact({
+          companyId: '1', // Default company ID
+          firstName: newContact.firstName,
+          lastName: newContact.lastName,
+          email: newContact.email,
+          phone: newContact.phone,
+          preferredContactMethod: newContact.preferredContactMethod!,
+          isPrimaryContact: newContact.isPrimaryContact || true,
+          isCompanyOwner: newContact.isCompanyOwner,
+          companyOwnerFirstName: newContact.companyOwnerFirstName,
+          companyOwnerLastName: newContact.companyOwnerLastName,
+          companyOwnerPhone: newContact.companyOwnerPhone,
+          companyOwnerEmail: newContact.companyOwnerEmail
+        });
+        
+        setNewContact({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          preferredContactMethod: 'Phone',
+          isCompanyOwner: true,
+          isPrimaryContact: true
+        });
+        setShowCreateModal(false);
+      } catch (error) {
+        console.error('Failed to create contact:', error);
+        alert('Failed to create contact. Please try again.');
+      }
     }
   };
 
-  const handleDeleteContact = (contactId: string) => {
-    setContacts(contacts.filter(contact => contact.id !== contactId));
+  const handleDeleteContact = async (contactId: string) => {
+    if (!confirm('Are you sure you want to delete this contact?')) {
+      return;
+    }
+    
+    try {
+      await deleteContact(contactId);
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      alert('Failed to delete contact. Please try again.');
+    }
   };
 
   const handleEditContact = (contact: Person) => {
@@ -164,34 +117,34 @@ const Contacts: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const handleUpdateContact = () => {
+  const handleUpdateContact = async () => {
     if (newContact.firstName && newContact.lastName && newContact.email && newContact.phone && editingContact) {
-      const updatedContact: Person = {
-        ...editingContact,
-        firstName: newContact.firstName,
-        lastName: newContact.lastName,
-        email: newContact.email,
-        phone: newContact.phone,
-        preferredContactMethod: newContact.preferredContactMethod,
-        isCompanyOwner: newContact.isCompanyOwner,
-        isPrimaryContact: newContact.isPrimaryContact
-      };
-      
-      setContacts(contacts.map(contact => 
-        contact.id === editingContact.id ? updatedContact : contact
-      ));
-      
-      setNewContact({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        preferredContactMethod: 'Phone',
-        isCompanyOwner: true,
-        isPrimaryContact: true
-      });
-      setEditingContact(null);
-      setShowCreateModal(false);
+      try {
+        await updateContact(editingContact.id, {
+          firstName: newContact.firstName,
+          lastName: newContact.lastName,
+          email: newContact.email,
+          phone: newContact.phone,
+          preferredContactMethod: newContact.preferredContactMethod,
+          isCompanyOwner: newContact.isCompanyOwner,
+          isPrimaryContact: newContact.isPrimaryContact
+        });
+        
+        setNewContact({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          preferredContactMethod: 'Phone',
+          isCompanyOwner: true,
+          isPrimaryContact: true
+        });
+        setEditingContact(null);
+        setShowCreateModal(false);
+      } catch (error) {
+        console.error('Failed to update contact:', error);
+        alert('Failed to update contact. Please try again.');
+      }
     }
   };
 

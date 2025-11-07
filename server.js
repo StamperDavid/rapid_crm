@@ -1515,6 +1515,113 @@ app.delete('/api/invoices/:id', async (req, res) => {
   }
 });
 
+// Tasks
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const tasks = await runQuery('SELECT * FROM tasks ORDER BY due_date ASC');
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/tasks/:id', async (req, res) => {
+  try {
+    const task = await runQueryOne('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const { title, description, dueDate, priority, status, assignedTo, relatedTo } = req.body;
+    const id = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+
+    await runExecute(
+      `INSERT INTO tasks (
+        id, title, description, due_date, priority, status, assigned_to,
+        related_type, related_id, related_name, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        title,
+        description || null,
+        dueDate || null,
+        priority || 'medium',
+        status || 'pending',
+        assignedTo || null,
+        relatedTo?.type || null,
+        relatedTo?.id || null,
+        relatedTo?.name || null,
+        now,
+        now
+      ]
+    );
+
+    const task = await runQueryOne('SELECT * FROM tasks WHERE id = ?', [id]);
+    res.status(201).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/tasks/:id', async (req, res) => {
+  try {
+    const { title, description, dueDate, priority, status, assignedTo, relatedTo, completedAt } = req.body;
+    const now = new Date().toISOString();
+
+    await runExecute(
+      `UPDATE tasks SET
+        title = COALESCE(?, title),
+        description = COALESCE(?, description),
+        due_date = COALESCE(?, due_date),
+        priority = COALESCE(?, priority),
+        status = COALESCE(?, status),
+        assigned_to = COALESCE(?, assigned_to),
+        related_type = COALESCE(?, related_type),
+        related_id = COALESCE(?, related_id),
+        related_name = COALESCE(?, related_name),
+        completed_at = COALESCE(?, completed_at),
+        updated_at = ?
+      WHERE id = ?`,
+      [
+        title,
+        description,
+        dueDate,
+        priority,
+        status,
+        assignedTo,
+        relatedTo?.type,
+        relatedTo?.id,
+        relatedTo?.name,
+        completedAt,
+        now,
+        req.params.id
+      ]
+    );
+
+    const task = await runQueryOne('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/tasks/:id', async (req, res) => {
+  try {
+    const result = await runExecute('DELETE FROM tasks WHERE id = ?', [req.params.id]);
+    res.json({ deleted: result.changes > 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Leads
 app.get('/api/leads', async (req, res) => {
   try {
@@ -5116,6 +5223,98 @@ app.post('/api/client-portal/login-config', (req, res) => {
   }
 });
 
+// Save portal design configuration
+app.post('/api/client-portal/design', (req, res) => {
+  try {
+    const design = req.body;
+    
+    // Save portal design to database
+    const designJson = JSON.stringify(design);
+    db.run(
+      'INSERT OR REPLACE INTO portal_designs (id, design, updated_at) VALUES (1, ?, datetime("now"))',
+      [designJson],
+      function(err) {
+        if (err) {
+          console.error('Error saving portal design:', err);
+          return res.status(500).json({ success: false, error: 'Failed to save portal design' });
+        }
+        
+        res.json({ success: true, message: 'Portal design saved successfully' });
+      }
+    );
+  } catch (error) {
+    console.error('Error in portal design save endpoint:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Get portal design configuration
+app.get('/api/client-portal/design', (req, res) => {
+  try {
+    db.get('SELECT design FROM portal_designs WHERE id = 1', (err, row) => {
+      if (err) {
+        console.error('Error loading portal design:', err);
+        return res.status(500).json({ error: 'Failed to load portal design' });
+      }
+      
+      if (!row) {
+        return res.json({ elements: [], customCSS: '', breakpoint: 'desktop' });
+      }
+      
+      res.json(JSON.parse(row.design));
+    });
+  } catch (error) {
+    console.error('Error in portal design get endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Save avatar configuration
+app.post('/api/client-portal/avatar-config', (req, res) => {
+  try {
+    const config = req.body;
+    
+    // Save avatar config to database
+    const configJson = JSON.stringify(config);
+    db.run(
+      'INSERT OR REPLACE INTO avatar_configs (id, config, updated_at) VALUES (1, ?, datetime("now"))',
+      [configJson],
+      function(err) {
+        if (err) {
+          console.error('Error saving avatar config:', err);
+          return res.status(500).json({ success: false, error: 'Failed to save avatar configuration' });
+        }
+        
+        res.json({ success: true, message: 'Avatar configuration saved successfully' });
+      }
+    );
+  } catch (error) {
+    console.error('Error in avatar config save endpoint:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Get avatar configuration
+app.get('/api/client-portal/avatar-config', (req, res) => {
+  try {
+    db.get('SELECT config FROM avatar_configs WHERE id = 1', (err, row) => {
+      if (err) {
+        console.error('Error loading avatar config:', err);
+        return res.status(500).json({ error: 'Failed to load avatar configuration' });
+      }
+      
+      if (!row) {
+        return res.json({});
+      }
+      
+      res.json(JSON.parse(row.config));
+    });
+  } catch (error) {
+    console.error('Error in avatar config get endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ===================================================================
 // PAYMENT API ENDPOINTS
 // ===================================================================
@@ -6238,6 +6437,69 @@ app.get('/api/training/scenarios', async (req, res) => {
     });
   } catch (error) {
     console.error('Error in training scenarios API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get All Training Sessions
+app.get('/api/training/sessions', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        ts.*,
+        tsc.name as scenario_name,
+        tsc.registration_type,
+        tsc.difficulty_level
+      FROM training_sessions ts
+      LEFT JOIN training_scenarios tsc ON ts.scenario_id = tsc.id
+      ORDER BY ts.created_at DESC
+      LIMIT 100
+    `;
+    
+    db.all(query, [], (err, rows) => {
+      if (err) {
+        console.error('Error fetching training sessions:', err);
+        return res.status(500).json({ error: 'Failed to fetch training sessions' });
+      }
+      
+      res.json(rows || []);
+    });
+  } catch (error) {
+    console.error('Error in get training sessions API:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Agent Performance by Registration Type (no agentId required)
+app.get('/api/training/agents/performance', async (req, res) => {
+  try {
+    const { registration_type } = req.query;
+    
+    const query = `
+      SELECT 
+        ts.*,
+        tsc.name as scenario_name,
+        tsc.registration_type,
+        tsc.difficulty_level
+      FROM training_sessions ts
+      LEFT JOIN training_scenarios tsc ON ts.scenario_id = tsc.id
+      ${registration_type ? 'WHERE tsc.registration_type = ?' : ''}
+      ORDER BY ts.created_at DESC
+      LIMIT 100
+    `;
+    
+    const params = registration_type ? [registration_type] : [];
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching agent performance:', err);
+        return res.status(500).json({ error: 'Failed to fetch agent performance' });
+      }
+      
+      res.json(rows || []);
+    });
+  } catch (error) {
+    console.error('Error in get agent performance API:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -7882,6 +8144,126 @@ app.post('/api/qualified-states/upload', upload.single('file'), async (req, res)
       fs.unlinkSync(filePath);
     }
     res.status(500).json({ error: 'Error processing file: ' + error.message });
+  }
+});
+
+// ===================================================================
+// ANALYTICS & TRACKING API ENDPOINTS
+// ===================================================================
+
+// Analytics Metrics
+app.get('/api/analytics/metrics', async (req, res) => {
+  try {
+    const { category } = req.query;
+    let query = 'SELECT * FROM analytics_metrics';
+    const params = [];
+    
+    if (category) {
+      query += ' WHERE category = ?';
+      params.push(category);
+    }
+    
+    query += ' ORDER BY last_updated DESC';
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching analytics metrics:', err);
+        return res.status(500).json({ error: 'Failed to fetch analytics metrics' });
+      }
+      res.json(rows || []);
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Activity Log
+app.get('/api/activity-log', async (req, res) => {
+  try {
+    const { entity_type, limit = 50 } = req.query;
+    let query = 'SELECT * FROM activity_log';
+    const params = [];
+    
+    if (entity_type) {
+      query += ' WHERE entity_type = ?';
+      params.push(entity_type);
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT ?';
+    params.push(parseInt(limit));
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching activity log:', err);
+        return res.status(500).json({ error: 'Failed to fetch activity log' });
+      }
+      res.json(rows || []);
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/activity-log', async (req, res) => {
+  try {
+    const { entity_type, entity_id, action, description, user_id, metadata } = req.body;
+    const id = `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await runExecute(
+      `INSERT INTO activity_log (id, entity_type, entity_id, action, description, user_id, metadata)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, entity_type, entity_id, action, description || null, user_id || null, metadata ? JSON.stringify(metadata) : null]
+    );
+    
+    res.status(201).json({ id, message: 'Activity logged successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reports
+app.get('/api/reports', async (req, res) => {
+  try {
+    const reports = await runQuery('SELECT * FROM reports ORDER BY last_generated DESC');
+    res.json(reports);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    let query = 'SELECT * FROM notifications';
+    const params = [];
+    
+    if (user_id) {
+      query += ' WHERE user_id = ?';
+      params.push(user_id);
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT 100';
+    
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('Error fetching notifications:', err);
+        return res.status(500).json({ error: 'Failed to fetch notifications' });
+      }
+      res.json(rows || []);
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Revenue Tracking
+app.get('/api/revenue-tracking', async (req, res) => {
+  try {
+    const data = await runQuery('SELECT * FROM revenue_tracking ORDER BY period DESC LIMIT 12');
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

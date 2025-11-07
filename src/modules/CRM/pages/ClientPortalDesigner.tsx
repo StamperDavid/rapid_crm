@@ -302,7 +302,7 @@ const ClientPortalDesigner: React.FC = () => {
   const selectedElementData = portalElements.find(el => el.id === selectedElement);
 
   // Save design
-  const saveDesign = useCallback(() => {
+  const saveDesign = useCallback(async () => {
     const design = {
       elements: portalElements,
       customCSS,
@@ -310,16 +310,27 @@ const ClientPortalDesigner: React.FC = () => {
       timestamp: new Date().toISOString()
     };
     
-    // Save to database via API
-    fetch('/api/client-portal/design', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(design)
-    }).then(response => {
+    try {
+      // Save to database via API
+      const response = await fetch('/api/client-portal/design', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(design)
+      });
+      
+      const result = await response.json();
+      
       if (response.ok) {
         console.log('Design saved successfully');
+        alert('Portal design saved successfully!');
+      } else {
+        console.error('Failed to save design:', result);
+        alert('Failed to save portal design. Please try again.');
       }
-    });
+    } catch (error) {
+      console.error('Error saving design:', error);
+      alert('Error saving portal design. Please try again.');
+    }
   }, [portalElements, customCSS, activeBreakpoint]);
 
   return (
@@ -414,9 +425,28 @@ const ClientPortalDesigner: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900 min-h-0">
               <div className="max-w-4xl mx-auto">
                 <AvatarPreview 
-                  onSelectAvatar={(config) => {
+                  onSelectAvatar={async (config) => {
                     console.log('Selected avatar config:', config);
-                    // TODO: Save avatar configuration
+                    try {
+                      const response = await fetch('/api/client-portal/avatar-config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(config)
+                      });
+                      
+                      const result = await response.json();
+                      
+                      if (response.ok) {
+                        console.log('Avatar configuration saved successfully');
+                        alert('Avatar configuration saved!');
+                      } else {
+                        console.error('Failed to save avatar config:', result);
+                        alert('Failed to save avatar configuration.');
+                      }
+                    } catch (error) {
+                      console.error('Error saving avatar config:', error);
+                      alert('Error saving avatar configuration.');
+                    }
                   }}
                 />
               </div>

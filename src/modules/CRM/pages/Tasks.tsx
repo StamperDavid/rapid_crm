@@ -10,72 +10,13 @@ import {
   TrashIcon,
   XIcon
 } from '@heroicons/react/outline';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'pending' | 'in_progress' | 'completed';
-  assignedTo: string;
-  relatedTo: {
-    type: 'contact' | 'company' | 'deal' | 'invoice';
-    id: string;
-    name: string;
-  } | null;
-  createdAt: string;
-  completedAt?: string;
-}
+import { useCRM, Task } from '../../../contexts/CRMContext';
 
 const Tasks: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Follow up with John Smith',
-      description: 'Call to discuss the proposal and answer questions about pricing',
-      dueDate: '2024-01-25',
-      priority: 'high',
-      status: 'pending',
-      assignedTo: 'Admin User',
-      relatedTo: { type: 'contact', id: '1', name: 'John Smith' },
-      createdAt: '2024-01-20'
-    },
-    {
-      id: '2',
-      title: 'Prepare proposal for Tech Solutions',
-      description: 'Create detailed proposal for CRM implementation project',
-      dueDate: '2024-01-26',
-      priority: 'medium',
-      status: 'in_progress',
-      assignedTo: 'Admin User',
-      relatedTo: { type: 'company', id: '2', name: 'Tech Solutions Inc' },
-      createdAt: '2024-01-21'
-    },
-    {
-      id: '3',
-      title: 'Update project timeline',
-      description: 'Review and update the project timeline for Global Shipping',
-      dueDate: '2024-01-27',
-      priority: 'low',
-      status: 'completed',
-      assignedTo: 'Admin User',
-      relatedTo: { type: 'deal', id: '3', name: 'Mobile App Development' },
-      createdAt: '2024-01-22',
-      completedAt: '2024-01-24'
-    },
-    {
-      id: '4',
-      title: 'Send invoice to Acme Corp',
-      description: 'Send invoice for completed website development work',
-      dueDate: '2024-01-28',
-      priority: 'high',
-      status: 'pending',
-      assignedTo: 'Admin User',
-      relatedTo: { type: 'invoice', id: '1', name: 'INV-2024-001' },
-      createdAt: '2024-01-23'
-    }
-  ]);
+  const { tasks, createTask, updateTask, deleteTask } = useCRM();
+  
+  // Using real tasks from database via CRMContext
+  // Mock data removed - now using real database data
 
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
@@ -124,40 +65,26 @@ const Tasks: React.FC = () => {
   const handleCreateTask = async () => {
     if (newTask.title && newTask.dueDate) {
       try {
-        const taskData = {
+        await createTask({
           title: newTask.title,
           description: newTask.description,
-          due_date: newTask.dueDate,
+          dueDate: newTask.dueDate,
           priority: newTask.priority,
           status: 'pending',
-          assigned_to: newTask.assignedTo,
-          company_id: newTask.relatedTo?.type === 'company' ? newTask.relatedTo.id : null,
-          contact_id: newTask.relatedTo?.type === 'contact' ? newTask.relatedTo.id : null
-        };
-        
-        // Use the CRM context to create the task
-        const response = await fetch(`${getApiBaseUrl()}/tasks`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData)
+          assignedTo: newTask.assignedTo,
+          relatedTo: newTask.relatedTo
         });
         
-        if (response.ok) {
-          const newTaskFromDB = await response.json();
-          setTasks(prev => [...prev, newTaskFromDB]);
-          setNewTask({
-            title: '',
-            description: '',
-            dueDate: '',
-            priority: 'medium',
-            status: 'pending',
-            assignedTo: 'Admin User',
-            relatedTo: null
-          });
-          setShowCreateModal(false);
-        } else {
-          throw new Error('Failed to create task');
-        }
+        setNewTask({
+          title: '',
+          description: '',
+          dueDate: '',
+          priority: 'medium',
+          status: 'pending',
+          assignedTo: 'Admin User',
+          relatedTo: null
+        });
+        setShowCreateModal(false);
       } catch (error) {
         console.error('Failed to create task:', error);
         alert('Failed to create task. Please try again.');
@@ -168,43 +95,27 @@ const Tasks: React.FC = () => {
   const handleUpdateTask = async () => {
     if (editingTask && newTask.title && newTask.dueDate) {
       try {
-        const taskData = {
+        await updateTask(editingTask.id, {
           title: newTask.title,
           description: newTask.description,
-          due_date: newTask.dueDate,
+          dueDate: newTask.dueDate,
           priority: newTask.priority,
           status: newTask.status,
-          assigned_to: newTask.assignedTo,
-          company_id: newTask.relatedTo?.type === 'company' ? newTask.relatedTo.id : null,
-          contact_id: newTask.relatedTo?.type === 'contact' ? newTask.relatedTo.id : null
-        };
-        
-        // Use the CRM context to update the task
-        const response = await fetch(`${getApiBaseUrl()}/tasks/${editingTask.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData)
+          assignedTo: newTask.assignedTo,
+          relatedTo: newTask.relatedTo
         });
         
-        if (response.ok) {
-          const updatedTaskFromDB = await response.json();
-          setTasks(prev => prev.map(task => 
-            task.id === editingTask.id ? updatedTaskFromDB : task
-          ));
-          setEditingTask(null);
-          setNewTask({
-            title: '',
-            description: '',
-            dueDate: '',
-            priority: 'medium',
-            status: 'pending',
-            assignedTo: 'Admin User',
-            relatedTo: null
-          });
-          setShowCreateModal(false);
-        } else {
-          throw new Error('Failed to update task');
-        }
+        setEditingTask(null);
+        setNewTask({
+          title: '',
+          description: '',
+          dueDate: '',
+          priority: 'medium',
+          status: 'pending',
+          assignedTo: 'Admin User',
+          relatedTo: null
+        });
+        setShowCreateModal(false);
       } catch (error) {
         console.error('Failed to update task:', error);
         alert('Failed to update task. Please try again.');
@@ -213,16 +124,12 @@ const Tasks: React.FC = () => {
   };
 
   const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('Are you sure you want to delete this task?')) {
+      return;
+    }
+    
     try {
-      const response = await fetch(`${getApiBaseUrl()}/tasks/${taskId}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        setTasks(prev => prev.filter(task => task.id !== taskId));
-      } else {
-        throw new Error('Failed to delete task');
-      }
+      await deleteTask(taskId);
     } catch (error) {
       console.error('Failed to delete task:', error);
       alert('Failed to delete task. Please try again.');
@@ -231,20 +138,11 @@ const Tasks: React.FC = () => {
 
   const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
     try {
-      const response = await fetch(`${getApiBaseUrl()}/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+      const completedAt = newStatus === 'completed' ? new Date().toISOString() : undefined;
+      await updateTask(taskId, { 
+        status: newStatus,
+        completedAt
       });
-      
-      if (response.ok) {
-        const updatedTask = await response.json();
-        setTasks(prev => prev.map(task => 
-          task.id === taskId ? updatedTask : task
-        ));
-      } else {
-        throw new Error('Failed to update task status');
-      }
     } catch (error) {
       console.error('Failed to update task status:', error);
       alert('Failed to update task status. Please try again.');

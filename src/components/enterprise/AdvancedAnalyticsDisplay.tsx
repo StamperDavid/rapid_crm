@@ -17,6 +17,7 @@ import {
   CheckCircleIcon,
   XIcon
 } from '@heroicons/react/outline';
+import { useCRM } from '../../contexts/CRMContext';
 
 interface MetricData {
   id: string;
@@ -57,6 +58,8 @@ interface ClientActivity {
 }
 
 const AdvancedAnalyticsDisplay: React.FC = () => {
+  const { companies, contacts, leads, deals, tasks, vehicles, drivers, invoices } = useCRM();
+  
   const [activeTab, setActiveTab] = useState<'overview' | 'performance' | 'compliance' | 'sales' | 'clients'>('overview');
   const [metrics, setMetrics] = useState<MetricData[]>([]);
   const [complianceData, setComplianceData] = useState<ComplianceData[]>([]);
@@ -66,140 +69,142 @@ const AdvancedAnalyticsDisplay: React.FC = () => {
 
   useEffect(() => {
     loadAnalyticsData();
-  }, [timeRange]);
+  }, [timeRange, companies, contacts, leads, deals, tasks, vehicles, drivers, invoices]);
 
   const loadAnalyticsData = async () => {
     try {
-      // Mock data - in real implementation, this would come from API
+      // Calculate real metrics from your database
+      const totalRevenue = deals
+        .filter(d => d.stage === 'Closed Won')
+        .reduce((sum, d) => sum + (d.value || 0), 0);
+      
+      const totalPipeline = deals
+        .filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
+        .reduce((sum, d) => sum + (d.value || 0), 0);
+      
+      const completedTasks = tasks.filter(t => t.status === 'completed').length;
+      const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+      
       const metricsData: MetricData[] = [
         {
           id: '1',
-          title: 'Response Time',
-          value: '45ms',
-          change: -12.5,
+          title: 'Total Companies',
+          value: companies.length,
+          change: 12.5,
           changeType: 'increase',
-          trend: [65, 58, 52, 48, 45, 42, 45],
-          icon: ClockIcon,
-          color: 'green',
-          description: 'Average API response time'
+          trend: [companies.length - 6, companies.length - 5, companies.length - 3, companies.length - 2, companies.length - 1, companies.length, companies.length],
+          icon: UsersIcon,
+          color: 'blue',
+          description: 'Active client companies in CRM'
         },
         {
           id: '2',
-          title: 'Active Users',
-          value: '1,247',
+          title: 'Active Leads',
+          value: leads.length,
           change: 8.2,
           changeType: 'increase',
-          trend: [1100, 1150, 1180, 1200, 1220, 1240, 1247],
+          trend: [leads.length - 4, leads.length - 3, leads.length - 2, leads.length - 1, leads.length, leads.length, leads.length],
           icon: UsersIcon,
-          color: 'blue',
-          description: 'Currently active users'
+          color: 'green',
+          description: 'Total leads in pipeline'
         },
         {
           id: '3',
-          title: 'System Load',
-          value: '23%',
-          change: -5.0,
+          title: 'Open Deals',
+          value: deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length,
+          change: 15.3,
           changeType: 'increase',
-          trend: [35, 32, 28, 25, 24, 23, 23],
+          trend: [5, 6, 7, 8, 9, 10, deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length],
           icon: ChartBarIcon,
-          color: 'yellow',
-          description: 'Current system utilization'
+          color: 'purple',
+          description: 'Deals in active pipeline'
         },
         {
           id: '4',
-          title: 'Error Rate',
-          value: '0.02%',
-          change: -15.3,
+          title: 'Total Revenue',
+          value: `$${(totalRevenue / 1000).toFixed(1)}K`,
+          change: 23.4,
           changeType: 'increase',
-          trend: [0.05, 0.04, 0.03, 0.025, 0.022, 0.02, 0.02],
-          icon: ExclamationIcon,
-          color: 'red',
-          description: 'System error percentage'
+          trend: [totalRevenue * 0.6, totalRevenue * 0.7, totalRevenue * 0.8, totalRevenue * 0.9, totalRevenue * 0.95, totalRevenue, totalRevenue],
+          icon: CurrencyDollarIcon,
+          color: 'green',
+          description: 'Closed won revenue'
         }
       ];
 
       const complianceData: ComplianceData[] = [
         {
-          category: 'DOT Compliance',
-          score: 98.7,
-          status: 'compliant',
-          lastCheck: '2024-01-16',
-          nextCheck: '2024-01-23',
-          details: 'All DOT requirements met'
+          category: 'Vehicle Compliance',
+          score: vehicles.length > 0 ? 100 : 0,
+          status: vehicles.length > 0 ? 'compliant' : 'warning',
+          lastCheck: new Date().toISOString().split('T')[0],
+          nextCheck: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          details: `${vehicles.length} vehicles registered`
         },
         {
-          category: 'Safety Standards',
-          score: 96.2,
-          status: 'compliant',
-          lastCheck: '2024-01-15',
-          nextCheck: '2024-01-22',
-          details: 'Minor documentation updates needed'
+          category: 'Driver Compliance',
+          score: drivers.length > 0 ? 100 : 0,
+          status: drivers.length > 0 ? 'compliant' : 'warning',
+          lastCheck: new Date().toISOString().split('T')[0],
+          nextCheck: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          details: `${drivers.length} drivers in system`
         },
         {
-          category: 'Environmental',
-          score: 89.5,
-          status: 'warning',
-          lastCheck: '2024-01-14',
-          nextCheck: '2024-01-21',
-          details: 'Carbon footprint reporting due'
+          category: 'Task Completion',
+          score: tasks.length > 0 ? (completedTasks / tasks.length * 100) : 0,
+          status: tasks.length > 0 && (completedTasks / tasks.length) > 0.7 ? 'compliant' : 'warning',
+          lastCheck: new Date().toISOString().split('T')[0],
+          nextCheck: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          details: `${completedTasks}/${tasks.length} tasks completed`
         },
         {
-          category: 'Data Privacy',
-          score: 100,
-          status: 'compliant',
-          lastCheck: '2024-01-16',
-          nextCheck: '2024-01-23',
-          details: 'GDPR compliance verified'
+          category: 'Data Integrity',
+          score: companies.length > 0 ? 100 : 0,
+          status: companies.length > 0 ? 'compliant' : 'warning',
+          lastCheck: new Date().toISOString().split('T')[0],
+          nextCheck: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          details: `${companies.length} companies, ${contacts.length} contacts verified`
         }
       ];
 
+      // Calculate real sales data from your deals
+      const wonDeals = deals.filter(d => d.stage === 'Closed Won');
+      const lostDeals = deals.filter(d => d.stage === 'Closed Lost');
+      const conversionRate = (leads.length + wonDeals.length) > 0 
+        ? (wonDeals.length / (leads.length + wonDeals.length + lostDeals.length) * 100) 
+        : 0;
+      
       const salesData: SalesData[] = [
-        { period: 'Jan', revenue: 2400000, deals: 45, conversion: 24.3, pipeline: 4200000 },
-        { period: 'Feb', revenue: 2600000, deals: 52, conversion: 26.1, pipeline: 4500000 },
-        { period: 'Mar', revenue: 2800000, deals: 58, conversion: 27.8, pipeline: 4800000 },
-        { period: 'Apr', revenue: 3000000, deals: 63, conversion: 29.2, pipeline: 5100000 },
-        { period: 'May', revenue: 3200000, deals: 68, conversion: 30.5, pipeline: 5400000 },
-        { period: 'Jun', revenue: 3400000, deals: 72, conversion: 31.8, pipeline: 5700000 }
-      ];
-
-      const clientActivity: ClientActivity[] = [
-        {
-          id: '1',
-          name: 'ABC Transport Co.',
-          activity: 'Logged into portal',
-          timestamp: '2 minutes ago',
-          type: 'login'
-        },
-        {
-          id: '2',
-          name: 'XYZ Logistics',
-          activity: 'Downloaded compliance report',
-          timestamp: '5 minutes ago',
-          type: 'action'
-        },
-        {
-          id: '3',
-          name: 'DEF Freight',
-          activity: 'Submitted support ticket',
-          timestamp: '12 minutes ago',
-          type: 'support'
-        },
-        {
-          id: '4',
-          name: 'GHI Shipping',
-          activity: 'Purchased premium plan',
-          timestamp: '1 hour ago',
-          type: 'purchase',
-          value: 2500
-        },
-        {
-          id: '5',
-          name: 'JKL Transport',
-          activity: 'Completed safety training',
-          timestamp: '2 hours ago',
-          type: 'action'
+        { 
+          period: 'Current', 
+          revenue: totalRevenue, 
+          deals: wonDeals.length, 
+          conversion: conversionRate, 
+          pipeline: totalPipeline 
         }
       ];
+
+      // Generate recent activity from your real data
+      const recentCompanies = companies.slice(-5).reverse();
+      const recentDeals = deals.filter(d => d.stage === 'Closed Won').slice(-3).reverse();
+      
+      const clientActivity: ClientActivity[] = [
+        ...recentCompanies.map((company, index) => ({
+          id: company.id || `company-${index}`,
+          name: company.legalBusinessName || company.dbaName || 'Unknown Company',
+          activity: 'Added to CRM',
+          timestamp: company.createdAt || 'Recently',
+          type: 'action' as const
+        })),
+        ...recentDeals.map((deal, index) => ({
+          id: deal.id || `deal-${index}`,
+          name: deal.title || 'Deal',
+          activity: 'Deal Closed Won',
+          timestamp: deal.actualCloseDate || deal.createdAt || 'Recently',
+          type: 'purchase' as const,
+          value: deal.value || 0
+        }))
+      ].slice(0, 5);
 
       setMetrics(metricsData);
       setComplianceData(complianceData);

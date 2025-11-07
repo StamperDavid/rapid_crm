@@ -84,7 +84,7 @@ const AgentPerformanceMonitoringDashboard: React.FC = () => {
   // Fetch agent performance data
   const fetchAgentPerformance = async () => {
     try {
-      const response = await fetch(`/api/training/agents/performance?registration_type=${selectedRegistrationType}`);
+      const response = await fetch(`http://localhost:3001/api/training/agents/performance?registration_type=${selectedRegistrationType}`);
       if (response.ok) {
         const sessions = await response.json();
         
@@ -160,7 +160,7 @@ const AgentPerformanceMonitoringDashboard: React.FC = () => {
   // Fetch active training sessions
   const fetchActiveSessions = async () => {
     try {
-      const response = await fetch('/api/training/sessions');
+      const response = await fetch('http://localhost:3001/api/training/sessions');
       if (response.ok) {
         const sessions = await response.json();
         const active = sessions.filter((session: any) => !session.endTime);

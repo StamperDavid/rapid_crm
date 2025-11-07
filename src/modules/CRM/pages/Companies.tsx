@@ -18,7 +18,7 @@ import HelpIcon from '../../../components/HelpIcon';
 import Tooltip from '../../../components/Tooltip';
 
 const Companies: React.FC = () => {
-  const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
+  const { companies, contacts, vehicles, drivers, deals, invoices, createCompany, deleteCompany, createContact, createVehicle, createDriver, createDeal, createInvoice } = useCRM();
   const navigate = useNavigate();
   
   // Debug logging
@@ -91,8 +91,8 @@ const Companies: React.FC = () => {
     }
     
     try {
-      // TODO: Implement deleteCompany function in CRMContext
-      alert('Delete functionality coming soon!');
+      await deleteCompany(companyId);
+      alert('Company deleted successfully!');
     } catch (error) {
       console.error('Error deleting company:', error);
       alert('Error deleting company. Please try again.');

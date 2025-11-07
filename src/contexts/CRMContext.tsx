@@ -2,6 +2,25 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Organization, Person, Vehicle, Driver, Deal, Invoice, Lead, Service } from '../types/schema';
 import { getApiBaseUrl } from '../config/api';
 
+// Task interface
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'pending' | 'in_progress' | 'completed';
+  assignedTo?: string;
+  relatedTo?: {
+    type: 'contact' | 'company' | 'deal' | 'invoice';
+    id: string;
+    name: string;
+  } | null;
+  createdAt: string;
+  completedAt?: string;
+  updatedAt: string;
+}
+
 // Define the context type
 interface CRMContextType {
   // State
@@ -19,6 +38,9 @@ interface CRMContextType {
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   drivers: Driver[];
   setDrivers: React.Dispatch<React.SetStateAction<Driver[]>>;
+  tasks: Task[];
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  invoices: Invoice[];
   isLoading: boolean;
   
   // Database operations
@@ -29,11 +51,13 @@ interface CRMContextType {
   refreshServices: () => Promise<void>;
   refreshVehicles: () => Promise<void>;
   refreshDrivers: () => Promise<void>;
+  refreshTasks: () => Promise<void>;
   
   createCompany: (company: Omit<Organization, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Organization>;
   createContact: (contact: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Person>;
   createLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Lead>;
   createDeal: (deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Deal>;
+  createTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task>;
   
   // Lead/Deal classification logic
   createLeadFromClient: (clientData: { name: string; email: string; phone: string; needs: string; source?: 'inbound' | 'outbound' | 'referral' }) => Promise<Lead>;
@@ -50,6 +74,7 @@ interface CRMContextType {
   updateService: (id: string, service: Partial<Service>) => Promise<Service>;
   updateVehicle: (id: string, vehicle: Partial<Vehicle>) => Promise<Vehicle>;
   updateDriver: (id: string, driver: Partial<Driver>) => Promise<Driver>;
+  updateTask: (id: string, task: Partial<Task>) => Promise<Task>;
   
   deleteCompany: (id: string) => Promise<void>;
   deleteContact: (id: string) => Promise<void>;
@@ -58,6 +83,7 @@ interface CRMContextType {
   deleteService: (id: string) => Promise<void>;
   deleteVehicle: (id: string) => Promise<void>;
   deleteDriver: (id: string) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 }
 
 // Create the context
@@ -77,6 +103,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // API base URL
@@ -89,7 +117,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setIsLoading(true);
         console.log(`[CRMContext] Starting data load from YOUR database... (attempt ${retryCount + 1})`);
         
-        const [companiesData, contactsData, leadsData, dealsData, servicesData, vehiclesData, driversData] = await Promise.all([
+        const [companiesData, contactsData, leadsData, dealsData, servicesData, vehiclesData, driversData, tasksData, invoicesData] = await Promise.all([
           fetch(`${API_BASE}/companies`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load companies:', err);
             throw new Error(`Companies: ${err.message}`);
@@ -117,6 +145,14 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
           fetch(`${API_BASE}/drivers`).then(res => res.json()).catch(err => {
             console.error('[CRMContext] Failed to load drivers:', err);
             throw new Error(`Drivers: ${err.message}`);
+          }),
+          fetch(`${API_BASE}/tasks`).then(res => res.json()).catch(err => {
+            console.error('[CRMContext] Failed to load tasks:', err);
+            throw new Error(`Tasks: ${err.message}`);
+          }),
+          fetch(`${API_BASE}/invoices`).then(res => res.json()).catch(err => {
+            console.error('[CRMContext] Failed to load invoices:', err);
+            throw new Error(`Invoices: ${err.message}`);
           })
         ]);
         
@@ -127,7 +163,9 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
           deals: dealsData.length,
           services: servicesData.length,
           vehicles: vehiclesData.length,
-          drivers: driversData.length
+          drivers: driversData.length,
+          tasks: tasksData.length,
+          invoices: invoicesData.length
         });
         
         setCompanies(companiesData);
@@ -137,6 +175,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setServices(servicesData);
         setVehicles(vehiclesData);
         setDrivers(driversData);
+        setTasks(tasksData);
+        setInvoices(invoicesData);
       } catch (error) {
         console.error('[CRMContext] Failed to load data:', error);
         
@@ -155,6 +195,8 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
         setServices([]);
         setVehicles([]);
         setDrivers([]);
+        setTasks([]);
+        setInvoices([]);
       } finally {
         setIsLoading(false);
       }
@@ -237,6 +279,17 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
       setDrivers(data);
     } catch (error) {
       console.error('Failed to refresh drivers:', error);
+      throw error;
+    }
+  };
+
+  const refreshTasks = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/tasks`);
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error('Failed to refresh tasks:', error);
       throw error;
     }
   };
@@ -640,6 +693,48 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     }
   };
 
+  const createTask = async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch(`${API_BASE}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(task)
+      });
+      const newTask = await response.json();
+      setTasks(prev => [...prev, newTask]);
+      return newTask;
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      throw error;
+    }
+  };
+
+  const updateTask = async (id: string, task: Partial<Task>) => {
+    try {
+      const response = await fetch(`${API_BASE}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(task)
+      });
+      const updatedTask = await response.json();
+      setTasks(prev => prev.map(t => t.id === id ? updatedTask : t));
+      return updatedTask;
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      throw error;
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    try {
+      await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
+      setTasks(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      throw error;
+    }
+  };
+
   const value = {
     companies,
     setCompanies,
@@ -655,6 +750,9 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     setVehicles,
     drivers,
     setDrivers,
+    tasks,
+    setTasks,
+    invoices,
     isLoading,
     refreshCompanies,
     refreshContacts,
@@ -663,10 +761,12 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     refreshServices,
     refreshVehicles,
     refreshDrivers,
+    refreshTasks,
     createCompany,
     createContact,
     createLead,
     createDeal,
+    createTask,
     createLeadFromClient,
     createDealFromService,
     convertLeadToDeal,
@@ -680,6 +780,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     updateService,
     updateVehicle,
     updateDriver,
+    updateTask,
     deleteCompany,
     deleteContact,
     deleteLead,
@@ -687,6 +788,7 @@ export const CRMProvider: React.FC<CRMProviderProps> = ({ children }) => {
     deleteService,
     deleteVehicle,
     deleteDriver,
+    deleteTask,
   };
 
   // Show loading state while data is being loaded

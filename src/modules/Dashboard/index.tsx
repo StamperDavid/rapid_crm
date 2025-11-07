@@ -14,8 +14,13 @@ import VisibleHelpIcon from '../../components/VisibleHelpIcon';
 
 const DashboardModule: React.FC = () => {
   const { companies, contacts, vehicles, drivers, leads, deals, isLoading } = useCRM();
+  const [recentActivities, setRecentActivities] = React.useState<any[]>([]);
   
   // Calculate real stats from CRM data with null checks
+  const totalRevenue = deals
+    .filter(d => d.stage === 'Closed Won')
+    .reduce((sum, d) => sum + (d.value || 0), 0);
+  
   const stats = {
     companies: companies?.length || 0,
     contacts: contacts?.length || 0,
@@ -23,36 +28,30 @@ const DashboardModule: React.FC = () => {
     drivers: drivers?.length || 0,
     leads: leads?.length || 0,
     deals: deals?.length || 0,
-    revenue: 125000 // Dummy data for now - revenue calculation not implemented yet
+    revenue: totalRevenue
   };
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'deal',
-      message: 'New deal created: Acme Transportation Contract',
-      timestamp: '2 hours ago'
-    },
-    {
-      id: 2,
-      type: 'contact',
-      message: 'Contact updated: John Smith',
-      timestamp: '4 hours ago'
-    },
-    {
-      id: 3,
-      type: 'company',
-      message: 'Company added: Global Shipping Co',
-      timestamp: '1 day ago'
-    }
-  ];
+  // Load recent activities from database
+  React.useEffect(() => {
+    fetch('http://localhost:3001/api/activity-log?limit=10')
+      .then(res => res.json())
+      .then(data => {
+        setRecentActivities(data.map((activity: any) => ({
+          id: activity.id,
+          type: activity.entity_type,
+          message: activity.description || `${activity.action} ${activity.entity_type}`,
+          timestamp: new Date(activity.created_at).toLocaleString()
+        })));
+      })
+      .catch(err => console.error('Failed to load activities:', err));
+  }, []);
 
   const statCards = [
     {
       name: 'Total Companies',
       value: stats?.companies || 0,
       icon: OfficeBuildingIcon,
-      change: '+12%',
+      change: stats?.companies > 0 ? `${stats.companies} total` : 'No data',
       changeType: 'increase' as const,
       href: '/companies',
       color: 'blue',
@@ -64,7 +63,7 @@ const DashboardModule: React.FC = () => {
       name: 'Total Leads',
       value: stats?.leads || 0,
       icon: UserGroupIcon,
-      change: '+8%',
+      change: stats?.leads > 0 ? `${stats.leads} total` : 'No data',
       changeType: 'increase' as const,
       href: '/leads',
       color: 'green',
@@ -76,7 +75,7 @@ const DashboardModule: React.FC = () => {
       name: 'Total Vehicles',
       value: stats?.vehicles || 0,
       icon: CurrencyDollarIcon,
-      change: '+15%',
+      change: stats?.vehicles > 0 ? `${stats.vehicles} total` : 'No data',
       changeType: 'increase' as const,
       href: '/vehicles',
       color: 'purple',
@@ -88,7 +87,7 @@ const DashboardModule: React.FC = () => {
       name: 'Total Drivers',
       value: stats?.drivers || 0,
       icon: CurrencyDollarIcon,
-      change: '+23%',
+      change: stats?.drivers > 0 ? `${stats.drivers} total` : 'No data',
       changeType: 'increase' as const,
       href: '/drivers',
       color: 'emerald',
@@ -97,16 +96,16 @@ const DashboardModule: React.FC = () => {
       tooltip: 'Commercial drivers in your system. Track CDL status, training, and compliance requirements.'
     },
     {
-      name: 'Enterprise AI',
-      value: 'Active',
+      name: 'Total Deals',
+      value: stats?.deals || 0,
       icon: ChipIcon,
-      change: '10/10',
+      change: stats?.deals > 0 ? `${stats.deals} total` : 'No data',
       changeType: 'increase' as const,
-      href: '/admin/ai-control',
+      href: '/deals',
       color: 'pink',
       bgColor: 'bg-pink-50 dark:bg-pink-900/20',
       iconColor: 'text-pink-600 dark:text-pink-400',
-      tooltip: 'AI system status and performance. Access AI agent management, training, and monitoring tools.'
+      tooltip: 'Active deals in your sales pipeline. Monitor deal progress and revenue potential.'
     }
   ];
 

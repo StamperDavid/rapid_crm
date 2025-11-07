@@ -16,6 +16,7 @@ import {
 import { Deal } from '../../../types/schema';
 import { Service } from '../../../types/schema';
 import Tooltip from '../../../components/Tooltip';
+import { useCRM } from '../../../contexts/CRMContext';
 
 interface DealsProps {
   preSelectedCompanyId?: string;
@@ -23,67 +24,16 @@ interface DealsProps {
 }
 
 const Deals: React.FC<DealsProps> = ({ preSelectedCompanyId, preSelectedCompanyName }) => {
+  const { deals, createDeal, updateDeal, deleteDeal } = useCRM();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
-  // Mock deal data using new Deal schema
-  const [deals, setDeals] = useState<Deal[]>([
-    {
-      id: '1',
-      title: 'Acme Transportation Contract',
-      description: 'Website development and CRM implementation for transportation company',
-      value: 150000,
-      stage: 'Negotiation',
-      probability: 75,
-      expectedCloseDate: '2024-02-15',
-      software: 'Website',
-      serviceId: '1',
-      serviceName: 'USDOT Number Registration',
-      customPrice: 150000,
-      contactId: '1',
-      companyId: '1',
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-20'
-    },
-    {
-      id: '2',
-      title: 'Global Shipping Partnership',
-      description: 'Mobile app development for fleet management',
-      value: 250000,
-      stage: 'Proposal',
-      probability: 60,
-      expectedCloseDate: '2024-03-01',
-      software: 'Website',
-      serviceId: '1',
-      serviceName: 'USDOT Number Registration',
-      customPrice: 150000,
-      contactId: '2',
-      companyId: '2',
-      createdAt: '2024-01-10',
-      updatedAt: '2024-01-18'
-    },
-    {
-      id: '3',
-      title: 'Metro Freight Service Agreement',
-      description: 'Complete digital transformation project',
-      value: 85000,
-      stage: 'Closed Won',
-      probability: 100,
-      expectedCloseDate: '2024-01-25',
-      actualCloseDate: '2024-01-25',
-      software: 'Website',
-      serviceId: '1',
-      serviceName: 'USDOT Number Registration',
-      customPrice: 150000,
-      contactId: '3',
-      companyId: '3',
-      createdAt: '2024-01-05',
-      updatedAt: '2024-01-22'
-    }
-  ]);
+  // Using real deals from database via CRMContext
+  // Mock data removed - now using real database data
 
   const [services, setServices] = useState<Service[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -122,62 +72,74 @@ const Deals: React.FC<DealsProps> = ({ preSelectedCompanyId, preSelectedCompanyN
     }
   };
 
-  const handleCreateDeal = () => {
+  const handleCreateDeal = async () => {
     if (newDeal.title && newDeal.value && newDeal.companyId) {
-      const deal: Deal = {
-        id: (deals.length + 1).toString(),
-        title: newDeal.title,
-        description: newDeal.description || '',
-        value: newDeal.value,
-        stage: newDeal.stage || 'Prospecting',
-        probability: newDeal.probability || 10,
-        expectedCloseDate: newDeal.expectedCloseDate,
-        actualCloseDate: newDeal.actualCloseDate,
-        software: newDeal.software || 'Custom Onboarding',
-        serviceId: newDeal.serviceId,
-        serviceName: newDeal.serviceName,
-        customPrice: newDeal.customPrice,
-        contactId: newDeal.contactId,
-        companyId: newDeal.companyId,
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0]
-      };
-      setDeals([...deals, deal]);
-      setNewDeal({
-        title: '',
-        description: '',
-        value: 0,
-        stage: 'Prospecting',
-        probability: 10,
-        software: 'Custom Onboarding'
-      });
-      setShowCreateModal(false);
+      try {
+        await createDeal({
+          title: newDeal.title,
+          description: newDeal.description || '',
+          value: newDeal.value,
+          stage: newDeal.stage || 'Prospecting',
+          probability: newDeal.probability || 10,
+          expectedCloseDate: newDeal.expectedCloseDate,
+          actualCloseDate: newDeal.actualCloseDate,
+          software: newDeal.software || 'Custom Onboarding',
+          serviceId: newDeal.serviceId,
+          serviceName: newDeal.serviceName,
+          customPrice: newDeal.customPrice,
+          contactId: newDeal.contactId,
+          companyId: newDeal.companyId
+        });
+        
+        setNewDeal({
+          title: '',
+          description: '',
+          value: 0,
+          stage: 'Prospecting',
+          probability: 10,
+          software: 'Custom Onboarding'
+        });
+        setShowCreateModal(false);
+      } catch (error) {
+        console.error('Failed to create deal:', error);
+        alert('Failed to create deal. Please try again.');
+      }
     }
   };
 
-  const handleUpdateDeal = () => {
+  const handleUpdateDeal = async () => {
     if (editingDeal && newDeal.title && newDeal.value && newDeal.companyId) {
-      const updatedDeal: Deal = {
-        ...editingDeal,
-        ...newDeal,
-        updatedAt: new Date().toISOString().split('T')[0]
-      };
-      setDeals(deals.map(d => d.id === editingDeal.id ? updatedDeal : d));
-      setEditingDeal(null);
-      setNewDeal({
-        title: '',
-        description: '',
-        value: 0,
-        stage: 'Prospecting',
-        probability: 10,
-        software: 'Custom Onboarding'
-      });
-      setShowCreateModal(false);
+      try {
+        await updateDeal(editingDeal.id, newDeal);
+        
+        setEditingDeal(null);
+        setNewDeal({
+          title: '',
+          description: '',
+          value: 0,
+          stage: 'Prospecting',
+          probability: 10,
+          software: 'Custom Onboarding'
+        });
+        setShowCreateModal(false);
+      } catch (error) {
+        console.error('Failed to update deal:', error);
+        alert('Failed to update deal. Please try again.');
+      }
     }
   };
 
-  const handleDeleteDeal = (dealId: string) => {
-    setDeals(deals.filter(deal => deal.id !== dealId));
+  const handleDeleteDeal = async (dealId: string) => {
+    if (!confirm('Are you sure you want to delete this deal?')) {
+      return;
+    }
+    
+    try {
+      await deleteDeal(dealId);
+    } catch (error) {
+      console.error('Failed to delete deal:', error);
+      alert('Failed to delete deal. Please try again.');
+    }
   };
 
   const handleEditDeal = (deal: Deal) => {

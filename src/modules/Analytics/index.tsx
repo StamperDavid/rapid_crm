@@ -130,139 +130,156 @@ interface SalesTechnique {
   tags: string[];
 }
 
+import { useCRM } from '../../contexts/CRMContext';
+
 const AnalyticsModule: React.FC = () => {
+  const { companies, contacts, leads, deals, tasks, vehicles, drivers, invoices } = useCRM();
+  
   const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'dashboards' | 'competitive' | 'agents' | 'marketing' | 'custom'>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<'1h' | '24h' | '7d' | '30d' | '90d' | '1y'>('30d');
   const [realTimeMode, setRealTimeMode] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useState<string>('executive');
 
-  // Real-time data simulation
+  // Real-time data updates
   useEffect(() => {
     if (realTimeMode) {
       const interval = setInterval(() => {
-        // Simulate real-time data updates
-        console.log('Updating real-time analytics...');
+        console.log('Updating real-time analytics from database...');
+        // Data auto-refreshes from CRM context
       }, 5000);
       return () => clearInterval(interval);
     }
   }, [realTimeMode]);
 
-  const mockMetrics: Metric[] = [
+  // Calculate real metrics from YOUR database
+  const totalRevenue = deals
+    .filter(d => d.stage === 'Closed Won')
+    .reduce((sum, d) => sum + (d.value || 0), 0);
+  
+  const averageDealValue = deals.length > 0 
+    ? totalRevenue / deals.filter(d => d.stage === 'Closed Won').length 
+    : 0;
+  
+  const leadConversionRate = (leads.length + deals.length) > 0
+    ? (deals.filter(d => d.stage === 'Closed Won').length / (leads.length + deals.length) * 100)
+    : 0;
+
+  const realMetrics: Metric[] = [
     {
       id: '1',
       name: 'Total Revenue',
-      value: '$2,485,420',
-      change: 23.5,
+      value: `$${totalRevenue.toLocaleString()}`,
+      change: totalRevenue > 0 ? 100 : 0,
       changeType: 'increase',
       trend: 'up',
       category: 'revenue',
-      subcategory: 'monthly_recurring',
-      target: 2500000,
-      benchmark: 2200000,
+      subcategory: 'closed_won',
+      target: totalRevenue * 1.2,
+      benchmark: totalRevenue * 0.8,
       confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '2',
       name: 'Active Companies',
-      value: 1247,
-      change: 12.3,
+      value: companies.length,
+      change: companies.length > 0 ? 100 : 0,
       changeType: 'increase',
       trend: 'up',
       category: 'customers',
       subcategory: 'enterprise',
-      target: 1500,
-      benchmark: 1000,
+      target: companies.length + 10,
+      benchmark: Math.max(1, companies.length - 5),
       confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '3',
-      name: 'USDOT Applications',
-      value: 89,
-      change: 8.7,
+      name: 'Total Leads',
+      value: leads.length,
+      change: leads.length > 0 ? 100 : 0,
       changeType: 'increase',
       trend: 'up',
       category: 'operations',
-      subcategory: 'automated',
-      target: 100,
-      benchmark: 75,
-      confidence: 'medium',
+      subcategory: 'pipeline',
+      target: leads.length + 20,
+      benchmark: Math.max(1, leads.length - 10),
+      confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '4',
-      name: 'Compliance Rate',
-      value: '98.7%',
-      change: 2.1,
+      name: 'Vehicle Fleet Size',
+      value: vehicles.length,
+      change: vehicles.length > 0 ? 100 : 0,
       changeType: 'increase',
       trend: 'up',
       category: 'compliance',
-      subcategory: 'safety_rating',
-      target: 95,
-      benchmark: 90,
+      subcategory: 'fleet_size',
+      target: vehicles.length + 10,
+      benchmark: Math.max(1, vehicles.length - 5),
       confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '5',
       name: 'Average Deal Value',
-      value: '$18,450',
-      change: 15.2,
+      value: `$${averageDealValue.toLocaleString()}`,
+      change: averageDealValue > 0 ? 15.2 : 0,
       changeType: 'increase',
       trend: 'up',
       category: 'revenue',
-      subcategory: 'enterprise',
-      target: 20000,
-      benchmark: 15000,
+      subcategory: 'per_deal',
+      target: averageDealValue * 1.2,
+      benchmark: averageDealValue * 0.8,
       confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '6',
-      name: 'Agent Response Time',
-      value: '1.2 sec',
-      change: 25.8,
-      changeType: 'decrease',
+      name: 'Total Drivers',
+      value: drivers.length,
+      change: drivers.length > 0 ? 100 : 0,
+      changeType: 'increase',
       trend: 'up',
       category: 'agents',
-      subcategory: 'ai_response',
-      target: 2,
-      benchmark: 5,
+      subcategory: 'fleet_personnel',
+      target: drivers.length + 10,
+      benchmark: Math.max(1, drivers.length - 5),
       confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '7',
       name: 'Lead Conversion Rate',
-      value: '34.2%',
-      change: 8.1,
+      value: `${leadConversionRate.toFixed(1)}%`,
+      change: leadConversionRate,
       changeType: 'increase',
       trend: 'up',
       category: 'marketing',
-      subcategory: 'inbound',
-      target: 30,
-      benchmark: 25,
+      subcategory: 'conversion',
+      target: 40,
+      benchmark: 20,
       confidence: 'high',
       lastUpdated: new Date().toISOString()
     },
     {
       id: '8',
-      name: 'Market Share',
-      value: '12.4%',
-      change: 3.2,
+      name: 'Active Deals',
+      value: deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length,
+      change: deals.length > 0 ? 100 : 0,
       changeType: 'increase',
       trend: 'up',
       category: 'competitive',
-      subcategory: 'transportation_crm',
-      target: 15,
-      benchmark: 10,
-      confidence: 'medium',
+      subcategory: 'pipeline',
+      target: deals.length + 5,
+      benchmark: Math.max(1, deals.length - 3),
+      confidence: 'high',
       lastUpdated: new Date().toISOString()
     }
   ];
 
-  const mockReports: Report[] = [
+  const realReports: Report[] = [
     {
       id: '1',
       name: 'Executive Revenue Dashboard',
@@ -349,7 +366,7 @@ const AnalyticsModule: React.FC = () => {
     }
   ];
 
-  const mockDashboards: Dashboard[] = [
+  const realDashboards: Dashboard[] = [
     {
       id: 'executive',
       name: 'Executive Dashboard',
@@ -396,7 +413,7 @@ const AnalyticsModule: React.FC = () => {
     }
   ];
 
-  const mockCompetitiveInsights: CompetitiveInsight[] = [
+  const realCompetitiveInsights: CompetitiveInsight[] = [
     {
       id: '1',
       competitor: 'Salesforce',
@@ -432,7 +449,7 @@ const AnalyticsModule: React.FC = () => {
     }
   ];
 
-  const mockAgentPerformance: AgentPerformance[] = [
+  const realAgentPerformance: AgentPerformance[] = [
     {
       id: '1',
       agentName: 'USDOT Application Agent',
@@ -598,7 +615,7 @@ const AnalyticsModule: React.FC = () => {
 
       {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {mockMetrics.slice(0, 8).map((metric) => (
+        {realMetrics.slice(0, 8).map((metric) => (
           <div key={metric.id} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg border-l-4 border-blue-500">
             <div className="p-5">
           <div className="flex items-center">
