@@ -17,8 +17,11 @@ import {
   RefreshIcon,
   ExclamationIcon,
   DownloadIcon,
+  IdentificationIcon,
 } from '@heroicons/react/outline';
 import { useUser } from '../../../contexts/UserContext';
+import { EmployeeCredentialsManager } from '../../../components/settings/EmployeeCredentialsManager';
+import { EmployeeIdentityDocuments } from '../../../components/settings/EmployeeIdentityDocuments';
 
 interface User {
   id: string;
@@ -66,7 +69,8 @@ interface AuditLog {
 
 const UserManagement: React.FC = () => {
   const { hasPermission } = useUser();
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'audit' | 'security'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'audit' | 'security' | 'credentials'>('users');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('1'); // Default to first user
   
   const [users, setUsers] = useState<User[]>([
     {
@@ -758,6 +762,7 @@ const UserManagement: React.FC = () => {
           {[
             { id: 'users', name: 'Users', icon: UserGroupIcon },
             { id: 'roles', name: 'Roles', icon: ShieldCheckIcon },
+            { id: 'credentials', name: 'RPA Credentials', icon: IdentificationIcon },
             { id: 'audit', name: 'Audit Logs', icon: DocumentTextIcon },
             { id: 'security', name: 'Security', icon: KeyIcon },
           ].map((tab) => {
@@ -783,6 +788,39 @@ const UserManagement: React.FC = () => {
       {/* Content */}
       {activeTab === 'users' && renderUsers()}
       {activeTab === 'roles' && renderRoles()}
+      {activeTab === 'credentials' && (
+        <div className="space-y-6">
+          {/* Employee Selector */}
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Select Employee
+            </label>
+            <select
+              value={selectedEmployeeId}
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+            >
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name} ({user.email}) - {user.role}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Credentials Management */}
+          <EmployeeCredentialsManager 
+            employeeId={selectedEmployeeId}
+            employeeName={users.find(u => u.id === selectedEmployeeId)?.name || 'Unknown'}
+          />
+
+          {/* Identity Documents */}
+          <EmployeeIdentityDocuments 
+            employeeId={selectedEmployeeId}
+            employeeName={users.find(u => u.id === selectedEmployeeId)?.name || 'Unknown'}
+          />
+        </div>
+      )}
       {activeTab === 'audit' && renderAudit()}
       {activeTab === 'security' && renderSecurity()}
 

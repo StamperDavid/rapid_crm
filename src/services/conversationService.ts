@@ -316,8 +316,8 @@ export class MockConversationService extends ConversationService {
       },
       {
         id: '2',
-        customerName: 'Sarah Johnson',
-        customerEmail: 'sarah@globalshipping.com',
+        customerName: 'Maria Garcia',
+        customerEmail: 'maria@globalshipping.com',
         customerPhone: '(555) 987-6543',
         companyName: 'Global Shipping Co',
         status: 'resolved',

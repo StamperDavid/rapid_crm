@@ -48,8 +48,8 @@ const RenewalManagement: React.FC = () => {
     },
     {
       id: '2',
-      clientName: 'Sarah Johnson',
-      companyName: 'Johnson Logistics',
+      clientName: 'Maria Garcia',
+      companyName: 'Garcia Logistics',
       registrationType: 'UCR',
       renewalDate: '2024-02-28',
       frequency: 'Annual',

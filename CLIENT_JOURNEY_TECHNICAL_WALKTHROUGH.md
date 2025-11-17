@@ -18,7 +18,7 @@ This walkthrough shows the **complete client journey** from first contact to aut
 **What the Client Sees:**
 - Google search: "USDOT registration help"
 - Lands on marketing page offering FREE USDOT registration
-- Sees AI-powered compliance assistant (Sarah Johnson)
+- Sees AI-powered compliance assistant (Alex)
 - Click "Get Started Free"
 
 **What's Happening Behind the Scenes:**
@@ -41,7 +41,7 @@ Technical Flow:
 ### **Step 2: AI-Powered Onboarding (Alex Agent)**
 **What the Client Sees:**
 - Conversational AI chat interface
-- "Hi! I'm Sarah, I'll help you get your USDOT registration"
+- "Hi! I'm Alex, I'll help you get your USDOT registration"
 - Natural language questions about their business
 - Real-time compliance analysis
 

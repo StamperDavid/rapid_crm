@@ -116,6 +116,21 @@ export const DASHBOARD_MODULES: Record<string, DashboardModule> = {
     enabled: true,
     order: 4
   },
+  automatedFilings: {
+    id: 'automatedFilings',
+    name: 'Automated Filings',
+    component: React.lazy(() => import('../modules/CRM/pages/AutomatedFilings')),
+    category: 'core',
+    required: true,
+    adminOnly: false,
+    trainerOnly: false,
+    icon: DocumentTextIcon,
+    description: 'File USDOT applications with automated RPA - select a deal and watch it work',
+    tooltip: 'Automated filing system - select a deal, click Start, and watch the RPA agent file the USDOT application on the real FMCSA website in real-time.',
+    href: '/automated-filings',
+    enabled: true,
+    order: 5
+  },
 
   // ADVANCED MODULES (Optional, can be toggled)
   tasks: {

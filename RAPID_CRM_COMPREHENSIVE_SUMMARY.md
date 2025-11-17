@@ -62,7 +62,7 @@
 
 ### Key Differentiators
 1. **98% AI Automation** - Minimal human intervention required (only for MFA and security checkpoints)
-2. **Unified AI Experience** - Clients interact with "Sarah Johnson" throughout onboarding and support (actually multiple AI agents working seamlessly)
+2. **Unified AI Experience** - Clients interact with "Alex" throughout onboarding and support (actually multiple AI agents working seamlessly)
 3. **Intelligent Training System** - AI agents train other AI agents with scenario-based learning
 4. **Patent-Protected** - Proprietary AI regulatory determination process
 5. **Renewal-Focused** - Built around recurring revenue, not one-time sales

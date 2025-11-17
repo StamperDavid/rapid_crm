@@ -305,8 +305,8 @@ const Deals: React.FC<DealsProps> = ({ preSelectedCompanyId, preSelectedCompanyN
       {
         id: '2',
         name: 'Global Shipping Inc',
-        contact: 'Sarah Johnson',
-        email: 'sarah@globalshipping.com',
+        contact: 'Maria Garcia',
+        email: 'maria@globalshipping.com',
         phone: '(555) 234-5678'
       },
       {

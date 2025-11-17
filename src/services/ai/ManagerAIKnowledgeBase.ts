@@ -134,7 +134,7 @@ export class ManagerAIKnowledgeBase {
               status: 'active',
               capabilities: ['regulatory_assessment', 'client_gathering', 'service_determination'],
               knowledgeRequirements: ['qualified_states', 'usdot_requirements', 'service_triggers'],
-              persona: 'Sarah Johnson'
+              persona: 'Alex'
             },
             {
               id: 'customer_service_agent_001',
@@ -143,7 +143,7 @@ export class ManagerAIKnowledgeBase {
               status: 'active',
               capabilities: ['client_support', 'issue_resolution', 'agent_coordination'],
               knowledgeRequirements: ['service_protocols', 'resolution_procedures'],
-              persona: 'Sarah Johnson (Shared)'
+              persona: 'Alex (Shared)'
             },
             {
               id: 'usdot_rpa_agent',

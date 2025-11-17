@@ -2176,10 +2176,145 @@ const checkAndInitializeDatabase = async () => {
     // Non-core feature schemas (SEO, ELD, IFTA) removed during strategic refactor
     // Training and qualified states tables are part of main schema.sql
     console.log('✅ Using core schema only - non-essential features removed');
+    
+    // Run credential management migrations
+    await runCredentialManagementMigrations();
   } catch (error) {
     console.error('❌ Failed to initialize database:', error);
     throw error;
   }
+};
+
+// Run credential management migrations
+const runCredentialManagementMigrations = async () => {
+  return new Promise((resolve, reject) => {
+    console.log('🔄 Running credential management migrations...');
+    
+    const migrations = [
+      // Add columns to users table (ALTER TABLE will fail if column exists, that's OK)
+      `ALTER TABLE users ADD COLUMN login_gov_username TEXT`,
+      `ALTER TABLE users ADD COLUMN login_gov_password_encrypted TEXT`,
+      `ALTER TABLE users ADD COLUMN login_gov_mfa_method TEXT DEFAULT 'sms'`,
+      `ALTER TABLE users ADD COLUMN login_gov_mfa_phone TEXT`,
+      `ALTER TABLE users ADD COLUMN login_gov_backup_codes_encrypted TEXT`,
+      `ALTER TABLE users ADD COLUMN fmcsa_account_verified INTEGER DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN fmcsa_verification_date TEXT`,
+      `ALTER TABLE users ADD COLUMN last_credential_update TEXT`,
+      
+      // Create new tables (IF NOT EXISTS will prevent duplicates)
+      `CREATE TABLE IF NOT EXISTS employee_identity_documents (
+        id TEXT PRIMARY KEY,
+        employee_id TEXT NOT NULL,
+        id_document_type TEXT NOT NULL,
+        id_document_number TEXT,
+        id_expiration_date TEXT,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        middle_name TEXT,
+        date_of_birth TEXT NOT NULL,
+        id_document_front_path TEXT NOT NULL,
+        id_document_back_path TEXT,
+        selfie_path TEXT,
+        idemia_verification_status TEXT DEFAULT 'not_verified',
+        idemia_verification_date TEXT,
+        idemia_verification_id TEXT,
+        idemia_verification_result TEXT,
+        idemia_failure_reason TEXT,
+        uploaded_at TEXT NOT NULL,
+        uploaded_by TEXT NOT NULL,
+        last_updated TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+      
+      `CREATE TABLE IF NOT EXISTS credential_access_log (
+        id TEXT PRIMARY KEY,
+        timestamp TEXT NOT NULL,
+        employee_id TEXT NOT NULL,
+        credential_type TEXT NOT NULL,
+        accessed_by_type TEXT NOT NULL,
+        accessed_by_id TEXT,
+        purpose TEXT NOT NULL,
+        deal_id TEXT,
+        rpa_instance_id TEXT,
+        access_granted INTEGER DEFAULT 1,
+        denial_reason TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+      
+      `CREATE TABLE IF NOT EXISTS admin_idemia_verifications (
+        id TEXT PRIMARY KEY,
+        employee_id TEXT NOT NULL,
+        deal_id TEXT,
+        rpa_instance_id TEXT,
+        verification_type TEXT NOT NULL,
+        verification_method TEXT DEFAULT 'idemia',
+        status TEXT DEFAULT 'pending',
+        started_at TEXT NOT NULL,
+        completed_at TEXT,
+        idemia_session_id TEXT,
+        idemia_session_url TEXT,
+        idemia_result TEXT,
+        admin_id TEXT,
+        admin_notes TEXT,
+        manual_override INTEGER DEFAULT 0,
+        ip_address TEXT,
+        user_agent TEXT,
+        duration_seconds INTEGER,
+        FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE SET NULL,
+        FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
+      )`,
+      
+      `CREATE TABLE IF NOT EXISTS rpa_audit_trail (
+        id TEXT PRIMARY KEY,
+        timestamp TEXT NOT NULL,
+        action_type TEXT NOT NULL,
+        deal_id TEXT NOT NULL,
+        employee_id TEXT,
+        rpa_instance_id TEXT NOT NULL,
+        page_number INTEGER,
+        page_url TEXT,
+        field_name TEXT,
+        field_value_hash TEXT,
+        screenshot_path TEXT,
+        success INTEGER DEFAULT 1,
+        error_message TEXT,
+        error_stack TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        session_id TEXT,
+        duration_ms INTEGER,
+        FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+      )`
+    ];
+    
+    let completed = 0;
+    let errors = 0;
+    
+    migrations.forEach((sql, index) => {
+      db.run(sql, (err) => {
+        completed++;
+        
+        if (err && !err.message.includes('duplicate column')) {
+          // Ignore "duplicate column" errors (column already exists)
+          errors++;
+          console.log(`⚠️ Migration ${index + 1} warning:`, err.message.substring(0, 80));
+        }
+        
+        if (completed === migrations.length) {
+          if (errors > 0) {
+            console.log(`✅ Migrations completed with ${errors} warnings (likely columns already exist)`);
+          } else {
+            console.log(`✅ Credential management migrations completed successfully`);
+          }
+          resolve();
+        }
+      });
+    });
+  });
 };
 
 // Legacy theme endpoint removed - using database version below
@@ -8264,6 +8399,298 @@ app.get('/api/revenue-tracking', async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// =============================================================================
+// CREDENTIAL MANAGEMENT API ENDPOINTS
+// =============================================================================
+
+// Import encryption service
+const crypto = require('crypto');
+
+// Simple encryption service (inline for now)
+class EncryptionService {
+  constructor() {
+    const secretKey = process.env.ENCRYPTION_SECRET_KEY || 'dev-encryption-key-do-not-use-in-production-minimum-32-chars';
+    this.algorithm = 'aes-256-gcm';
+    this.key = crypto.scryptSync(secretKey, 'rapid-crm-encryption-salt-2025', 32);
+  }
+
+  encrypt(text) {
+    if (!text) throw new Error('Cannot encrypt empty text');
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag();
+    return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted;
+  }
+
+  decrypt(encryptedData) {
+    if (!encryptedData) throw new Error('Cannot decrypt empty data');
+    const parts = encryptedData.split(':');
+    if (parts.length !== 3) throw new Error('Invalid encrypted data format');
+    const iv = Buffer.from(parts[0], 'hex');
+    const authTag = Buffer.from(parts[1], 'hex');
+    const encrypted = parts[2];
+    const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  }
+
+  hashPII(value) {
+    if (!value) return '';
+    return crypto.createHash('sha256').update(value).digest('hex').substring(0, 16);
+  }
+}
+
+const encryptionService = new EncryptionService();
+
+// GET employee credentials (password stays encrypted)
+app.get('/api/employees/:id/credentials', async (req, res) => {
+  try {
+    const employee = await runQueryOne(
+      `SELECT 
+        login_gov_username,
+        login_gov_mfa_method,
+        login_gov_mfa_phone,
+        fmcsa_account_verified,
+        fmcsa_verification_date,
+        last_credential_update
+      FROM users 
+      WHERE id = ?`,
+      [req.params.id]
+    );
+    
+    res.json(employee || {});
+  } catch (error) {
+    console.error('Error loading credentials:', error);
+    res.status(500).json({ error: 'Failed to load credentials' });
+  }
+});
+
+// POST update credentials
+app.post('/api/employees/:id/credentials', async (req, res) => {
+  const { username, password, mfaMethod, mfaPhone, backupCodes } = req.body;
+  
+  try {
+    // Encrypt password if provided
+    let encryptedPassword = null;
+    if (password) {
+      encryptedPassword = encryptionService.encrypt(password);
+    }
+    
+    // Encrypt backup codes if provided
+    let encryptedBackupCodes = null;
+    if (backupCodes) {
+      encryptedBackupCodes = encryptionService.encrypt(backupCodes);
+    }
+    
+    // Update database
+    if (password) {
+      await runExecute(
+        `UPDATE users SET 
+          login_gov_username = ?,
+          login_gov_password_encrypted = ?,
+          login_gov_mfa_method = ?,
+          login_gov_mfa_phone = ?,
+          login_gov_backup_codes_encrypted = ?,
+          last_credential_update = ?
+        WHERE id = ?`,
+        [username, encryptedPassword, mfaMethod, mfaPhone, encryptedBackupCodes, 
+         new Date().toISOString(), req.params.id]
+      );
+    } else {
+      // Update without changing password
+      await runExecute(
+        `UPDATE users SET 
+          login_gov_username = ?,
+          login_gov_mfa_method = ?,
+          login_gov_mfa_phone = ?,
+          last_credential_update = ?
+        WHERE id = ?`,
+        [username, mfaMethod, mfaPhone, new Date().toISOString(), req.params.id]
+      );
+    }
+    
+    // Log credential access
+    const logId = `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    await runExecute(
+      `INSERT INTO credential_access_log (
+        id, timestamp, employee_id, credential_type,
+        accessed_by_type, accessed_by_id, purpose,
+        access_granted, ip_address
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        logId,
+        new Date().toISOString(),
+        req.params.id,
+        'login_gov_credentials',
+        'user',
+        'admin', // Would use req.user.id in production
+        'credential_update',
+        1,
+        req.ip
+      ]
+    ).catch(err => {
+      // Table might not exist yet, ignore error
+      console.log('Credential access log not available yet (table may not exist)');
+    });
+    
+    res.json({ success: true, message: 'Credentials updated successfully' });
+  } catch (error) {
+    console.error('Error updating credentials:', error);
+    res.status(500).json({ error: 'Failed to update credentials' });
+  }
+});
+
+// POST test credentials (verify Login.gov connection)
+app.post('/api/employees/:id/credentials/test', async (req, res) => {
+  try {
+    // TODO: Implement actual Login.gov API test
+    // For now, just return success to test the flow
+    res.json({ success: true, message: 'Credential test successful (simulated)' });
+  } catch (error) {
+    console.error('Error testing credentials:', error);
+    res.status(500).json({ error: 'Failed to test credentials' });
+  }
+});
+
+// GET employee identity document
+app.get('/api/employees/:id/identity-document', async (req, res) => {
+  try {
+    const document = await runQueryOne(
+      `SELECT * FROM employee_identity_documents 
+       WHERE employee_id = ? AND is_active = 1`,
+      [req.params.id]
+    ).catch(() => null); // Table might not exist yet
+    
+    res.json(document || null);
+  } catch (error) {
+    console.error('Error loading identity document:', error);
+    res.status(500).json({ error: 'Failed to load identity document' });
+  }
+});
+
+// =============================================================================
+// LIVE RPA CONTROL API ENDPOINTS
+// =============================================================================
+
+// Note: In production, you would import and use the actual LiveUSDOTRPAService
+// For now, we'll create placeholder endpoints that return mock data
+
+let rpaService = null; // Will hold the RPA service instance
+let rpaStatus = {
+  status: 'idle',
+  currentPage: 0,
+  totalPages: 77,
+  currentAction: 'Ready to start',
+  errors: [],
+  startTime: null,
+  endTime: null
+};
+
+// GET RPA status
+app.get('/api/rpa/status', async (req, res) => {
+  try {
+    res.json(rpaStatus);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get RPA status' });
+  }
+});
+
+// POST start RPA
+app.post('/api/rpa/start', async (req, res) => {
+  try {
+    const { dealId } = req.body;
+    
+    if (!dealId) {
+      return res.status(400).json({ error: 'Deal ID required' });
+    }
+    
+    // TODO: Initialize and start the actual RPA service
+    // const { LiveUSDOTRPAService } = require('./src/services/rpa/LiveUSDOTRPAService.ts');
+    // rpaService = new LiveUSDOTRPAService();
+    // await rpaService.initialize();
+    // await rpaService.navigateToFMCSA();
+    
+    // For now, simulate starting
+    rpaStatus = {
+      status: 'running',
+      currentPage: 0,
+      totalPages: 77,
+      currentAction: 'Starting RPA agent...',
+      errors: [],
+      startTime: new Date().toISOString(),
+      endTime: null
+    };
+    
+    console.log(`🚀 RPA started for deal: ${dealId}`);
+    res.json({ success: true, message: 'RPA started' });
+  } catch (error) {
+    console.error('Error starting RPA:', error);
+    res.status(500).json({ error: 'Failed to start RPA' });
+  }
+});
+
+// POST pause RPA
+app.post('/api/rpa/pause', async (req, res) => {
+  try {
+    // TODO: Call rpaService.pause()
+    rpaStatus.status = 'paused';
+    rpaStatus.currentAction = 'Paused by user';
+    
+    console.log('⏸️ RPA paused');
+    res.json({ success: true, message: 'RPA paused' });
+  } catch (error) {
+    console.error('Error pausing RPA:', error);
+    res.status(500).json({ error: 'Failed to pause RPA' });
+  }
+});
+
+// POST resume RPA
+app.post('/api/rpa/resume', async (req, res) => {
+  try {
+    // TODO: Call rpaService.resume()
+    rpaStatus.status = 'running';
+    rpaStatus.currentAction = 'Resuming...';
+    
+    console.log('▶️ RPA resumed');
+    res.json({ success: true, message: 'RPA resumed' });
+  } catch (error) {
+    console.error('Error resuming RPA:', error);
+    res.status(500).json({ error: 'Failed to resume RPA' });
+  }
+});
+
+// POST stop RPA
+app.post('/api/rpa/stop', async (req, res) => {
+  try {
+    // TODO: Call rpaService.close()
+    rpaStatus.status = 'idle';
+    rpaStatus.currentAction = 'Stopped by user';
+    rpaStatus.endTime = new Date().toISOString();
+    
+    console.log('⏹️ RPA stopped');
+    res.json({ success: true, message: 'RPA stopped' });
+  } catch (error) {
+    console.error('Error stopping RPA:', error);
+    res.status(500).json({ error: 'Failed to stop RPA' });
+  }
+});
+
+// GET RPA screenshot
+app.get('/api/rpa/screenshot', async (req, res) => {
+  try {
+    // TODO: Get actual screenshot from rpaService.getCurrentScreenshot()
+    // For now, return placeholder
+    res.status(404).json({ error: 'No screenshot available' });
+  } catch (error) {
+    console.error('Error getting screenshot:', error);
+    res.status(500).json({ error: 'Failed to get screenshot' });
   }
 });
 

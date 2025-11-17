@@ -70,7 +70,7 @@ const RegulationTrainingDashboard: React.FC = () => {
           {
             id: 'usdot-onboarding',
             name: 'USDOT Application Agent',
-            displayName: 'Sarah Johnson',
+            displayName: 'Alex',
             type: 'custom',
             status: 'active',
             capabilities: ['USDOT Application Guidance', 'Data Collection', 'Form Validation'],

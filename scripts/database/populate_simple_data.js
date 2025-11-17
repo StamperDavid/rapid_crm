@@ -90,7 +90,7 @@ async function populateSimpleData() {
       console.log('\n🎯 Creating leads...');
       const leadData = [
         { firstName: 'David', lastName: 'Miller', email: 'david.miller@newtransport.com', phone: '555-0201', company: 'New Transport Solutions', leadSource: 'Website', leadStatus: 'New', leadScore: 85, assignedTo: 'John Smith', nextFollowUpDate: '2024-01-15', notes: 'Interested in hazmat services', companyId: existingCompanies[0].id },
-        { firstName: 'Amanda', lastName: 'Taylor', email: 'amanda.taylor@logistics.com', phone: '555-0202', company: 'Logistics Plus Inc', leadSource: 'Referral', leadStatus: 'Qualified', leadScore: 92, assignedTo: 'Sarah Johnson', nextFollowUpDate: '2024-01-18', notes: 'Looking for freight forwarding', companyId: existingCompanies[1] ? existingCompanies[1].id : existingCompanies[0].id }
+        { firstName: 'Amanda', lastName: 'Taylor', email: 'amanda.taylor@logistics.com', phone: '555-0202', company: 'Logistics Plus Inc', leadSource: 'Referral', leadStatus: 'Qualified', leadScore: 92, assignedTo: 'Maria Garcia', nextFollowUpDate: '2024-01-18', notes: 'Looking for freight forwarding', companyId: existingCompanies[1] ? existingCompanies[1].id : existingCompanies[0].id }
       ];
       
       for (const lead of leadData) {

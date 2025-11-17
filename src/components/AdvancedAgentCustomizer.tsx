@@ -465,7 +465,7 @@ const AdvancedAgentCustomizer: React.FC<AdvancedAgentCustomizerProps> = ({
                       type="text"
                       value={agentInfo.displayName}
                       onChange={(e) => setAgentInfo({...agentInfo, displayName: e.target.value})}
-                      placeholder="e.g., Sarah Johnson"
+                      placeholder="e.g., Alex"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

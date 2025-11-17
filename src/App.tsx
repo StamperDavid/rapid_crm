@@ -41,6 +41,7 @@ import AIControlCenter from './components/AIControlCenter';
 import AIAdminPage from './pages/AIAdminPage';
 import RegulationTrainingDashboard from './components/training/RegulationTrainingDashboard';
 import USDOTRegistrationTrainingCenter from './components/training/USDOTRegistrationTrainingCenter';
+import AutomatedFilings from './modules/CRM/pages/AutomatedFilings';
 import AgentPerformanceMonitoringDashboard from './components/training/AgentPerformanceMonitoringDashboard';
 import CriticalPathTestCenter from './components/training/CriticalPathTestCenter';
 import AlexTrainingCenter from './components/training/AlexTrainingCenter';
@@ -140,6 +141,9 @@ function App() {
                         {/* AI Administration - Admin access only */}
                         <Route path="/admin/ai-control" element={<AIControlCenter />} />
                         <Route path="/ai-admin" element={<AIAdminPage />} />
+                        
+                        {/* Automated Filings - Main CRM feature (all employees) */}
+                        <Route path="/automated-filings" element={<AutomatedFilings />} />
                         
                         {/* Training Environment Routes - Admin/Trainer access only */}
                         <Route path="/training" element={<RegulationTrainingDashboard />} />
