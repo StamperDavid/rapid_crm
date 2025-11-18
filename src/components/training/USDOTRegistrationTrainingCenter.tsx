@@ -232,7 +232,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [fieldComparisons, setFieldComparisons] = useState<FieldComparison[]>([]);
-  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [fieldFeedback, setFieldFeedback] = useState<Map<string, string>>(new Map());
   const [agentId, setAgentId] = useState<string>('usdot_rpa_agent');
   const [autoFillSpeed, setAutoFillSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
   const [sessionStats, setSessionStats] = useState({
@@ -609,23 +609,44 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     compareResults(formData);
   };
 
-  // Helper: Get RPA filled value for a field
-  const getRPAFilledValue = (fieldMapping: { pageNumber: number, fieldName: string }): any => {
+  // Helper: Get RPA filled value for a field by finding matching question
+  const getRPAFilledValue = (fieldMapping: { pageNumber: number, fieldName: string }, questionHint?: string): any => {
     const page = rpaFilledPages.find(p => p.pageNumber === fieldMapping.pageNumber);
-    if (!page || !page.questions) return undefined;
+    if (!page || !page.questions || page.questions.length === 0) {
+      return undefined;
+    }
     
-    // The intelligent agent uses semantic matching rather than field names
-    return undefined;
+    // If there's a question hint, try to match by question text
+    if (questionHint) {
+      const matchedQuestion = page.questions.find(q => 
+        q.questionText.toLowerCase().includes(questionHint.toLowerCase()) ||
+        questionHint.toLowerCase().includes(q.questionText.toLowerCase())
+      );
+      if (matchedQuestion) {
+        return matchedQuestion.answer;
+      }
+    }
+    
+    // If only one question on the page, use that
+    if (page.questions.length === 1) {
+      return page.questions[0].answer;
+    }
+    
+    // Multiple questions, need better matching - return first for now
+    return page.questions[0]?.answer;
   };
 
   // Compare RPA results with expected scenario data - using actual RPA filled data
   const compareResults = (expectedData: Partial<USDOTApplicationData>) => {
+    console.log('🔍 REVIEW COMPARISON - Checking RPA filled pages:', rpaFilledPages.length);
+    console.log('📊 RPA Filled Pages Data:', rpaFilledPages);
+    
     const comparisons: FieldComparison[] = [
       // Operation Classification Questions
-      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: 'No', actual: getRPAFilledValue({ pageNumber: 16, fieldName: 'questionCode_B0041P040011S04013_Q04035' }) === 'N' ? 'No' : 'Yes', isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
-      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: getRPAFilledValue({ pageNumber: 17, fieldName: 'questionCode_B0041P040061S04001_Q04001_LEGAL_BUS_NAME' }), isCorrect: null, fieldPath: 'legalBusinessName', category: 'operation_classification' },
-      { fieldName: 'dbaName', displayName: 'Doing Business As Name(s) (if different from Legal Business Name)', expected: expectedData.dbaName, actual: getRPAFilledValue({ pageNumber: 18, fieldName: 'dbaName_1' }), isCorrect: null, fieldPath: 'dbaName', category: 'operation_classification' },
-      { fieldName: 'principalAddressSame', displayName: 'Is the Applicant\'s Principal Place of Business Address the same as the Application Contact\'s Address?', expected: 'Yes', actual: getRPAFilledValue({ pageNumber: 19, fieldName: 'questionCode_B0041P040031S04004_Q04002' }) === 'Y' ? 'Yes' : 'No', isCorrect: null, fieldPath: 'principalAddressSame', category: 'operation_classification' },
+      { fieldName: 'hasDunsBradstreet', displayName: 'Does the Applicant have a Dun and Bradstreet Number?', expected: 'No', actual: getRPAFilledValue({ pageNumber: 16, fieldName: 'questionCode_B0041P040011S04013_Q04035' }, 'Dun and Bradstreet') === 'N' ? 'No' : getRPAFilledValue({ pageNumber: 16, fieldName: 'questionCode_B0041P040011S04013_Q04035' }, 'Dun and Bradstreet') === 'Y' ? 'Yes' : '(empty)', isCorrect: null, fieldPath: 'hasDunsBradstreet', category: 'operation_classification' },
+      { fieldName: 'legalBusinessName', displayName: 'Legal Business Name', expected: expectedData.legalBusinessName, actual: getRPAFilledValue({ pageNumber: 17, fieldName: 'questionCode_B0041P040061S04001_Q04001_LEGAL_BUS_NAME' }, 'Legal Business Name') || '(empty)', isCorrect: null, fieldPath: 'legalBusinessName', category: 'operation_classification' },
+      { fieldName: 'dbaName', displayName: 'Doing Business As Name(s) (if different from Legal Business Name)', expected: expectedData.dbaName, actual: getRPAFilledValue({ pageNumber: 18, fieldName: 'dbaName_1' }, 'Doing Business As') || '(empty)', isCorrect: null, fieldPath: 'dbaName', category: 'operation_classification' },
+      { fieldName: 'principalAddressSame', displayName: 'Is the Applicant\'s Principal Place of Business Address the same as the Application Contact\'s Address?', expected: 'Yes', actual: getRPAFilledValue({ pageNumber: 19, fieldName: 'questionCode_B0041P040031S04004_Q04002' }, 'Principal Place of Business Address') === 'Y' ? 'Yes' : getRPAFilledValue({ pageNumber: 19, fieldName: 'questionCode_B0041P040031S04004_Q04002' }, 'Principal Place of Business Address') === 'N' ? 'No' : '(empty)', isCorrect: null, fieldPath: 'principalAddressSame', category: 'operation_classification' },
       { fieldName: 'principalAddress', displayName: 'Principal Place of Business Address', expected: expectedData.principalAddress, actual: {
         country: 'US',
         street: getRPAFilledValue({ pageNumber: 20, fieldName: 'Q04004_ADDRESS1' }),
@@ -832,12 +853,21 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
 
   // Submit correction and load next scenario
   const submitCorrection = async (overallCorrect: boolean) => {
-    if (!trainingSession || !currentScenario) return;
+    console.log('🔵 SUBMIT BUTTON CLICKED!');
+    console.log('   trainingSession:', trainingSession);
+    console.log('   currentScenario:', currentScenario);
+    
+    if (!trainingSession || !currentScenario) {
+      console.error('❌ Cannot submit: missing session or scenario');
+      return;
+    }
 
     // Calculate accuracy from individual field reviews
     const correctFields = fieldComparisons.filter(f => f.isCorrect === true).length;
     const totalFields = fieldComparisons.length;
     const accuracy = (correctFields / totalFields) * 100;
+    
+    console.log('📊 Accuracy:', accuracy, '%');
 
     // Collect incorrect fields with details
     const incorrectFields = fieldComparisons
@@ -851,6 +881,14 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
       }));
 
     try {
+      // Convert field feedback Map to object for JSON
+      const fieldFeedbackObj: Record<string, string> = {};
+      fieldFeedback.forEach((feedback, fieldName) => {
+        if (feedback) { // Only include non-empty feedback
+          fieldFeedbackObj[fieldName] = feedback;
+        }
+      });
+      
       await fetch('/api/usdot-rpa-training/submit-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -861,7 +899,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
           fieldComparisons: fieldComparisons,
           incorrectFields: incorrectFields,
           accuracy: accuracy,
-          reviewFeedback: reviewFeedback,
+          fieldFeedback: fieldFeedbackObj, // Per-field feedback instead of global
           isCorrect: overallCorrect,
           reviewedFields: totalFields,
           correctFields: correctFields
@@ -1113,21 +1151,27 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
               const nextStepIndex = allFormPages.findIndex(p => p.pageNumber === branch.nextPage);
               setCurrentStep(nextStepIndex + 1);
             } else {
-              // All pages done!
-              console.log(`🎉 All pages completed!`);
+              // All pages done! Show review
+              console.log(`🎉 All pages completed! Showing review...`);
               setIsWatchingAgent(false);
+              setShowReview(true);
+              compareResults(mapScenarioToFormData(currentScenario!));
             }
           }, delay * 2);
         } else if (filledData.totalQuestions === 0) {
-          // Navigation-only page (no questions)
-          console.log(`ℹ️ Page ${formPage.pageNumber} is navigation-only, moving to next...`);
+          // Navigation-only page (no questions) - auto-advance but slower
+          console.log(`ℹ️ Page ${formPage.pageNumber} is navigation-only (no questions)`);
           setTimeout(() => {
             if (currentStep < totalPages) {
               setCurrentStep(currentStep + 1);
             } else {
+              // Finished on a navigation page - show review
+              console.log(`🎉 All pages completed! Showing review...`);
               setIsWatchingAgent(false);
+              setShowReview(true);
+              compareResults(mapScenarioToFormData(currentScenario!));
             }
-          }, delay);
+          }, delay * 3); // Slower delay so you can see it
         } else {
           // Failed to fill any questions
           console.error(`❌ Page ${formPage.pageNumber} FAILED: Could not fill any of ${filledData.totalQuestions} questions`);
@@ -1177,42 +1221,41 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
     return (
       <div className="space-y-4">
         
+        {/* AGENT'S ANSWERS - ALWAYS VISIBLE AT TOP */}
+        {currentPageData && currentPageData.questions && currentPageData.questions.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg shadow-xl">
+            <h2 className="text-2xl font-bold mb-4 flex items-center">
+              🤖 RPA Agent Answering Page {formPage.pageNumber}: {formPage.title}
+            </h2>
+            <div className="space-y-4">
+              {currentPageData.questions.map((q: any, index: number) => (
+                <div key={index} className="bg-white text-gray-900 p-4 rounded-lg shadow">
+                  <div className="font-bold text-sm text-gray-600 mb-2">❓ {q.questionText}</div>
+                  <div className="text-2xl font-bold text-green-600 mb-2">✅ {Array.isArray(q.answer) ? q.answer.join(', ') : q.answer}</div>
+                  <div className="text-sm text-gray-700 italic">💭 {q.reasoning}</div>
+                  <div className="text-xs text-gray-500 mt-2">Confidence: {(q.confidence * 100).toFixed(0)}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* Page Status Banner */}
         {currentPageData ? (
           <>
-            {/* Show current filling status when agent is working */}
-            {isWatchingAgent && currentPageData && currentPageData.questions && currentPageData.questions.length > 0 && (
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
-                <div className="text-sm">
-                  <div className="font-bold text-blue-900">
-                    🤖 RPA Agent - Page {formPage.pageNumber}: {formPage.title}
-                  </div>
-                  <div className="text-blue-700 mt-1">
-                    {currentPageData.successfullyFilled} of {currentPageData.totalQuestions} questions filled successfully
-                  </div>
-                  {currentPageData.failedToFill > 0 && (
-                    <div className="text-red-600 text-xs mt-1">
-                      ⚠️ {currentPageData.failedToFill} question(s) could not be answered
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Show agent can fill this page */}
-            {!isWatchingAgent && currentPageData.totalQuestions > 0 && (
-              <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-4">
-                <div className="text-sm font-bold text-green-900">
-                  ✅ Page {formPage.pageNumber}: {formPage.title} - RPA Agent can fill this page ({currentPageData.totalQuestions} questions)
+            {!currentPageData.questions || currentPageData.questions.length === 0 && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4">
+                <div className="text-sm font-bold text-yellow-900">
+                  ℹ️ Page {formPage.pageNumber}: Navigation page (no questions)
                 </div>
               </div>
             )}
           </>
         ) : (
           /* Show agent cannot fill this page yet */
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4">
-            <div className="text-sm font-bold text-yellow-900">
-              ⚠️ Page {formPage.pageNumber}: {formPage.title} - RPA Agent has not been trained on this page yet
+          <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-4">
+            <div className="text-sm font-bold text-red-900">
+              ⚠️ Page {formPage.pageNumber}: {formPage.title} - RPA Agent has not analyzed this page yet
             </div>
           </div>
         )}
@@ -1240,13 +1283,13 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
           </div>
         )}
 
-        {/* Agent's Decision Logic (Expandable) - Only show if agent has data for this page */}
+        {/* Agent's Decision Logic (Always Visible) - Only show if agent has data for this page */}
         {currentPageData && (
-          <details className="bg-gray-50 border-2 border-gray-200 rounded-lg">
-            <summary className="cursor-pointer font-bold text-gray-700 hover:text-blue-600 p-4 select-none">
-              🧠 View RPA Agent's Decision-Making Process & Confidence Scores
-            </summary>
-            <div className="p-4 pt-2 border-t border-gray-200">
+          <div className="bg-gray-50 border-2 border-blue-300 rounded-lg">
+            <div className="bg-blue-100 border-b border-blue-300 font-bold text-blue-900 p-4">
+              🧠 RPA Agent's Answers & Decision-Making Process
+            </div>
+            <div className="p-4">
               <div className="space-y-3">
                 {currentPageData.questions.map((question: any, index: number) => (
                 <div key={index} className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm">
@@ -1303,7 +1346,7 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                 ))}
               </div>
             </div>
-          </details>
+          </div>
         )}
       </div>
     );
@@ -2311,21 +2354,11 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                         >
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <div className="font-bold text-gray-900 mb-2 text-sm leading-relaxed">{field.displayName}</div>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
-                                <div>
-                                  <div className="text-xs text-gray-600 font-semibold mb-1">Expected (from scenario):</div>
-                                  <div className="font-mono text-xs bg-blue-50 p-2 rounded border">
-                                    {typeof field.expected === 'object' ? JSON.stringify(field.expected, null, 2) : (field.expected || '(empty)')}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-gray-600 font-semibold mb-1">RPA Filled:</div>
-                                  <div className={`font-mono text-xs p-2 rounded border ${
-                                    matches ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                                  }`}>
-                                    {typeof field.actual === 'object' ? JSON.stringify(field.actual, null, 2) : (field.actual || '(empty)')}
-                                  </div>
+                              <div className="font-bold text-gray-900 mb-3 text-base leading-relaxed">{field.displayName}</div>
+                              <div className="text-sm">
+                                <div className="text-xs text-gray-600 font-semibold mb-2">What the RPA Agent Filled:</div>
+                                <div className="font-mono text-lg bg-white p-4 rounded-lg border-2 border-gray-300 font-bold">
+                                  {typeof field.actual === 'object' ? JSON.stringify(field.actual, null, 2) : (field.actual || '(not filled)')}
                                 </div>
                               </div>
                             </div>
@@ -2356,18 +2389,24 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                               Incorrect
                             </button>
                           </div>
-
-                          {/* Auto-suggest based on match */}
-                          {matches && field.isCorrect === null && (
-                            <div className="mt-2 text-xs text-green-600 italic">
-                              ✓ Values match - likely correct
-                            </div>
-                          )}
-                          {!matches && field.isCorrect === null && (
-                            <div className="mt-2 text-xs text-red-600 italic">
-                              ⚠️ Values don't match - review carefully
-                            </div>
-                          )}
+                          
+                          {/* Per-Field Feedback */}
+                          <div className="mt-3">
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">
+                              Your Feedback:
+                            </label>
+                            <textarea
+                              value={fieldFeedback.get(field.fieldName) || ''}
+                              onChange={(e) => {
+                                const newFeedback = new Map(fieldFeedback);
+                                newFeedback.set(field.fieldName, e.target.value);
+                                setFieldFeedback(newFeedback);
+                              }}
+                              placeholder="Why is this correct/incorrect? What should the agent have filled?"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              rows={2}
+                            />
+                          </div>
                         </div>
                       );
                     })}
@@ -2405,18 +2444,9 @@ const USDOTRegistrationTrainingCenter: React.FC = () => {
                           </div>
                           </div>
 
-              <textarea
-                value={reviewFeedback}
-                onChange={(e) => setReviewFeedback(e.target.value)}
-                className="w-full h-32 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                placeholder="Provide detailed training feedback. For incorrect answers, explain:
-
-• What the RPA should have answered instead
-• Why it got it wrong (e.g., incorrect field mapping, wrong data source, logic error)
-• How to fix it (e.g., 'interstateVehicles should sum all owned vehicles when interstateCommerce = Yes')
-
-Example: 'The RPA incorrectly filled interstateVehicles as 0. It should be 5 (3 straight trucks + 2 tractors owned). The mapping logic needs to check if interstateCommerce=Yes, then sum vehicles.straightTrucks.owned + vehicles.truckTractors.owned.'"
-              />
+              <div className="w-full px-4 py-3 border-2 border-blue-300 bg-blue-50 rounded-lg text-sm text-blue-900">
+                ℹ️ Feedback is now provided per-field above. Use the individual feedback boxes to provide specific corrections for each field.
+              </div>
 
               {/* Action Buttons */}
               <div className="flex space-x-4 mt-4">
