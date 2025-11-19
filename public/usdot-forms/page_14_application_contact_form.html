@@ -2,6 +2,17 @@
 <!-- form_applicationContact, Branch B0031, Page P030021 -->
 <!-- THIS IS THE FIRST PAGE WITH ACTUAL DATA ENTRY FIELDS -->
 
+<!-- USPS ADDRESS VALIDATION DIALOG -->
+<!-- When user enters address, a confirmation dialog appears with this message: -->
+<!-- "The application will validate the entered address with the United States Postal Service (USPS). -->
+<!--  In the event USPS finds a matching address, the address will be changed to utilize standard USPS abbreviations and formatting." -->
+<!-- This means the system will auto-correct: -->
+<!-- - City names (based on postal code) -->
+<!-- - Street abbreviations (Street → St, Avenue → Ave, Road → Rd, etc.) -->
+<!-- - Address formatting and capitalization -->
+<!-- - Any other USPS standardizations -->
+<!-- Dialog has single "Ok" button to confirm understanding -->
+
 <!-- PAGE TITLE -->
 <div class="mainRegTopDiv">
   <div id="landingDiv" class="pageTitleDiv">
@@ -150,6 +161,9 @@
           </tr>
 
           <!-- 8. Street Address Line 1 (REQUIRED TEXT) -->
+          <!-- VALIDATION: Only these special characters allowed: & - / # ' (space) -->
+          <!-- Error message: "Address Line : Only the following special characters may be entered by the applicant: (&-/#'space)" -->
+          <!-- USPS VALIDATION: After entry, USPS will standardize abbreviations (Street → St, Avenue → Ave, etc.) -->
           <tr>
             <td>
               <div id="div_Q03004_APP_CONT_ADDR1">
@@ -160,10 +174,13 @@
                        id="Q03004_APP_CONT_ADDR1"
                        name="Q03004_APP_CONT_ADDR1"
                        maxlength="38"
-                       aria-required="true">
+                       aria-required="true"
+                       pattern="[A-Za-z0-9 &\-/#']*"
+                       title="Only these special characters allowed: & - / # ' (space)">
               </div>
 
               <!-- 9. Street Address Line 2 (OPTIONAL TEXT) -->
+              <!-- VALIDATION: Same special character restriction as Address Line 1 -->
               <div id="div_Q03005_APP_CONT_ADDR2">
                 <label class="forInput" for="Q03005_APP_CONT_ADDR2">
                   Application Contact Street Address Line 2
@@ -172,10 +189,13 @@
                        id="Q03005_APP_CONT_ADDR2"
                        name="Q03005_APP_CONT_ADDR2"
                        maxlength="38"
-                       aria-required="false">
+                       aria-required="false"
+                       pattern="[A-Za-z0-9 &\-/#']*"
+                       title="Only these special characters allowed: & - / # ' (space)">
               </div>
 
               <!-- 10. Street Address Line 3 (OPTIONAL, HIDDEN by default) -->
+              <!-- VALIDATION: Same special character restriction as Address Line 1 -->
               <div id="div_Q03006_APP_CONT_ADDR3" style="display: none;">
                 <label class="forInput" for="Q03006_APP_CONT_ADDR3">
                   Application Contact Street Address Line 3
@@ -184,10 +204,13 @@
                        id="Q03006_APP_CONT_ADDR3"
                        name="Q03006_APP_CONT_ADDR3"
                        maxlength="256"
-                       aria-required="false">
+                       aria-required="false"
+                       pattern="[A-Za-z0-9 &\-/#']*"
+                       title="Only these special characters allowed: & - / # ' (space)">
               </div>
 
               <!-- 11. Street Address Line 4 (OPTIONAL, HIDDEN by default) -->
+              <!-- VALIDATION: Same special character restriction as Address Line 1 -->
               <div id="div_Q03007_APP_CONT_ADDR4" style="display: none;">
                 <label class="forInput" for="Q03007_APP_CONT_ADDR4">
                   Application Contact Street Address Line 4
@@ -196,12 +219,17 @@
                        id="Q03007_APP_CONT_ADDR4"
                        name="Q03007_APP_CONT_ADDR4"
                        maxlength="256"
-                       aria-required="false">
+                       aria-required="false"
+                       pattern="[A-Za-z0-9 &\-/#']*"
+                       title="Only these special characters allowed: & - / # ' (space)">
               </div>
             </td>
           </tr>
 
           <!-- 12. City (REQUIRED TEXT, auto-populated from postal code) -->
+          <!-- AUTO-CORRECTION: System uses USPS validation to auto-correct city name based on postal code -->
+          <!-- If user enters wrong city, USPS validation will correct it when valid postal code is entered -->
+          <!-- See USPS Address Validation Dialog at top of file for full explanation -->
           <tr>
             <td align="left" class="topTDInVerticalQA">
               <label class="forInput" for="Q03008_APP_CONT_CITY">
@@ -216,7 +244,9 @@
                      name="Q03008_APP_CONT_CITY"
                      maxlength="25"
                      aria-required="true"
-                     placeholder="May automatically get set from postal code below">
+                     placeholder="May automatically get set from postal code below"
+                     data-auto-fill="true"
+                     data-auto-fill-trigger="Q03010_APP_CONT_POSTAL_CODE">
             </td>
           </tr>
 
@@ -250,6 +280,9 @@
           </tr>
 
           <!-- 14. Postal Code (REQUIRED TEXT) -->
+          <!-- AUTO-FILL TRIGGER: When valid postal code is entered, USPS validation corrects entire address -->
+          <!-- This includes: City name, street abbreviations, formatting, and standardization -->
+          <!-- See USPS Address Validation Dialog at top of file for full explanation -->
           <tr>
             <td align="left" class="topTDInVerticalQA">
               <label class="forInput" for="Q03010_APP_CONT_POSTAL_CODE">
@@ -263,7 +296,9 @@
                      id="Q03010_APP_CONT_POSTAL_CODE"
                      name="Q03010_APP_CONT_POSTAL_CODE"
                      maxlength="10"
-                     aria-required="true">
+                     aria-required="true"
+                     data-triggers-auto-fill="Q03008_APP_CONT_CITY"
+                     data-validation-type="postal-code">
             </td>
           </tr>
 

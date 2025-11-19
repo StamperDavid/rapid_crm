@@ -1,0 +1,565 @@
+{
+  "metadata": {
+    "generatedAt": "2025-11-18T17:14:08.245Z",
+    "totalPages": 3,
+    "totalFields": 26,
+    "operationTypes": [
+      "PROPERTY_CARRIER"
+    ]
+  },
+  "pages": [
+    {
+      "pageNumber": 1,
+      "url": "https://portal.fmcsa.dot.gov/UrsRegistrationWizard/",
+      "operationType": "PROPERTY_CARRIER",
+      "fields": [],
+      "conditionalLogic": [],
+      "validationRules": []
+    },
+    {
+      "pageNumber": 2,
+      "url": "https://portal.fmcsa.dot.gov/UrsRegistrationWizard/ursapp?code=4cb85974-c232-4921-901b-b280cc96b26e&state=SepXwYdLVKCDnSEAsOTWoD",
+      "operationType": "PROPERTY_CARRIER",
+      "fields": [
+        {
+          "id": "questionCode_B0011P010031S01003_Q01002_id_Y",
+          "name": "questionCode_B0011P010031S01003_Q01002",
+          "label": "Yes",
+          "type": "radio",
+          "required": false,
+          "options": [
+            {
+              "value": "Y",
+              "label": "Yes",
+              "selected": false
+            },
+            {
+              "value": "N",
+              "label": "No",
+              "selected": false
+            }
+          ],
+          "validation": {}
+        },
+        {
+          "id": "questionCode_B0011P010031S01003_Q01002_id_N",
+          "name": "questionCode_B0011P010031S01003_Q01002",
+          "label": "No",
+          "type": "radio",
+          "required": false,
+          "options": [
+            {
+              "value": "Y",
+              "label": "Yes",
+              "selected": false
+            },
+            {
+              "value": "N",
+              "label": "No",
+              "selected": false
+            }
+          ],
+          "validation": {}
+        },
+        {
+          "id": "fileUploaderDijit",
+          "name": "appDocuments[]",
+          "type": "file",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "appDocType",
+          "name": "",
+          "label": "Document Type:",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "chatUserName",
+          "name": "chatUserName",
+          "label": "Your Name",
+          "type": "text",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "chatApplicantId",
+          "name": "chatApplicantId",
+          "label": "Applicant ID",
+          "type": "text",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "chatEmailAddress",
+          "name": "chatEmailAddress",
+          "label": "Email Address",
+          "type": "text",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "id": "chatQuestion",
+          "name": "chatQuestion",
+          "label": "Your Question",
+          "type": "textarea",
+          "required": false,
+          "validation": {}
+        }
+      ],
+      "conditionalLogic": [],
+      "validationRules": [
+        {
+          "field": "chatUserName",
+          "rule": "maxLength",
+          "value": 100
+        },
+        {
+          "field": "chatApplicantId",
+          "rule": "maxLength",
+          "value": 100
+        },
+        {
+          "field": "chatEmailAddress",
+          "rule": "maxLength",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "pageNumber": 1,
+      "url": "https://portal.fmcsa.dot.gov/UrsRegistrationWizard/ursapp?code=4cb85974-c232-4921-901b-b280cc96b26e&state=SepXwYdLVKCDnSEAsOTWoD",
+      "operationType": "PROPERTY_CARRIER",
+      "fields": [
+        {
+          "id": "applicantNEW",
+          "name": "landingUserType",
+          "type": "radio",
+          "required": false,
+          "options": [
+            {
+              "value": "NEW",
+              "label": "NEW",
+              "selected": false
+            },
+            {
+              "value": "OLD",
+              "label": "OLD",
+              "selected": false
+            }
+          ],
+          "validation": {}
+        },
+        {
+          "id": "applicantOLD",
+          "name": "landingUserType",
+          "type": "radio",
+          "required": false,
+          "options": [
+            {
+              "value": "NEW",
+              "label": "NEW",
+              "selected": false
+            },
+            {
+              "value": "OLD",
+              "label": "OLD",
+              "selected": false
+            }
+          ],
+          "validation": {}
+        },
+        {
+          "id": "fileUploaderDijit",
+          "name": "appDocuments[]",
+          "type": "file",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "appDocType",
+          "name": "",
+          "label": "Document Type:",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "chatUserName",
+          "name": "chatUserName",
+          "label": "Your Name",
+          "type": "text",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "chatApplicantId",
+          "name": "chatApplicantId",
+          "label": "Applicant ID",
+          "type": "text",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "required": false,
+          "validation": {}
+        },
+        {
+          "id": "chatEmailAddress",
+          "name": "chatEmailAddress",
+          "label": "Email Address",
+          "type": "text",
+          "required": false,
+          "validation": {
+            "maxLength": 100
+          }
+        },
+        {
+          "id": "chatQuestion",
+          "name": "chatQuestion",
+          "label": "Your Question",
+          "type": "textarea",
+          "required": false,
+          "validation": {}
+        }
+      ],
+      "conditionalLogic": [],
+      "validationRules": [
+        {
+          "field": "chatUserName",
+          "rule": "maxLength",
+          "value": 100
+        },
+        {
+          "field": "chatApplicantId",
+          "rule": "maxLength",
+          "value": 100
+        },
+        {
+          "field": "chatEmailAddress",
+          "rule": "maxLength",
+          "value": 100
+        }
+      ]
+    }
+  ],
+  "fieldMap": {
+    "questionCode_B0011P010031S01003_Q01002_id_Y": {
+      "id": "questionCode_B0011P010031S01003_Q01002_id_Y",
+      "name": "questionCode_B0011P010031S01003_Q01002",
+      "type": "radio",
+      "label": "Yes",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "Y",
+      "options": [
+        {
+          "value": "Y",
+          "label": "Yes",
+          "selected": false
+        },
+        {
+          "value": "N",
+          "label": "No",
+          "selected": false
+        }
+      ],
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"questionCode_B0011P010031S01003_Q01002_id_Y\"]",
+      "cssSelector": "#questionCode_B0011P010031S01003_Q01002_id_Y",
+      "appearsOnPages": [
+        2
+      ]
+    },
+    "questionCode_B0011P010031S01003_Q01002_id_N": {
+      "id": "questionCode_B0011P010031S01003_Q01002_id_N",
+      "name": "questionCode_B0011P010031S01003_Q01002",
+      "type": "radio",
+      "label": "No",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "N",
+      "options": [
+        {
+          "value": "Y",
+          "label": "Yes",
+          "selected": false
+        },
+        {
+          "value": "N",
+          "label": "No",
+          "selected": false
+        }
+      ],
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"questionCode_B0011P010031S01003_Q01002_id_N\"]",
+      "cssSelector": "#questionCode_B0011P010031S01003_Q01002_id_N",
+      "appearsOnPages": [
+        2
+      ]
+    },
+    "fileUploaderDijit": {
+      "id": "fileUploaderDijit",
+      "name": "appDocuments[]",
+      "type": "file",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "",
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"fileUploaderDijit\"]",
+      "cssSelector": "#fileUploaderDijit",
+      "appearsOnPages": [
+        2,
+        1
+      ]
+    },
+    "": {
+      "id": "",
+      "name": "",
+      "type": "text",
+      "required": false,
+      "disabled": false,
+      "readonly": true,
+      "value": "▼ ",
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"widget_appDocType\"]/div[1]/input[1]",
+      "cssSelector": "div#widget_appDocType > div:nth-child(1) > input:nth-child(1)",
+      "appearsOnPages": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "appDocType": {
+      "id": "appDocType",
+      "name": "",
+      "type": "text",
+      "label": "Document Type:",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "",
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"appDocType\"]",
+      "cssSelector": "#appDocType",
+      "appearsOnPages": [
+        2,
+        1
+      ]
+    },
+    "chatUserName": {
+      "id": "chatUserName",
+      "name": "chatUserName",
+      "type": "text",
+      "label": "Your Name",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "",
+      "maxLength": 100,
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"chatUserName\"]",
+      "cssSelector": "#chatUserName",
+      "appearsOnPages": [
+        2,
+        1
+      ]
+    },
+    "chatApplicantId": {
+      "id": "chatApplicantId",
+      "name": "chatApplicantId",
+      "type": "text",
+      "label": "Applicant ID",
+      "required": false,
+      "disabled": false,
+      "readonly": true,
+      "value": "",
+      "maxLength": 100,
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"chatApplicantId\"]",
+      "cssSelector": "#chatApplicantId",
+      "appearsOnPages": [
+        2,
+        1
+      ]
+    },
+    "chatEmailAddress": {
+      "id": "chatEmailAddress",
+      "name": "chatEmailAddress",
+      "type": "text",
+      "label": "Email Address",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "",
+      "maxLength": 100,
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"chatEmailAddress\"]",
+      "cssSelector": "#chatEmailAddress",
+      "appearsOnPages": [
+        2,
+        1
+      ]
+    },
+    "chatQuestion": {
+      "id": "chatQuestion",
+      "name": "chatQuestion",
+      "type": "textarea",
+      "label": "Your Question",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "Current custom names: applicationContact, businessDesc, vehicleInfo. To test layout of custom pages enter customStaticPageFileName value into Your Name field and click Send. The custom page will be rendered, but without any integration to active registration.  It will effectively be a static page for development testing of the look and feel and layout.",
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"chatQuestion\"]",
+      "cssSelector": "#chatQuestion",
+      "appearsOnPages": [
+        2,
+        1
+      ]
+    },
+    "applicantNEW": {
+      "id": "applicantNEW",
+      "name": "landingUserType",
+      "type": "radio",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "NEW",
+      "options": [
+        {
+          "value": "NEW",
+          "label": "NEW",
+          "selected": false
+        },
+        {
+          "value": "OLD",
+          "label": "OLD",
+          "selected": false
+        }
+      ],
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"applicantNEW\"]",
+      "cssSelector": "#applicantNEW",
+      "appearsOnPages": [
+        1
+      ]
+    },
+    "applicantOLD": {
+      "id": "applicantOLD",
+      "name": "landingUserType",
+      "type": "radio",
+      "required": false,
+      "disabled": false,
+      "readonly": false,
+      "value": "OLD",
+      "options": [
+        {
+          "value": "NEW",
+          "label": "NEW",
+          "selected": false
+        },
+        {
+          "value": "OLD",
+          "label": "OLD",
+          "selected": false
+        }
+      ],
+      "eventHandlers": {},
+      "xpath": "//*[@id=\"applicantOLD\"]",
+      "cssSelector": "#applicantOLD",
+      "appearsOnPages": [
+        1
+      ]
+    }
+  },
+  "branchingMap": {}
+}

@@ -1,0 +1,358 @@
+<html style="width:100%;height:100%; margin:0; padding:0; overflow:scroll;" class="dj_webkit dj_chrome dj_contentbox"><head>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta http-equiv="cache-control" content="no-cache">
+
+    <meta http-equiv="cache-control" content="private">
+
+    <meta http-equiv="cache-control" content="no-store">
+
+    <meta http-equiv="expires" content="0">
+
+    <meta http-equiv="pragma" content="no-cache">
+
+    
+
+    <title>Unified Registration System</title>
+
+
+
+<!--  <link href="/CompassThemesURS/themes/html/commonurs/css/portal.css" type="text/css" rel="stylesheet" />   --> 
+
+<link href="/CompassThemesURS/themes/html/commonurs/css/datatable.css" rel="stylesheet" type="text/css" media="screen">
+
+<!--  <link href="/CompassThemesURS/themes/html/commonurs/css/main.css" rel="stylesheet" type="text/css" media="screen" />   -->
+
+<link href="/CompassThemesURS/themes/html/commonurs/css/newnavigation.css" rel="stylesheet" type="text/css" media="screen"> 
+
+
+
+<link rel="stylesheet" type="text/css" href="/FpmThemeURS8/themes/Portal8.0/css/dojo.css">
+
+<link rel="stylesheet" type="text/css" href="/FpmThemeURS8/themes/Portal8.0/css/jelam/jelam.css">
+
+<link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/commonurs/css/Grid.css">
+
+<link rel="stylesheet" type="text/css" href="/FpmThemeURS8/themes/Portal8.0/css/lotusui30dojo.css">
+
+
+
+
+
+<!--  
+
+Import the main CSS file of Gridx.  
+
+-->
+
+<link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/commonurs/dojo/gridx-1.3.0/resources/claro/Gridx.css">
+
+<link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/css/style_urs_dynamic_page.css">
+
+
+
+<!-- load Dojo -->
+
+<script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-GLJF0N9VGX&amp;cx=c&amp;_slc=1"></script><script async="" src="//www.google-analytics.com/analytics.js"></script><script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script async="" src="//www.google-analytics.com/analytics.js"></script><script>
+
+var map17 = { dojo: "dojo", dijit: "dijit", dojox: "dojox" };
+
+var dojoConfig = {
+
+//    baseUrl: "/CompassThemesURS/themes/html/commonurs/",
+
+    tlmSiblingOfDojo: false,  // to allow access to the commonurs/js folder without declaring it a package
+
+    packages: [
+
+        { name: "commonjs", location: "/CompassThemesURS/themes/html/commonurs/js" },
+
+        { name: "commonsizzle", location: "/CompassThemesURS/themes/html/commonurs/sizzle-master" },
+
+        { name: "dojo",  location: "/CompassThemesURS/themes/html/commonurs/portal_dojo/dojo", packageMap: map17  },
+
+        { name: "dijit",  location: "/CompassThemesURS/themes/html/commonurs/portal_dojo/dijit", packageMap: map17  },
+
+        { name: "dojox",  location: "/CompassThemesURS/themes/html/commonurs/portal_dojo/dojox", packageMap: map17  }
+
+    ]
+
+    
+
+};
+
+</script>
+
+</head>
+
+<body class="jelam" style="width:100%;height:100%; margin:0; padding:0;">
+
+<div id="ursDiv" style="width:100%;height:100%; margin:0; padding:0;">
+
+<table>
+    <tbody><tr id="ursWizardBannerTR">
+        <td colspan="2">
+          <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'" class="dijitContentPane" id="dijit_layout_ContentPane_0" widgetid="dijit_layout_ContentPane_0">
+    <div role="banner" class="header">
+        <div class="dot-logo">
+            <p>United States Department of Transportation</p>
+        </div>
+    </div>
+    
+    <div role="main" class="main row">
+        
+        <div class="article col">
+            <div class="article-banner">
+                <div class="article-banner-logo">
+                    <h1 style="margin-top:0em;">FMCSA</h1>
+                    <p style="color:white;">Federal Motor Carrier Safety Administration</p>
+                </div>
+            </div>
+       </div>
+    </div>
+  </div>
+        </td>
+    </tr>
+    
+    <tr id="ursWizardBodyTR" style="background-color:#fff;">
+        <td style="width:100%;">
+        <div style="width:80%;display:inline-block;padding:20px;background:#fff;">
+            <div id="wizardContainer" class="dijitContentPane wizardContainer dijitContentPaneSingleChild" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" widgetid="wizardContainer"><form data-dojo-attach-point="containerNode" data-dojo-attach-event="onreset:_onReset,onsubmit:_onSubmit" class="wizardPaneContentDivForm" id="form_B0041P040081" enctype="multipart/form-data" action="" method="" widgetid="form_B0041P040081"><table class="leafPageTable">  <tbody><tr id="leafPageTitleTR" style="display: none;"><td><div class="pageTitleDiv"><span class="heavy" id="leaftitle_B0041P040081"></span></div><p></p> </td></tr>  <tr id="leafPageDescriptionTR"><td class="leafPageDescription"><label class="leafPageDescription" id="leafdescription_B0041P040081"></label> </td></tr>  <tr><td><div id="leafinputdiv_B0041P040081"><label class="pageDescription"></label><table class="pageTable" width="100%"><tr class="pageSectionOuterRow"><td class="pageSectionOuterCell"><table class="pageSectionInnerTable" width="100%"><tr class="pageSectionInnerTitleRow" width="100%"><td class="pageSectionInnerTitleCell"><label class="pageSectionTitleLabel" title="">Business Description</label></td></tr><tr class="pageSectionInnerTitleRow"><td class="pageSectionInnerDescriptionCell"><label class="pageSectionTitleLabel" title=""></label></td></tr><tr class="pageSectionRow"><td class="pageSectionCell"><table class="questionTable" width="100%"><tr class="questionRow"><td class="questionCell"><label class="questionDesc" id="questionDesc_Q04039">Is the Applicant's Principal Place of Business Address the same as the Application Contact's Address?</label></td></tr><tr class="answerRow"></tr><tr class="answersRow"><td class="answersCell"><table class="selectbuttonsTable"><tr class="selectbuttonsSharedImageRow"><td class="selectbuttonsSharedImageCell"><label for=""><img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_FMCSAPOBasContactAddress.png" alt="image" border="0"></label></td><td class="answersTD"><table class="answersTable"><tr class="selectbuttonsRow"></tr><tr class="answerRow"><td class="answerCellLeft"><table class="answerMiniTable"><tr class="answerMiniTableButtonLabelRow"><td class="answerValueCell"><div class="dijit dijitReset dijitInline dijitRadio" role="presentation" widgetid="questionCode_B0041P040081S04018_Q04039_id_Y"><input name="questionCode_B0041P040081S04018_Q04039" type="radio" role="radio" aria-checked="false" class="dijitReset dijitCheckBoxInput" data-dojo-attach-point="focusNode" data-dojo-attach-event="ondijitclick:_onClick" value="Y" tabindex="0" id="questionCode_B0041P040081S04018_Q04039_id_Y" style="user-select: none;"></div></td><td class="answerLabelCell"><label class="answerLabel" for="questionCode_B0041P040081S04018_Q04039_id_Y" id="ansLbl_B0041P040081S04018_Q04039_id_Y">Yes</label></td></tr></table></td></tr><tr class="answerRow"><td class="answerCellLeft"><table class="answerMiniTable"><tr class="answerMiniTableButtonLabelRow"><td class="answerValueCell"><div class="dijit dijitReset dijitInline dijitRadio" role="presentation" widgetid="questionCode_B0041P040081S04018_Q04039_id_N"><input name="questionCode_B0041P040081S04018_Q04039" type="radio" role="radio" aria-checked="false" class="dijitReset dijitCheckBoxInput" data-dojo-attach-point="focusNode" data-dojo-attach-event="ondijitclick:_onClick" value="N" tabindex="0" id="questionCode_B0041P040081S04018_Q04039_id_N" style="user-select: none;"></div></td><td class="answerLabelCell"><label class="answerLabel" for="questionCode_B0041P040081S04018_Q04039_id_N" id="ansLbl_B0041P040081S04018_Q04039_id_N">No</label></td></tr></table></td></tr></table></td></tr></table></td></tr></table></td></tr></table></td></tr></table></div></td></tr></tbody></table></form></div>
+        </div>
+        <div style="float:right;display:inline-block;position:fixed;right:0px;background-color:lightgray;z-index:99 !important;">
+           <!-- progress bar maximum is set to 22 - the number of possible branches user could navigate through -->
+           <div class="dijitProgressBar dijitProgressBarEmpty" role="progressbar" aria-valuenow="0.22499999999999998" aria-labelledby="ursRegProgressBar_label" aria-valuemin="0" aria-valuemax="1" id="ursRegProgressBar" title="Estimated progress to completion of URS Online Application Process" widgetid="ursRegProgressBar"><div data-dojo-attach-point="internalProgress" class="dijitProgressBarFull" style="width: 22.5%;"><div class="dijitProgressBarTile" role="presentation"></div><span style="visibility:hidden">&nbsp;</span></div><div data-dojo-attach-point="labelNode" class="dijitProgressBarLabel" id="ursRegProgressBar_label">22%</div><span data-dojo-attach-point="indeterminateHighContrastImage" class="dijitInline dijitProgressBarIndeterminateHighContrastImage" src="/CompassThemesURS/themes/html/commonurs/portal_dojo/dijit/themes/a11y/indeterminate_progress.gif"></span></div>
+      <table class="dijit dijitMenuPassive dijitReset dijitMenuTable dijitMenu" role="menu" tabindex="0" cellspacing="0" id="mainMenuTop" widgetid="mainMenuTop" style="background-color: inherit; border: 0px none; width: 100%;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+
+        <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="LOGOUT " id="menu_logout" widgetid="menu_logout" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardExit" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_logout_text">LOGOUT</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_logout_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitPopupMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="MENU " id="treePopupMenuItem" widgetid="treePopupMenuItem" aria-haspopup="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardMenu" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="treePopupMenuItem_text">MENU</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="treePopupMenuItem_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="STATUS " id="menu_status" widgetid="menu_status" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardStatus" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_status_text">STATUS</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_status_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="SAVE " id="menu_save" widgetid="menu_save" aria-disabled="false" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardSave" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_save_text">SAVE</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_save_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="REPORT " id="menu_report" widgetid="menu_report" aria-disabled="false" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardReport" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_report_text">REPORT</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_report_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;UPLOAD FILE&lt;/label&gt; " id="menu_uploadFile" widgetid="menu_uploadFile" aria-disabled="false" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardUploadFile" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_uploadFile_text"><label style="white-space:normal;">UPLOAD FILE</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_uploadFile_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;PREVIOUS&lt;/label&gt; " id="menu_previous" widgetid="menu_previous" style="user-select: none;" aria-disabled="false">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardBack" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_previous_text"><label style="white-space:normal;">PREVIOUS</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_previous_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset nextMenu_disabled dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;NEXT&lt;/label&gt; " id="menu_next" widgetid="menu_next" style="user-select: none;" aria-disabled="true">
+	<td class="dijitReset dijitMenuItemIconCell nextMenu_disabled" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardContinue" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel nextMenu_disabled" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_next_text"><label style="white-space:normal;">NEXT</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey nextMenu_disabled" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_next_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell nextMenu_disabled" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;WITHDRAW APP&lt;/label&gt; " id="menu_withdraw" widgetid="menu_withdraw" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardWithDraw" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_withdraw_text"><label style="white-space:normal;">WITHDRAW APP</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_withdraw_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+      </tbody>
+</table>
+      <div style="height:50px;">&nbsp;</div>
+       <table class="dijit dijitMenuPassive dijitReset dijitMenuTable dijitMenu" role="menu" tabindex="0" cellspacing="0" id="mainMenuBottom" widgetid="mainMenuBottom" style="background-color: inherit; border: 0px none; width: 100%;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+        <tr class="dijitReset dijitMenuItem dijitPopupMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="PRINT " id="menu_print" widgetid="menu_print" aria-haspopup="true" style="user-select: none;" aria-disabled="false">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardPrint" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_print_text">PRINT</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_print_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>      
+        <tr class="dijitReset dijitMenuItem dijitPopupMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="HELP " id="menu_help" widgetid="menu_help" aria-haspopup="true" aria-disabled="false" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardHelp" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_help_text">HELP</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_help_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+    </tbody>
+</table>
+    </div>
+        </td> 
+    </tr>
+
+    <tr>
+        <td>
+
+    <!--  footer -->
+<div class="footer" style="width:80%;">
+    <div class="legalNotice">
+        <div class="part1">
+            <span id="attention">ATTENTION  ATTENTION  ATTENTION</span>
+            <ul class="mainItems">
+                <li>You are accessing a U.S. Government information system, which includes (1) this computer, (2) this computer network, (3) all computers connected to this network, and (4) all devices and storage media attached to this network or to a computer on this network.  This information system is provided for U.S. Government-authorized use only. </li>
+                <li>Unauthorized or improper use of this system may result in disciplinary action, as well as civil and criminal penalties.</li>  
+                <li>By using this information system, you understand and consent to the following:
+                    <ul class="consentItems">
+                        <li>You have no reasonable expectation of privacy regarding any communications or data transiting or stored on this information system.  At any time, and for any lawful government purpose, the government may monitor, intercept, and search and seize any communication or data transiting or stored on this information system.</li> 
+                        <li>Any communications or data transiting or stored on this information system may be disclosed or used for any lawful government purpose.</li> 
+                    </ul>
+                </li>
+            </ul>   
+        </div>
+        <div class="part2">
+            <span class="privacyAct">This system contains information protected under the provisions of the Privacy Act of 1974 (Public Law 93-579).  Any privacy information displayed on the screen or printed shall be protected from unauthorized disclosure.  Individuals who violate privacy safeguards may be subject to disciplinary actions, a fine of up to $5,000, or both. The USDOT Privacy Policy details can be found <a href="https://www.transportation.gov/dot-website-privacy-policy" target="_blank">here</a>.</span>
+        </div>
+    </div>
+</div>
+
+        </td>
+    </tr>
+
+</tbody></table>
+</div>
+
+<!-- METADATA COMMENTS -->
+<!--
+PAGE IDENTIFICATION:
+- Form ID: form_B0041P040081
+- Branch: B0041 (Business Description)
+- Page: P040081
+- Section: S04018
+- Question: Q04039
+- Progress: 22%
+
+FIELD INFORMATION:
+- Field Name: questionCode_B0041P040081S04018_Q04039
+- Field Type: Radio button (Yes/No)
+- Values: Y (Yes), N (No)
+- Required: Yes (must select to proceed)
+- Neither option is checked in this capture
+
+QUESTION TEXT:
+"Is the Applicant's Principal Place of Business Address the same as the Application Contact's Address?"
+
+NAVIGATION STATE:
+- Menu Items: LOGOUT, MENU, STATUS, SAVE, REPORT, UPLOAD FILE, PREVIOUS, NEXT, WITHDRAW APP, PRINT, HELP
+- **IMPORTANT:** NEXT button is DISABLED (nextMenu_disabled class, aria-disabled="true")
+- User MUST make a selection before proceeding
+- Progress bar shows 22% complete
+
+CONDITIONAL LOGIC:
+- If "Yes": System likely copies the contact address to principal address
+- If "No": User will need to enter a separate principal business address
+
+STYLING NOTES:
+- Uses Dojo Dijit widgets
+- FMCSA blue header
+- Right-side fixed navigation panel  
+- Icon: icon_FMCSAPOBasContactAddress.png
+- Government footer with legal notices
+
+BUSINESS LOGIC:
+This question helps streamline data entry by potentially reusing the
+Application Contact's address for the Principal Place of Business if
+they are the same. This reduces redundancy and improves user experience.
+-->
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+{
+  "cookies": [
+    {
+      "name": "_GRECAPTCHA",
+      "value": "09ADiQh0fZ61lRgyxivx71an3OrmsEw8sXY9X0qZ548ZTZlziU4HoUnVkuREQRpaewIk19qS7n06RfbnSVL51vbMs",
+      "domain": "www.google.com",
+      "path": "/recaptcha",
+      "expires": 1779041810.898975,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "BIGipServerApache_Pool",
+      "value": "4076932362.47873.0000",
+      "domain": "portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.2.247815281.1763421818",
+      "domain": ".dot.gov",
+      "path": "/",
+      "expires": 1798049849.06936,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gid",
+      "value": "GA1.2.993175361.1763421818",
+      "domain": ".dot.gov",
+      "path": "/",
+      "expires": 1763576249,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmc",
+      "value": "268464624",
+      "domain": ".portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmz",
+      "value": "268464624.1763421818.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)",
+      "domain": ".portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": 1779257850,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ahoy_visitor",
+      "value": "ae803a2c-c9a0-40d9-bda2-efb7a3c1565f",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": 1797981819.750208,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ahoy_track",
+      "value": "true",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.1819675604.1763421820",
+      "domain": ".login.gov",
+      "path": "/",
+      "expires": 1798049806.519212,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "device",
+      "value": "b0dd8e0fa555026b74900bc5ce619ec631b06ac4932ef64c96a89610472894a1ea70250d236ffa08c73e4661bb6745fd29d927b9d301d847769efac23eedeb24",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": 1798049823.80502,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "JSESSIONID",
+      "value": "0000FvSeAgIxJ8HqEeYHcX4ry-Q:1d52r8v38",
+      "domain": "portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gat",
+      "value": "1",
+      "domain": ".dot.gov",
+      "path": "/",
+      "expires": 1763489864,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utma",
+      "value": "268464624.247815281.1763421818.1763485946.1763489805.3",
+      "domain": ".portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": 1795025851,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmt_GSA_CP",
+      "value": "1",
+      "domain": ".portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": 1763490404,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ahoy_visit",
+      "value": "48d05a3b-7108-4541-aacb-706150a7e542",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": 1763490723.891806,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sp_issuer",
+      "value": "urn%3Agov%3Agsa%3Aopenidconnect.profiles%3Asp%3Asso%3Adot%3Afmcsa%3Aurs",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": 1763490723.891901,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_identity_idp_session",
+      "value": "0a326ba58f4c806feccd406a23169e4c",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_CSLL4ZEK4L",
+      "value": "GS2.1.s1763489806$o3$g0$t1763489811$j55$l0$h0",
+      "domain": ".login.gov",
+      "path": "/",
+      "expires": 1798049811.305483,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "user_opted_remember_device_preference",
+      "value": "jPYongW8em9kYPR2xl%2FgNyI8adqvq5ImRNPzASZko6xzHHCTC0OTn5N8hhx3tMXrTGb3wLjJI%2B69OuEDmBD7p4giAb7ROmV%2F5s1Afszi0nskdyoq%2FzNRMHxvinuT--7U8wvF%2BZAOr0ckzI--FyXhexmU%2BzZMYXDZ2MIasg%3D%3D",
+      "domain": "secure.login.gov",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmb",
+      "value": "268464624.3.10.1763489805",
+      "domain": ".portal.fmcsa.dot.gov",
+      "path": "/",
+      "expires": 1763491650,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_GLJF0N9VGX",
+      "value": "GS2.2.s1763489804$o3$g1$t1763489850$j14$l0$h0",
+      "domain": ".dot.gov",
+      "path": "/",
+      "expires": 1798049850.77,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://secure.login.gov",
+      "localStorage": [
+        {
+          "name": "_grecaptcha",
+          "value": "09ADiQh0e4t0zPwf5eihIhXSE9PSTiovKJ9Tf3PCyb0gKVcwaZP-5W0WQL7MccsdBuFJawjV_ivxJwSfClK6q44aS1jF_AzDxBkC2eBBX7HoJRwYZUrBUj-mH_WD79C9FN"
+        }
+      ]
+    },
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "rc::a",
+          "value": "MTh2c2VvYmxsZm80cQ=="
+        },
+        {
+          "name": "rc::f",
+          "value": "0aAMgNbx4bUDNF_6OLeskm2Kblwd5SOETkdMRf14wRYtiWRJVr-Lyo34mCGI_ohdtBiiobgxE"
+        }
+      ]
+    }
+  ]
+}

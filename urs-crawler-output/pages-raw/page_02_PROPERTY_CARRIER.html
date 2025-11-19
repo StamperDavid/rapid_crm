@@ -1,0 +1,1230 @@
+<!DOCTYPE html><html style="width:100%;height:100%; margin:0; padding:0; overflow:scroll;" class="dj_webkit dj_chrome dj_contentbox"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="cache-control" content="private">
+    <meta http-equiv="cache-control" content="no-store">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
+    
+    <title>Unified Registration System</title>
+
+<!--  <link href="/CompassThemesURS/themes/html/commonurs/css/portal.css" type="text/css" rel="stylesheet" />   --> 
+<link href="/CompassThemesURS/themes/html/commonurs/css/datatable.css" rel="stylesheet" type="text/css" media="screen">
+<!--  <link href="/CompassThemesURS/themes/html/commonurs/css/main.css" rel="stylesheet" type="text/css" media="screen" />   -->
+<link href="/CompassThemesURS/themes/html/commonurs/css/newnavigation.css" rel="stylesheet" type="text/css" media="screen"> 
+
+<link rel="stylesheet" type="text/css" href="/FpmThemeURS8/themes/Portal8.0/css/dojo.css">
+<link rel="stylesheet" type="text/css" href="/FpmThemeURS8/themes/Portal8.0/css/jelam/jelam.css">
+<link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/commonurs/css/Grid.css">
+<link rel="stylesheet" type="text/css" href="/FpmThemeURS8/themes/Portal8.0/css/lotusui30dojo.css">
+
+
+<!--  
+Import the main CSS file of Gridx.  
+-->
+<link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/commonurs/dojo/gridx-1.3.0/resources/claro/Gridx.css">
+<link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/css/style_urs_dynamic_page.css">
+
+<!-- load Dojo -->
+<script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-GLJF0N9VGX&amp;cx=c&amp;_slc=1"></script><script async="" src="//www.google-analytics.com/analytics.js"></script><script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script async="" src="//www.google-analytics.com/analytics.js"></script><script>
+var map17 = { dojo: "dojo", dijit: "dijit", dojox: "dojox" };
+var dojoConfig = {
+//    baseUrl: "/CompassThemesURS/themes/html/commonurs/",
+    tlmSiblingOfDojo: false,  // to allow access to the commonurs/js folder without declaring it a package
+    packages: [
+        { name: "commonjs", location: "/CompassThemesURS/themes/html/commonurs/js" },
+        { name: "commonsizzle", location: "/CompassThemesURS/themes/html/commonurs/sizzle-master" },
+        { name: "dojo",  location: "/CompassThemesURS/themes/html/commonurs/portal_dojo/dojo", packageMap: map17  },
+        { name: "dijit",  location: "/CompassThemesURS/themes/html/commonurs/portal_dojo/dijit", packageMap: map17  },
+        { name: "dojox",  location: "/CompassThemesURS/themes/html/commonurs/portal_dojo/dojox", packageMap: map17  }
+    ]
+    
+};
+
+window.addEventListener("load", ursAppDocEvent, false);
+
+function ursAppDocEvent() {
+    document.getElementById("form_appUploadDetails").addEventListener("submit",
+            function(event) {
+                event.preventDefault();
+                
+                var fileSelect = document.getElementById('fileUploaderDijit');
+                var uploadButton = document.getElementById('submitAppDocButton');
+                var uploadDocType = dijit.byId('appDocType').get('value');
+
+                if(typeof uploadDocType == "undefined"
+					 || uploadDocType == null || uploadDocType == "__NONE__" || uploadDocType == "NONE" || uploadDocType.length == 0){
+                	globalUrsRegWizardController.showMessage('Please select the Document Type');
+                	return false;
+                }
+                
+             // Get the selected files from the input.
+                var files = fileSelect.files;
+             //var files = dijit.byId("fileUploaderDijit").getFileList();
+                if(files && files.length > 0) {
+	             // Create a new FormData object.
+	                var formData = new FormData();
+	                formData.append('appDocType', uploadDocType);
+	                formData.append('applicantId', globalUrsRegWizardController.getWizardControllerMap().applicantId);
+	                formData.append('filingTypeId', globalUrsRegWizardController.getWizardControllerMap().filingTypeId);
+	                
+	             // Loop through each of the selected files.
+	                for (var i = 0; i < files.length; i++) {
+	                  var file = files[i];
+	
+	                  // Check the file type.
+	                  if (!file.type.match('pdf.*')) {
+	                	  globalUrsRegWizardController.showMessage("You can upload only PDF Documents");
+	                	  return false;
+	                    	//continue;
+	                  }
+	
+	                  // Add the file to the request.
+	                  formData.append('appDocuments[]', file, file.name);
+	                }
+	                uploadButton.innerHTML = 'Uploading...';
+	                callServletInfo(formData, uploadButton);                                                      
+	            } else {
+	            	globalUrsRegWizardController.showMessage("No file was selected.  Select a file and try again.");
+	            }
+            }, false);
+}
+
+function callServletInfo(formData, uploadButton){
+	
+	// Set up the request.
+    var xhr = new XMLHttpRequest();
+ 
+ // Open the connection.
+    xhr.open('POST', '/UrsRegistrationWizard/UploadDocsServlet', true);
+ 
+ // Set up a handler for when the request finishes.
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        // File(s) uploaded. currently going with status 200 -- but if we need to verify the wm response then enable this code
+        //if (xhr.status === 200 && xhr.responseText == 'true') {
+
+        globalUrsRegWizardController.refreshAppDocGrid();
+        uploadButton.innerHTML = 'Upload';
+      } else {
+        uploadButton.innerHTML = 'Upload';
+//        alert('An error occurred! Please contact system Administration\n'+xhr.responseText);
+        var exObj = JSON.parse(xhr.responseText);
+        globalUrsRegWizardController.handleSpecialError(exObj.errorMessage, exObj);
+      }
+    };
+    
+ // Send the Data.
+    xhr.send(formData);
+}
+
+</script>
+<script src="/CompassThemesURS/themes/html/commonurs/portal_dojo/dojo/dojo.js.uncompressed.js" data-dojo-config="isDebug:true, async: false, parseOnLoad: false"></script>
+<script type="text/javascript" src="lib/qrcode.min.js"></script>
+<script type="text/javascript" src="/CompassThemesURS/themes/html/commonurs/help/help.js"></script>
+<script type="text/javascript" src="/CompassThemesURS/themes/html/commonurs/js/compassportal.js"></script>
+<script type="text/javascript" src="/CompassThemesURS/themes/html/commonurs/js/CompassRefCodes.js"></script>
+<script type="text/javascript" src="/CompassThemesURS/themes/html/commonurs/js/underscore_min.js"></script>
+
+<script type="text/javascript">
+var globalCeh = null;
+var globalUrsRegWizardController = null;
+var globalUrsRegInitial = null;
+var globalUrsReg = null;
+var globalRegistry = null;
+var globalDomStyle = null;
+var globalPopup = null;
+var globalIsHuman = false;
+// google.captcha.sitekey is defined in the dev/config/system.properties.xml in the <PortalBox> definition, developers will use one defined for 'localhost' instead of the gov.dot.fmcsa host.
+var globalEnableRecaptcha = "false";
+var globalRecaptchaSiteKey = "???google.captcha.sitekey???";
+var rightHelpPanelOn = false;
+var reviewPrintWindow;
+var reviewTrainingWindow;
+var reviewOnlineChatWindow;
+var reviewGlossaryWindow;
+
+var globalCountryAnswers = [];
+var globalStateAnswers = [];
+var globalIntlStateAnswers = new Object();
+
+var globalPrintUrsReg = null;
+var globalSummaryFlag="N";
+var globalPrintDivId = "wizardContainer";
+var globalPrintMode = "";
+
+var URSQuestion_DISPLAYORDER_HORIZONTAL = "HORIZONTAL";
+var URSQuestion_DISPLAYORDER_VERTICAL   = "VERTICAL";
+var URSQuestion_ALIGNTEXT_LEFT          = "LEFT";
+var URSQuestion_ALIGNTEXT_CENTER        = "CENTER";
+var URSQuestion_ALIGNTEXT_RIGHT         = "RIGHT";
+var FILINGTYPE_NEW_REGISTRANT         	= "1";
+ 
+var BaseException_ERRTYPE_BUSINESS_VALIDATION = "Business Validation";
+var BaseException_ERRTYPE_SYSTEM_VALIDATION = "System Validation";
+var BaseException_ERRTYPE_INPUT_VALIDATION = "Input Validation";
+var BaseException_ERRTYPE_USER_COMMUNICATION = "User Communication";
+var BaseException_ERRTYPE_ERROR_MESSAGE = "Error Message";
+ 
+ //Pentaho and multisort vars begin
+ //var dwrHandler = dataHandlerVA;   // used by the MultiColumnSorterDialog.jspf
+ //var dataSetId = ""; // set to the grid's id after grid is defined
+ var jobId = ""; // unique to the download report job
+ var submitAjaxObj = {
+       ns:"testnamespace", //",
+       pageTitle:"",
+       fileNamePrefix:"", 
+       userId:"testuserId",
+       userPk:"testuserPk",
+       userFullName: "Mr. Test F. Name", //dojo.byId("userFullName").innerHTML,
+       requestType:"REPORT",
+       dataSetId: "testdataSetId", //dataSetId,
+       jobId: "testJobId" //jobId
+};
+ var onloadCaptchaCallback = function() {
+     grecaptcha.render('captchaDiv', {
+    	 'sitekey' : globalRecaptchaSiteKey,
+         'callback' : verifyCaptchaCallback
+// no noticeable size difference in HTML, just wrapped the recycle image underneath the checkbox         ,'size': 'compact'
+     });
+
+     grecaptcha.reset();
+ }
+
+ //console.log("---request.getRemoteAddr()--------------------------------- 10.13.11.161");
+ //console.log("---request.getLocalAddr()--------------------------------- 10.13.1.64");
+ var verifyCaptchaCallback = function(g_recaptcha_response) {
+   //console.log("Response validated.  Not a robot.");
+   globalUrsRegWizardController.validateGoogleReCAPTCHA(g_recaptcha_response);
+ };
+
+ function handleButton(buttonId) {
+     //console.log("UPV.handleButton buttonI="+buttonId);
+         switch(buttonId) {
+         case 'registrationStatus':
+            globalUrsRegWizardController.registrationStatus();
+            break;
+         case 'withDrawApplication':
+             globalUrsRegWizardController.withDrawApplication();
+             break;
+         case 'uploadFile':
+            globalUrsRegWizardController.uploadFile();
+            break;
+         case 'idemia':
+             globalUrsRegWizardController.idemiaPage();
+             break;
+         case 'nextButton':
+            globalUrsRegWizardController.nextPage();
+            break;
+         case 'previousButton':
+            globalUrsRegWizardController.previousPage();
+            break;
+         case 'chat':
+            globalUrsRegWizardController.chat();
+            break;
+         case 'save':
+//            globalUrsRegWizardController.storeRegistrationAnswersForUser(true);
+            globalUrsRegWizardController.handleSaveButton();
+            break;
+         case 'submitTestButton':
+             //console.log("submitted test button");
+             break;
+         case 'submitChatButton':
+             globalUrsRegWizardController.submitChat();
+             break;
+         case 'exitPreReg':
+             if(confirm("You wish to exit the pre-registration questionnaire and skip to main registration?")) {
+                 globalUrsRegWizardController.beginMainRegistration();
+             }
+             break;
+         case 'exitUrs':
+             globalUrsRegWizardController.exitRegistration();
+             break;
+         case 'submitRegistrationButton':
+             globalUrsRegWizardController.regComplete();
+             break;
+         case 'report':
+             globalUrsRegWizardController.viewReport();
+             break;
+         case 'reset':
+             var continueReset = confirm("ALERT: This will reset the answers on this pane to the last saved answers.");
+               if(continueReset) {
+                 globalUrsRegWizardController.resetPane();
+               }
+             break;
+         case 'helpBrowserWindow':
+             globalUrsRegWizardController.displayHelp(1);
+             break;
+         case 'printCurrentPage':
+			if (typeof reviewPrintWindow != "undefined" && reviewPrintWindow != null) {
+				reviewPrintWindow.close();
+				reviewPrintWindow = null;
+			}
+			globalPrintMode = "CurrentPage";
+            globalPrintUrsReg = globalUrsReg;
+            reviewPrintWindow = window.open("UrsRegistrationPrintWizard.jsp", "printSummaryPage");
+            break;
+         case 'printAllSummaryHTML':
+			 if (typeof reviewPrintWindow != "undefined" && reviewPrintWindow != null) {
+				 reviewPrintWindow.close();
+				 reviewPrintWindow = null;
+			 }
+        	 globalUrsRegWizardController.getAllSummaryPages();
+             break;
+         case 'printMainSummaryHTML':
+             break;
+         case 'printMainSummaryPDF':
+             break;
+         case 'printerFriendlyAllPanes':
+             globalUrsRegWizardController.printerFriendlyAllPanes();
+             break;
+         case 'training':
+				if (typeof reviewTrainingWindow != "undefined") {
+					reviewTrainingWindow.close();
+				}
+				reviewTrainingWindow = window.open("/urstraining/index.html", "trainingPage");
+	           break;
+         case 'onlineChatHelp':
+				if (typeof reviewOnlineChatWindow != "undefined") {
+					reviewOnlineChatWindow.close();
+				}
+				reviewOnlineChatWindow = window.open("https://ask.fmcsa.dot.gov/app/chat/chat_launch", "onlineHelpPage");
+	           break;
+         case 'glossaryterm':
+				if (typeof reviewGlossaryWindow != "undefined") {
+					reviewGlossaryWindow.close();
+				}
+				reviewGlossaryWindow = window.open("https://www.fmcsa.dot.gov/registration/urs-glossary-of-terms", "onlineGlossaryPage");
+	           break;
+         case 'helpModalDialog':
+             globalUrsRegWizardController.displayHelp(2);
+             break;
+         case 'helpBelow':
+             globalUrsRegWizardController.displayHelp(3);
+             window.location.href="#bottomHelpLocation";
+             break;
+         case 'jumpForwardToSummary':
+             globalUrsRegWizardController.jumpForwardToSummary();
+             break;
+         case 'helpRight':
+             var mainContainer = globalRegistry.byId("ursBorderContainer");
+             var rightContainer = globalRegistry.byId("rightHelpContentPane");
+             if(!rightHelpPanelOn) {
+                 // add the rightHelpContentPane to the ursBorderContainer
+                 globalDomStyle.set("rightHelpContentPane", {
+                     width: "200px",
+                     display: "block"
+                 });
+                 rightHelpPanelOn = true;
+             } else {
+                 globalDomStyle.set("rightHelpContentPane", {
+                     width: "0px",
+                     display: "none"
+                 });
+                 rightHelpPanelOn = false;
+             }
+             rightContainer.resize();
+             mainContainer.resize();
+             break;
+         case 'goToPage':
+             var userId = arguments[1];
+             var branchCode = arguments[2];
+             var branchInstance = arguments[3];
+             var pageCode = arguments[4];
+             var pageInstance = arguments[5];
+             globalUrsRegWizardController.getURSRegistrationWizardPage(globalUrsRegWizardController.getWizardControllerMap().filingTypeId, "", userId, branchCode, branchInstance, pageCode, pageInstance);
+// in favor of handleNext         case 'continueFromPreRegButton':
+//          globalUrsRegWizardController.continueFromPreRegQuestionnaire();
+         }
+
+ }
+ function gotoPane(selectedPaneId, sectionIdPrefix, isMainSummary, propertyName) {
+     require(
+              { packages:[ { name:'lib', location:'/UrsRegistrationWizard/lib' } ] },
+              [
+                "lib/UrsRegWizardController"
+              ],
+              function(ursController) {
+                  ursController.openPane(selectedPaneId, sectionIdPrefix, isMainSummary, propertyName);
+              }
+              );
+ }
+ function printEntry(entryIndex) {
+     //console.log("UPV.printEntry entryIndex"+entryIndex);
+     require(
+              { packages:[ { name:'lib', location:'/UrsRegistrationWizard/lib' } ] },
+              [
+                "lib/UrsRegWizardController"
+              ],
+              function(ursController) {
+                  ursController.printEntry(entryIndex);
+              }
+              );
+ }
+ 
+ require(
+  { packages:[ { name:'lib', location:'/UrsRegistrationWizard/lib' } ] },
+  ["commonjs/CompassErrorHandler",
+    "lib/UrsRegWizardController",
+//    "lib/UrsPage_1_11_8_Controller",
+    "commonjs/DialogConfirm",
+//    "lib/ConfirmDialog",
+//    "lib/MessageBox",
+    "dojo/dom",
+    "dojo/parser",
+    "dojo/_base/array",
+    "dojo/_base/lang",
+    "dojo/ready",
+    "dojo/query",
+    "dojo/i18n!lib/nls/resources",
+    "dijit/registry",
+    "dojo/dom-construct",
+
+    // types needed for Tree
+    "dojo/store/Memory",
+//    "dijit/tree/ObjectStoreModel", 
+    "dijit/Tree",
+    "dojo/on",
+    "dojo/dom-style",
+    "dijit/layout/AccordionContainer", "dijit/layout/ContentPane",
+    "dijit/TitlePane",
+    "dojox/widget/Standby",
+    
+    // types needed for dojo element types   
+    "dojox/widget/Wizard",
+//    "dojox/widget/WizardPane",    
+    "dijit/Dialog",
+//dup    "dijit/layout/AccordionContainer",
+//dup    "dijit/layout/ContentPane",
+    "dijit/layout/TabContainer",
+    "dijit/layout/BorderContainer",
+    "dijit/form/ValidationTextBox",
+    "dijit/form/Form",
+//  "dojox/validate",
+    "dojox/validate/creditCard",
+    "dojox/validate/us",
+    "dojox/validate/ca",
+    "dojox/validate/web",
+    "dijit/form/DateTextBox",
+//    "dojox/form/MonthTextBox",
+//    "dojox/widget/MonthAndYearlyCalendar",
+    "dijit/form/FilteringSelect", 
+    "dijit/form/Select", 
+    "dijit/form/MultiSelect",
+    "dijit/form/RadioButton",
+    "dijit/form/CheckBox",
+    "dojox/form/Uploader",
+    "dojox/form/uploader/FileList",
+    "dojox/form/uploader/plugins/IFrame", 
+    "dijit/form/Textarea",
+    "dijit/TooltipDialog",
+    "dijit/form/DropDownButton",
+    "dijit/ProgressBar",
+    "dijit/form/NumberSpinner",
+    //"dojox/grid/DataGrid.js.uncompressed",
+    "dojox/grid/DataGrid",
+    "dijit/ProgressBar",
+    "lib/FormattedPhoneTextBox",
+    "lib/StrictNumberTextBox",
+    "lib/StrictNumberComboBox",
+    "dijit/form/ComboBox",
+    "dijit/Menu",
+    "dijit/MenuItem",
+    "dijit/PopupMenuItem"
+
+  ],
+  function(ceh, ursController, 
+//        urspage_1_11_8_controller, 
+          DialogConfirm, /*ConfirmDialog, MessageBox,*/ dom, parser, array, dojoLang, ready, dojoQuery, 
+          resources, registry, domConstruct, Memory, /*ObjectStoreModel,*/ Tree, on, domStyle, AccordionContainer, ContentPane, TitlePane, Standby) {
+     ready(function() {
+         //console.log("sAS.init ceh="+ceh);
+//         dwr.engine.setErrorHandler(ceh.compassErrorHandler);
+         dwr.engine.setErrorHandler(ursController.handleSpecialError);
+         dojoLang.setObject("global_ceh", ceh);
+         globalCeh = ceh;
+         
+      //console.debug("URSPortletView.jsp resources.titleForDialog="+resources.titleForDialog);
+      parser.parse("ursDiv");
+      parser.parse("errDialogDivWrapper");
+      globalUrsRegWizardController = ursController;
+      globalRegistry = registry;
+      globalDomStyle = domStyle;
+      
+      ursController.setContextPath("/UrsRegistrationWizard");
+      ursController.setCommonPath("/CompassThemesURS/themes/html/commonurs");
+      console.log("UPV path=/UrsRegistrationWizard");
+      ursController.getWizardControllerMap().myUserId = "";
+      ursController.getWizardControllerMap().namespace = "";
+      ursController.getWizardControllerMap().commonPath = "/CompassThemesURS/themes/html/commonurs";
+      ursController.getWizardControllerMap().contextPath = "/UrsRegistrationWizard";
+		ursController.getWizardControllerMap().filingTypeId = FILINGTYPE_NEW_REGISTRANT;
+      ursController.disableControlPanelAction("menu_status", true);
+      ursController.disableControlPanelAction("menu_uploadFile", true);
+      ursController.disableControlPanelAction("menu_withdraw", true);
+      ursController.disableControlPanelAction("menu_save", true);
+      ursController.disableControlPanelAction("menu_report", true);
+      ursController.disableControlPanelAction("printMainSummaryHTML", true);
+      // create status label and place in the container with the wizard buttons
+            console.log("sAS.init calling getfirstpage");
+            ursController.waitMessageShow("Loading.");
+// grab and set the global lists of states and countries
+        dwr.engine.beginBatch();
+
+ursController.getStateCountryList();
+
+      UrsRegWizardDataHandler.getURSRegistrationFirstPage({
+          callback:function(ursReg) {
+              console.log("sAS.getRegistrationProgress ursReg="+ursReg);
+              ursController.waitMessageHide();
+              globalUrsReg = dojoLang.clone(ursReg);
+              
+              /*
+               * Alert the user to any attempt to leave this page, either by the Back button, another bookmark, link, or just closing the browser.
+               */
+              window.onbeforeunload = function() {
+            	  var exitMessage = globalUrsRegWizardController.getExitMessage();
+            	  if (exitMessage != "") {
+            		  return exitMessage;
+            	  }
+              }
+              
+              globalUrsRegInitial = dojoLang.clone(ursReg);
+            console.dir(ursReg);
+            ursController.setCurrentBranchPageValues(globalUrsReg);
+        // generate tree model from ursReg data
+        ursController.setNavigationDojoTree(globalUrsReg);
+        
+        ursController.openInProgressPage();
+//      ursController.loadStaticPage("landing");    
+
+        // grab and set the global lists of states and countries
+//        ursController.getStateCountryList();
+      },
+      errorHandler:function(errString, exObj) {
+          if(!ursController.handleSpecialError(errString, exObj)) {
+              globalCeh.compassErrorHandler(errString, exObj);
+          }
+      },
+    warningHandler:function(warnString, exObj) {
+    	ursController.waitMessageHide();
+        if(exObj.name == "dwr.engine.missingData") {
+        	ursController.showMessage("Please try again.");
+        }
+    }
+        }
+      );
+      dwr.engine.endBatch();
+
+    // add handler for the wait message dialog closing
+//04/24    on(waitPopup, "blur", ursController.onBlurWaitPopup);
+    on(waitPopup, "hide", ursController.onHideWaitPopup);
+    });
+});
+</script>
+
+
+<link href="theme/nonav.css" rel="stylesheet" type="text/css" media="screen">
+<link href="theme/datatable.css" rel="stylesheet" type="text/css" media="screen">
+<link href="theme/main.css" rel="stylesheet" type="text/css" media="screen">
+<link href="theme/portal.css" rel="stylesheet" type="text/css" media="screen">
+
+<script type="text/javascript" src="dwr/interface/UrsRegWizardDataHandler.js"></script>
+<script type="text/javascript" src="dwr/engine.js"></script>
+<script type="text/javascript" src="dwr/util.js"></script>
+
+
+
+<!-- ---- Begin GA tracking code --- -->
+
+<!-- Below is the event tracking code. Place this script directly above all GA scripts below.  -->
+
+<script src="entourage.js"></script>
+
+<!-- Below is the FMCSA GA tracking code - this uses GA Universal Analytics - the newest version -->
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48056947-1', 'dot.gov');
+  ga('send', 'pageview');
+
+</script>
+
+<!-- Below is the DOT-GSA Tracking code -->
+
+<script src="dot_analytics.js"></script>
+
+
+<!-- ---- End GA tracking code --- -->
+
+
+    <link rel="stylesheet" type="text/css" href="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/css/style.css" media="screen">
+
+    <script src="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/scripts/respond.min.js"></script>
+    <style>
+.idemia {
+  background-color: #2289bb;;
+  border: none;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration-line: white;
+  display: inline-block;
+  font-size: medium;
+  margin: 2px 2px;
+  cursor: pointer;
+  border-radius: 12px; 
+}
+</style>
+</head>
+<body class="jelam" style="width:100%;height:100%; margin:0; padding:0;">
+
+<!-- hide the dojoDivWrapper initially with display:none since 
+     in IE the dojo.parse() has to wait (in IE only) until the dojo.addOnLoad() occurs 
+     which causes the div to temporarily display in an ugly blank box while waiting
+     a couple of seconds for the dojo.addOnLoad() to happen. In Firefox it's not an issue.
+     When the dojo.addOnLoad() happens this div is unhidden.
+-->
+<div id="errDialogDivWrapper" style="display:none">
+  
+<!-- the errContainerHidden is a temporary holding div for the detailsTabJsid. In order to allow the 
+user to display the details tab, then the details tab needs to exist first in a hidden container, and
+be moved to the visible container above when needed. This technique is used in MakeAssignments heavily 
+-->
+  <div class="dijitTabContainer dijitTabContainerTop dijitContainer dijitLayoutContainer tabStrip-disabled" id="dijit_layout_TabContainer_0" widgetid="dijit_layout_TabContainer_0" style="display: none;">
+	<div class="dijitTabListContainer-top dijitTabController dijitScrollingTabController tabStrip-disabled dijitAlignTop dijitLayoutContainer" style="left: 0px; top: 0px; position: absolute; width: 0px; height: 0px;" id="dijit_layout_TabContainer_0_tablist" widgetid="dijit_layout_TabContainer_0_tablist" _dijitmenudijit_layout_tabcontainer_0_tablist_menu="1">
+	<div data-dojo-attach-event="ondijitclick:_onClick" class="dijitTabInnerDiv dijitTabContent dijitButtonContents dijitTab tabStripButton dijitbelow-altArrowButton tabStripButton-top dijitAlignRight" data-dojo-attach-point="focusNode" role="button" tabindex="-1" id="dijit_layout_TabContainer_0_tablist_menuBtn" title="" widgetid="dijit_layout_TabContainer_0_tablist_menuBtn" style="user-select: none; display: none; left: 0px; top: 0px; position: absolute; height: 0px;">
+	<span role="presentation" class="dijitInline dijitTabStripIcon dijitTabStripMenuIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,titleNode" class="dijitButtonText dijitDisplayNone">▼</span>
+</div>
+	<div data-dojo-attach-event="ondijitclick:_onClick" class="dijitTabInnerDiv dijitTabContent dijitButtonContents tabStripButton-top dijitAlignLeft dijitTab tabStripButton dijitTabDisabled tabStripButtonDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="button" id="dijit_layout_TabContainer_0_tablist_leftBtn" title="" widgetid="dijit_layout_TabContainer_0_tablist_leftBtn" aria-disabled="true" tabindex="-1" style="user-select: none; display: none; left: 0px; top: 0px; position: absolute; height: 0px;">
+	<span role="presentation" class="dijitInline dijitTabStripIcon dijitTabStripSlideLeftIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,titleNode" class="dijitButtonText dijitDisplayNone">◀</span>
+</div>
+	<div data-dojo-attach-event="ondijitclick:_onClick" class="dijitTabInnerDiv dijitTabContent dijitButtonContents tabStripButton-top dijitAlignRight dijitTab tabStripButton dijitTabDisabled tabStripButtonDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="button" id="dijit_layout_TabContainer_0_tablist_rightBtn" title="" widgetid="dijit_layout_TabContainer_0_tablist_rightBtn" aria-disabled="true" tabindex="-1" style="user-select: none; display: none; left: 0px; top: 0px; position: absolute; height: 0px;">
+	<span role="presentation" class="dijitInline dijitTabStripIcon dijitTabStripSlideRightIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,titleNode" class="dijitButtonText dijitDisplayNone">▶</span>
+</div>
+	<div class="dijitTabListWrapper dijitTabContainerTopNone dijitAlignCenter" data-dojo-attach-point="tablistWrapper" style="height: 0px; left: 0px; top: 0px; position: absolute; width: 0px;">
+		<div role="tablist" data-dojo-attach-event="onkeydown:onkeydown" data-dojo-attach-point="containerNode" class="nowrapTabStrip dijitTabContainerTop-tabs" style="width: 50400px;"><div role="presentation" data-dojo-attach-point="titleNode,innerDiv,tabContent" class="dijitTabInner dijitTabContent dijitTab dijitTabChecked dijitChecked" widgetid="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_2">
+	<span role="presentation" class="dijitInline dijitIcon dijitTabButtonIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,focusNode" class="tabLabel" role="tab" tabindex="0" id="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_2" name="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_2" aria-disabled="false" title="" aria-selected="true" style="user-select: none;">Details</span>
+	<span class="dijitInline dijitTabCloseButton dijitTabCloseIcon" data-dojo-attach-point="closeNode" role="presentation" title="Close" style="display: none;">
+		<span data-dojo-attach-point="closeText" class="dijitTabCloseText">[x]</span></span>
+</div><div role="presentation" data-dojo-attach-point="titleNode,innerDiv,tabContent" class="dijitTabInner dijitTabContent dijitTab" widgetid="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_3">
+	<span role="presentation" class="dijitInline dijitIcon dijitTabButtonIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,focusNode" class="tabLabel" role="tab" tabindex="-1" id="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_3" name="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_3" aria-disabled="false" title="" style="user-select: none;">Stack Trace</span>
+	<span class="dijitInline dijitTabCloseButton dijitTabCloseIcon" data-dojo-attach-point="closeNode" role="presentation" title="Close" style="display: none;">
+		<span data-dojo-attach-point="closeText" class="dijitTabCloseText">[x]</span></span>
+</div></div>
+	</div>
+</div>
+	<div data-dojo-attach-point="tablistSpacer" class="dijitTabSpacer dijitTabContainerTop-spacer dijitAlignTop" style="left: 0px; top: 0px; position: absolute; width: 0px;"></div>
+	<div class="dijitTabPaneWrapper dijitTabContainerTop-container dijitAlignCenter" data-dojo-attach-point="containerNode" style="left: 0px; top: 0px; position: absolute; width: 0px; height: 0px;">
+        <div role="tabpanel" class="dijitTabContainerTopChildWrapper dijitVisible" aria-labelledby="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_2"><div data-dojo-id="detailsTabJsid" data-dojo-type="dijit/layout/ContentPane" class="dijitContentPane dijitTabPane dijitTabContainerTop-child dijitTabContainerTop-dijitContentPane" id="dijit_layout_ContentPane_2" widgetid="dijit_layout_ContentPane_2" style="left: 0px; top: 0px;">
+            Details of error goes here.
+        </div></div>
+        <div role="tabpanel" class="dijitTabContainerTopChildWrapper dijitHidden" aria-labelledby="dijit_layout_TabContainer_0_tablist_dijit_layout_ContentPane_3"><div data-dojo-id="stackTabJsid" data-dojo-type="dijit/layout/ContentPane" class="dijitContentPane dijitTabPane dijitTabContainerTop-child dijitTabContainerTop-dijitContentPane" id="dijit_layout_ContentPane_3" widgetid="dijit_layout_ContentPane_3">
+            Stack trace of error goes here.
+        </div></div>
+  </div>
+</div>
+     
+    
+</div>
+
+
+ 
+<div id="ursDiv" style="width:100%;height:100%; margin:0; padding:0;">
+
+<table>
+    <tbody><tr id="ursWizardBannerTR">
+        <td colspan="2">
+          <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'" class="dijitContentPane" id="dijit_layout_ContentPane_0" widgetid="dijit_layout_ContentPane_0">
+    <div role="banner" class="header">
+        <div class="dot-logo">
+            <p>United States Department of Transportation</p>
+        </div>
+    </div>
+    
+    <div role="main" class="main row">
+        
+        <div class="article col">
+            <div class="article-banner">
+                <div class="article-banner-logo">
+                    <h1 style="margin-top:0em;">FMCSA</h1>
+                    <p style="color:white;">Federal Motor Carrier Safety Administration</p>
+                </div>
+            </div>
+       </div>
+    </div>
+  </div>
+        </td>
+    </tr>
+    
+    <tr id="ursWizardBodyTR" style="background-color:#fff;">
+        <td style="width:100%;">
+        <div style="width:80%;display:inline-block;padding:20px;background:#fff;">
+            <div id="wizardContainer" class="dijitContentPane wizardContainer" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" widgetid="wizardContainer"><form data-dojo-attach-point="containerNode" data-dojo-attach-event="onreset:_onReset,onsubmit:_onSubmit" class="wizardPaneContentDivForm" id="form_B0011P010031" enctype="multipart/form-data" action="" method="" widgetid="form_B0011P010031"><table class="leafPageTable">  <tbody><tr id="leafPageTitleTR" style="display: none;"><td><div class="pageTitleDiv"><span class="heavy" id="leaftitle_B0011P010031"></span></div><p></p> </td></tr>  <tr id="leafPageDescriptionTR"><td class="leafPageDescription"><label class="leafPageDescription" id="leafdescription_B0011P010031"></label> </td></tr>  <tr><td><div id="leafinputdiv_B0011P010031"><label class="pageDescription"></label><table class="pageTable" width="100%"><tr class="pageSectionOuterRow"><td class="pageSectionOuterCell"><table class="pageSectionInnerTable" width="100%"><tr class="pageSectionInnerTitleRow" width="100%"><td class="pageSectionInnerTitleCell"><label class="pageSectionTitleLabel" title=""></label></td></tr><tr class="pageSectionInnerTitleRow"><td class="pageSectionInnerDescriptionCell"><label class="pageSectionTitleLabel" title=""></label></td></tr><tr class="pageSectionRow"><td class="pageSectionCell"><table class="questionTable" width="100%"><tr class="questionRow"><td class="questionCell"><label class="questionDesc" id="questionDesc_Q01002">Are you a 3rd Party Service provider ?</label></td></tr><tr class="answerRow"></tr><tr class="answersRow"><td class="answersCell"><table class="selectbuttonsTable"><tr class="selectbuttonsSharedImageRow"><td class="selectbuttonsSharedImageCell"><label for=""><img src="/CompassThemesURS/themes/html/commonurs/images/200/icon_ProcessAgent.png" alt="image" border="0"></label></td><td class="answersTD"><table class="answersTable"><tr class="selectbuttonsRow"></tr><tr class="answerRow"><td class="answerCellLeft"><table class="answerMiniTable"><tr class="answerMiniTableButtonLabelRow"><td class="answerValueCell"><div class="dijit dijitReset dijitInline dijitRadio dijitRadioFocused dijitFocused" role="presentation" widgetid="questionCode_B0011P010031S01003_Q01002_id_Y"><input name="questionCode_B0011P010031S01003_Q01002" type="radio" role="radio" aria-checked="false" class="dijitReset dijitCheckBoxInput" data-dojo-attach-point="focusNode" data-dojo-attach-event="ondijitclick:_onClick" value="Y" tabindex="0" id="questionCode_B0011P010031S01003_Q01002_id_Y" style="user-select: none;"></div></td><td class="answerLabelCell"><label class="answerLabel dijitFocusedLabel" for="questionCode_B0011P010031S01003_Q01002_id_Y" id="ansLbl_B0011P010031S01003_Q01002_id_Y">Yes</label></td></tr></table></td></tr><tr class="answerRow"><td class="answerCellLeft"><table class="answerMiniTable"><tr class="answerMiniTableButtonLabelRow"><td class="answerValueCell"><div class="dijit dijitReset dijitInline dijitRadio" role="presentation" widgetid="questionCode_B0011P010031S01003_Q01002_id_N"><input name="questionCode_B0011P010031S01003_Q01002" type="radio" role="radio" aria-checked="false" class="dijitReset dijitCheckBoxInput" data-dojo-attach-point="focusNode" data-dojo-attach-event="ondijitclick:_onClick" value="N" tabindex="0" id="questionCode_B0011P010031S01003_Q01002_id_N" style="user-select: none;"></div></td><td class="answerLabelCell"><label class="answerLabel" for="questionCode_B0011P010031S01003_Q01002_id_N" id="ansLbl_B0011P010031S01003_Q01002_id_N">No</label></td></tr></table></td></tr></table></td></tr></table></td></tr></table></td></tr></table></td></tr></table></div></td></tr></tbody></table></form></div>
+        </div>
+        <div style="float:right;display:inline-block;position:fixed;right:0px;background-color:lightgray;z-index:99 !important;">
+           <!-- progress bar maximum is set to 22 - the number of possible branches user could navigate through -->
+           <div class="dijitProgressBar dijitProgressBarEmpty" role="progressbar" aria-valuenow="0.045" aria-labelledby="ursRegProgressBar_label" aria-valuemin="0" aria-valuemax="1" id="ursRegProgressBar" title="Estimated progress to completion of URS Online Application Process" widgetid="ursRegProgressBar"><div data-dojo-attach-point="internalProgress" class="dijitProgressBarFull" style="width: 4.5%;"><div class="dijitProgressBarTile" role="presentation"></div><span style="visibility:hidden">&nbsp;</span></div><div data-dojo-attach-point="labelNode" class="dijitProgressBarLabel" id="ursRegProgressBar_label">5%</div><span data-dojo-attach-point="indeterminateHighContrastImage" class="dijitInline dijitProgressBarIndeterminateHighContrastImage" src="/CompassThemesURS/themes/html/commonurs/portal_dojo/dijit/themes/a11y/indeterminate_progress.gif"></span></div>
+      <table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable" role="menu" tabindex="0" cellspacing="0" id="mainMenuTop" widgetid="mainMenuTop" style="background-color: inherit; border: 0px none; width: 100%;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+
+        <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="LOGOUT " id="menu_logout" widgetid="menu_logout" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardExit" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_logout_text">LOGOUT</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_logout_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitPopupMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="MENU " id="treePopupMenuItem" widgetid="treePopupMenuItem" aria-haspopup="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardMenu" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="treePopupMenuItem_text">MENU</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="treePopupMenuItem_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr><!-- end of sub-menu -->
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="STATUS " id="menu_status" widgetid="menu_status" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardStatus" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_status_text">STATUS</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_status_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="SAVE " id="menu_save" widgetid="menu_save" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardSave" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_save_text">SAVE</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_save_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="REPORT " id="menu_report" widgetid="menu_report" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardReport" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_report_text">REPORT</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_report_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;UPLOAD FILE&lt;/label&gt; " id="menu_uploadFile" widgetid="menu_uploadFile" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardUploadFile" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_uploadFile_text"><label style="white-space:normal;">UPLOAD FILE</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_uploadFile_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;PREVIOUS&lt;/label&gt; " id="menu_previous" widgetid="menu_previous" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardBack" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_previous_text"><label style="white-space:normal;">PREVIOUS</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_previous_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled nextMenu_disabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;NEXT&lt;/label&gt; " id="menu_next" widgetid="menu_next" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell nextMenu_disabled" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardContinue" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel nextMenu_disabled" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_next_text"><label style="white-space:normal;">NEXT</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey nextMenu_disabled" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_next_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell nextMenu_disabled" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+        <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="&lt;label style=&quot;white-space:normal;&quot;&gt;WITHDRAW APP&lt;/label&gt; " id="menu_withdraw" widgetid="menu_withdraw" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardWithDraw" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_withdraw_text"><label style="white-space:normal;">WITHDRAW APP</label></td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_withdraw_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+      </tbody>
+</table>
+      <div style="height:50px;">&nbsp;</div>
+       <table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable" role="menu" tabindex="0" cellspacing="0" id="mainMenuBottom" widgetid="mainMenuBottom" style="background-color: inherit; border: 0px none; width: 100%;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+        <tr class="dijitReset dijitMenuItem dijitPopupMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="PRINT " id="menu_print" widgetid="menu_print" aria-haspopup="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardPrint" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_print_text">PRINT</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_print_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>      
+ <!--       <div id="menu_print" data-dojo-type="dijit/MenuItem" data-dojo-props="iconClass: 'imgWizardPrint'" onClick="javascript:handleButton('printCurrentPage');">PRINT</div>
+ end of sub-menu -->  
+        <tr class="dijitReset dijitMenuItem dijitPopupMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="HELP " id="menu_help" widgetid="menu_help" aria-haspopup="true" aria-disabled="false" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon imgWizardHelp" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="menu_help_text">HELP</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="menu_help_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+    </tbody>
+</table>
+    </div>
+        </td> 
+    </tr>
+
+    <tr>
+        <td>
+
+
+    <!--  footer -->
+<div class="footer" style="width:80%;">
+    <div class="legalNotice">
+        <div class="part1">
+            <span id="attention">ATTENTION  ATTENTION  ATTENTION</span>
+            <ul class="mainItems">
+                <li>You are accessing a U.S. Government information system, which includes (1) this computer, (2) this computer network, (3) all computers connected to this network, and (4) all devices and storage media attached to this network or to a computer on this network.  This information system is provided for U.S. Government-authorized use only. </li>
+                <li>Unauthorized or improper use of this system may result in disciplinary action, as well as civil and criminal penalties.</li>  
+                <li>By using this information system, you understand and consent to the following:
+                    <ul class="consentItems">
+                        <li>You have no reasonable expectation of privacy regarding any communications or data transiting or stored on this information system.  At any time, and for any lawful government purpose, the government may monitor, intercept, and search and seize any communication or data transiting or stored on this information system.</li> 
+                        <li>Any communications or data transiting or stored on this information system may be disclosed or used for any lawful government purpose.</li> 
+                    </ul>
+                </li>
+            </ul>   
+        </div>
+        <div class="part2">
+            <span class="privacyAct">This system contains information protected under the provisions of the Privacy Act of 1974 (Public Law 93-579).  Any privacy information displayed on the screen or printed shall be protected from unauthorized disclosure.  Individuals who violate privacy safeguards may be subject to disciplinary actions, a fine of up to $5,000, or both. The USDOT Privacy Policy details can be found <a href="https://www.transportation.gov/dot-website-privacy-policy" target="_blank">here</a>.</span>
+        </div>
+    </div>
+</div>
+
+
+        </td>
+    </tr>
+
+</tbody></table>
+   
+   <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'bottom'" style="height: 200px;" class="dijitContentPane" id="dijit_layout_ContentPane_1" widgetid="dijit_layout_ContentPane_1">
+   </div>
+
+  
+  
+  
+    
+
+</div>
+<div id="goodbyeDiv" style="display:none;">
+    <br><br>
+    <div style="text-align:center;" class="paneHeader1">Thank you for participating in the<br>Unified Registration System.</div>
+    <br>
+    <br>
+</div>
+<form name="downloadURSmcsa1Form" action="/UrsRegistrationWizard/JasperReporter2" method="post" target="_blank">
+    <input type="hidden" id="pageTitle" name="pageTitle" value="">
+    <input type="hidden" id="fileNamePrefix" name="fileNamePrefix" value="">
+    <input type="hidden" id="fileType" name="fileType" value="application/pdf">
+    <input type="hidden" id="fileOrientation" name="fileOrientation" value="PORTRAIT">
+    <input type="hidden" id="userFullName" name="userFullName" value="">
+    <input type="hidden" id="requestType" name="requestType" value="REPORT">
+    <input type="hidden" id="reportBaseType" name="reportBaseType" value="MCSA1">
+    <input type="hidden" id="jobId" name="jobId" value="">
+    <input type="hidden" id="dataSetId" name="dataSetId" value="">
+</form>
+<form name="notificationLetterDownloadForm" method="post" action="/CompassDownloaders/NotificationDownloader" target="_blank">
+     <input type="hidden" id="ACTION" name="ACTION" value="download">
+     <input type="hidden" id="myUserId" name="myUserId" value="">
+     <input type="hidden" id="usDOTnumber" name="usDOTnumber" value="">
+     <input type="hidden" id="notificationId" name="notificationId" value="">
+</form>
+
+<div class="dijitDialog" role="dialog" aria-labelledby="uploadAppDocumentsDialog_title" id="uploadAppDocumentsDialog" widgetid="uploadAppDocumentsDialog" style="display: none; position: absolute;">
+	<div data-dojo-attach-point="titleBar" class="dijitDialogTitleBar">
+		<span data-dojo-attach-point="titleNode" class="dijitDialogTitle" id="uploadAppDocumentsDialog_title" role="heading" level="1">Application Documents Upload</span>
+		<span data-dojo-attach-point="closeButtonNode" class="dijitDialogCloseIcon" data-dojo-attach-event="ondijitclick: onCancel" title="Cancel" role="button" tabindex="-1">
+			<span data-dojo-attach-point="closeText" class="closeText" title="Cancel">x</span>
+		</span>
+	</div>
+	<div data-dojo-attach-point="containerNode" class="dijitDialogPaneContent">
+  <h2 id="uploadInstructionsText">Please upload all required documents. </h2>
+  <h2>&nbsp;</h2>
+  <form data-dojo-attach-point="containerNode" data-dojo-attach-event="onreset:_onReset,onsubmit:_onSubmit" name="form_appUploadDetails" id="form_appUploadDetails" enctype="multipart/form-data" action="/UrsRegistrationWizard/UploadDocsServlet" method="post" target="_blank" widgetid="form_appUploadDetails">
+        
+      
+    <table class="forChatInput" style="width:100%;">
+        <tbody><tr><td colspan="2"></td></tr>
+        <tr><td colspan="2">
+            <input type="file" id="fileUploaderDijit" name="appDocuments[]"></td>
+        </tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr>
+            <td align="left" colspan="2"><label class="forInput" for="appDocType">Document Type:</label></td>
+        </tr>
+        <tr>
+            <td align="left" class="bottomTDInVerticalQA"><div class="dijit dijitReset dijitInline dijitLeft dijitTextBox dijitComboBox dijitValidationTextBox" id="widget_appDocType" role="combobox" aria-haspopup="true" data-dojo-attach-point="_popupStateNode" widgetid="appDocType" style="width: 100%;"><div class="dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer" data-dojo-attach-point="_buttonNode" role="presentation"><input class="dijitReset dijitInputField dijitArrowButtonInner" value="▼ " type="text" tabindex="-1" readonly="readonly" role="button presentation" aria-hidden="true"></div><div class="dijitReset dijitValidationContainer"><input class="dijitReset dijitInputField dijitValidationIcon dijitValidationInner" value="Χ " type="text" tabindex="-1" readonly="readonly" role="presentation"></div><div class="dijitReset dijitInputField dijitInputContainer"><input class="dijitReset dijitInputInner" type="text" autocomplete="off" data-dojo-attach-point="textbox,focusNode" role="textbox" aria-autocomplete="both" tabindex="0" id="appDocType" title="Document Type" aria-required="false" value="" aria-invalid="false"><input type="hidden" name="appDocType" value=""></div></div>
+            </td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td align="Right" colspan="2">    
+              <span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="submitAppDocButton"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="submitAppDocButton_label" tabindex="0" id="submitAppDocButton" title="Upload Document" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="submitAppDocButton_label" data-dojo-attach-point="containerNode">Upload</span></span></span><input name="submitAppDocButton" type="submit" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+              <span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="dijit_form_Button_0"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="dijit_form_Button_0_label" tabindex="0" id="dijit_form_Button_0" title="Close dialog" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="dijit_form_Button_0_label" data-dojo-attach-point="containerNode">Close</span></span></span><input type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+            </td>
+      </tr>
+      <tr><td colspan="2">&nbsp;</td></tr>
+    </tbody></table>
+  </form>
+      <table class="forChatInput" style="width:100%;">
+            
+            
+            <tbody><tr><td> 
+            <div id="ursAppDocGrid" style="height: 200px;max-height:250px" summary="Application Documents">
+            Loading...
+                    <img alt="Please Wait" src="/CompassThemesURS/themes/html/COMPASS_THEME_LARGE_GREY/images/context_loading.gif">
+            </div>
+            </td><td></td></tr>
+            <tr>
+            <td><span id="rowCount"></span></td>
+            </tr>
+          
+        </tbody></table>
+  
+</div>
+	
+</div><div class="dijitDialog" role="dialog" aria-labelledby="dijit_Dialog_0_title" id="dijit_Dialog_0" widgetid="dijit_Dialog_0" style="width: 600px; display: none; position: absolute;">
+	<div data-dojo-attach-point="titleBar" class="dijitDialogTitleBar">
+		<span data-dojo-attach-point="titleNode" class="dijitDialogTitle" id="dijit_Dialog_0_title" role="heading" level="1">Chat</span>
+		<span data-dojo-attach-point="closeButtonNode" class="dijitDialogCloseIcon" data-dojo-attach-event="ondijitclick: onCancel" title="Cancel" role="button" tabindex="-1">
+			<span data-dojo-attach-point="closeText" class="closeText" title="Cancel">x</span>
+		</span>
+	</div>
+	<div data-dojo-attach-point="containerNode" class="dijitDialogPaneContent">
+
+  <table class="forChatInput">
+    <tbody><tr>
+      <td colspan="2" class="paneHeader2">
+        Welcome to URS Live Chat!<br>
+        If you have a question regarding your application, Customer Service can help.
+        <br><br>
+      </td>
+    </tr>
+    <tr>
+      <td class="leftTDInTwoColumnInputTableChat"><label class="forChatInput" for="chatUserName">Your Name</label></td>
+      <td>
+        <div class="dijit dijitReset dijitInline dijitLeft dijitTextBox dijitValidationTextBox" id="widget_chatUserName" role="presentation" widgetid="chatUserName" style="width: 100%;"><div class="dijitReset dijitValidationContainer"><input class="dijitReset dijitInputField dijitValidationIcon dijitValidationInner" value="Χ " type="text" tabindex="-1" readonly="readonly" role="presentation"></div><div class="dijitReset dijitInputField dijitInputContainer"><input class="dijitReset dijitInputInner" data-dojo-attach-point="textbox,focusNode" autocomplete="off" name="chatUserName" type="text" tabindex="0" id="chatUserName" title="Your first and last name" maxlength="100" aria-required="false" value="" aria-invalid="false"></div></div>
+      </td> 
+    </tr>
+    <tr>
+      <td class="leftTDInTwoColumnInputTableChat"><label class="forChatInput" for="chatApplicantId">Applicant ID</label></td>
+      <td>
+        <div class="dijit dijitReset dijitInline dijitLeft dijitTextBox dijitValidationTextBox dijitTextBoxReadOnly dijitValidationTextBoxReadOnly dijitReadOnly" id="widget_chatApplicantId" role="presentation" widgetid="chatApplicantId" style="width: 100%;"><div class="dijitReset dijitValidationContainer"><input class="dijitReset dijitInputField dijitValidationIcon dijitValidationInner" value="Χ " type="text" tabindex="-1" readonly="readonly" role="presentation"></div><div class="dijitReset dijitInputField dijitInputContainer"><input class="dijitReset dijitInputInner" data-dojo-attach-point="textbox,focusNode" autocomplete="off" name="chatApplicantId" type="text" tabindex="0" id="chatApplicantId" readonly="" maxlength="100" aria-required="false" value="" aria-invalid="false"></div></div>
+      </td> 
+    </tr>
+    <tr>
+      <td class="leftTDInTwoColumnInputTableChat"><label class="forChatInput" for="chatEmailAddress">Email Address</label></td>
+      <td>
+        <div class="dijit dijitReset dijitInline dijitLeft dijitTextBox dijitValidationTextBox" id="widget_chatEmailAddress" role="presentation" widgetid="chatEmailAddress" style="width: 100%;"><div class="dijitReset dijitValidationContainer"><input class="dijitReset dijitInputField dijitValidationIcon dijitValidationInner" value="Χ " type="text" tabindex="-1" readonly="readonly" role="presentation"></div><div class="dijitReset dijitInputField dijitInputContainer"><input class="dijitReset dijitInputInner" data-dojo-attach-point="textbox,focusNode" autocomplete="off" name="chatEmailAddress" type="text" tabindex="0" id="chatEmailAddress" title="The best email by which to contact you" maxlength="100" aria-required="false" value="" aria-invalid="false"></div></div>
+      </td> 
+    </tr>
+    <tr>
+      <td class="leftTDInTwoColumnInputTableChat"><label class="forChatInput" for="chatQuestion">Your Question</label></td>
+      <td>
+        <textarea name="chatQuestion" data-dojo-attach-point="focusNode,containerNode,textbox" autocomplete="off" class="dijitTextBox dijitTextArea" tabindex="0" id="chatQuestion" title="A description of the problem for which you would like chat assistance" rows="5" widgetid="chatQuestion" value="Current custom names: applicationContact, businessDesc, vehicleInfo. To test layout of custom pages enter customStaticPageFileName value into Your Name field and click Send. The custom page will be rendered, but without any integration to active registration.  It will effectively be a static page for development testing of the look and feel and layout." style="width: 100%;">Current custom names: applicationContact, businessDesc, vehicleInfo. To test layout of custom pages enter customStaticPageFileName value into Your Name field and click Send. The custom page will be rendered, but without any integration to active registration.  It will effectively be a static page for development testing of the look and feel and layout.</textarea>
+      </td> 
+    </tr>
+    <tr>
+      <td align="center" colspan="2">    
+          <span class="dijit dijitReset dijitInline dijitButton jelam-button-blue" role="presentation" widgetid="dijit_form_Button_1"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="dijit_form_Button_1_label" tabindex="0" id="dijit_form_Button_1" title="Send Question" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="dijit_form_Button_1_label" data-dojo-attach-point="containerNode">Send</span></span></span><input name="sendChatButton" type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+          <span class="dijit dijitReset dijitInline dijitButton jelam-button-link" role="presentation" widgetid="dijit_form_Button_2"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="dijit_form_Button_2_label" tabindex="0" id="dijit_form_Button_2" title="Send Question" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="dijit_form_Button_2_label" data-dojo-attach-point="containerNode">Cancel</span></span></span><input name="cancelChatButton" type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+      </td>
+    </tr></tbody></table>
+  </div>
+	
+</div><table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable" role="menu" tabindex="0" cellspacing="0" id="treeMenu" widgetid="treeMenu" aria-labelledby="treePopupMenuItem_text" style="display: none;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+            <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" id="dijit_MenuItem_2" aria-label="URS Welcome " widgetid="dijit_MenuItem_2" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="dijit_MenuItem_2_text">URS Welcome</td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="dijit_MenuItem_2_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr></tbody>
+</table><table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable" role="menu" tabindex="0" cellspacing="0" id="taskPrint" widgetid="taskPrint" aria-labelledby="menu_print_text" style="display: none;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+                <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="
+                    Print current page
+                 " id="printCurrentPage" widgetid="printCurrentPage" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="printCurrentPage_text">
+                    Print current page
+                </td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="printCurrentPage_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+                <tr class="dijitReset dijitMenuItem dijitMenuItemDisabled dijitDisabled" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="
+                    Print ALL Summary - HTML
+                 " id="printMainSummaryHTML" widgetid="printMainSummaryHTML" aria-disabled="true" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="printMainSummaryHTML_text">
+                    Print ALL Summary - HTML
+                </td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="printMainSummaryHTML_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+              <!--   <div id="printMainSummaryPDF" data-dojo-type="dijit/MenuItem" onClick="javascript:handleButton('printMainSummaryPDF');">
+                    Print main summary - PDF
+                </div> --> 
+            </tbody>
+</table><table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable" role="menu" tabindex="0" cellspacing="0" id="taskHelp" widgetid="taskHelp" aria-labelledby="menu_help_text" style="display: none;">
+	<tbody class="dijitReset" data-dojo-attach-point="containerNode">
+                <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="
+                    URS Computer-Based Training
+                 " id="trainingPage" widgetid="trainingPage" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="trainingPage_text">
+                    URS Computer-Based Training
+                </td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="trainingPage_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+                <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="
+                    URS Glossary of Terms
+                 " id="glossaryPage" widgetid="glossaryPage" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="glossaryPage_text">
+                    URS Glossary of Terms
+                </td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="glossaryPage_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+                <tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="
+                    FMCSA Contact Center Number &lt;br&gt; 1-800-832-5660
+                 " id="contactHelpPage" widgetid="contactHelpPage" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="contactHelpPage_text">
+                    FMCSA Contact Center Number <br> 1-800-832-5660
+                </td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="contactHelpPage_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr>
+              	<tr class="dijitReset dijitMenuItem" data-dojo-attach-point="focusNode" role="menuitem" tabindex="-1" aria-label="
+                    FMCSA Contact Center Chat
+                 " id="onlineChatPage" widgetid="onlineChatPage" style="user-select: none;">
+	<td class="dijitReset dijitMenuItemIconCell" role="presentation">
+		<span role="presentation" class="dijitInline dijitIcon dijitMenuItemIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	</td>
+	<td class="dijitReset dijitMenuItemLabel" colspan="2" data-dojo-attach-point="containerNode,textDirNode" role="presentation" id="onlineChatPage_text">
+                    FMCSA Contact Center Chat
+                </td>
+	<td class="dijitReset dijitMenuItemAccelKey" style="display: none" data-dojo-attach-point="accelKeyNode" id="onlineChatPage_accel"></td>
+	<td class="dijitReset dijitMenuArrowCell" role="presentation">
+		<span data-dojo-attach-point="arrowWrapper" style="visibility: hidden">
+			<span class="dijitInline dijitIcon dijitMenuExpand"></span>
+			<span class="dijitMenuExpandA11y">+</span>
+		</span>
+	</td>
+</tr> 
+            </tbody>
+</table><div class="dijitDialog" role="dialog" aria-labelledby="errDialogId_title" id="errDialogId" widgetid="errDialogId" style="background: white; display: none; position: absolute;">
+	<div data-dojo-attach-point="titleBar" class="dijitDialogTitleBar">
+		<span data-dojo-attach-point="titleNode" class="dijitDialogTitle" id="errDialogId_title" role="heading" level="1">Error(s)</span>
+		<span data-dojo-attach-point="closeButtonNode" class="dijitDialogCloseIcon" data-dojo-attach-event="ondijitclick: onCancel" title="Cancel" role="button" tabindex="-1">
+			<span data-dojo-attach-point="closeText" class="closeText" title="Cancel">x</span>
+		</span>
+	</div>
+	<div data-dojo-attach-point="containerNode" class="dijitDialogPaneContent">
+    <div class="dijitTabContainer dijitTabContainerTop dijitContainer dijitLayoutContainer tabStrip-disabled" id="errTabContainerId" widgetid="errTabContainerId" style="width: 500px; height: auto; display: none;">
+	<div class="dijitTabListContainer-top dijitTabController dijitScrollingTabController tabStrip-disabled" style="" id="errTabContainerId_tablist" widgetid="errTabContainerId_tablist" _dijitmenuerrtabcontainerid_tablist_menu="1">
+	<div data-dojo-attach-event="ondijitclick:_onClick" class="dijitTabInnerDiv dijitTabContent dijitButtonContents dijitTab tabStripButton dijitbelow-altArrowButton tabStripButton-top" data-dojo-attach-point="focusNode" role="button" tabindex="-1" id="errTabContainerId_tablist_menuBtn" title="" widgetid="errTabContainerId_tablist_menuBtn" style="user-select: none;">
+	<span role="presentation" class="dijitInline dijitTabStripIcon dijitTabStripMenuIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,titleNode" class="dijitButtonText dijitDisplayNone">▼</span>
+</div>
+	<div data-dojo-attach-event="ondijitclick:_onClick" class="dijitTabInnerDiv dijitTabContent dijitButtonContents dijitTab tabStripButton tabStripButton-top" data-dojo-attach-point="focusNode" role="button" id="errTabContainerId_tablist_leftBtn" title="" widgetid="errTabContainerId_tablist_leftBtn" style="user-select: none;">
+	<span role="presentation" class="dijitInline dijitTabStripIcon dijitTabStripSlideLeftIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,titleNode" class="dijitButtonText dijitDisplayNone">◀</span>
+</div>
+	<div data-dojo-attach-event="ondijitclick:_onClick" class="dijitTabInnerDiv dijitTabContent dijitButtonContents dijitTab tabStripButton tabStripButton-top" data-dojo-attach-point="focusNode" role="button" id="errTabContainerId_tablist_rightBtn" title="" widgetid="errTabContainerId_tablist_rightBtn" style="user-select: none;">
+	<span role="presentation" class="dijitInline dijitTabStripIcon dijitTabStripSlideRightIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,titleNode" class="dijitButtonText dijitDisplayNone">▶</span>
+</div>
+	<div class="dijitTabListWrapper dijitTabContainerTopNone" data-dojo-attach-point="tablistWrapper">
+		<div role="tablist" data-dojo-attach-event="onkeydown:onkeydown" data-dojo-attach-point="containerNode" class="nowrapTabStrip dijitTabContainerTop-tabs" style="width: 50200px;"><div role="presentation" data-dojo-attach-point="titleNode,innerDiv,tabContent" class="dijitTabInner dijitTabContent dijitTab dijitTabChecked dijitChecked" widgetid="errTabContainerId_tablist_summaryTabId">
+	<span role="presentation" class="dijitInline dijitIcon dijitTabButtonIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span>
+	<span data-dojo-attach-point="containerNode,focusNode" class="tabLabel" role="tab" tabindex="0" id="errTabContainerId_tablist_summaryTabId" name="errTabContainerId_tablist_summaryTabId" aria-disabled="false" title="" aria-selected="true" style="user-select: none;">Summary</span>
+	<span class="dijitInline dijitTabCloseButton dijitTabCloseIcon" data-dojo-attach-point="closeNode" role="presentation" title="Close" style="display: none;">
+		<span data-dojo-attach-point="closeText" class="dijitTabCloseText">[x]</span></span>
+</div></div>
+	</div>
+</div>
+	<div data-dojo-attach-point="tablistSpacer" class="dijitTabSpacer dijitTabContainerTop-spacer"></div>
+	<div class="dijitTabPaneWrapper dijitTabContainerTop-container" data-dojo-attach-point="containerNode">
+        <div role="tabpanel" class="dijitTabContainerTopChildWrapper dijitHidden" aria-labelledby="errTabContainerId_tablist_summaryTabId"><div id="summaryTabId" data-dojo-id="summaryTabJsid" data-dojo-type="dijit/layout/ContentPane" class="dijitContentPane dijitTabPane dijitTabContainerTop-child dijitTabContainerTop-dijitContentPane" widgetid="summaryTabId">
+            Summary of error goes here.
+        </div></div>
+    </div>
+</div>
+    <div id="allInOneContainer" style="width:500px;height:auto;display:block;overflow:scroll;">
+    <div id="allInOne_summary">
+        </div>
+    <div id="allInOne_details" style="display:none;">
+        </div>
+    <div id="allInOne_stacktrace" style="display:none;width:1000px;">
+        </div>
+    </div>
+      <table id="errButtonsTableId" width="500px"><tbody><tr>
+    <td>
+    <span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="errPrevBtn"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="errPrevBtn_label" tabindex="0" id="errPrevBtn" title="Show previous error" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="errPrevBtn_label" data-dojo-attach-point="containerNode">
+        Previous
+    </span></span></span><input type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+    <span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="errNextBtn"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="errNextBtn_label" tabindex="0" id="errNextBtn" title="Show next error" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="errNextBtn_label" data-dojo-attach-point="containerNode">
+        Next
+    </span></span></span><input type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+    &nbsp;&nbsp;Error #<label id="errorCountLabelId">1</label>
+    </td>
+    <td align="right">
+    <span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="errShowDetailsBtn"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="errShowDetailsBtn_label" tabindex="0" id="errShowDetailsBtn" title="Show/hide details of the error(s)" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="errShowDetailsBtn_label" data-dojo-attach-point="containerNode">
+        <span id="detailButtonLabel">Show Details</span>
+    </span></span></span><input type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+    <span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="errCloseBtn"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="errCloseBtn_label" tabindex="0" id="errCloseBtn" title="Close this error dialog" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="errCloseBtn_label" data-dojo-attach-point="containerNode">
+        Close
+    </span></span></span><input type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span>
+    </td>
+    </tr>
+      </tbody></table>
+  </div>
+	
+</div><div class="dijitDialog" role="dialog" aria-labelledby="waitPopup_title" id="waitPopup" widgetid="waitPopup" style="z-index: 999; display: none; position: absolute;">
+	<div data-dojo-attach-point="titleBar" class="dijitDialogTitleBar">
+		<span data-dojo-attach-point="titleNode" class="dijitDialogTitle" id="waitPopup_title" role="heading" level="1">Please Wait</span>
+		<span data-dojo-attach-point="closeButtonNode" class="dijitDialogCloseIcon" data-dojo-attach-event="ondijitclick: onCancel" title="Cancel" role="button" tabindex="-1">
+			<span data-dojo-attach-point="closeText" class="closeText" title="Cancel">x</span>
+		</span>
+	</div>
+	<div data-dojo-attach-point="containerNode" class="dijitDialogPaneContent">
+    <div id="waitingMessageDiv"></div>
+  </div>
+	
+</div><div class="dijitDialog" role="dialog" aria-labelledby="messagePopup_title" id="messagePopup" widgetid="messagePopup" style="z-index: 999; display: none; position: absolute;">
+	<div data-dojo-attach-point="titleBar" class="dijitDialogTitleBar">
+		<span data-dojo-attach-point="titleNode" class="dijitDialogTitle" id="messagePopup_title" role="heading" level="1">Message</span>
+		<span data-dojo-attach-point="closeButtonNode" class="dijitDialogCloseIcon" data-dojo-attach-event="ondijitclick: onCancel" title="Cancel" role="button" tabindex="-1">
+			<span data-dojo-attach-point="closeText" class="closeText" title="Cancel">x</span>
+		</span>
+	</div>
+	<div data-dojo-attach-point="containerNode" class="dijitDialogPaneContent">
+     <table>
+         <tbody><tr><td><div id="dialogMessageDiv"></div></td></tr>
+         <tr id="messageOkRow"><td align="center"><span class="dijit dijitReset dijitInline dijitButton" role="presentation" widgetid="dijit_form_Button_3"><span class="dijitReset dijitInline dijitButtonNode" data-dojo-attach-event="ondijitclick:__onClick" role="presentation"><span class="dijitReset dijitStretch dijitButtonContents" data-dojo-attach-point="titleNode,focusNode" role="button" aria-labelledby="dijit_form_Button_3_label" tabindex="0" id="dijit_form_Button_3" style="user-select: none;"><span class="dijitReset dijitInline dijitIcon dijitNoIcon" data-dojo-attach-point="iconNode"></span><span class="dijitReset dijitToggleButtonIconChar">●</span><span class="dijitReset dijitInline dijitButtonText" id="dijit_form_Button_3_label" data-dojo-attach-point="containerNode">Ok</span></span></span><input type="button" value="" class="dijitOffScreen" data-dojo-attach-event="onclick:_onClick" tabindex="-1" aria-hidden="true" data-dojo-attach-point="valueNode"></span></td></tr>
+     </tbody></table>
+  </div>
+	
+</div><div class="dijitDialog" role="dialog" aria-labelledby="dijit_Dialog_1_title" id="dijit_Dialog_1" widgetid="dijit_Dialog_1" style="position: absolute; left: 752px; top: 479px; opacity: 0; z-index: 950; display: none;">
+	<div data-dojo-attach-point="titleBar" class="dijitDialogTitleBar">
+		<span data-dojo-attach-point="titleNode" class="dijitDialogTitle" id="dijit_Dialog_1_title" role="heading" level="1">Please Wait</span>
+		<span data-dojo-attach-point="closeButtonNode" class="dijitDialogCloseIcon" data-dojo-attach-event="ondijitclick: onCancel" title="Cancel" role="button" tabindex="-1">
+			<span data-dojo-attach-point="closeText" class="closeText" title="Cancel">x</span>
+		</span>
+	</div>
+	<div data-dojo-attach-point="containerNode" class="dijitDialogPaneContent"><p>Loading.</p></div>
+	
+</div><div class="dijitDialogUnderlayWrapper" id="dijit_DialogUnderlay_0" widgetid="dijit_DialogUnderlay_0" style="z-index: 949; display: none; top: 0px; left: 0px;"><div class="dijitDialogUnderlay _underlay" tabindex="-1" data-dojo-attach-point="node" id="dijit_Dialog_1_underlay" style="width: 1905px; height: 1065px;"></div></div></body></html>
